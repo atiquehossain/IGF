@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>APPROVED — Global Navigation &amp; Footer - Ignite Global Foundation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed-variant": "#773300",
+                      "primary": "#9c4500",
+                      "secondary-container": "#e4e1eb",
+                      "on-primary-fixed": "#331200",
+                      "surface-bright": "#f8f9fa",
+                      "on-tertiary-fixed": "#321300",
+                      "surface-tint": "#9c4500",
+                      "tertiary": "#994700",
+                      "on-tertiary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e1e3e4",
+                      "tertiary-fixed": "#ffdbc8",
+                      "background": "#f8f9fa",
+                      "secondary": "#5e5d66",
+                      "on-background": "#191c1d",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#c7c5cf",
+                      "surface": "#f8f9fa",
+                      "outline": "#8c7163",
+                      "inverse-on-surface": "#f0f1f2",
+                      "surface-container": "#edeeef",
+                      "on-tertiary-fixed-variant": "#743500",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#ffb68e",
+                      "surface-container-highest": "#e1e3e4",
+                      "primary-fixed-dim": "#ffb68e",
+                      "surface-dim": "#d9dadb",
+                      "on-error": "#ffffff",
+                      "error": "#ba1a1a",
+                      "surface-container-low": "#f3f4f5",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#e0c0b0",
+                      "tertiary-fixed-dim": "#ffb68a",
+                      "primary-fixed": "#ffdbca",
+                      "on-secondary-container": "#64636c",
+                      "on-tertiary-container": "#592700",
+                      "on-secondary-fixed-variant": "#46464e",
+                      "on-surface": "#191c1d",
+                      "on-primary-container": "#5b2500",
+                      "on-primary": "#ffffff",
+                      "on-secondary-fixed": "#1b1b22",
+                      "secondary-fixed": "#e4e1eb",
+                      "on-surface-variant": "#594236",
+                      "tertiary-container": "#f07f2d",
+                      "surface-container-high": "#e7e8e9",
+                      "primary-container": "#ff7500",
+                      "inverse-surface": "#2e3132"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap-mobile": "64px",
+                      "grid-margin": "24px",
+                      "grid-gutter": "24px",
+                      "section-gap-desktop": "120px",
+                      "base": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Literata"
+                      ],
+                      "display-lg": [
+                              "Literata"
+                      ],
+                      "headline-lg-mobile": [
+                              "Literata"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg": [
+                              "Literata"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glow-overlay {
+            background: linear-gradient(135deg, #FF7500 0%, #F06A00 100%);
+        }
+        .btn-hover-shadow:hover {
+            box-shadow: 0px 12px 32px rgba(36, 36, 43, 0.08);
+        }
+        .focus-ring:focus-visible {
+            outline: 2px solid #9c4500;
+            outline-offset: 2px;
+        }
+        /* Ensure 44px min touch target */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased pb-section-gap-desktop">
+<div class="max-w-7xl mx-auto px-grid-margin py-8">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Component Sheet: Global Navigation &amp; Footer</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12">Ignite Global Foundation Design System</p>
+<!-- 1. Desktop Header (full nav, sign in, donate) -->
+<section class="mb-section-gap-desktop">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">1. Desktop Header (Default)</h2>
+<div class="border border-outline-variant rounded-lg overflow-hidden relative bg-surface">
+<!-- TopNavBar Component -->
+<header class="bg-surface border-b border-outline-variant shadow-sm w-full flex justify-between items-center px-grid-margin max-w-7xl mx-auto h-20 relative z-50">
+<div class="flex items-center gap-8">
+<a class="font-headline-md text-headline-md font-bold text-on-surface focus-ring touch-target" href="#">Ignite Global Foundation</a>
+<nav class="hidden lg:flex items-center gap-1">
+<a class="text-primary border-b-2 border-primary font-bold pb-1 touch-target px-3 transition-transform hover:scale-95 duration-150 font-label-caps text-label-caps focus-ring" href="#">Programs</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors touch-target px-3 font-label-caps text-label-caps focus-ring" href="#">Projects</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors touch-target px-3 font-label-caps text-label-caps focus-ring" href="#">Resources</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors touch-target px-3 font-label-caps text-label-caps focus-ring" href="#">Events</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors touch-target px-3 font-label-caps text-label-caps focus-ring" href="#">About Us</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors touch-target px-3 font-label-caps text-label-caps focus-ring" href="#">Blog</a>
+</nav>
+</div>
+<div class="hidden lg:flex items-center gap-4">
+<button aria-label="Search" class="text-on-surface-variant hover:text-primary transition-colors focus-ring touch-target px-2">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors focus-ring touch-target px-2">EN/BN</button>
+<a class="font-label-caps text-label-caps text-on-surface hover:text-primary transition-colors focus-ring touch-target px-4" href="#">Sign In</a>
+<a class="glow-overlay text-white font-label-caps text-label-caps px-6 rounded-full touch-target btn-hover-shadow focus-ring transition-all hover:-translate-y-0.5" href="#">Donate</a>
+</div>
+</header>
+<!-- Context Canvas -->
+<div class="h-48 bg-surface-container-low flex items-center justify-center">
+<p class="text-on-surface-variant italic opacity-50">Page Content Canvas</p>
+</div>
+</div>
+</section>
+<!-- 8. Desktop Footer -->
+<section class="mb-section-gap-desktop">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">8. Desktop Footer</h2>
+<div class="border border-outline-variant overflow-hidden relative">
+<!-- Footer Component -->
+<footer class="bg-inverse-surface w-full rounded-none">
+<div class="w-full py-section-gap-desktop px-grid-margin grid grid-cols-1 md:grid-cols-12 gap-grid-gutter max-w-7xl mx-auto">
+<div class="md:col-span-4 flex flex-col gap-6">
+<h3 class="font-headline-md text-headline-md font-bold text-surface-container-lowest">Ignite Global Foundation</h3>
+<p class="font-body-md text-body-md text-surface-variant opacity-80 max-w-sm">
+                                Empowering communities in Bangladesh through sustainable development and humanitarian aid.
+                            </p>
+</div>
+<div class="md:col-span-2 md:col-start-7 flex flex-col gap-4">
+<h4 class="font-label-caps text-label-caps text-on-primary-fixed mb-2 opacity-60 uppercase tracking-wider">Organization</h4>
+<a class="font-body-md text-body-md text-surface-variant opacity-80 hover:opacity-100 hover:text-primary-fixed transition-opacity focus-within:ring-2 focus-within:ring-primary w-fit" href="#">About Us</a>
+<a class="font-body-md text-body-md text-surface-variant opacity-80 hover:opacity-100 hover:text-primary-fixed transition-opacity focus-within:ring-2 focus-within:ring-primary w-fit" href="#">Contact</a>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<h4 class="font-label-caps text-label-caps text-on-primary-fixed mb-2 opacity-60 uppercase tracking-wider">Legal</h4>
+<a class="font-body-md text-body-md text-surface-variant opacity-80 hover:opacity-100 hover:text-primary-fixed transition-opacity focus-within:ring-2 focus-within:ring-primary w-fit" href="#">Privacy Policy</a>
+</div>
+<div class="md:col-span-2 flex flex-col gap-4">
+<h4 class="font-label-caps text-label-caps text-on-primary-fixed mb-2 opacity-60 uppercase tracking-wider">Get Involved</h4>
+<a class="font-body-md text-body-md text-surface-variant opacity-80 hover:opacity-100 hover:text-primary-fixed transition-opacity focus-within:ring-2 focus-within:ring-primary w-fit" href="#">Volunteer</a>
+</div>
+<div class="md:col-span-12 mt-12 pt-8 border-t border-outline/20 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-md text-body-md text-surface-variant opacity-60">© 2024 Ignite Global Foundation. All rights reserved. Registered Nonprofit in Bangladesh.</p>
+<div class="flex gap-4">
+<!-- Social placeholders -->
+<a aria-label="Facebook" class="text-surface-variant opacity-80 hover:opacity-100 hover:text-primary-fixed transition-opacity focus-ring touch-target" href="#">
+<svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24"><path clip-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill-rule="evenodd"></path></svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+</section>
+<!-- Component States Documentation -->
+<section class="mb-section-gap-desktop">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Interactive States (Nav Items &amp; Buttons)</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-surface p-8 border border-outline-variant rounded-lg">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-6 uppercase tracking-widest">Navigation Links</h3>
+<div class="flex flex-col gap-4 items-start">
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Default</span>
+<a class="text-on-surface-variant font-label-caps text-label-caps px-3 touch-target" href="#">Projects</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Hover</span>
+<a class="text-primary font-label-caps text-label-caps px-3 touch-target" href="#">Projects</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Active</span>
+<a class="text-primary border-b-2 border-primary font-bold pb-1 font-label-caps text-label-caps px-3 touch-target" href="#">Programs</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Focus</span>
+<a class="text-on-surface-variant font-label-caps text-label-caps px-3 touch-target outline outline-2 outline-primary outline-offset-2" href="#">Projects</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Disabled</span>
+<span class="text-on-surface-variant opacity-30 font-label-caps text-label-caps px-3 touch-target cursor-not-allowed">Events</span>
+</div>
+</div>
+</div>
+<div class="bg-surface p-8 border border-outline-variant rounded-lg">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-6 uppercase tracking-widest">Primary Action (Donate)</h3>
+<div class="flex flex-col gap-4 items-start">
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Default</span>
+<button class="glow-overlay text-white font-label-caps text-label-caps px-6 rounded-full touch-target">Donate</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Hover</span>
+<button class="glow-overlay text-white font-label-caps text-label-caps px-6 rounded-full touch-target shadow-[0px_12px_32px_rgba(36,36,43,0.08)] -translate-y-0.5">Donate</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Focus</span>
+<button class="glow-overlay text-white font-label-caps text-label-caps px-6 rounded-full touch-target outline outline-2 outline-primary outline-offset-2">Donate</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Active</span>
+<button class="glow-overlay text-white font-label-caps text-label-caps px-6 rounded-full touch-target scale-95 opacity-90">Donate</button>
+</div>
+<div class="flex items-center gap-4">
+<span class="w-24 text-sm text-on-surface-variant opacity-60">Disabled</span>
+<button class="bg-surface-variant text-on-surface-variant opacity-40 font-label-caps text-label-caps px-6 rounded-full touch-target cursor-not-allowed" disabled="">Donate</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</body></html>

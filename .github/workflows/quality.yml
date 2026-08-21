@@ -1,0 +1,130 @@
+name: Quality Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: ctype, curl, dom, exif, fileinfo, filter, mbstring, openssl, pdo_sqlite, sodium
+          coverage: none
+
+      - name: Validate Composer metadata
+        run: composer validate --strict --no-check-publish
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Audit PHP dependencies
+        run: composer audit --no-interaction
+
+      - name: Verify production caches and route names
+        run: |
+          php artisan optimize
+          php artisan optimize:clear
+
+      - name: Run Laravel tests
+        run: php artisan test --display-warnings
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CYPRESS_INSTALL_BINARY: '0'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Scan project for credentials and personal-data artifacts
+        run: npm run security:scan
+
+      - name: Audit JavaScript dependencies
+        run: npm audit --audit-level=high
+
+      - name: Lint Vue and JavaScript
+        run: npm run lint
+
+      - name: Run Vue unit tests
+        run: npm run test:unit
+
+      - name: Build production assets
+        run: npm run production
+
+  browser-smoke:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LOCAL_ADMIN_USERNAME: cypress-admin
+      CYPRESS_ADMIN_USERNAME: cypress-admin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: ctype, curl, dom, fileinfo, mbstring, openssl, pdo_sqlite
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install application dependencies
+        run: |
+          composer install --prefer-dist --no-interaction --no-progress
+          npm ci --no-audit --no-fund
+
+      - name: Prepare isolated browser-test environment
+        run: |
+          cp .env.cypress.example .env.cypress
+          runtime_value="$(openssl rand -hex 24)"
+          echo "LOCAL_ADMIN_PASSWORD=${runtime_value}" >> "$GITHUB_ENV"
+          echo "CYPRESS_ADMIN_PASSWORD=${runtime_value}" >> "$GITHUB_ENV"
+
+      - name: Build assets and seed isolated browser database
+        run: |
+          npm run production
+          npm run cypress:seed
+
+      - name: Start isolated application
+        run: |
+          php artisan serve --env=cypress --host=127.0.0.1 --port=8001 > storage/logs/cypress-server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8001/admin/login > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat storage/logs/cypress-server.log
+          exit 1
+
+      - name: Run administrator browser smoke tests
+        run: npm run cypress:smoke

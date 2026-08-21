@@ -1,0 +1,36 @@
+.fa, .fas {
+    font-family: "Font Awesome 5 Pro" !important;
+    font-weight: 900;
+}
+
+.mce-fontawesome-panel-accordion:first-child {
+    margin-top: 40px !important;
+}
+
+.mce-fontawesome-panel-accordion  {
+    font-family: "Font Awesome 5 Pro" !important;
+}
+
+.mce-fontawesome-panel-title>span{
+    margin-left: auto !important;
+}
+
+.mce-fontawesome-panel-accordion .mce-fontawesome-panel-title,
+.mce-icon-cell>span
+{
+    cursor: pointer  !important;
+}
+
+.mce-icon-cell{
+    float: left !important;
+    padding: 10px !important;
+    font-weight: 900 !important;
+}
+
+.mce-fontawesome-panel-accordion .mce-fontawesome-panel-title{
+    font-weight: 900 !important;
+}
+
+.fa-accessible-icon{
+    display: none !important;
+}

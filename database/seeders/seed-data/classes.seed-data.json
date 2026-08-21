@@ -1,0 +1,202 @@
+[
+    {
+        "id": 1,
+        "name": "Class One",
+        "details": "Class One",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483711,
+        "created_at": "2023-01-11T06:55:06.000000Z",
+        "updated_at": "2023-01-11T06:55:06.000000Z"
+    },
+    {
+        "id": 2,
+        "name": "အတန်း တစ်ခု",
+        "details": "အတန်း တစ်ခု",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483711,
+        "created_at": "2023-01-11T06:55:06.000000Z",
+        "updated_at": "2023-01-11T06:55:06.000000Z"
+    },
+    {
+        "id": 3,
+        "name": "Class Two",
+        "details": "Class Two",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483712,
+        "created_at": "2023-01-11T06:55:34.000000Z",
+        "updated_at": "2023-01-11T06:55:34.000000Z"
+    },
+    {
+        "id": 4,
+        "name": "အတန်းနှစ်",
+        "details": "အတန်းနှစ်",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483712,
+        "created_at": "2023-01-11T06:55:34.000000Z",
+        "updated_at": "2023-01-11T06:55:34.000000Z"
+    },
+    {
+        "id": 5,
+        "name": "Class Three",
+        "details": "Class Three",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483713,
+        "created_at": "2023-01-11T06:56:00.000000Z",
+        "updated_at": "2023-01-11T06:56:00.000000Z"
+    },
+    {
+        "id": 6,
+        "name": "အတန်းသုံး",
+        "details": "အတန်းသုံး",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483713,
+        "created_at": "2023-01-11T06:56:00.000000Z",
+        "updated_at": "2023-01-11T06:56:00.000000Z"
+    },
+    {
+        "id": 7,
+        "name": "Class Four",
+        "details": "Class Four",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483714,
+        "created_at": "2023-01-11T06:56:29.000000Z",
+        "updated_at": "2023-01-11T06:56:29.000000Z"
+    },
+    {
+        "id": 8,
+        "name": "အတန်းလေး",
+        "details": "အတန်းလေး",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483714,
+        "created_at": "2023-01-11T06:56:29.000000Z",
+        "updated_at": "2023-01-11T06:56:29.000000Z"
+    },
+    {
+        "id": 9,
+        "name": "Class Five",
+        "details": "Class Five",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483715,
+        "created_at": "2023-01-11T06:56:58.000000Z",
+        "updated_at": "2023-01-11T06:56:58.000000Z"
+    },
+    {
+        "id": 10,
+        "name": "အတန်းငါး",
+        "details": "အတန်းငါး",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483715,
+        "created_at": "2023-01-11T06:56:58.000000Z",
+        "updated_at": "2023-01-11T06:56:58.000000Z"
+    },
+    {
+        "id": 11,
+        "name": "Class Six",
+        "details": "Class Six",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483716,
+        "created_at": "2023-01-11T08:25:53.000000Z",
+        "updated_at": "2023-01-11T08:25:53.000000Z"
+    },
+    {
+        "id": 12,
+        "name": "အတန်းခြောက်",
+        "details": "အတန်းခြောက်",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483716,
+        "created_at": "2023-01-11T08:25:53.000000Z",
+        "updated_at": "2023-01-11T08:25:53.000000Z"
+    },
+    {
+        "id": 13,
+        "name": "Class Seven",
+        "details": "Class Seven",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483717,
+        "created_at": "2023-01-11T08:26:16.000000Z",
+        "updated_at": "2023-01-11T08:26:16.000000Z"
+    },
+    {
+        "id": 14,
+        "name": "အတန်းခုနစ်တန်း",
+        "details": "အတန်းခုနစ်တန်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483717,
+        "created_at": "2023-01-11T08:26:16.000000Z",
+        "updated_at": "2023-01-11T08:26:16.000000Z"
+    },
+    {
+        "id": 15,
+        "name": "Class Eight",
+        "details": "Class Eight",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483718,
+        "created_at": "2023-01-11T08:26:46.000000Z",
+        "updated_at": "2023-01-11T08:26:46.000000Z"
+    },
+    {
+        "id": 16,
+        "name": "ရှစ်တန်း",
+        "details": "ရှစ်တန်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483718,
+        "created_at": "2023-01-11T08:26:46.000000Z",
+        "updated_at": "2023-01-11T08:26:46.000000Z"
+    },
+    {
+        "id": 17,
+        "name": "Class Nine",
+        "details": "Class Nine",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483719,
+        "created_at": "2023-01-11T08:32:44.000000Z",
+        "updated_at": "2023-01-11T08:32:44.000000Z"
+    },
+    {
+        "id": 18,
+        "name": "အတန်းကိုး",
+        "details": "အတန်းကိုး",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483719,
+        "created_at": "2023-01-11T08:32:44.000000Z",
+        "updated_at": "2023-01-11T08:32:44.000000Z"
+    },
+    {
+        "id": 19,
+        "name": "Class Ten",
+        "details": "Class Ten",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483720,
+        "created_at": "2023-01-11T08:33:11.000000Z",
+        "updated_at": "2023-01-11T08:33:11.000000Z"
+    },
+    {
+        "id": 20,
+        "name": "ဆယ်တန်း",
+        "details": "ဆယ်တန်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483720,
+        "created_at": "2023-01-11T08:33:11.000000Z",
+        "updated_at": "2023-01-11T08:33:11.000000Z"
+    }
+]

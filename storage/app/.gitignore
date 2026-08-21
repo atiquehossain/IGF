@@ -1,0 +1,6 @@
+*
+!public/
+!public/media/
+!public/media/ignite-live/
+!public/media/ignite-live/**
+!.gitignore

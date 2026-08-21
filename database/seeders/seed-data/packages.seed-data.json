@@ -1,0 +1,82 @@
+[
+    {
+        "id": 1,
+        "name": "English Course",
+        "details": "Basic English Course",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483694,
+        "created_at": "2022-12-21T03:39:42.000000Z",
+        "updated_at": "2023-01-11T06:53:59.000000Z"
+    },
+    {
+        "id": 2,
+        "name": "အင်္ဂလိပ်စာသင်တန်း",
+        "details": "အခြေခံအင်္ဂလိပ်စာသင်တန်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483694,
+        "created_at": "2022-12-21T03:39:42.000000Z",
+        "updated_at": "2023-01-11T06:53:59.000000Z"
+    },
+    {
+        "id": 3,
+        "name": "Basic Computer",
+        "details": "Basic Computer Course",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483710,
+        "created_at": "2023-01-11T06:53:09.000000Z",
+        "updated_at": "2023-01-11T06:53:09.000000Z"
+    },
+    {
+        "id": 4,
+        "name": "အခြေခံကွန်ပျူတာ",
+        "details": "အခြေခံကွန်ပြူတာသင်တန်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483710,
+        "created_at": "2023-01-11T06:53:09.000000Z",
+        "updated_at": "2023-01-11T06:53:09.000000Z"
+    },
+    {
+        "id": 5,
+        "name": "Package 1",
+        "details": "Package 1",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483707,
+        "created_at": "2023-01-11T08:47:54.000000Z",
+        "updated_at": "2023-01-11T08:47:54.000000Z"
+    },
+    {
+        "id": 6,
+        "name": "အထုပ် ၁",
+        "details": "အထုပ် ၁",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483707,
+        "created_at": "2023-01-11T08:47:54.000000Z",
+        "updated_at": "2023-01-11T08:47:54.000000Z"
+    },
+    {
+        "id": 7,
+        "name": "Package 2",
+        "details": "Package 2",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483708,
+        "created_at": "2023-01-11T08:48:16.000000Z",
+        "updated_at": "2023-01-11T08:48:16.000000Z"
+    },
+    {
+        "id": 8,
+        "name": "အထုပ် ၂",
+        "details": "အထုပ် ၂",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483708,
+        "created_at": "2023-01-11T08:48:16.000000Z",
+        "updated_at": "2023-01-11T08:48:16.000000Z"
+    }
+]

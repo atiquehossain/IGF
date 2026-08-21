@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ignite Global Foundation - Content Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#ffb68a",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#743500",
+                      "on-primary-fixed": "#331200",
+                      "on-surface-variant": "#594236",
+                      "secondary-fixed-dim": "#c7c5cf",
+                      "secondary-fixed": "#e4e1eb",
+                      "on-secondary-fixed-variant": "#46464e",
+                      "secondary": "#5e5d66",
+                      "surface-container-low": "#f3f4f5",
+                      "on-primary-fixed-variant": "#773300",
+                      "tertiary": "#994700",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#e4e1eb",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f8f9fa",
+                      "surface-container-high": "#e7e8e9",
+                      "on-tertiary-container": "#592700",
+                      "background": "#f8f9fa",
+                      "surface-tint": "#9c4500",
+                      "inverse-surface": "#2e3132",
+                      "on-error": "#ffffff",
+                      "primary-fixed-dim": "#ffb68e",
+                      "outline-variant": "#e0c0b0",
+                      "on-tertiary-fixed": "#321300",
+                      "surface-container-highest": "#e1e3e4",
+                      "surface-bright": "#f8f9fa",
+                      "surface-variant": "#e1e3e4",
+                      "on-background": "#191c1d",
+                      "tertiary-fixed": "#ffdbc8",
+                      "tertiary-container": "#f07f2d",
+                      "primary": "#9c4500",
+                      "on-secondary-container": "#64636c",
+                      "surface-dim": "#d9dadb",
+                      "on-surface": "#191c1d",
+                      "outline": "#8c7163",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#5b2500",
+                      "on-secondary-fixed": "#1b1b22",
+                      "inverse-primary": "#ffb68e",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#f0f1f2",
+                      "surface-container": "#edeeef",
+                      "primary-container": "#ff7500",
+                      "primary-fixed": "#ffdbca"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap-desktop": "120px",
+                      "base": "8px",
+                      "section-gap-mobile": "64px",
+                      "grid-margin": "24px",
+                      "grid-gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Literata"
+                      ],
+                      "display-lg": [
+                              "Literata"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Literata"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg-mobile": [
+                              "Literata"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+          font-variation-settings: 'FILL' 1;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased min-h-screen flex">
+<!-- SideNavBar (JSON Component) -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest dark:bg-inverse-surface border-r border-on-surface/5 flex flex-col py-6 z-50 shadow-sm hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-primary-container shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">local_fire_department</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary text-xl leading-tight">Ignite Admin</h1>
+<p class="font-label-caps text-label-caps text-secondary text-xs uppercase tracking-wider">Global Dashboard</p>
+</div>
+</div>
+<ul class="flex-1 flex flex-col gap-1 px-4">
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="text-primary font-bold border-r-2 border-primary bg-primary/5 px-4 py-3 flex items-center gap-3 transition-colors rounded-lg active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined fill">article</span>
+<span class="font-label-caps text-label-caps">Content</span>
+</a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+<span class="font-label-caps text-label-caps">Donations</span>
+</a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-caps text-label-caps">Donors</span>
+</a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</li>
+</ul>
+<div class="px-6 mb-6">
+<button class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-surface-container text-on-surface font-label-caps text-label-caps hover:bg-surface-container-high transition-colors">
+                Visit Site
+                <span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+<div class="mt-auto px-4 border-t border-on-surface/5 pt-4">
+<a class="text-secondary hover:text-primary px-4 py-2 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-caps text-label-caps">Help Center</span>
+</a>
+<a class="text-secondary hover:text-error px-4 py-2 flex items-center gap-3 transition-colors rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-variant mt-1" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-caps text-label-caps">Log Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar (JSON Component) -->
+<header class="bg-surface dark:bg-background border-b border-on-surface/5 docked full-width top-0 sticky z-40 flex justify-between items-center h-16 px-8 shadow-sm">
+<div class="flex items-center gap-8 h-full">
+<span class="font-headline-md text-headline-md font-bold text-primary hidden lg:block text-xl">Ignite Global Foundation</span>
+<nav class="h-full hidden md:flex items-center gap-6 ml-4">
+<a class="text-secondary font-medium hover:text-primary hover:text-primary-container transition-colors h-full flex items-center font-label-caps text-label-caps" href="#">Analytics</a>
+<a class="text-secondary font-medium hover:text-primary hover:text-primary-container transition-colors h-full flex items-center font-label-caps text-label-caps" href="#">Media</a>
+<a class="text-secondary font-medium hover:text-primary hover:text-primary-container transition-colors h-full flex items-center font-label-caps text-label-caps" href="#">Users</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search -->
+<div class="relative hidden md:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 rounded-full border border-on-surface/10 bg-surface-container-lowest text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search content..." type="text"/>
+</div>
+<div class="w-px h-6 bg-on-surface/10 mx-2"></div>
+<button class="text-secondary hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-secondary hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">translate</span>
+</button>
+<button class="w-9 h-9 rounded-full overflow-hidden border border-on-surface/10 ml-2 shrink-0">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a non-profit administrator in a bright, modern office setting. The lighting is soft and natural, casting a warm glow. The overall tone is approachable, credible, and energetic, reflecting the contemporary editorial style of the Ignite Global Foundation brand. The background is slightly blurred to keep focus on the subject." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUTqnupuXn4QnJNzvuaeGCF1osVlsZduUXguxS79YtVDcWRpH_RScWo3u8GM4AuSHQ0jlXzSVBJ3lebmwl6sLVfz0JmhsOIfSNuWAC_DENZskQQkdJY4WLt1tXlBeeWWxsXpSzRf0JC45hZYcrKiiuuKNfxdVkYeM3gWqMh2fHxka2M7zQUDdzhBl1K6FQbw3Qoxyg-1R-5AA4Q7oWarVsYdj_CmOcXSrzTwWzL5gu1s38SnNLac6ZIg"/>
+</button>
+<button class="ml-4 bg-primary text-on-primary font-label-caps text-label-caps py-2 px-5 rounded-full hover:shadow-[0px_12px_32px_rgba(36,36,43,0.08)] transition-all flex items-center gap-2 bg-gradient-to-br from-[#FF7500] to-[#F06A00]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Quick Create
+                </button>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-8 pb-24 flex-1">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">Content Hub</h2>
+<p class="text-secondary max-w-2xl text-lg">Manage, publish, and translate stories from the field. Impact begins with communication.</p>
+</div>
+</div>
+<!-- Bento Grid Content Area -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-grid-gutter">
+<!-- Filters & Stats (Left Column on large screens) -->
+<div class="xl:col-span-3 flex flex-col gap-6">
+<!-- Stats Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-on-surface/5">
+<h3 class="font-headline-md text-xl mb-4">Overview</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center pb-3 border-b border-on-surface/5">
+<span class="text-secondary">Published</span>
+<span class="font-bold text-primary-container">142</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b border-on-surface/5">
+<span class="text-secondary">Drafts</span>
+<span class="font-bold text-outline">18</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-secondary">Needs Translation</span>
+<span class="font-bold text-error">5</span>
+</div>
+</div>
+</div>
+<!-- Filters Card -->
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-on-surface/5 sticky top-24">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-xl">Filters</h3>
+<button class="text-sm text-primary font-medium hover:underline">Clear</button>
+</div>
+<div class="space-y-6">
+<!-- Type Filter -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-3">Content Type</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-1.5 rounded-full text-sm border border-primary text-primary bg-primary/5 font-medium">All</button>
+<button class="px-4 py-1.5 rounded-full text-sm border border-outline-variant text-secondary hover:border-secondary transition-colors">Stories</button>
+<button class="px-4 py-1.5 rounded-full text-sm border border-outline-variant text-secondary hover:border-secondary transition-colors">Programs</button>
+<button class="px-4 py-1.5 rounded-full text-sm border border-outline-variant text-secondary hover:border-secondary transition-colors">Events</button>
+<button class="px-4 py-1.5 rounded-full text-sm border border-outline-variant text-secondary hover:border-secondary transition-colors">Pages</button>
+</div>
+</div>
+<!-- Status Filter -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-3">Status</label>
+<select class="w-full rounded-lg border-on-surface/10 bg-surface-container focus:border-primary focus:ring-primary text-sm py-2.5">
+<option>Any Status</option>
+<option>Published</option>
+<option>Draft</option>
+<option>Archived</option>
+</select>
+</div>
+<!-- Language Filter -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-3">Language</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm">English (EN)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm">Bengali (BN)</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Data View (Right Column) -->
+<div class="xl:col-span-9 flex flex-col gap-6">
+<!-- Action Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-3 border border-on-surface/5 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-2 pl-2">
+<input class="rounded border-outline-variant text-primary focus:ring-primary h-5 w-5 mr-2" type="checkbox"/>
+<span class="text-sm text-secondary font-medium">Select All</span>
+</div>
+<div class="flex items-center gap-2 opacity-50 pointer-events-none transition-opacity" id="bulk-actions">
+<button class="px-3 py-1.5 rounded-lg hover:bg-surface-container text-secondary flex items-center gap-1 text-sm transition-colors" title="Translate Selected">
+<span class="material-symbols-outlined text-[18px]">translate</span>
+<span class="hidden sm:inline">Translate</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg hover:bg-surface-container text-secondary flex items-center gap-1 text-sm transition-colors" title="Duplicate Selected">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg hover:bg-error-container hover:text-error text-secondary flex items-center gap-1 text-sm transition-colors" title="Trash Selected">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- List/Card View Hybrid -->
+<div class="space-y-4">
+<!-- Item 1: Published Story -->
+<div class="bg-surface-container-lowest rounded-xl border border-on-surface/5 hover:shadow-[0px_12px_32px_rgba(36,36,43,0.08)] transition-all group overflow-hidden flex flex-col sm:flex-row">
+<!-- Image/Indicator -->
+<div class="sm:w-48 h-32 sm:h-auto shrink-0 relative bg-surface-container">
+<img alt="Story thumbnail" class="w-full h-full object-cover" data-alt="A compelling photograph of a rural community in Bangladesh. A group of women are smiling and weaving textiles together in a sunlit courtyard. The style is contemporary editorial, highlighting human connection and energetic empowerment. Warm natural lighting, high-quality resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4k844KZYmw7uEWAU-rIT4_k6_adZqdXEjld_V4KYo-DZxsAo4pN8d4JMqK8RT28694oAxH0xg3tZTkWrbgaUtAastRVHLuemEX8V9lOlW0pV8MAsfXD7OmFs2sXakNmVzZGe7q3A6MiX7SVFECoVG33PY2-VfhIgzBHSfG2LR-vjMyIh4iI1-0I8pKCk-LLznlCOw4Qv5zpM8UkhH7JQWWnWkAHJuGp2p0qmGIYbLUdvVWDMqZXMFXA"/>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase">EN</span>
+<span class="bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase">BN</span>
+</div>
+</div>
+<!-- Content Details -->
+<div class="p-4 flex-1 flex flex-col justify-between min-w-0">
+<div>
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container shrink-0"></span>
+<span class="font-label-caps text-[11px] text-primary tracking-wider">Story</span>
+</div>
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span class="text-xs">1.2k</span>
+</div>
+</div>
+<h4 class="font-headline-md text-lg text-on-surface truncate pr-8 mb-2 group-hover:text-primary transition-colors cursor-pointer">Empowering Women Artisans in Rural Sylhet</h4>
+</div>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-secondary border-t border-on-surface/5 pt-3 mt-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>Amina Rahman</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">update</span>
+<span>Updated 2 hrs ago</span>
+</div>
+<div class="flex items-center gap-1.5 ml-auto">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-[#e6f4ea] text-[#137333] text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Published
+                                        </span>
+</div>
+</div>
+</div>
+<!-- Row Actions -->
+<div class="sm:w-16 border-l border-on-surface/5 bg-surface/50 flex sm:flex-col items-center justify-center gap-2 p-2 shrink-0">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-lowest hover:text-primary transition-colors border border-transparent hover:border-on-surface/10 bg-surface-container-lowest sm:bg-transparent" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-lowest hover:text-primary transition-colors border border-transparent hover:border-on-surface/10 bg-surface-container-lowest sm:bg-transparent" title="Preview">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-error-container hover:text-error transition-colors border border-transparent hover:border-error/20 bg-surface-container-lowest sm:bg-transparent" title="Trash">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Item 2: Draft Program -->
+<div class="bg-surface-container-lowest rounded-xl border border-on-surface/5 hover:shadow-[0px_12px_32px_rgba(36,36,43,0.08)] transition-all group overflow-hidden flex flex-col sm:flex-row opacity-80">
+<div class="sm:w-48 h-32 sm:h-auto shrink-0 relative bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-outline-variant">image</span>
+<div class="absolute top-2 left-2 flex gap-1">
+<span class="bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase">EN</span>
+</div>
+</div>
+<div class="p-4 flex-1 flex flex-col justify-between min-w-0">
+<div>
+<div class="flex justify-between items-start mb-1">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant shrink-0"></span>
+<span class="font-label-caps text-[11px] text-secondary tracking-wider">Program</span>
+</div>
+</div>
+<h4 class="font-headline-md text-lg text-on-surface truncate pr-8 mb-2 group-hover:text-primary transition-colors cursor-pointer">Clean Water Initiative Expansion 2025</h4>
+</div>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-secondary border-t border-on-surface/5 pt-3 mt-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">person</span>
+<span>System Admin</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">update</span>
+<span>Updated yesterday</span>
+</div>
+<div class="flex items-center gap-1.5 ml-auto">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container-high text-secondary text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">edit_note</span> Draft
+                                        </span>
+</div>
+</div>
+</div>
+<div class="sm:w-16 border-l border-on-surface/5 bg-surface/50 flex sm:flex-col items-center justify-center gap-2 p-2 shrink-0">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-lowest hover:text-primary transition-colors border border-transparent hover:border-on-surface/10 bg-surface-container-lowest sm:bg-transparent" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-error-container hover:text-error transition-colors border border-transparent hover:border-error/20 bg-surface-container-lowest sm:bg-transparent" title="Trash">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between pt-6 border-t border-on-surface/5">
+<span class="text-sm text-secondary">Showing 1-10 of 160 items</span>
+<div class="flex gap-2">
+<button class="w-9 h-9 flex items-center justify-center rounded-lg border border-on-surface/10 text-secondary hover:bg-surface-container disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg bg-primary-container text-on-primary-container font-medium">1</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg border border-on-surface/10 text-secondary hover:bg-surface-container font-medium">2</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg border border-on-surface/10 text-secondary hover:bg-surface-container font-medium">3</button>
+<span class="w-9 h-9 flex items-center justify-center text-secondary">...</span>
+<button class="w-9 h-9 flex items-center justify-center rounded-lg border border-on-surface/10 text-secondary hover:bg-surface-container">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple script to toggle bulk actions opacity based on 'Select All' checkbox
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAll = document.querySelector('input[type="checkbox"]');
+            const bulkActions = document.getElementById('bulk-actions');
+            
+            selectAll.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    bulkActions.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    bulkActions.classList.add('opacity-50', 'pointer-events-none');
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,62 @@
+[
+    {
+        "id": 1,
+        "name": "Foundation",
+        "details": "Foundation",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483709,
+        "created_at": "2023-01-11T08:52:38.000000Z",
+        "updated_at": "2023-01-11T08:52:38.000000Z"
+    },
+    {
+        "id": 2,
+        "name": "ဖောင်ဒေးရှင်း",
+        "details": "ဖောင်ဒေးရှင်း",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483709,
+        "created_at": "2023-01-11T08:52:38.000000Z",
+        "updated_at": "2023-01-11T08:52:38.000000Z"
+    },
+    {
+        "id": 3,
+        "name": "Intermediate",
+        "details": "Intermediate",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483710,
+        "created_at": "2023-01-11T08:53:10.000000Z",
+        "updated_at": "2023-01-11T08:53:10.000000Z"
+    },
+    {
+        "id": 4,
+        "name": "အလယ်အလတ်",
+        "details": "အလယ်အလတ်",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483710,
+        "created_at": "2023-01-11T08:53:10.000000Z",
+        "updated_at": "2023-01-11T08:53:10.000000Z"
+    },
+    {
+        "id": 5,
+        "name": "Advanced",
+        "details": "Advanced",
+        "language": "en",
+        "status": 1,
+        "uuid": 1147483711,
+        "created_at": "2023-01-11T08:53:34.000000Z",
+        "updated_at": "2023-01-11T08:53:34.000000Z"
+    },
+    {
+        "id": 6,
+        "name": "အဆင့်မြင့်",
+        "details": "အဆင့်မြင့်",
+        "language": "my",
+        "status": 1,
+        "uuid": 1147483711,
+        "created_at": "2023-01-11T08:53:34.000000Z",
+        "updated_at": "2023-01-11T08:53:34.000000Z"
+    }
+]

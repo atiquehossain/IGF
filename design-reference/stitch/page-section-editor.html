@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Page &amp; Section Editor - Ignite Global Foundation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb68a",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#743500",
+                    "on-primary-fixed": "#331200",
+                    "on-surface-variant": "#594236",
+                    "secondary-fixed-dim": "#c7c5cf",
+                    "secondary-fixed": "#e4e1eb",
+                    "on-secondary-fixed-variant": "#46464e",
+                    "secondary": "#5e5d66",
+                    "surface-container-low": "#f3f4f5",
+                    "on-primary-fixed-variant": "#773300",
+                    "tertiary": "#994700",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#e4e1eb",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f8f9fa",
+                    "surface-container-high": "#e7e8e9",
+                    "on-tertiary-container": "#592700",
+                    "background": "#f8f9fa",
+                    "surface-tint": "#9c4500",
+                    "inverse-surface": "#2e3132",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#ffb68e",
+                    "outline-variant": "#e0c0b0",
+                    "on-tertiary-fixed": "#321300",
+                    "surface-container-highest": "#e1e3e4",
+                    "surface-bright": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "on-background": "#191c1d",
+                    "tertiary-fixed": "#ffdbc8",
+                    "tertiary-container": "#f07f2d",
+                    "primary": "#9c4500",
+                    "on-secondary-container": "#64636c",
+                    "surface-dim": "#d9dadb",
+                    "on-surface": "#191c1d",
+                    "outline": "#8c7163",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#5b2500",
+                    "on-secondary-fixed": "#1b1b22",
+                    "inverse-primary": "#ffb68e",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container": "#edeeef",
+                    "primary-container": "#ff7500",
+                    "primary-fixed": "#ffdbca"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap-desktop": "120px",
+                    "base": "8px",
+                    "section-gap-mobile": "64px",
+                    "grid-margin": "24px",
+                    "grid-gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": [
+                            "Literata"
+                    ],
+                    "display-lg": [
+                            "Literata"
+                    ],
+                    "body-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-md": [
+                            "Literata"
+                    ],
+                    "body-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "label-caps": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-lg-mobile": [
+                            "Literata"
+                    ]
+            },
+            "fontSize": {
+                    "headline-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "64px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "20px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.0",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-inverse-surface border-r border-on-surface/5 flex flex-col h-full py-6 h-screen w-64 fixed left-0 top-0 z-50">
+<div class="px-6 pb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ignite Admin</h1>
+<p class="font-body-md text-body-md text-secondary mt-1">Global Dashboard</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="text-primary font-bold border-r-2 border-primary bg-primary/5 px-4 py-3 flex items-center gap-3 transition-transform duration-150 scale-95 font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined filled-icon">article</span>
+                        Content
+                    </a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">volunteer_activism</span>
+                        Donations
+                    </a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">group</span>
+                        Donors
+                    </a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-3 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</div>
+<div class="px-4 mt-auto space-y-4">
+<button class="w-full bg-primary-container text-on-primary font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">open_in_new</span>
+                Visit Site
+            </button>
+<ul class="space-y-1 border-t border-on-surface/5 pt-4">
+<li>
+<a class="text-secondary hover:text-primary px-4 py-2 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Help Center
+                    </a>
+</li>
+<li>
+<a class="text-secondary hover:text-primary px-4 py-2 flex items-center gap-3 transition-colors hover:bg-surface-container-high dark:hover:bg-surface-variant font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Log Out
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="ml-64 flex-1 flex flex-col h-full bg-surface-container-low">
+<!-- TopNavBar (Editor Header) -->
+<header class="bg-surface dark:bg-background border-b border-on-surface/5 flex justify-between items-center h-16 px-8 docked full-width top-0 sticky z-40 shrink-0">
+<div class="flex items-center gap-6">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Editing: Homepage</h2>
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="px-3 py-1.5 rounded bg-surface shadow-sm text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">desktop_windows</span>
+</button>
+<button class="px-3 py-1.5 rounded text-secondary hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">tablet_mac</span>
+</button>
+<button class="px-3 py-1.5 rounded text-secondary hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]">smartphone</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-secondary">
+<span class="font-body-md text-body-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">cloud_done</span> Saved
+                    </span>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded-lg border-[1.5px] border-outline text-on-surface font-label-caps text-label-caps hover:bg-surface-container transition-colors">Preview</button>
+<button class="px-6 py-2 rounded-lg bg-[linear-gradient(135deg,#FF7500_0%,#F06A00_100%)] text-white font-label-caps text-label-caps shadow-sm hover:shadow-[0px_12px_32px_rgba(36,36,43,0.08)] transition-all flex items-center gap-2">
+                        Publish <span class="material-symbols-outlined text-[18px]">arrow_drop_down</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Editor Workspace Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Preview Canvas (Center) -->
+<div class="flex-1 overflow-y-auto p-grid-margin relative">
+<!-- Canvas Container matching desktop width -->
+<div class="max-w-[1200px] mx-auto bg-surface-container-lowest shadow-sm min-h-[1000px] rounded-lg border border-on-surface/5 relative transition-all duration-300 origin-top">
+<!-- Editable Block: Hero Section -->
+<div class="group relative border-2 border-transparent hover:border-primary transition-colors">
+<!-- Block Controls Overlay -->
+<div class="absolute -top-3 left-4 bg-primary text-white text-xs font-label-caps px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2 items-center">
+<span class="material-symbols-outlined text-[14px]">drag_indicator</span>
+                            Hero Banner
+                            <button class="ml-2 hover:text-primary-fixed"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+<button class="hover:text-primary-fixed"><span class="material-symbols-outlined text-[14px]">visibility</span></button>
+</div>
+<!-- Block Content Preview -->
+<div class="relative h-[600px] w-full flex items-center bg-surface-container">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A striking wide-angle photograph of an optimistic Bengali community project outdoors, with warm sunlight catching the faces of volunteers. The composition is balanced and editorial, embodying a contemporary non-profit aesthetic. Vivid orange accents highlight key elements against earthy tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD1gLx6zJHzdgh-jQh5vTxHt6Q63JhRKj-viePJg_OawK3m06dppF23CWJb48FIUCeuYVFvfLL3pL269o5m4ldjAt7wjIIE_33Bmdi_Rp38rcutObqQlsMtLVsA5DFsHDml8K3fj0D3zE8KOOaBEyt1RO9uS6ygKYJ7t_7V36N7b5rzKT_xqgYK80bihSSlU0jl31mQIRRFmNMUrJNL6bXJ1ZwNxWtYkub32J8VutMXUWw9m0qfBfwRxw')"></div>
+<div class="absolute inset-0 bg-black/40"></div>
+<div class="relative z-10 p-12 max-w-2xl text-white">
+<span class="inline-block px-3 py-1 bg-primary/90 text-white font-label-caps text-[12px] rounded-xl mb-4">Urgent Initiative</span>
+<h2 class="font-display-lg text-display-lg mb-6 text-white">Empowering the Future, Block by Block.</h2>
+<p class="font-body-lg text-body-lg text-white/90 mb-8">Join our latest campaign to build sustainable infrastructure in rural communities.</p>
+<button class="px-8 py-4 rounded-lg bg-[linear-gradient(135deg,#FF7500_0%,#F06A00_100%)] text-white font-label-caps text-label-caps shadow-sm">Donate Now</button>
+</div>
+</div>
+</div>
+<!-- Editable Block: Impact Counters -->
+<div class="group relative border-2 border-transparent hover:border-primary transition-colors my-section-gap-desktop">
+<div class="absolute -top-3 left-4 bg-primary text-white text-xs font-label-caps px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2 items-center">
+<span class="material-symbols-outlined text-[14px]">drag_indicator</span>
+                            Impact Grid
+                        </div>
+<div class="grid grid-cols-3 gap-grid-gutter px-12">
+<div class="bg-surface p-8 border border-on-surface/5 rounded-xl text-center">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-2">2.4M</h3>
+<p class="font-body-md text-body-md text-secondary">Lives Impacted</p>
+</div>
+<div class="bg-surface p-8 border border-on-surface/5 rounded-xl text-center">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-2">150+</h3>
+<p class="font-body-md text-body-md text-secondary">Active Projects</p>
+</div>
+<div class="bg-surface p-8 border border-on-surface/5 rounded-xl text-center">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-2">98%</h3>
+<p class="font-body-md text-body-md text-secondary">Funds to Field</p>
+</div>
+</div>
+</div>
+<!-- Drop Zone Indicator -->
+<div class="mx-12 py-4 border-2 border-dashed border-primary/30 bg-primary/5 rounded-lg flex items-center justify-center text-primary font-label-caps opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined mr-2">add_circle</span> Add Block Here
+                    </div>
+</div>
+</div>
+<!-- Right Sidebar: Block Settings & Library -->
+<aside class="w-80 bg-surface-container-lowest border-l border-on-surface/5 flex flex-col shrink-0">
+<!-- Sidebar Tabs -->
+<div class="flex border-b border-on-surface/5">
+<button class="flex-1 py-4 font-label-caps text-label-caps text-primary border-b-2 border-primary bg-primary/5">Settings</button>
+<button class="flex-1 py-4 font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">Blocks</button>
+<button class="flex-1 py-4 font-label-caps text-label-caps text-secondary hover:text-primary transition-colors">Page</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Block Inspector: Hero -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-headline-md text-[20px] font-bold text-on-surface">Hero Banner</h3>
+<span class="material-symbols-outlined text-secondary text-[20px]">more_vert</span>
+</div>
+<div class="space-y-6">
+<!-- Field: Heading -->
+<div>
+<label class="block font-label-caps text-label-caps text-secondary mb-2">Heading</label>
+<textarea class="w-full bg-surface border border-on-surface/20 rounded-lg p-3 font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none" rows="3">Empowering the Future, Block by Block.</textarea>
+</div>
+<!-- Field: Subtext -->
+<div>
+<label class="block font-label-caps text-label-caps text-secondary mb-2">Subtext</label>
+<textarea class="w-full bg-surface border border-on-surface/20 rounded-lg p-3 font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none" rows="2">Join our latest campaign to build sustainable infrastructure in rural communities.</textarea>
+</div>
+<!-- Image Upload -->
+<div>
+<label class="block font-label-caps text-label-caps text-secondary mb-2">Background Media</label>
+<div class="border-2 border-dashed border-on-surface/20 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-surface-container cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-secondary mb-2">image</span>
+<p class="font-body-md text-[14px] text-secondary">Click to upload or drag and drop</p>
+<p class="font-body-md text-[12px] text-secondary/70 mt-1">SVG, PNG, JPG or MP4 (max. 10MB)</p>
+</div>
+</div>
+<!-- Toggle: Overlay -->
+<div class="flex items-center justify-between py-2 border-t border-on-surface/5">
+<span class="font-body-md text-on-surface">Darken Overlay</span>
+<div class="w-10 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Block Visibility Settings -->
+<div class="border-t border-on-surface/5 pt-6">
+<h4 class="font-label-caps text-label-caps text-secondary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">visibility</span> Visibility &amp; Schedule
+                        </h4>
+<div class="space-y-4">
+<div>
+<label class="block font-body-md text-[14px] text-on-surface mb-1">Publish Status</label>
+<select class="w-full bg-surface border border-on-surface/20 rounded-lg p-2.5 font-body-md text-on-surface focus:border-primary outline-none">
+<option>Published</option>
+<option>Draft</option>
+<option>Scheduled</option>
+</select>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<input checked="" class="rounded border-on-surface/20 text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<label class="font-body-md text-[14px] text-on-surface">Show on Desktop</label>
+</div>
+<div class="flex items-center gap-2">
+<input checked="" class="rounded border-on-surface/20 text-primary focus:ring-primary w-4 h-4" type="checkbox"/>
+<label class="font-body-md text-[14px] text-on-surface">Show on Mobile</label>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

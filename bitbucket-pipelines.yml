@@ -1,0 +1,180 @@
+image: node:22-bookworm
+
+definitions:
+  steps:
+    - step: &quality
+        name: Application quality gate
+        caches:
+          - node
+        script:
+          - apt-get update
+          - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl git unzip php8.2-cli php8.2-curl php8.2-mbstring php8.2-sqlite3 php8.2-xml php8.2-zip
+          - curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php
+          - php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          - composer validate --strict --no-check-publish
+          - composer install --prefer-dist --no-interaction --no-progress
+          - composer audit --no-interaction
+          - npm ci --no-audit --no-fund
+          - |
+            set -Eeuo pipefail
+            test "${#BITBUCKET_COMMIT}" -eq 40
+            case "$BITBUCKET_COMMIT" in (*[!0-9a-fA-F]*|'') echo 'Invalid pipeline commit SHA' >&2; exit 1;; esac
+            test "$(git rev-parse HEAD)" = "$BITBUCKET_COMMIT"
+          - npm run security:scan:test
+          - npm run security:scan
+          - npm audit --audit-level=high
+          - npm run lint
+          - npm run test:unit
+          - php artisan optimize
+          - php artisan optimize:clear
+          - php artisan test --display-warnings
+          - npm run production
+    - step: &browser-smoke
+        name: Isolated administrator browser smoke
+        caches:
+          - node
+        script:
+          - apt-get update
+          - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl git openssl unzip php8.2-cli php8.2-curl php8.2-mbstring php8.2-sqlite3 php8.2-xml php8.2-zip libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+          - curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php
+          - php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+          - composer install --prefer-dist --no-interaction --no-progress
+          - npm ci --no-audit --no-fund
+          - |
+            set -Eeuo pipefail
+            test "${#BITBUCKET_COMMIT}" -eq 40
+            case "$BITBUCKET_COMMIT" in (*[!0-9a-fA-F]*|'') echo 'Invalid pipeline commit SHA' >&2; exit 1;; esac
+            test "$(git rev-parse HEAD)" = "$BITBUCKET_COMMIT"
+
+            cp .env.cypress.example .env.cypress
+            runtime_value="$(openssl rand -hex 24)"
+            export LOCAL_ADMIN_USERNAME=cypress-admin
+            export LOCAL_ADMIN_PASSWORD="$runtime_value"
+            export CYPRESS_ADMIN_USERNAME=cypress-admin
+            export CYPRESS_ADMIN_PASSWORD="$runtime_value"
+
+            npm run production
+            npm run cypress:seed
+            php artisan serve --env=cypress --host=127.0.0.1 --port=8001 > storage/logs/cypress-server.log 2>&1 &
+            server_pid=$!
+            trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+            server_ready=false
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent http://127.0.0.1:8001/admin/login > /dev/null; then
+                server_ready=true
+                break
+              fi
+              sleep 1
+            done
+            if [ "$server_ready" != true ]; then
+              cat storage/logs/cypress-server.log
+              exit 1
+            fi
+
+            npm run cypress:smoke
+    - step: &release-gate
+        name: Clean release artifact security gate
+        script:
+          - apt-get update
+          - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git
+          - |
+            set -Eeuo pipefail
+            test "${#BITBUCKET_COMMIT}" -eq 40
+            case "$BITBUCKET_COMMIT" in (*[!0-9a-fA-F]*|'') echo 'Invalid pipeline commit SHA' >&2; exit 1;; esac
+            test "$(git rev-parse HEAD)" = "$BITBUCKET_COMMIT"
+
+            repository_root="$(pwd)"
+            release_stage="$(mktemp -d)"
+            mkdir -p "$release_stage/source"
+            git archive --format=tar "$BITBUCKET_COMMIT" | tar -xf - -C "$release_stage/source"
+            cd "$release_stage/source"
+            npm run security:scan:release
+
+            cd "$repository_root"
+            test ! -e release-gate
+            mkdir -p release-gate
+            printf '%s\n' "$BITBUCKET_COMMIT" > release-gate/commit
+            git rev-parse "$BITBUCKET_COMMIT^{tree}" > release-gate/tree
+        artifacts:
+          - release-gate/**
+    - step: &deploy
+        name: Deploy reviewed main release
+        deployment: main
+        trigger: manual
+        script:
+          - apt-get update
+          - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git openssh-client
+          - install -d -m 700 ~/.ssh
+          - printf '%s\n' "$SSH_PRIVATE_KEY_SUCHANA_02" > ~/.ssh/id_ed25519
+          - chmod 600 ~/.ssh/id_ed25519
+          - printf '%s\n' "$SSH_KNOWN_HOSTS_SUCHANA_02" > ~/.ssh/known_hosts
+          - chmod 600 ~/.ssh/known_hosts
+          - test -s ~/.ssh/known_hosts
+          - |
+            set -Eeuo pipefail
+            test "${#BITBUCKET_COMMIT}" -eq 40
+            case "$BITBUCKET_COMMIT" in (*[!0-9a-fA-F]*|'') echo 'Invalid pipeline commit SHA' >&2; exit 1;; esac
+            test "$(git rev-parse HEAD)" = "$BITBUCKET_COMMIT"
+            test -s release-gate/commit
+            test -s release-gate/tree
+            test "$(tr -d '\r\n' < release-gate/commit)" = "$BITBUCKET_COMMIT"
+            test "$(tr -d '\r\n' < release-gate/tree)" = "$(git rev-parse "$BITBUCKET_COMMIT^{tree}")"
+            test -n "${APP_HEALTHCHECK_URL:-}"
+            healthcheck_b64="$(printf '%s' "$APP_HEALTHCHECK_URL" | base64 -w 0)"
+            ssh -i ~/.ssh/id_ed25519 "$SSH_USER_SUCHANA_02@$SSH_HOST_SUCHANA_02" "bash -se -- '$BITBUCKET_COMMIT' '$healthcheck_b64'" <<'EOF'
+              set -Eeuo pipefail
+              release_sha="$1"
+              healthcheck_url="$(printf '%s' "$2" | base64 -d)"
+              backup_script=/usr/local/sbin/ignite-release-backup
+              cd /var/www/ignite-global-foundation
+
+              case "$healthcheck_url" in (https://*) ;; (*) echo 'Production health check must use HTTPS.' >&2; exit 1;; esac
+              test -x "$backup_script"
+              test -z "$(git status --porcelain)"
+              git fetch --prune origin '+refs/heads/main:refs/remotes/origin/main'
+              git cat-file -e "$release_sha^{commit}"
+              git merge-base --is-ancestor "$release_sha" refs/remotes/origin/main
+              previous_revision="$(git rev-parse HEAD)"
+              php artisan down --retry=30
+              printf 'Application is in maintenance mode. Previous revision: %s\n' "$previous_revision"
+              "$backup_script"
+              php artisan optimize:clear
+
+              git checkout --detach "$release_sha"
+              test "$(git rev-parse HEAD)" = "$release_sha"
+              composer install --no-dev --prefer-dist --no-interaction --no-progress --classmap-authoritative
+              source "$HOME/.nvm/nvm.sh"
+              nvm install 22
+              nvm use 22
+              npm ci --no-audit --no-fund
+              npm run production
+
+              php artisan optimize:clear
+              php artisan migrate:status
+              php artisan migrate --force
+              php artisan config:cache
+              php artisan route:cache
+              php artisan view:cache
+              php artisan about --only=environment,cache,drivers
+              php artisan up
+
+              if ! curl --fail --silent --show-error --location --max-redirs 3 \
+                --proto '=https' --proto-redir '=https' --connect-timeout 5 --max-time 20 \
+                --header 'Cache-Control: no-cache' --header 'Pragma: no-cache' \
+                "$healthcheck_url" > /dev/null; then
+                php artisan down --retry=30
+                printf 'Health check failed. The application remains in maintenance mode. Restore revision %s and the verified backup.\n' "$previous_revision" >&2
+                exit 1
+              fi
+            EOF
+
+pipelines:
+  default:
+    - step: *quality
+  branches:
+    main:
+      - step: *quality
+      - step: *browser-smoke
+      - step: *release-gate
+      - step: *deploy

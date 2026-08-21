@@ -1,0 +1,78 @@
+# Fail closed if the repository root is ever configured as the web root.
+# Public deployments should still point DocumentRoot at /public.
+Options -Indexes
+
+<IfModule mod_negotiation.c>
+    Options -MultiViews
+</IfModule>
+
+# Deny repository-only trees during Apache authorization, so this protection
+# remains active when mod_rewrite is unavailable or disabled. It is scoped to
+# that case because public/storage and public/vendor are legitimate mapped
+# assets when rewriting is available.
+<IfModule !mod_rewrite.c>
+    <IfModule mod_authz_core.c>
+        <If "%{REQUEST_URI} =~ m#(?i)^/(?:app|bootstrap|config|cypress|database|deliverables|design-reference|docs|ignite-community-stories-tutorial|ignite-homepage-tutorial|node_modules|output|outputs|resources|routes|scripts|storage|tests|tmp|vendor)(?:/|$)#">
+            Require all denied
+        </If>
+        <If "%{REQUEST_URI} =~ m#(?i)^/\.(?!well-known(?:/|$))#">
+            Require all denied
+        </If>
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        SetEnvIfNoCase Request_URI "^/(?:app|bootstrap|config|cypress|database|deliverables|design-reference|docs|ignite-community-stories-tutorial|ignite-homepage-tutorial|node_modules|output|outputs|resources|routes|scripts|storage|tests|tmp|vendor)(?:/|$)" repository_private_path
+        SetEnvIfNoCase Request_URI "^/\.(?!well-known(?:/|$))" repository_private_path
+        Order Allow,Deny
+        Allow from all
+        Deny from env=repository_private_path
+    </IfModule>
+</IfModule>
+
+<FilesMatch "(?i)^(?:\.env(?:\..*)?|\.git.*|\.rnd|artisan|readme(?:\.[^.]+)?|php\.ini|server\.php|composer\.(?:json|lock)|package(?:-lock)?\.json|phpunit(?:\.xml)?|bitbucket-pipelines\.yml|(?:vite|cypress|eslint)\.config\.js|.*\.(?:sql|sqlite|sqlite3|log|key|pem|p12|pfx|bak))(?:-(?:wal|shm|journal))?$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # ACME challenges on legacy root deployments must live beneath
+    # public/.well-known; the public-target mapping below serves them.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L,NC]
+
+    # Compatibility for legacy hosts whose DocumentRoot is the repository:
+    # serve only files/directories that actually exist beneath /public.
+    RewriteRule ^public(?:/|$) - [L,NC]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.+)$ public/$1 [L,NE]
+
+    # Deny every known non-public project tree, including generated review and
+    # tutorial outputs. Public names above win only when the public target exists.
+    RewriteRule ^(?:app|bootstrap|config|cypress|database|deliverables|design-reference|docs|ignite-community-stories-tutorial|ignite-homepage-tutorial|node_modules|output|outputs|resources|routes|scripts|storage|tests|tmp|vendor)(?:/|$) - [F,L,NC]
+
+    # The root route and front controller remain available, but any other
+    # existing repository file/directory fails closed instead of being served.
+    RewriteRule ^$ index.php [L]
+    RewriteRule ^index\.php$ - [L,NC]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [F,L]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send application routes to the front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>

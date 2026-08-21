@@ -1,0 +1,63 @@
+@extends('admin.layouts.master')
+
+@section('content')
+@include('admin.seo._styles')
+<main class="seo2">
+    <header class="seo2-head">
+        <div><h1>Search &amp; Sharing</h1><p>Help people find every public page and make shared links look trustworthy. Start with anything marked “Needs attention”; advanced technical settings stay out of the way.</p></div>
+        <div class="seo2-actions"><a class="seo2-btn" href="{{ route('seo.bulk.index') }}"><i class="fa fa-table" aria-hidden="true"></i> Bulk editor</a>@if($technicalSeoUrl)<a class="seo2-btn" href="{{ $technicalSeoUrl }}"><i class="fa fa-stethoscope" aria-hidden="true"></i> Technical SEO</a>@endif @if($technicalOrphanUrl)<a class="seo2-btn" href="{{ $technicalOrphanUrl }}"><i class="fa fa-link" aria-hidden="true"></i> Orphan-page link suggestions</a>@endif<a class="seo2-btn" href="{{ route('seo.sitemap.index') }}" target="_blank" rel="noopener">View sitemap</a>@if($canManageRedirects)<a class="seo2-btn" href="{{ route('seo.redirects.index') }}">Manage redirects</a>@endif</div>
+    </header>
+    @include('admin.seo._indexing-status')
+    @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif
+    @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Please fix these settings:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+    @unless($canEditMetadata)<div class="seo2-alert seo2-alert--warning" role="status"><strong>Read-only SEO access.</strong> You can inspect live health, previews and revision differences. Editing and restoring need separate permissions.</div>@endunless
+
+    <nav class="seo2-language" aria-label="SEO language">
+        @foreach($languageSummary as $language)<a class="{{ $language['id'] === $locale ? 'is-active' : '' }}" href="{{ route('seo.index', ['locale' => $language['id']]) }}"><span>{{ $language['name'] }}</span><small>{{ $language['ready'] }}/{{ $language['total'] }}</small></a>@endforeach
+    </nav>
+    <section class="seo2-metrics" aria-label="SEO completion summary">
+        <article class="seo2-metric"><strong>{{ $dashboardCounts['average'] }}%</strong><span>Live-page completion</span></article>
+        <article class="seo2-metric"><strong>{{ $dashboardCounts['ready'] }}/{{ $dashboardCounts['live'] }}</strong><span>Live and ready</span></article>
+        <article class="seo2-metric"><strong>{{ $dashboardCounts['attention'] }}</strong><span>Live pages needing attention</span></article>
+        <article class="seo2-metric"><strong>{{ $dashboardCounts['draft'] }}</strong><span>Draft, private or scheduled</span></article>
+    </section>
+
+    <section class="seo2-card seo2-dashboard" aria-labelledby="seo2-dashboard-title">
+        <header class="seo2-card__head"><div><h2 id="seo2-dashboard-title">Website SEO checklist</h2><p>{{ strtoupper($locale) }} · {{ $dashboardCounts['total'] }} managed pages and features, including drafts that can be prepared before publishing. System endpoints are excluded.</p></div></header>
+        <div class="seo2-card__body">
+            <form class="seo2-filter" method="GET" action="{{ route('seo.index') }}"><input type="hidden" name="locale" value="{{ $locale }}"><label class="seo2-field"><span>Find a page</span><input type="search" name="search" value="{{ $dashboardFilters['search'] }}" placeholder="Search name or address"></label><label class="seo2-field"><span>Content type</span><select name="type">@foreach($dashboardTypes as $value => $label)<option value="{{ $value }}" @selected($dashboardFilters['type'] === $value)>{{ $label }}</option>@endforeach</select></label><label class="seo2-field"><span>Show</span><select name="issue"><option value="all" @selected($dashboardFilters['issue'] === 'all')>Everything</option><option value="needs_attention" @selected($dashboardFilters['issue'] === 'needs_attention')>Needs attention</option><option value="missing_title" @selected($dashboardFilters['issue'] === 'missing_title')>Missing search title</option><option value="missing_description" @selected($dashboardFilters['issue'] === 'missing_description')>Missing description</option><option value="missing_image" @selected($dashboardFilters['issue'] === 'missing_image')>Missing social image</option><option value="duplicate_title" @selected($dashboardFilters['issue'] === 'duplicate_title')>Duplicate title</option><option value="duplicate_description" @selected($dashboardFilters['issue'] === 'duplicate_description')>Duplicate description</option><option value="focus_missing_title" @selected($dashboardFilters['issue'] === 'focus_missing_title')>Focus phrase missing from title</option><option value="focus_missing_description" @selected($dashboardFilters['issue'] === 'focus_missing_description')>Focus phrase missing from description</option><option value="hidden" @selected($dashboardFilters['issue'] === 'hidden')>Hidden from search</option><option value="missing_translation" @selected($dashboardFilters['issue'] === 'missing_translation')>Missing translation</option></select></label><button class="seo2-btn" type="submit">Apply filters</button></form>
+            <div class="seo2-content-list">
+                @forelse($dashboardTargets as $target)
+                <article class="seo2-target">
+                    <div class="seo2-target__name"><strong>{{ $target['label'] }}</strong><small>{{ $target['type_label'] }} · {{ strtoupper($target['locale']) }} · <b>{{ $target['publication']['label'] }}</b></small><span class="seo2-target__url">{{ $target['url'] }}</span></div>
+                    <div class="seo2-score" aria-label="{{ $target['score'] }} percent complete"><strong>{{ $target['score'] }}%</strong><span aria-hidden="true"><i style="width:{{ $target['score'] }}%"></i></span></div>
+                    <div class="seo2-target__issues">@forelse(array_slice($target['issues'], 0, 3) as $issue)<span class="seo2-chip {{ $issue['level'] === 'required' ? 'seo2-chip--danger' : ($issue['level'] === 'information' ? 'seo2-chip--neutral' : '') }}">{{ $issue['level'] === 'required' ? 'Required: ' : ($issue['level'] === 'recommended' ? 'Recommended: ' : '') }}{{ $issue['label'] }}</span>@empty<span class="seo2-chip" style="background:#e8f5ec;color:#276b3d">Ready</span>@endforelse</div>
+                    @if(!($target['is_editable'] ?? true))
+                        @if($canViewTranslations)<a class="seo2-btn seo2-btn--soft" href="{{ $target['edit_url'] }}">Create translation</a>@else<span class="seo2-help">Ask a Translation Center editor to create this translation.</span>@endif
+                    @else<a class="seo2-btn seo2-btn--soft" href="{{ $target['edit_url'] }}">{{ $canEditMetadata ? 'Improve' : 'View' }}</a>@endif
+                </article>
+                @empty<div class="seo2-empty"><h3>No matching pages</h3><p>Clear a filter to see more content.</p></div>@endforelse
+            </div>
+        </div>
+    </section>
+
+    <section class="seo2-card" style="margin-bottom:24px">
+        <header class="seo2-card__head"><div><h2>Choose a website feature</h2><p>These are curated public pages only—technical routes are never shown.</p></div></header>
+        <div class="seo2-card__body"><form class="seo2-filter" method="GET" action="{{ route('seo.index') }}"><label class="seo2-field"><span>Page or feature</span><select name="route">@foreach($routeDefinitions as $name => $definition)<option value="{{ $name }}" @selected($name === $selectedName)>{{ $definition['label'] }} — {{ $definition['path'] }}</option>@endforeach</select></label><label class="seo2-field"><span>Language</span><select name="locale">@foreach($locales as $option)<option value="{{ $option->id }}" @selected($option->id === $locale)>{{ $option->name }}</option>@endforeach</select></label><button class="seo2-btn" type="submit">Open settings</button></form></div>
+    </section>
+
+    @if($missingManagedPageTranslation)
+        <div class="seo2-alert seo2-alert--warning" role="status"><strong>{{ strtoupper($locale) }} translation required.</strong> This website feature is owned by a translated Page, so route-level SEO cannot be saved for a missing translation. @if($translationCenterUrl)<a href="{{ $translationCenterUrl }}">Create this translation in Translation Center</a>.@else Ask a Translation Center editor to create it before editing search settings.@endif</div>
+    @endif
+    @php($editorTitle = $selectedLabel)
+    @php($canEditMetadata = $editorCanEditMetadata)
+    @php($canRestoreRevisions = $editorCanRestoreRevisions)
+    @php($canReviewMetadata = $editorCanReviewMetadata)
+    @php($canOpenPage = $editorCanOpenPage)
+    @include('admin.seo._editor')
+</main>
+@endsection
+
+@section('custom-js')
+@include('admin.seo._scripts')
+@endsection

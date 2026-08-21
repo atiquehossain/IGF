@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ignite Global Foundation - Mobile Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF7500",
+                        "primary-container": "#FF7500",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#5b2500",
+                        "background": "#f8f9fa",
+                        "on-background": "#24242B",
+                        "surface": "#ffffff",
+                        "on-surface": "#24242B",
+                        "surface-variant": "#e1e3e4",
+                        "on-surface-variant": "#594236",
+                        "surface-container": "#edeeef",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e7e8e9",
+                        "outline": "#8c7163",
+                        "outline-variant": "#e0c0b0",
+                        "inverse-surface": "#24242B",
+                        "inverse-on-surface": "#f0f1f2"
+                    },
+                    spacing: {
+                        "grid-margin": "16px",
+                        "grid-gutter": "16px",
+                        "section-gap": "64px"
+                    },
+                    fontFamily: {
+                        "headline": ["Literata", "serif"],
+                        "body": ["Hanken Grotesk", "sans-serif"],
+                        "label": ["Hanken Grotesk", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Hanken Grotesk', sans-serif; background-color: #f8f9fa; color: #24242B; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Literata', serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Accordion utils */
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-in-out;
+        }
+        .accordion-content > div {
+            overflow: hidden;
+        }
+        .accordion.open .accordion-content {
+            grid-template-rows: 1fr;
+        }
+        .accordion.open .accordion-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden selection:bg-primary/20">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-surface border-b border-surface-variant shadow-sm w-full h-[72px] flex items-center px-4 justify-between transition-colors">
+<div class="flex items-center gap-3">
+<button aria-label="Open Menu" class="w-[44px] h-[44px] flex items-center justify-center rounded-full hover:bg-surface-container active:scale-95 transition-all text-on-surface focus-visible:ring-2 focus-visible:ring-primary outline-none" id="menu-btn">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<a class="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary rounded outline-none" href="#">
+<span class="material-symbols-outlined text-primary text-3xl icon-fill">local_fire_department</span>
+<span class="font-headline font-bold text-xl text-on-surface">Ignite Global</span>
+</a>
+</div>
+<div class="flex items-center">
+<button class="font-label font-bold text-sm tracking-wider text-on-surface-variant hover:text-primary min-w-[44px] min-h-[44px] px-2 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary rounded outline-none">
+            EN | বাংলা
+        </button>
+</div>
+</header>
+<!-- Navigation Drawer Overlay -->
+<div class="fixed inset-0 bg-on-background/60 z-[60] opacity-0 pointer-events-none transition-opacity duration-300 backdrop-blur-sm" id="drawer-overlay"></div>
+<!-- Navigation Drawer -->
+<nav class="fixed top-0 left-0 bottom-0 w-[320px] max-w-[85vw] bg-surface z-[70] transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl overflow-y-auto" id="drawer">
+<div class="flex items-center justify-between p-4 border-b border-surface-variant h-[72px]">
+<span class="font-headline font-bold text-xl text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl icon-fill">local_fire_department</span>
+            Menu
+        </span>
+<button aria-label="Close Menu" class="w-[44px] h-[44px] flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-variant active:scale-95 transition-all text-on-surface focus-visible:ring-2 focus-visible:ring-primary outline-none" id="close-drawer-btn">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex flex-col py-2 px-3 gap-1 flex-grow">
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Home</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">About</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Programs</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Projects</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Donate</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Resources</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Blog</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Events</a>
+<a class="flex items-center px-4 min-h-[48px] rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors font-medium focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">Contact</a>
+</div>
+<div class="p-4 border-t border-surface-variant flex flex-col gap-3 pb-8">
+<a class="flex items-center justify-between px-4 min-h-[48px] rounded-xl bg-surface-container text-on-surface font-medium hover:bg-surface-variant transition-colors focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span>Search</span>
+<span class="material-symbols-outlined">search</span>
+</a>
+<a class="flex items-center justify-between px-4 min-h-[48px] rounded-xl bg-surface-container text-on-surface font-medium hover:bg-surface-variant transition-colors focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span>Sign in</span>
+<span class="material-symbols-outlined">login</span>
+</a>
+<a class="flex items-center justify-center gap-2 w-full min-h-[48px] mt-2 rounded-full bg-primary text-white font-bold tracking-wide hover:bg-[#E66A00] transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none shadow-md" href="#">
+            Donate
+            <span class="material-symbols-outlined text-[18px]">favorite</span>
+</a>
+</div>
+</nav>
+<main>
+<!-- Hero Section -->
+<section class="relative w-full min-h-[600px] flex items-end">
+<div class="absolute inset-0 z-0">
+<img alt="Documentary-style photograph of a rural community" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmda0K0D4dMKJibV5Aw9Mk9Ga8akkAyEOXajXPptgEURRCluzKq7W6BNzmdqMR3SOReGVPXsiDQGqmUSWFO2UWF6_bSmFOleMOHUPnrj0J_pLt4cQ5O9nzS108pcKjE6bjikRqCXJiXtM3V8wM-ZxaryFkuNNRV0vgHFSUd9NzzVzKiD0cTgMDSBstYRD_mZd6ztg9kDjLnV-hug1BA3mUa4i98IFssyV93xFwy85t8ZvdaBpNxCoqbg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/95 via-inverse-surface/50 to-transparent mix-blend-multiply"></div>
+</div>
+<div class="relative z-10 w-full px-4 pb-12 pt-40 flex flex-col gap-6 text-white">
+<div class="bg-inverse-surface/90 backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-xl flex flex-col gap-6">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/20 text-primary-100 border border-primary/30 w-fit font-label text-sm font-bold tracking-wide">
+<span class="material-symbols-outlined text-[16px] icon-fill">campaign</span>
+                    [CMS-managed Campaign Alert]
+                </div>
+<h1 class="font-headline text-4xl leading-tight font-bold text-white">
+                    Igniting hope.<br/>Building lasting change.
+                </h1>
+<p class="font-body text-[16px] leading-relaxed text-white/90">
+                    We empower marginalized communities in Bangladesh through sustainable education, healthcare, and livelihood programs, fostering resilience and opportunity.
+                </p>
+<div class="flex flex-col gap-3 mt-2">
+<button class="w-full min-h-[48px] bg-primary text-white font-bold rounded-full shadow-lg hover:bg-[#E66A00] transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white outline-none">
+                        Donate now
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="w-full min-h-[48px] bg-transparent text-white font-bold rounded-full border-2 border-white/30 hover:border-white transition-colors flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white outline-none">
+                        Explore our work
+                    </button>
+</div>
+<div class="pt-4 mt-2 border-t border-white/20">
+<a class="flex items-center gap-2 text-primary hover:text-white transition-colors text-sm font-bold focus-visible:ring-2 focus-visible:ring-white outline-none rounded p-1 -ml-1 w-fit" href="#">
+<span class="material-symbols-outlined text-[18px]">description</span>
+                        Read our [CMS-managed Year] Annual Report
+                    </a>
+</div>
+</div>
+</div>
+</section>
+<!-- Impact Metrics (2x2 Grid) -->
+<section class="py-12 px-4 bg-surface">
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-variant shadow-sm flex flex-col gap-2">
+<span class="material-symbols-outlined text-3xl text-primary mb-1">group</span>
+<div class="font-headline text-2xl font-bold text-on-surface">[Value]</div>
+<div class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">[CMS-managed verified metric]</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-variant shadow-sm flex flex-col gap-2">
+<span class="material-symbols-outlined text-3xl text-primary mb-1">map</span>
+<div class="font-headline text-2xl font-bold text-on-surface">[Value]</div>
+<div class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">[CMS-managed verified metric]</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-variant shadow-sm flex flex-col gap-2">
+<span class="material-symbols-outlined text-3xl text-primary mb-1">volunteer_activism</span>
+<div class="font-headline text-2xl font-bold text-on-surface">[Value]</div>
+<div class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">[CMS-managed verified metric]</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-surface-variant shadow-sm flex flex-col gap-2">
+<span class="material-symbols-outlined text-3xl text-primary mb-1">school</span>
+<div class="font-headline text-2xl font-bold text-on-surface">[Value]</div>
+<div class="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider">[CMS-managed verified metric]</div>
+</div>
+</div>
+</section>
+<!-- Who we are -->
+<section class="py-12 px-4 bg-surface border-t border-surface-variant">
+<div class="flex flex-col gap-6">
+<div class="aspect-[4/3] rounded-2xl overflow-hidden bg-surface-container">
+<img alt="Portrait of a smiling young Bangladeshi girl" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRYMLYnu2O06_gAN9OrYuA7i31V4R0bbmU46s3aABjFt2UGnx9p29ZQWI1VSnG6PTOLC9GtZISi8sXu1tG_pteXS92hLWPG3hFvFPO6i-8MED600L_EQa3hDSxpwFpxZ3MmYbhUmyyX1-ZuLcwwArWDhITt02ajTHsTLYCYMFaDULXrvdgTzTuKLIgX_6hn1hvWjseJ35aW0xDTu4hAFLx1MJxr9A_zvXLY68wkqJ8Fdb0JdmeY0PZEA"/>
+</div>
+<div class="flex flex-col gap-4">
+<h2 class="font-headline text-3xl font-bold text-on-surface">Who we are</h2>
+<p class="font-body text-[16px] leading-relaxed text-on-surface-variant">
+                    We believe that every community holds the seeds of its own prosperity. Ignite Global Foundation works hand-in-hand with local leaders to provide the resources, training, and infrastructure needed to break the cycle of poverty.
+                </p>
+<p class="font-body text-[16px] leading-relaxed text-on-surface-variant">
+                    We have grown from a small group of passionate volunteers to a nationwide movement. Our holistic approach ensures that interventions in education, healthcare, and livelihoods are interconnected and sustainable.
+                </p>
+<a class="inline-flex items-center gap-2 font-label font-bold text-primary hover:text-[#E66A00] transition-colors min-h-[44px] w-fit focus-visible:ring-2 focus-visible:ring-primary outline-none mt-2" href="#">
+                    About us
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Our Programs -->
+<section class="py-12 px-4 bg-surface-container-low">
+<div class="mb-8">
+<h2 class="font-headline text-3xl font-bold text-on-surface mb-3">Our programs</h2>
+<p class="font-body text-[16px] text-on-surface-variant">[CMS-managed description of our holistic approach to community development.]</p>
+</div>
+<div class="flex flex-col gap-4">
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">school</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Education</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Empowering the next generation through inclusive learning environments.</p>
+</a>
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">health_and_safety</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Healthcare</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Providing essential medical services and health education to remote areas.</p>
+</a>
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">water_drop</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Clean Water</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Building sustainable infrastructure for safe drinking water and sanitation.</p>
+</a>
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">agriculture</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Livelihoods</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Supporting sustainable agriculture and small business development.</p>
+</a>
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">emergency</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Emergency Relief</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Rapid response and rebuilding efforts during natural disasters.</p>
+</a>
+<a class="block bg-surface p-6 rounded-2xl border border-surface-variant shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+<span class="material-symbols-outlined text-4xl text-primary mb-3 block">child_care</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-2">Child Sponsorship</h3>
+<p class="font-body text-[16px] text-on-surface-variant">Direct support for vulnerable children's education and well-being.</p>
+</a>
+</div>
+</section>
+<!-- Campaign Section -->
+<section class="py-12 px-4 bg-surface">
+<div class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-lg border border-surface-variant flex flex-col">
+<div class="bg-surface-container-low p-6 border-b border-surface-variant">
+<span class="inline-block px-3 py-1 bg-primary/10 text-primary font-label font-bold text-xs rounded-full mb-4">Featured Campaign</span>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-3">Emergency Community Support</h2>
+<p class="font-body text-[16px] text-on-surface-variant mb-6">Your contribution directly supports communities facing urgent challenges, providing necessary resources for immediate relief and long-term recovery.</p>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between font-label font-bold text-sm text-on-surface">
+<span>Raised: ৳650,000</span>
+<span class="text-on-surface-variant">Target: ৳1,000,000</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 65%"></div>
+</div>
+<div class="text-right text-sm font-bold text-primary">65% funded</div>
+</div>
+</div>
+<div class="p-6 bg-surface">
+<h3 class="font-headline text-xl font-bold text-on-surface mb-5">Make a donation</h3>
+<form class="flex flex-col gap-5">
+<!-- Provider-dependent frequency as requested, simplifying to a generic dropdown or label if specifically asked, but instructions say "Label frequency as 'Provider-dependent'". Let's add a label. -->
+<div>
+<label class="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-wider mb-2">Frequency (Provider-dependent)</label>
+<div class="flex bg-surface-container rounded-full p-1">
+<label class="flex-1 text-center cursor-pointer">
+<input checked="" class="peer sr-only" name="freq_mobile" type="radio" value="one-time"/>
+<div class="py-2.5 px-4 rounded-full font-label font-bold text-sm peer-checked:bg-primary peer-checked:text-white text-on-surface-variant transition-colors min-h-[44px] flex items-center justify-center">One-time</div>
+</label>
+<label class="flex-1 text-center cursor-pointer">
+<input class="peer sr-only" name="freq_mobile" type="radio" value="monthly"/>
+<div class="py-2.5 px-4 rounded-full font-label font-bold text-sm peer-checked:bg-primary peer-checked:text-white text-on-surface-variant transition-colors min-h-[44px] flex items-center justify-center">Monthly</div>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<label class="cursor-pointer">
+<input class="peer sr-only" name="amt_mobile" type="radio" value="500"/>
+<div class="py-3 px-2 border border-surface-variant rounded-xl text-center font-bold peer-checked:border-primary peer-checked:bg-primary/5 text-on-surface transition-all min-h-[48px] flex items-center justify-center">৳500</div>
+</label>
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="amt_mobile" type="radio" value="1000"/>
+<div class="py-3 px-2 border border-surface-variant rounded-xl text-center font-bold peer-checked:border-primary peer-checked:bg-primary/5 text-on-surface transition-all min-h-[48px] flex items-center justify-center">৳1,000</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="amt_mobile" type="radio" value="2000"/>
+<div class="py-3 px-2 border border-surface-variant rounded-xl text-center font-bold peer-checked:border-primary peer-checked:bg-primary/5 text-on-surface transition-all min-h-[48px] flex items-center justify-center">৳2,000</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="amt_mobile" type="radio" value="custom"/>
+<div class="py-3 px-2 border border-surface-variant rounded-xl text-center font-bold peer-checked:border-primary peer-checked:bg-primary/5 text-on-surface transition-all min-h-[48px] flex items-center justify-center">Custom</div>
+</label>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="text-on-surface-variant font-bold">৳</span>
+</div>
+<input class="block w-full pl-8 pr-4 min-h-[48px] border-surface-variant rounded-xl focus:ring-primary focus:border-primary bg-surface-container-lowest text-[16px]" placeholder="Enter amount" type="number"/>
+</div>
+<button class="w-full min-h-[48px] bg-primary text-white font-bold rounded-full shadow-md hover:bg-[#E66A00] transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none mt-2" type="submit">
+                        Donate Now
+                    </button>
+</form>
+</div>
+</div>
+</section>
+<!-- Featured Projects -->
+<section class="py-12 px-4 bg-surface-container-low border-t border-surface-variant">
+<div class="mb-8 flex flex-col gap-2 text-center items-center">
+<h2 class="font-headline text-3xl font-bold text-on-surface">Featured projects</h2>
+<p class="font-body text-[16px] text-on-surface-variant">Discover our current initiatives making a measurable impact on the ground.</p>
+</div>
+<div class="flex flex-col gap-6">
+<!-- Project 1 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-surface-variant shadow-sm flex flex-col">
+<div class="aspect-video bg-surface-container relative">
+<img alt="Project Image" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlx8bAOH6sZhDXnpFfWKOB6BVgMVpASLXCbsDYI1-0zVwVTuxBJAeLQ006-MqNA_Nzot8oOePEo1BwuxEYE5zFLgJrj5pYrKo0TBG1iRbhpFgggjDMtx4JxN1tBdlPxnGrhHxaEaOrE9IzkfaeP9Yhi8rpeCVoy0xYLwpVsRgYr7BDqmP8xJWhk6Ch4aKgBimlnifg6JIq2SSxoNYkSvFPGr6VLCm2vLLgg7ZPUm1brvqdx-KvzfMYPQ"/>
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur text-on-surface font-label font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-surface-variant">
+                        [Status: Active]
+                    </div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<div class="flex items-center gap-1.5 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                        [CMS-managed Location]
+                    </div>
+<h3 class="font-headline text-xl font-bold text-on-surface">[CMS-managed Project Title 1]</h3>
+<a class="inline-flex items-center gap-2 font-label font-bold text-primary min-h-[44px] w-fit outline-none focus-visible:underline mt-2" href="#">
+                        Read more <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-surface-variant shadow-sm flex flex-col">
+<div class="aspect-video bg-surface-container relative">
+<img alt="Project Image" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy7qy1vJ24maihuPBI87geTsnjCZJlWqiAPR0cAU8FzXlW8eUSGqJShWzJlqXhwInQMsITUGt99wmvPZnRO9qm7q94krIEmPNBbNhFWxN7IU7Esv-y28PwrpzD1LtyX_CHU7CdOsEdL79TBZp2pR8ygx_jdVHdkIzOYuIsrKk3-ClsMue1-xIreO0SPPDbmkWj5MOoH_P679bJ_XE8u3w-f4zWKiskfHwJMRKgVuNlQjPPVaUx0tdkDA"/>
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur text-on-surface font-label font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-surface-variant">
+                        [Status: Planning]
+                    </div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<div class="flex items-center gap-1.5 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                        [CMS-managed Location]
+                    </div>
+<h3 class="font-headline text-xl font-bold text-on-surface">[CMS-managed Project Title 2]</h3>
+<a class="inline-flex items-center gap-2 font-label font-bold text-primary min-h-[44px] w-fit outline-none focus-visible:underline mt-2" href="#">
+                        Read more <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Project 3 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-surface-variant shadow-sm flex flex-col">
+<div class="aspect-video bg-surface-container relative">
+<img alt="Project Image" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB01uNZf7W6JhcwZlX2NBaXXfTgSFbMz6bDT19f-4qEaavRA2JhYWAUyZtHmkZ5vr5q-3KhBbFxdoEX3NxOwJ8CUxJQYfFPRyvalXhuMBJm0XejWfjgWLcIyH65qcN8D99LxPXz06oqRDv3fXAfe1Fg8jPx47iybRk__MTtHc8HCttNINoGC7MqzsA47zhuQr1POq3BmuOMNkqKJgXvcOgsdK3zFO809zIeoDBonSrPIC8zlu5jr7XQoQ"/>
+<div class="absolute top-3 left-3 bg-surface/90 backdrop-blur text-on-surface font-label font-bold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full border border-surface-variant">
+                        [Status: Completed]
+                    </div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<div class="flex items-center gap-1.5 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                        [CMS-managed Location]
+                    </div>
+<h3 class="font-headline text-xl font-bold text-on-surface">[CMS-managed Project Title 3]</h3>
+<a class="inline-flex items-center gap-2 font-label font-bold text-primary min-h-[44px] w-fit outline-none focus-visible:underline mt-2" href="#">
+                        Read more <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="mt-4 flex justify-center">
+<a class="min-h-[48px] px-6 rounded-full border border-primary text-primary font-bold flex items-center justify-center hover:bg-primary/5 transition-colors focus-visible:ring-2 focus-visible:ring-primary outline-none" href="#">
+                    View all projects
+                </a>
+</div>
+</div>
+</section>
+<!-- Community Story -->
+<section class="py-12 px-4 bg-surface">
+<div class="bg-surface-container-high rounded-3xl overflow-hidden shadow-sm flex flex-col">
+<div class="aspect-square bg-surface-container relative">
+<img alt="Community Story placeholder" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH3MhQHZilMKzZs2F87AH-8VjpMLLLUg5SW_W2YyqAcRtXiJaQwOZW433UofmXB3dE9TfKT47eq8Et_wLzWmMJqPqSSQYXAc0GFNsY8f_R1EaIoIT4HmxPRm1vLHrhqrDt_B9uI3JvcMEuDkfSkjzu2THwTf7HisWQGIiUT_c0DLKqqLoVv6IjRqk_VibyFK65qeVlq7QT59xzQ-nFEOskKLRiXQJ0fuhaod1WcJl5RFNi-2dVzp0U1g"/>
+</div>
+<div class="p-6">
+<div class="inline-block px-3 py-1 bg-surface-variant text-on-surface-variant font-label font-bold text-[10px] uppercase tracking-wider rounded-full mb-4">
+                    A story from the community
+                </div>
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-4">
+                    "[Client-approved, consented story and photography required]"
+                </h2>
+<p class="font-body text-[16px] text-on-surface-variant mb-6">
+                    [Client-approved narrative text detailing the impact of the programs on individuals within the community. Authentic, verifiable stories only.]
+                </p>
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-surface-variant shrink-0"></div>
+<div class="flex flex-col">
+<div class="font-bold text-on-surface">[Name]</div>
+<div class="text-sm text-on-surface-variant">[Role/Location]</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Events & News -->
+<section class="py-12 px-4 bg-surface-container-low border-y border-surface-variant">
+<div class="flex flex-col gap-10">
+<!-- Events -->
+<div>
+<div class="flex justify-between items-center mb-6 border-b border-surface-variant pb-3">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Upcoming Events</h2>
+<a class="font-label font-bold text-sm text-primary min-h-[44px] flex items-center outline-none focus-visible:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-3">
+<a class="flex gap-4 p-3 rounded-xl bg-surface border border-surface-variant shadow-sm hover:shadow-md transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-primary" href="#">
+<div class="shrink-0 flex flex-col items-center justify-center bg-surface-container-low border border-surface-variant rounded-lg w-[72px] py-2">
+<span class="text-[10px] font-label font-bold text-primary uppercase">[MON]</span>
+<span class="text-xl font-bold text-on-surface">[DD]</span>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="font-bold text-on-surface line-clamp-2 mb-1.5 leading-snug">[CMS-managed Event Title]</h3>
+<div class="text-[12px] text-on-surface-variant flex flex-col gap-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> [Time]</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">location_on</span> [Location]</span>
+</div>
+</div>
+</a>
+<a class="flex gap-4 p-3 rounded-xl bg-surface border border-surface-variant shadow-sm hover:shadow-md transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-primary" href="#">
+<div class="shrink-0 flex flex-col items-center justify-center bg-surface-container-low border border-surface-variant rounded-lg w-[72px] py-2">
+<span class="text-[10px] font-label font-bold text-primary uppercase">[MON]</span>
+<span class="text-xl font-bold text-on-surface">[DD]</span>
+</div>
+<div class="flex flex-col justify-center">
+<h3 class="font-bold text-on-surface line-clamp-2 mb-1.5 leading-snug">[CMS-managed Event Title]</h3>
+<div class="text-[12px] text-on-surface-variant flex flex-col gap-1">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> [Time]</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">location_on</span> [Location]</span>
+</div>
+</div>
+</a>
+</div>
+</div>
+<!-- News -->
+<div>
+<div class="flex justify-between items-center mb-6 border-b border-surface-variant pb-3">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Latest News</h2>
+<a class="font-label font-bold text-sm text-primary min-h-[44px] flex items-center outline-none focus-visible:underline" href="#">Read Blog</a>
+</div>
+<div class="flex flex-col gap-4">
+<a class="flex gap-4 group outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg" href="#">
+<div class="w-24 h-24 rounded-lg bg-surface-container shrink-0 overflow-hidden border border-surface-variant">
+<img alt="News thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQZOtHgj_-0b60woFd6VyL5wx3l7YSJJ4de4z6WQYhsKBBns1MVx09rEr2yKtI1NjfkQ2Pgl8qLVb3U-aBY-bl2Fvegn0oy5JW8W8Fcugz45F-1k3lzvYWOGkzJkI-4aziyQNca__qI3y-by33_rGU6SzIjWb_tyMSDNDA2NKFoB_Jhl2v_ICmwFaGMxkNaxmfOrpaaEZbugdevHbMv2zm8ZTNlpdy4zurM1vtxreUEb7Y8f5QahKYQA"/>
+</div>
+<div class="flex flex-col justify-center gap-1.5">
+<div class="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-wider">[Date] | [Category]</div>
+<h3 class="font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-snug">[CMS-managed News Article Title]</h3>
+</div>
+</a>
+<a class="flex gap-4 group outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg" href="#">
+<div class="w-24 h-24 rounded-lg bg-surface-container shrink-0 overflow-hidden border border-surface-variant">
+<img alt="News thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACpSZOSts0aJ4bfHCw7L0ZYlyDeQd1zXfaIAxr189VOC8NtgUmGw_OcmRyayXuv1r-s4bmX1nqLYX2QjbhwkanR47n9N3MRJexgXbfBQCMpNKV9LAxhtjk0YYTTwY4kTcuhZ2XhW7EILAWEvEpfZ5MEezfuUid3nN5gyCZqbHAfcs0MXcMCPpUGuxrZaaoZD-XhlXIsuZEVEHpzli_xA-NAD11Y-4l1vZ3NIP-SxqZYnxnHqCuKXzyxA"/>
+</div>
+<div class="flex flex-col justify-center gap-1.5">
+<div class="text-[10px] font-label font-bold text-on-surface-variant uppercase tracking-wider">[Date] | [Category]</div>
+<h3 class="font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 leading-snug">[CMS-managed News Article Title]</h3>
+</div>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Accountability -->
+<section class="py-12 px-4 bg-surface text-center">
+<h2 class="font-headline text-3xl font-bold text-on-surface mb-4">Our Commitment to Accountability</h2>
+<p class="font-body text-[16px] text-on-surface-variant mb-8">Transparency and trust are at the core of our operations. We ensure every contribution is maximized for impact.</p>
+<div class="grid grid-cols-1 gap-4">
+<a class="flex items-center gap-4 p-4 border border-surface-variant rounded-2xl hover:border-primary hover:bg-surface-container-lowest shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none text-left" href="#">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant shrink-0">description</span>
+<span class="font-bold text-on-surface">[CMS-managed] Annual Report</span>
+</a>
+<a class="flex items-center gap-4 p-4 border border-surface-variant rounded-2xl hover:border-primary hover:bg-surface-container-lowest shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none text-left" href="#">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant shrink-0">account_balance</span>
+<span class="font-bold text-on-surface">[CMS-managed] Financials</span>
+</a>
+<a class="flex items-center gap-4 p-4 border border-surface-variant rounded-2xl hover:border-primary hover:bg-surface-container-lowest shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none text-left" href="#">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant shrink-0">security</span>
+<span class="font-bold text-on-surface">[CMS-managed] Safeguarding</span>
+</a>
+<a class="flex items-center gap-4 p-4 border border-surface-variant rounded-2xl hover:border-primary hover:bg-surface-container-lowest shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary outline-none text-left" href="#">
+<span class="material-symbols-outlined text-3xl text-on-surface-variant shrink-0">gavel</span>
+<span class="font-bold text-on-surface">[CMS-managed] Policies</span>
+</a>
+</div>
+</section>
+<!-- Partner Logos -->
+<section class="py-12 bg-surface-container-low px-4 border-y border-surface-variant">
+<h3 class="font-label font-bold text-on-surface-variant text-center mb-6 uppercase tracking-widest text-sm">Supported by</h3>
+<div class="flex flex-col gap-4 items-center">
+<div class="w-full max-w-xs text-[10px] font-bold border border-dashed border-outline-variant p-4 rounded text-on-surface-variant text-center bg-surface">[Client-approved partner logos only]</div>
+<div class="w-full max-w-xs text-[10px] font-bold border border-dashed border-outline-variant p-4 rounded text-on-surface-variant text-center bg-surface">[Client-approved partner logos only]</div>
+<div class="w-full max-w-xs text-[10px] font-bold border border-dashed border-outline-variant p-4 rounded text-on-surface-variant text-center bg-surface">[Client-approved partner logos only]</div>
+<div class="w-full max-w-xs text-[10px] font-bold border border-dashed border-outline-variant p-4 rounded text-on-surface-variant text-center bg-surface">[Client-approved partner logos only]</div>
+</div>
+</section>
+<!-- Testimonial -->
+<section class="py-12 px-4 bg-surface">
+<div class="bg-primary/5 border border-primary/20 rounded-3xl p-6 md:p-8 text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-4xl mb-4">format_quote</span>
+<p class="font-headline text-2xl text-on-surface mb-6 italic leading-relaxed">
+                "[Real-content-required testimonial: A compelling, authentic quote from a volunteer or partner about the impact of getting involved.]"
+            </p>
+<div class="font-bold text-on-surface mb-1">[Name]</div>
+<div class="text-sm text-on-surface-variant mb-8">[Role/Title]</div>
+<h3 class="font-headline text-2xl font-bold text-on-surface mb-5">Join our mission</h3>
+<div class="flex flex-col gap-3 w-full">
+<a class="w-full min-h-[48px] bg-primary text-white font-bold rounded-full shadow-md flex items-center justify-center hover:bg-[#E66A00] transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none" href="#">
+                    Become a volunteer
+                </a>
+<a class="w-full min-h-[48px] bg-surface text-on-surface font-bold rounded-full border-2 border-surface-variant hover:border-primary hover:text-primary transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none" href="#">
+                    Partner with us
+                </a>
+</div>
+</div>
+</section>
+<!-- Newsletter -->
+<section class="py-12 px-4 bg-surface-container-high">
+<div class="text-center mb-6">
+<h2 class="font-headline text-2xl font-bold text-on-surface mb-3">Stay Informed</h2>
+<p class="font-body text-[16px] text-on-surface-variant">Subscribe to our newsletter for updates on our projects, impact reports, and ways to get involved.</p>
+</div>
+<form class="flex flex-col gap-4">
+<div class="flex flex-col gap-3">
+<label class="sr-only" for="email">Email address</label>
+<input class="w-full min-h-[48px] px-4 rounded-xl border-surface-variant focus:ring-primary focus:border-primary bg-surface-container-lowest text-[16px] shadow-sm" id="email" name="email" placeholder="Enter your email" required="" type="email"/>
+<button class="w-full min-h-[48px] bg-on-surface text-surface-container-lowest font-bold rounded-xl hover:bg-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-none shadow-sm" type="submit">
+                    Subscribe
+                </button>
+</div>
+<div class="flex items-start gap-3 mt-1">
+<div class="flex h-6 items-center">
+<input class="h-5 w-5 rounded border-surface-variant text-primary focus:ring-primary bg-surface-container-lowest" id="consent_nl" required="" type="checkbox"/>
+</div>
+<label class="text-sm text-on-surface-variant leading-snug" for="consent_nl">
+                    I consent to receive emails and agree to the <a class="underline hover:text-primary focus-visible:text-primary outline-none" href="#">Privacy Policy</a>.
+                </label>
+</div>
+<div class="mt-2 p-3 rounded-xl bg-surface/50 border border-surface-variant text-xs flex flex-col gap-2">
+<p class="text-green-700 font-bold">Example Success: "Thank you for subscribing! Check your inbox to confirm."</p>
+<p class="text-red-700 font-bold">Example Error: "Please enter a valid email address."</p>
+</div>
+</form>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-inverse-surface w-full py-10 px-4 text-inverse-on-surface">
+<div class="flex flex-col gap-8">
+<!-- Logo and Intro -->
+<div class="flex flex-col gap-4">
+<a class="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-white rounded outline-none w-fit" href="#">
+<span class="material-symbols-outlined text-primary text-3xl icon-fill">local_fire_department</span>
+<span class="font-headline font-bold text-xl text-white">Ignite Global Foundation</span>
+</a>
+<p class="font-body text-[16px] text-surface-variant opacity-80">
+                Empowering communities and building resilience across Bangladesh through sustainable, community-led initiatives.
+            </p>
+<div class="flex items-center gap-4 mt-2">
+<a aria-label="Facebook" class="w-[44px] h-[44px] rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary transition-colors focus-visible:ring-2 focus-visible:ring-white outline-none" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+<a aria-label="Twitter" class="w-[44px] h-[44px] rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary transition-colors focus-visible:ring-2 focus-visible:ring-white outline-none" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a aria-label="Instagram" class="w-[44px] h-[44px] rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-primary transition-colors focus-visible:ring-2 focus-visible:ring-white outline-none" href="#">
+<span class="material-symbols-outlined">photo_camera</span>
+</a>
+</div>
+</div>
+<!-- Accordions -->
+<div class="flex flex-col border-t border-white/10">
+<!-- Accordion 1 -->
+<div class="accordion border-b border-white/10">
+<button class="w-full py-4 flex items-center justify-between font-label font-bold text-primary tracking-wider focus-visible:ring-2 focus-visible:ring-white outline-none rounded-sm">
+                    EXPLORE
+                    <span class="material-symbols-outlined accordion-icon transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="flex flex-col gap-3 pb-4">
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">About Us</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Our Impact</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">News &amp; Blog</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Events</a>
+</div>
+</div>
+</div>
+<!-- Accordion 2 -->
+<div class="accordion border-b border-white/10">
+<button class="w-full py-4 flex items-center justify-between font-label font-bold text-primary tracking-wider focus-visible:ring-2 focus-visible:ring-white outline-none rounded-sm">
+                    PROGRAMS
+                    <span class="material-symbols-outlined accordion-icon transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="flex flex-col gap-3 pb-4">
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Education</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Healthcare</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Clean Water</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Livelihoods</a>
+</div>
+</div>
+</div>
+<!-- Accordion 3 -->
+<div class="accordion border-b border-white/10">
+<button class="w-full py-4 flex items-center justify-between font-label font-bold text-primary tracking-wider focus-visible:ring-2 focus-visible:ring-white outline-none rounded-sm">
+                    DONOR SUPPORT
+                    <span class="material-symbols-outlined accordion-icon transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="flex flex-col gap-3 pb-4">
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Ways to Give</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Donor FAQs</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Tax Information</a>
+<a class="min-h-[44px] flex items-center text-primary underline hover:text-white focus-visible:ring-2 focus-visible:ring-white outline-none w-fit" href="#">Manage Donation</a>
+</div>
+</div>
+</div>
+<!-- Accordion 4 -->
+<div class="accordion border-b border-white/10">
+<button class="w-full py-4 flex items-center justify-between font-label font-bold text-primary tracking-wider focus-visible:ring-2 focus-visible:ring-white outline-none rounded-sm">
+                    LEGAL &amp; CONTACT
+                    <span class="material-symbols-outlined accordion-icon transition-transform duration-300">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="flex flex-col gap-3 pb-4">
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Contact Us</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Privacy Policy</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Terms of Service</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none" href="#">Safeguarding</a>
+<a class="min-h-[44px] flex items-center text-surface-variant opacity-80 hover:opacity-100 focus-visible:underline outline-none font-bold gap-2 mt-2" href="tel:+8801700000000">
+<span class="material-symbols-outlined text-[18px]">call</span> +880 1700 000 000
+                        </a>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 pt-4 text-xs text-surface-variant opacity-60">
+<p>© [Current Year] Ignite Global Foundation. All rights reserved. Registered Nonprofit in Bangladesh.</p>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="font-label uppercase tracking-wider font-bold">[Organization Registration Detail]</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    // Drawer Logic
+    const menuBtn = document.getElementById('menu-btn');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawer-overlay');
+    const closeBtn = document.getElementById('close-drawer-btn');
+
+    function openDrawer() {
+        drawer.classList.remove('-translate-x-full');
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+        drawer.classList.add('-translate-x-full');
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+        document.body.style.overflow = '';
+    }
+
+    menuBtn.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+
+    // Accordion Logic
+    const accordions = document.querySelectorAll('.accordion');
+    accordions.forEach(acc => {
+        const btn = acc.querySelector('button');
+        btn.addEventListener('click', () => {
+            // Close others (optional, standard behavior usually allows multiple)
+            /* accordions.forEach(other => {
+                if (other !== acc) other.classList.remove('open');
+            }); */
+            acc.classList.toggle('open');
+        });
+    });
+</script>
+</body></html>

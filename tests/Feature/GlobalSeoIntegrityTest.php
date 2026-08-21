@@ -1,0 +1,176 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Page;
+use App\Models\SeoMetadata;
+use App\Models\SeoRedirect;
+use App\Services\SeoMetadataService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Tests\TestCase;
+
+class GlobalSeoIntegrityTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_dynamic_robots_endpoint_is_not_shadowed_by_a_public_static_file(): void
+    {
+        $this->assertFileDoesNotExist(public_path('robots.txt'));
+
+        $this->get('/robots.txt')
+            ->assertOk()
+            ->assertSee('Disallow: /admin')
+            ->assertSee('Sitemap:');
+    }
+
+    public function test_route_metadata_supports_social_robots_canonical_and_schema_fields(): void
+    {
+        $service = app(SeoMetadataService::class);
+        $service->updateForRoute('frontend.home', '/', 'en', [
+            'title' => 'Ignite Global Foundation | Community-led change',
+            'description' => 'Partner with communities creating lasting change.',
+            'focus_keyword' => 'community-led development',
+            'canonical_url' => 'https://ignite.test/',
+            'robots_index' => true,
+            'robots_follow' => false,
+            'og_title' => 'Ignite change together',
+            'twitter_card' => 'summary_large_image',
+            'schema_markup' => json_encode(['@context' => 'https://schema.org', '@type' => 'NGO'], JSON_THROW_ON_ERROR),
+            'sitemap_priority' => 1,
+            'sitemap_change_frequency' => 'daily',
+            'exclude_from_sitemap' => false,
+        ]);
+
+        $meta = $service->metaForRoute('frontend.home', 'en');
+
+        $this->assertSame('Ignite Global Foundation | Community-led change', $meta['meta_title']);
+        $this->assertSame('index,nofollow', $meta['robots']);
+        $this->assertSame('Ignite change together', $meta['og_title']);
+        $this->assertSame('NGO', $meta['schema_markup']['@type']);
+    }
+
+    public function test_active_redirect_runs_before_the_fallback_and_tracks_hits(): void
+    {
+        $redirect = SeoRedirect::create([
+            'from_path' => '/old-campaign',
+            'to_url' => '/page/current-campaign',
+            'status_code' => 301,
+            'is_active' => true,
+        ]);
+
+        $this->get('/old-campaign')
+            ->assertStatus(301)
+            ->assertRedirect('/page/current-campaign');
+
+        $this->assertSame(1, $redirect->fresh()->hits);
+        $this->assertNotNull($redirect->fresh()->last_hit_at);
+    }
+
+    public function test_sitemap_includes_published_pages_and_honors_seo_exclusion(): void
+    {
+        $included = $this->makePage('included-story');
+        $excluded = $this->makePage('excluded-story');
+
+        SeoMetadata::create([
+            'seoable_type' => Page::class,
+            'seoable_id' => $excluded->id,
+            'locale' => 'en',
+            'exclude_from_sitemap' => true,
+        ]);
+
+        $response = $this->get('/sitemap.xml')->assertOk();
+
+        $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $response->assertSee('/page/' . $included->slug, false);
+        $response->assertDontSee('/page/' . $excluded->slug, false);
+    }
+
+    public function test_robots_file_points_crawlers_to_the_sitemap_and_blocks_admin(): void
+    {
+        $this->get('/robots.txt')
+            ->assertOk()
+            ->assertSee('Disallow: /admin', false)
+            ->assertSee('/sitemap.xml', false);
+    }
+
+    public function test_specialized_pages_have_one_canonical_public_url(): void
+    {
+        $about = $this->makePage('about-us');
+        $zakat = $this->makePage('zakat');
+
+        $this->get('/page/about-us')->assertRedirect('/about-us');
+        $this->get('/page/zakat')->assertRedirect('/zakat');
+
+        $sitemap = $this->get('/sitemap.xml')->assertOk();
+        $sitemap->assertSee(url('/about-us'), false);
+        $sitemap->assertSee(url('/zakat'), false);
+        $sitemap->assertDontSee(url('/page/about-us'), false);
+        $sitemap->assertDontSee(url('/page/zakat'), false);
+
+        $this->assertNotNull($about);
+        $this->assertNotNull($zakat);
+    }
+
+    public function test_home_page_has_one_canonical_url_and_old_page_path_redirects(): void
+    {
+        $this->makePage('home');
+
+        $this->get('/page/home')->assertRedirect('/');
+        $content = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($content, '<loc>' . url('/') . '</loc>'));
+        $this->assertStringNotContainsString('/page/home', $content);
+    }
+
+    public function test_dynamic_page_metadata_cannot_be_overridden_by_one_route_record(): void
+    {
+        $page = $this->makePage('item-specific-page');
+        $page->update([
+            'meta_title' => 'Item-specific title',
+            'meta_description' => 'Item-specific description.',
+        ]);
+        SeoMetadata::create([
+            'route_name' => 'frontend.page',
+            'route_path' => '/page/{slug?}',
+            'locale' => 'en',
+            'title' => 'Wrong global page title',
+            'description' => 'Wrong global page description.',
+        ]);
+
+        $response = $this->get('/page/item-specific-page')->assertOk();
+        $response->assertSee('<title inertia>Item-specific title</title>', false);
+        $response->assertSee('content="Item-specific description."', false);
+        $response->assertSee('rel="canonical" href="' . url('/page/item-specific-page') . '"', false);
+        $response->assertDontSee('Wrong global page title', false);
+    }
+
+    public function test_primary_public_routes_have_default_canonicals_and_sitemap_entries(): void
+    {
+        foreach (['/contact-us', '/gallery', '/sponsor-child', '/events', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+            $this->get($path)->assertOk()->assertSee('rel="canonical" href="' . url($path) . '"', false);
+        }
+
+        $sitemap = $this->get('/sitemap.xml')->assertOk()->getContent();
+        foreach (['/contact-us', '/gallery', '/events', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+            $this->assertStringContainsString('<loc>' . url($path) . '</loc>', $sitemap);
+        }
+        // Sponsor is configured as Page-backed. Rendering its safe fallback is
+        // allowed, but it must not be advertised until its published Page
+        // record actually exists in this language.
+        $this->assertStringNotContainsString('<loc>' . url('/sponsor-child') . '</loc>', $sitemap);
+    }
+
+    private function makePage(string $slug): Page
+    {
+        return Page::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => Str::headline($slug),
+            'sub_title' => 'A public impact story.',
+            'slug' => $slug,
+            'status' => 1,
+            'language' => 'en',
+            'published_at' => now()->subDay(),
+        ]);
+    }
+}

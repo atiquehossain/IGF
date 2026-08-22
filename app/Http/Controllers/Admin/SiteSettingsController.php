@@ -57,6 +57,15 @@ class SiteSettingsController extends Controller
         $rules = ['locale' => ['required', 'string', 'max:10']];
         foreach ($schema as $groupKey => $group) {
             foreach ($group['fields'] as $key => $field) {
+                if (($field['type'] ?? null) === 'faq_list') {
+                    $rules["settings.{$groupKey}.{$key}"] = ['nullable', 'array', 'max:50'];
+                    $rules["settings.{$groupKey}.{$key}.*.question"] = ['required', 'string', 'max:500'];
+                    $rules["settings.{$groupKey}.{$key}.*.answer"] = ['required', 'string', 'max:5000'];
+                    $rules["settings.{$groupKey}.{$key}.*.is_active"] = ['sometimes', 'boolean'];
+
+                    continue;
+                }
+
                 $rules["settings.{$groupKey}.{$key}"] = $this->rulesFor($field);
             }
         }
@@ -131,8 +140,10 @@ class SiteSettingsController extends Controller
                     }
 
                     $setting->fill([
-                        'value' => is_bool($value) ? ($value ? '1' : '0') : (string) ($value ?? ''),
-                        'type' => in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text',
+                        'value' => $this->serializedValue($value, $field['type']),
+                        'type' => $field['type'] === 'faq_list'
+                            ? 'json'
+                            : (in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text'),
                         'is_public' => (bool) ($field['public'] ?? false),
                         'created_by' => $setting->exists ? $setting->created_by : auth('admin')->id(),
                         'updated_by' => auth('admin')->id(),
@@ -191,9 +202,37 @@ class SiteSettingsController extends Controller
             'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             'integer' => (int) $value,
             'float' => (float) $value,
+            'faq_list' => $this->normalizeFaqList($value),
             'date' => is_string($value) ? Carbon::createFromFormat('Y-m-d', $value)->toDateString() : $value,
             'url', 'url_or_path' => $this->sanitizer->sanitizeUrl($value),
             default => is_string($value) ? trim(strip_tags($value)) : $value,
         };
+    }
+
+    private function normalizeFaqList(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return collect($value)
+            ->filter(fn ($item): bool => is_array($item))
+            ->take(50)
+            ->map(fn (array $item): array => [
+                'question' => trim(strip_tags((string) ($item['question'] ?? ''))),
+                'answer' => trim(strip_tags((string) ($item['answer'] ?? ''))),
+                'is_active' => filter_var($item['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function serializedValue(mixed $value, string $type): string
+    {
+        if ($type === 'faq_list') {
+            return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+
+        return is_bool($value) ? ($value ? '1' : '0') : (string) ($value ?? '');
     }
 }

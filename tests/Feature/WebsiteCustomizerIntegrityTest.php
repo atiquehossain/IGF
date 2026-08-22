@@ -90,6 +90,11 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertSee('min="10" max="500000"', false)
             ->assertSee('payment verification stay protected')
             ->assertSee('Choose image')
+            ->assertSee('FAQ questions and answers')
+            ->assertSee('Add FAQ')
+            ->assertSee('Show publicly')
+            ->assertSee('data-faq-move="up"', false)
+            ->assertSee('data-faq-remove', false)
             ->assertSee('Save website changes')
             ->assertSee('Reset to default')
             ->assertSee($asset->url, false)
@@ -109,6 +114,41 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertArrayNotHasKey('nagad_label', $donationFields);
         $this->assertArrayNotHasKey('card_label', $donationFields);
         $this->assertArrayNotHasKey('card_networks_label', $donationFields);
+    }
+
+    public function test_contact_page_faq_editor_saves_an_ordered_dynamic_list_safely(): void
+    {
+        $admin = $this->makePageEditor();
+        $settings = $this->defaultSettingsPayload();
+        $settings['contact_page']['faqs'] = [
+            ['question' => 'First <b>question</b>?', 'answer' => 'First <em>answer</em>.', 'is_active' => true],
+            ['question' => 'Second question?', 'answer' => 'Second answer.', 'is_active' => false],
+            ['question' => 'Third question?', 'answer' => 'Third answer.', 'is_active' => true],
+            ['question' => 'Fourth question?', 'answer' => 'Fourth answer.', 'is_active' => true],
+            ['question' => 'Fifth question?', 'answer' => 'Fifth answer.', 'is_active' => true],
+            ['question' => 'Sixth question?', 'answer' => 'Sixth answer.', 'is_active' => true],
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $stored = SiteSetting::query()
+            ->where('group', 'contact_page')
+            ->where('key', 'faqs')
+            ->where('locale', 'en')
+            ->firstOrFail();
+
+        $this->assertSame('json', $stored->type);
+        $this->assertCount(6, $stored->typed_value);
+        $this->assertSame('First question?', $stored->typed_value[0]['question']);
+        $this->assertSame('First answer.', $stored->typed_value[0]['answer']);
+        $this->assertFalse($stored->typed_value[1]['is_active']);
+
+        $public = app(SiteSettingService::class)->values('en', true)['contact_page'];
+        $this->assertCount(6, $public['faqs']);
+        $this->assertSame('Sixth question?', $public['faqs'][5]['question']);
+        $this->assertSame('', $public['faq_2_question']);
     }
 
     public function test_view_only_customizer_hides_mutations_and_unauthorized_admin_shortcuts(): void

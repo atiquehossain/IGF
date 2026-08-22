@@ -20,6 +20,9 @@ class SiteSettingServiceTest extends TestCase
         $this->assertSame('#ff7500', $values['theme']['primary_color']);
         $this->assertSame("Let's start a conversation.", $values['contact_page']['title']);
         $this->assertSame('What is Ignite Global Foundation?', $values['contact_page']['faq_1_question']);
+        $this->assertCount(5, $values['contact_page']['faqs']);
+        $this->assertSame('What is Ignite Global Foundation?', $values['contact_page']['faqs'][0]['question']);
+        $this->assertTrue($values['contact_page']['faqs'][0]['is_active']);
         $this->assertSame(1500, $values['sponsor_page']['monthly_amount']);
         $this->assertSame('Bring your time, skills, and heart.', $values['volunteer_page']['title']);
         $this->assertSame('silver', $values['zakat_calculator']['nisab_default_basis']);
@@ -66,6 +69,50 @@ class SiteSettingServiceTest extends TestCase
         $this->assertSame('Ignite for Everyone', $values['branding']['site_name']);
         $this->assertTrue($values['header']['announcement_enabled']);
         $this->assertSame('', $values['analytics']['google_analytics_id']);
+    }
+
+    public function test_dynamic_contact_faqs_preserve_legacy_customizations_until_the_new_list_is_saved(): void
+    {
+        SiteSetting::create([
+            'group' => 'contact_page',
+            'key' => 'faq_1_question',
+            'locale' => 'en',
+            'value' => 'A customized legacy question?',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        SiteSetting::create([
+            'group' => 'contact_page',
+            'key' => 'faq_1_answer',
+            'locale' => 'en',
+            'value' => 'A customized legacy answer.',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+
+        $legacyValues = app(SiteSettingService::class)->values('en', true);
+
+        $this->assertSame('A customized legacy question?', $legacyValues['contact_page']['faqs'][0]['question']);
+        $this->assertSame('A customized legacy answer.', $legacyValues['contact_page']['faqs'][0]['answer']);
+
+        SiteSetting::create([
+            'group' => 'contact_page',
+            'key' => 'faqs',
+            'locale' => 'en',
+            'value' => json_encode([
+                ['question' => 'A dynamic question?', 'answer' => 'A dynamic answer.', 'is_active' => true],
+                ['question' => 'A hidden question?', 'answer' => 'A hidden answer.', 'is_active' => false],
+            ], JSON_THROW_ON_ERROR),
+            'type' => 'json',
+            'is_public' => true,
+        ]);
+
+        $dynamicValues = app(SiteSettingService::class)->values('en', true);
+
+        $this->assertCount(2, $dynamicValues['contact_page']['faqs']);
+        $this->assertSame('A dynamic question?', $dynamicValues['contact_page']['faqs'][0]['question']);
+        $this->assertSame('A dynamic question?', $dynamicValues['contact_page']['faq_1_question']);
+        $this->assertSame('', $dynamicValues['contact_page']['faq_2_question']);
     }
 
     public function test_public_values_sanitize_legacy_stored_urls_at_read_time(): void

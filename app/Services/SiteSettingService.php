@@ -40,9 +40,72 @@ class SiteSettingService
             }
         }
 
+        $this->addContactFaqCompatibility($values, $stored, $locale);
         $this->addCalculatedZakatNisab($values);
 
         return $values;
+    }
+
+    /**
+     * Prefer the dynamic FAQ list while preserving installations that still
+     * have customized values under the former five fixed question fields.
+     * The aliases keep older public clients working during deployment.
+     */
+    private function addContactFaqCompatibility(array &$values, Collection $stored, string $locale): void
+    {
+        if (!isset($values['contact_page']) || !is_array($values['contact_page'])) {
+            return;
+        }
+
+        $defaultItems = config('site-settings.groups.contact_page.fields.faqs.default', []);
+        $items = $values['contact_page']['faqs'] ?? $defaultItems;
+        $storedList = $this->preferredSetting($stored->get('contact_page.faqs', collect()), $locale);
+
+        if (!is_array($items)) {
+            $items = $defaultItems;
+        }
+
+        if (!$storedList) {
+            foreach ($items as $index => &$item) {
+                if (!is_array($item)) {
+                    $item = [];
+                }
+
+                $position = $index + 1;
+                foreach (['question', 'answer'] as $part) {
+                    $legacy = $this->preferredSetting(
+                        $stored->get("contact_page.faq_{$position}_{$part}", collect()),
+                        $locale
+                    );
+
+                    if ($legacy) {
+                        $item[$part] = $legacy->typed_value;
+                    }
+                }
+            }
+            unset($item);
+        }
+
+        $items = collect($items)
+            ->filter(fn ($item): bool => is_array($item))
+            ->map(fn (array $item): array => [
+                'question' => trim(strip_tags((string) ($item['question'] ?? ''))),
+                'answer' => trim(strip_tags((string) ($item['answer'] ?? ''))),
+                'is_active' => filter_var($item['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN),
+            ])
+            ->filter(fn (array $item): bool => $item['question'] !== '')
+            ->take(50)
+            ->values()
+            ->all();
+
+        $values['contact_page']['faqs'] = $items;
+
+        for ($position = 1; $position <= 5; $position++) {
+            $item = $items[$position - 1] ?? null;
+            $visible = is_array($item) && ($item['is_active'] ?? true);
+            $values['contact_page']["faq_{$position}_question"] = $visible ? $item['question'] : '';
+            $values['contact_page']["faq_{$position}_answer"] = $visible ? $item['answer'] : '';
+        }
     }
 
     /**

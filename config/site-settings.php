@@ -80,7 +80,7 @@ return [
         ],
         'contact_page' => [
             'label' => 'Contact page',
-            'description' => 'Contact-page introduction and frequently asked questions. Clear a question to hide it.',
+            'description' => 'Contact-page introduction and frequently asked questions. Add, reorder, hide, or remove answers without code.',
             'fields' => [
                 'eyebrow' => ['label' => 'Eyebrow', 'type' => 'text', 'default' => 'Talk with our team', 'localized' => true, 'public' => true],
                 'title' => ['label' => 'Page title', 'type' => 'text', 'default' => "Let's start a conversation.", 'localized' => true, 'public' => true],
@@ -104,16 +104,19 @@ return [
                 'error_message' => ['label' => 'Submission error message', 'type' => 'textarea', 'default' => 'We could not send your message. Please try again.', 'localized' => true, 'public' => true],
                 'faq_eyebrow' => ['label' => 'FAQ small heading', 'type' => 'text', 'default' => 'Helpful information', 'localized' => true, 'public' => true],
                 'faq_title' => ['label' => 'FAQ title', 'type' => 'text', 'default' => 'Frequently asked questions', 'localized' => true, 'public' => true],
-                'faq_1_question' => ['label' => 'FAQ 1 question', 'type' => 'text', 'default' => 'What is Ignite Global Foundation?', 'localized' => true, 'public' => true],
-                'faq_1_answer' => ['label' => 'FAQ 1 answer', 'type' => 'textarea', 'default' => 'Ignite Global Foundation is a nonprofit organization that works alongside communities in Bangladesh through education, health, livelihoods, and humanitarian action.', 'localized' => true, 'public' => true],
-                'faq_2_question' => ['label' => 'FAQ 2 question', 'type' => 'text', 'default' => 'Is Ignite Global Foundation registered?', 'localized' => true, 'public' => true],
-                'faq_2_answer' => ['label' => 'FAQ 2 answer', 'type' => 'textarea', 'default' => 'Yes. Registration and governance information is published in our organizational reports and can be confirmed directly with our team.', 'localized' => true, 'public' => true],
-                'faq_3_question' => ['label' => 'FAQ 3 question', 'type' => 'text', 'default' => 'How are donations managed?', 'localized' => true, 'public' => true],
-                'faq_3_answer' => ['label' => 'FAQ 3 answer', 'type' => 'textarea', 'default' => 'Donations are recorded through our secure payment process and are subject to financial oversight and transparent reporting.', 'localized' => true, 'public' => true],
-                'faq_4_question' => ['label' => 'FAQ 4 question', 'type' => 'text', 'default' => 'How can I volunteer?', 'localized' => true, 'public' => true],
-                'faq_4_answer' => ['label' => 'FAQ 4 answer', 'type' => 'textarea', 'default' => 'Use the volunteer registration page to tell us about your interests and availability. Our team will contact you about suitable opportunities.', 'localized' => true, 'public' => true],
-                'faq_5_question' => ['label' => 'FAQ 5 question', 'type' => 'text', 'default' => 'How can my organization partner with Ignite?', 'localized' => true, 'public' => true],
-                'faq_5_answer' => ['label' => 'FAQ 5 answer', 'type' => 'textarea', 'default' => "Send us a message with your organization's goals and preferred area of collaboration so the right team member can follow up.", 'localized' => true, 'public' => true],
+                'faqs' => [
+                    'label' => 'FAQ questions and answers',
+                    'type' => 'faq_list',
+                    'default' => [
+                        ['question' => 'What is Ignite Global Foundation?', 'answer' => 'Ignite Global Foundation is a nonprofit organization that works alongside communities in Bangladesh through education, health, livelihoods, and humanitarian action.', 'is_active' => true],
+                        ['question' => 'Is Ignite Global Foundation registered?', 'answer' => 'Yes. Registration and governance information is published in our organizational reports and can be confirmed directly with our team.', 'is_active' => true],
+                        ['question' => 'How are donations managed?', 'answer' => 'Donations are recorded through our secure payment process and are subject to financial oversight and transparent reporting.', 'is_active' => true],
+                        ['question' => 'How can I volunteer?', 'answer' => 'Use the volunteer registration page to tell us about your interests and availability. Our team will contact you about suitable opportunities.', 'is_active' => true],
+                        ['question' => 'How can my organization partner with Ignite?', 'answer' => "Send us a message with your organization's goals and preferred area of collaboration so the right team member can follow up.", 'is_active' => true],
+                    ],
+                    'localized' => true,
+                    'public' => true,
+                ],
             ],
         ],
         'sponsor_page' => [

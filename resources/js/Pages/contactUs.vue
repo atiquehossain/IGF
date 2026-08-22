@@ -53,7 +53,7 @@
         <div class="igf-shell igf-contact__faq-grid">
           <div><p class="igf-eyebrow">{{ content.faq_eyebrow }}</p><h2 id="faq-title">{{ content.faq_title }}</h2></div>
           <div class="igf-accordion">
-            <div v-for="(item,index) in faqItems" :key="index" class="igf-accordion__item">
+            <div v-for="(item,index) in faqItems" :key="`${index}-${item.question}`" class="igf-accordion__item">
               <h3>
                 <button type="button" :id="`faq-button-${index}`" :aria-expanded="openItems.includes(index)" :aria-controls="`faq-panel-${index}`" @click="toggleAccordion(index)">
                   {{ item.question }} <i :class="openItems.includes(index) ? 'fa-solid fa-minus' : 'fa-solid fa-plus'" aria-hidden="true" />
@@ -76,9 +76,18 @@ const page = usePage();
 const settings = computed(() => page.props.siteSettings || {});
 const contact = computed(() => settings.value.contact || {});
 const content = computed(() => settings.value.contact_page || {});
-const faqItems = computed(() => Array.from({length:5},(_,index) => ({
-  question: content.value[`faq_${index + 1}_question`], answer: content.value[`faq_${index + 1}_answer`],
-})).filter(item => item.question));
+const faqItems = computed(() => {
+  const dynamicItems = Array.isArray(content.value.faqs) ? content.value.faqs : null;
+  const items = dynamicItems || Array.from({ length: 5 }, (_, index) => ({
+    question: content.value[`faq_${index + 1}_question`],
+    answer: content.value[`faq_${index + 1}_answer`],
+    is_active: true,
+  }));
+
+  return items
+    .filter(item => item && item.question && ![false, 0, '0'].includes(item.is_active))
+    .map(item => ({ question: String(item.question), answer: String(item.answer || '') }));
+});
 const openItems = ref([0]);
 const showSuccess = ref(false);
 const submitError = ref('');

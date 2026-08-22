@@ -5,9 +5,9 @@
         <h1 class="dashboard-title text-center">
           MEMBERS
         </h1>
-        <BRow>
-          <BCol md="9" cols="2"></BCol>
-          <BCol md="3" cols="10">
+        <v-row>
+          <v-col md="9" cols="2" />
+          <v-col md="3" cols="10">
             <div class="input-group mb-3">
               <input
                 v-model="searchvalue"
@@ -22,8 +22,8 @@
                 </button>
               </div>
             </div>
-          </BCol>
-        </BRow>
+          </v-col>
+        </v-row>
 
         <div class="members-list">
           <v-row

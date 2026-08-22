@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Page;
 use App\Models\SeoMetadata;
 use App\Models\SeoRedirect;
 use App\Services\SeoMetadataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class GlobalSeoIntegrityTest extends TestCase
@@ -143,6 +145,39 @@ class GlobalSeoIntegrityTest extends TestCase
         $response->assertSee('content="Item-specific description."', false);
         $response->assertSee('rel="canonical" href="' . url('/page/item-specific-page') . '"', false);
         $response->assertDontSee('Wrong global page title', false);
+    }
+
+    public function test_public_content_links_back_to_its_real_category_hub(): void
+    {
+        $category = Category::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Community projects',
+            'slug' => 'community-projects',
+            'status' => 1,
+            'language' => 'en',
+        ]);
+        $project = $this->makePage('project-alpha');
+        $project->update(['category_id' => $category->id]);
+
+        $this->get('/page/project-alpha')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('data.page.category_name', 'Community projects')
+            ->where('data.page.category_url', route('frontend.category', ['slug' => 'community-projects']))
+        );
+
+        $giving = Category::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Giving',
+            'slug' => 'giving',
+            'status' => 1,
+            'language' => 'en',
+        ]);
+        $zakat = $this->makePage('zakat');
+        $zakat->update(['category_id' => $giving->id]);
+
+        $this->get('/zakat')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('data.category.name', 'Giving')
+            ->where('data.category.url', route('frontend.category', ['slug' => 'giving']))
+        );
     }
 
     public function test_primary_public_routes_have_default_canonicals_and_sitemap_entries(): void

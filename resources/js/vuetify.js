@@ -1,9 +1,71 @@
 // resources/js/vuetify.js
 import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
-import * as components from 'vuetify/components';
+import {
+  VApp,
+  VAvatar,
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VCarousel,
+  VCarouselItem,
+  VCheckbox,
+  VChip,
+  VCol,
+  VContainer,
+  VDialog,
+  VDivider,
+  VForm,
+  VIcon,
+  VImg,
+  VList,
+  VListGroup,
+  VListItem,
+  VListItemTitle,
+  VMenu,
+  VPagination,
+  VProgressCircular,
+  VRow,
+  VSelect,
+  VTextField,
+  VTextarea,
+} from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import '@mdi/font/css/materialdesignicons.css';
+
+const components = {
+  VApp,
+  VAvatar,
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VCarousel,
+  VCarouselItem,
+  VCheckbox,
+  VChip,
+  VCol,
+  VContainer,
+  VDialog,
+  VDivider,
+  VForm,
+  VIcon,
+  VImg,
+  VList,
+  VListGroup,
+  VListItem,
+  VListItemTitle,
+  VMenu,
+  VPagination,
+  VProgressCircular,
+  VRow,
+  VSelect,
+  VTextField,
+  VTextarea,
+};
 
 // For testing, we need to mock the icon sets
 // The actual imports would be:

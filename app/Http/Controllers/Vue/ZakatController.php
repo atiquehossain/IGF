@@ -21,7 +21,7 @@ class ZakatController extends Controller
 
     public function zakat(Request $request, $slug = null)
     {
-        $zakat = Page::with(['banner', 'visibleBlocks.reusableBlock'])
+        $zakat = Page::with(['banner', 'category', 'visibleBlocks.reusableBlock'])
             ->publiclyAvailable()
             ->where('language', app()->getLocale())
             ->where('slug', 'zakat')
@@ -45,6 +45,18 @@ class ZakatController extends Controller
         }
         StaticUtil::ssr($metaTag);
 
+        $category = $zakat->category;
+        $categoryContext = $category && $category->status && filled($category->slug)
+            ? [
+                'name' => (string) $category->name,
+                'url' => app(SeoMetadataService::class)->localizedUrl(
+                    route('frontend.category', ['slug' => $category->slug]),
+                    (string) $zakat->language,
+                ),
+            ]
+            : null;
+        $zakat->unsetRelation('category');
+
         return Inertia::render('zakat')->with([
             'status' => true,
             'title' => $zakat->name ?: 'Zakat',
@@ -53,6 +65,7 @@ class ZakatController extends Controller
             'data' => [
                 'banner' => $zakat->banner,
                 'zakat' => $zakat,
+                'category' => $categoryContext,
             ],
         ]);
     }

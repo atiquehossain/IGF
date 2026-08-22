@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\SeoSearchPerformanceGateway;
+use App\Contracts\SeoTrafficAnalyticsGateway;
+use App\Services\GoogleAnalyticsSeoGateway;
+use App\Services\GoogleSearchConsoleGateway;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\AuthMenu;
@@ -24,7 +28,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(SeoSearchPerformanceGateway::class, GoogleSearchConsoleGateway::class);
+        $this->app->bind(SeoTrafficAnalyticsGateway::class, GoogleAnalyticsSeoGateway::class);
     }
 
     /**

@@ -60,18 +60,39 @@ function settings() {
     show_custom_amount: true,
     show_gateway_note: false,
     show_legal_links: false,
-    frequency_label: 'One-time donation',
-    frequency_help: 'Charged once.',
+    form_badge: 'Secure donation',
+    form_title: 'Make a donation',
+    checkout_steps_accessible_label: 'Donation steps',
+    gift_step_label: 'Gift choices',
+    checkout_step_label: 'Details & payment',
+    continue_gift_label: 'Continue to details & payment',
+    edit_gift_label: 'Edit gift choices',
+    gift_subtitle: 'Every contribution strengthens the cause you choose.',
+    frequency_heading: 'Choose how often',
+    frequency_label: 'One-time',
+    frequency_daily_label: 'Daily',
+    frequency_weekly_label: 'Weekly',
+    frequency_monthly_label: 'Monthly',
+    frequency_coming_soon_label: 'Coming soon',
+    frequency_help: 'One-time gifts are charged once.',
     frequency_accessible_label: 'Donation frequency',
     amount_legend: 'Donation amount',
     suggested_amounts_label: 'Suggested amounts',
     other_amount_label: 'Other amount (BDT) *',
+    other_amount_option_label: 'Other amount',
+    other_amount_option_help: 'Enter your own amount',
     amount_button_count: '5',
     amount_1: 500,
     amount_2: 1000,
     amount_3: 2500,
     amount_4: 5000,
     amount_5: 10000,
+    amount_1_impact: 'Learning materials',
+    amount_2_impact: 'Family support',
+    amount_3_impact: 'Community programs',
+    amount_4_impact: 'An active project',
+    amount_5_impact: 'Long-term impact',
+    featured_amount_index: '4',
     cause_legend: 'Where should your gift go?',
     cause_field_label: 'Select a cause *',
     cause_placeholder: 'Choose a cause',
@@ -105,6 +126,14 @@ function settings() {
     amount_precision_message: 'Enter no more than two decimal places.',
     privacy_note: 'Payment details stay with the provider.',
     submit_label: 'Continue to secure payment',
+    submit_with_amount_label: 'Continue securely with {amount}',
+    summary_heading: 'Your donation',
+    summary_frequency_label: 'Frequency',
+    summary_amount_label: 'Amount',
+    summary_destination_label: 'Destination',
+    summary_payment_label: 'Payment',
+    summary_pending_label: 'Not selected',
+    summary_help: 'Review your choices before continuing.',
   };
 }
 
@@ -115,9 +144,9 @@ function mountDonate({ methods, data = {}, url = '/donate?amount=500' } = {}) {
       selectedUUID: 'education',
       checkout_key: 'checkout-key-initial',
       paymentMethods: methods || [
-        { key: 'bkash', label: 'bKash', description: 'Pay from bKash', logos: [{ src: '/image/payment-methods/bkash.png' }], enabled: true, available: true },
+        { key: 'bkash', label: 'bKash', description: 'Pay from bKash', logos: [{ src: '/image/payment-methods/bkash-reference.svg' }], enabled: true, available: true },
         { key: 'nagad', label: 'Nagad', description: 'Pay from Nagad', logos: [{ src: '/image/payment-methods/nagad.png' }], enabled: true, available: false, unavailable_reason: 'Nagad is awaiting provider activation.' },
-        { key: 'card', label: 'Card', description: 'Pay by card', networks: ['Visa', 'American Express'], logos: [{ src: '/image/payment-methods/visa.png' }, { src: '/image/payment-methods/amex.png' }], enabled: true, available: true },
+        { key: 'card', label: 'Card', description: 'Pay by card', networks: ['Visa', 'American Express'], logos: [{ src: '/image/payment-methods/visa-reference.svg' }, { src: '/image/payment-methods/amex.png' }], enabled: true, available: true },
         { key: 'hidden', label: 'Admin disabled', enabled: false, available: true },
       ],
       ...data,
@@ -175,7 +204,13 @@ describe('donation payment methods', () => {
     expect(radios).toHaveLength(3);
     expect(radios.every(radio => radio.attributes('required') !== undefined)).toBe(true);
     expect(wrapper.text()).not.toContain('Admin disabled');
-    expect(wrapper.get('legend').text()).toContain('Donation amount');
+    expect(wrapper.get('.igf-fieldset legend').text()).toContain('Donation amount');
+    expect(wrapper.findAll('.igf-frequency-tabs button')).toHaveLength(4);
+    expect(wrapper.findAll('.igf-frequency-tabs button[disabled]')).toHaveLength(3);
+    expect(wrapper.get('.igf-frequency-tabs .is-selected').text()).toBe('One-time');
+    expect(wrapper.findAll('[data-test="suggested-amount"]')).toHaveLength(5);
+    expect(wrapper.findAll('[data-test="custom-amount-option"]')).toHaveLength(1);
+    expect(wrapper.get('.igf-amount-options .is-featured small').text()).toBe('An active project');
     expect(wrapper.get('.igf-payment-methods legend').text()).toBe('Choose a payment method');
     expect(wrapper.get('#payment-method-nagad').attributes('disabled')).toBeDefined();
     expect(wrapper.get('#payment-method-nagad-unavailable').text()).toBe('Nagad is awaiting provider activation.');
@@ -183,15 +218,15 @@ describe('donation payment methods', () => {
     expect(wrapper.get('.igf-payment-method__networks').text()).toBe('Visa · American Express');
     expect(wrapper.findAll('.igf-payment-method__logos img')).toHaveLength(4);
     expect(wrapper.get('label[for="payment-method-bkash"] img').attributes()).toMatchObject({
-      src: '/image/payment-methods/bkash.png',
+      src: '/image/payment-methods/bkash-reference.svg',
       alt: '',
-      width: '64',
-      height: '32',
+      width: '122',
+      height: '44',
     });
     expect(wrapper.get('label[for="payment-method-nagad"] .igf-payment-method__logos').attributes('aria-hidden')).toBe('true');
     expect(wrapper.get('label[for="payment-method-nagad"] img').attributes('src')).toBe('/image/payment-methods/nagad.png');
     expect(wrapper.findAll('label[for="payment-method-card"] img').map(image => image.attributes('src'))).toEqual([
-      '/image/payment-methods/visa.png',
+      '/image/payment-methods/visa-reference.svg',
       '/image/payment-methods/amex.png',
     ]);
 
@@ -211,8 +246,88 @@ describe('donation payment methods', () => {
     await flushPromises();
     expect(axios.post).toHaveBeenCalledWith('frontend.donate.store', expect.objectContaining({
       payment_method: 'card',
+      frequency: 'one_time',
       checkout_key: 'checkout-key-initial',
     }));
+  });
+
+  test('preselects the editor-highlighted gift when the URL does not request an amount', async () => {
+    const wrapper = mountDonate({ url: '/donate' });
+    await nextTick();
+
+    expect(wrapper.vm.donation.amount).toBe(5000);
+    expect(wrapper.get('.igf-amount-options button.is-selected small').text()).toBe('An active project');
+  });
+
+  test('switches coherently between suggested and custom amounts', async () => {
+    const wrapper = mountDonate();
+    await nextTick();
+
+    expect(wrapper.find('[data-test="custom-amount-field"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="suggested-amount"].is-selected').text()).toContain('৳500');
+
+    await wrapper.get('[data-test="custom-amount-option"]').trigger('click');
+    await nextTick();
+    expect(wrapper.vm.customAmountActive).toBe(true);
+    expect(wrapper.vm.donation.amount).toBe('');
+
+    await wrapper.get('[data-test="custom-amount-field"]').setValue('750');
+    expect(wrapper.vm.donation.amount).toBe('750');
+    expect(wrapper.get('[data-test="donation-review"]').text()).toContain('৳750');
+
+    await wrapper.findAll('[data-test="suggested-amount"]')[1].trigger('click');
+    await nextTick();
+    expect(wrapper.vm.customAmountActive).toBe(false);
+    expect(wrapper.vm.donation.amount).toBe(1000);
+    expect(wrapper.find('[data-test="custom-amount-field"]').exists()).toBe(false);
+  });
+
+  test('opens custom mode for a deep-linked non-suggested amount', async () => {
+    const wrapper = mountDonate({ url: '/donate?custom_amount=750' });
+    await nextTick();
+
+    expect(wrapper.vm.customAmountActive).toBe(true);
+    expect(wrapper.vm.donation.amount).toBe(750);
+    expect(wrapper.get('[data-test="custom-amount-field"]').attributes('value')).toBe('750');
+    expect(wrapper.find('.igf-amount-options [data-test="suggested-amount"].is-selected').exists()).toBe(false);
+  });
+
+  test('reveals details only after the gift and destination are ready', async () => {
+    const wrapper = mountDonate();
+    await nextTick();
+
+    expect(wrapper.vm.giftSelectionComplete).toBe(true);
+    expect(wrapper.get('#donation-step-checkout').attributes('style')).toContain('display: none');
+    expect(wrapper.get('.igf-step-continue').attributes('disabled')).toBeUndefined();
+    const checkoutFocus = vi.spyOn(wrapper.get('#donation-checkout-heading').element, 'focus');
+    const giftFocus = vi.spyOn(wrapper.get('#donation-gift-heading').element, 'focus');
+
+    await wrapper.get('.igf-step-continue').trigger('click');
+    await nextTick();
+    expect(wrapper.vm.checkoutRevealed).toBe(true);
+    expect(wrapper.get('#donation-step-checkout').attributes('style') || '').not.toContain('display: none');
+    expect(checkoutFocus).toHaveBeenCalledOnce();
+
+    await wrapper.get('.igf-checkout-section__heading button').trigger('click');
+    await nextTick();
+    expect(wrapper.vm.checkoutRevealed).toBe(false);
+    expect(giftFocus).toHaveBeenCalledOnce();
+  });
+
+  test('updates the live review and amount-aware secure-payment action', async () => {
+    const wrapper = mountDonate();
+    await nextTick();
+    const review = wrapper.get('[data-test="donation-review"]');
+
+    expect(review.attributes('aria-live')).toBe('polite');
+    expect(review.text()).toContain('৳500');
+    expect(review.text()).toContain('Education');
+    expect(review.text()).toContain('Not selected');
+    expect(wrapper.get('.igf-submit').text()).toContain('Continue securely with ৳500');
+
+    await wrapper.get('#payment-method-card').setValue();
+    await nextTick();
+    expect(review.text()).toContain('Card');
   });
 
   test('shows backend-confirmed destinations and keeps project selection compatible when the cause changes', async () => {
@@ -301,7 +416,7 @@ describe('donation payment methods', () => {
   test('keeps unavailable brands visible but announces one shared message when no method is operational', () => {
     const wrapper = mountDonate({
       methods: [
-        { key: 'bkash', label: 'bKash', logos: [{ src: '/image/payment-methods/bkash.png' }], enabled: true, available: false },
+        { key: 'bkash', label: 'bKash', logos: [{ src: '/image/payment-methods/bkash-reference.svg' }], enabled: true, available: false },
         { key: 'nagad', label: 'Nagad', logos: [{ src: '/image/payment-methods/nagad.png' }], enabled: true, available: false },
       ],
     });
@@ -321,7 +436,8 @@ describe('donation payment methods', () => {
           key: 'bkash',
           label: 'bKash',
           logos: [
-            { src: '/image/payment-methods/bkash.png' },
+            { src: '/image/payment-methods/bkash-reference.svg' },
+            { src: '/image/payment-methods/bkash-reference.svg' },
             { src: '/image/payment-methods/bkash.png' },
             { src: '/image/payment-methods/nagad.png' },
             { src: 'https://example.test/bkash.png' },
@@ -331,12 +447,12 @@ describe('donation payment methods', () => {
           available: true,
         },
         { key: 'card', label: 'Card', logos: [], enabled: true, available: true },
-        { key: 'unknown', label: 'Unknown', logos: [{ src: '/image/payment-methods/bkash.png' }], enabled: true, available: true },
+        { key: 'unknown', label: 'Unknown', logos: [{ src: '/image/payment-methods/bkash-reference.svg' }], enabled: true, available: true },
       ],
     });
 
     expect(wrapper.findAll('.igf-payment-method__logos img')).toHaveLength(1);
-    expect(wrapper.get('label[for="payment-method-bkash"] img').attributes('src')).toBe('/image/payment-methods/bkash.png');
+    expect(wrapper.get('label[for="payment-method-bkash"] img').attributes('src')).toBe('/image/payment-methods/bkash-reference.svg');
     expect(wrapper.get('label[for="payment-method-card"] .igf-payment-method__icon i').classes()).toEqual(expect.arrayContaining(['fa-regular', 'fa-credit-card']));
     expect(wrapper.get('label[for="payment-method-unknown"] .igf-payment-method__icon i').classes()).toEqual(expect.arrayContaining(['fa-solid', 'fa-mobile-screen-button']));
     expect(wrapper.html()).not.toContain('https://example.test/bkash.png');
@@ -345,6 +461,8 @@ describe('donation payment methods', () => {
 
   test('uses the provider amount limits and rejects values with more than two decimals', async () => {
     const wrapper = mountDonate();
+    await wrapper.get('[data-test="custom-amount-option"]').trigger('click');
+    await nextTick();
     const amountInput = wrapper.get('input[type="number"]');
 
     expect(amountInput.attributes('min')).toBe('10');

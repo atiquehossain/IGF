@@ -16,7 +16,20 @@
       <!-- Dynamic Slides -->
       <v-carousel-item v-for="(slide, index) in sliders" :key="index" class="banner-slide">
         <div class="banner-background">
-          <img v-if="slide.imageUrl" class="banner-media" :src="slide.imageUrl" :alt="slide.imageAlt">
+          <picture v-if="slide.imageUrl" class="banner-picture">
+            <source v-if="slide.media.avifSrcset" type="image/avif" :srcset="slide.media.avifSrcset" :sizes="slide.media.sizes">
+            <source v-if="slide.media.webpSrcset" type="image/webp" :srcset="slide.media.webpSrcset" :sizes="slide.media.sizes">
+            <img
+              class="banner-media"
+              :src="slide.media.src"
+              :alt="slide.imageAlt"
+              :width="slide.media.width"
+              :height="slide.media.height"
+              :loading="index === 0 ? 'eager' : 'lazy'"
+              :fetchpriority="index === 0 ? 'high' : 'low'"
+              decoding="async"
+            >
+          </picture>
           <div class="overlay"></div>
           <v-container class="h-100">
             <v-row class="h-100 justify-center align-center">
@@ -47,6 +60,7 @@
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { presentBanner } from '../../../Shared/composables/bannerPresentation';
+import { responsiveImagePresentation } from '../../../Shared/composables/responsiveImage';
 
 defineOptions({
   name: 'Banner'
@@ -59,7 +73,13 @@ const bannerSettings = computed(() => inertiaPage.props?.siteSettings?.banners |
 const sliders = computed(() => {
   const raw = inertiaPage.props?.data?.sliders || [];
 
-  return raw.map(slider => presentBanner(slider, bannerSettings.value));
+  return raw.map((slider) => {
+    const presentation = presentBanner(slider, bannerSettings.value);
+    return {
+      ...presentation,
+      media: responsiveImagePresentation(presentation.imageUrl),
+    };
+  });
 });
 </script>
 
@@ -108,6 +128,11 @@ const sliders = computed(() => {
   background-position: center;
   display: flex;
   align-items: center;
+
+  .banner-picture {
+    position: absolute;
+    inset: 0;
+  }
 
   .banner-media {
     position: absolute;

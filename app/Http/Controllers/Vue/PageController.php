@@ -36,7 +36,13 @@ class PageController extends Controller
             return redirect()->route($specializedRoutes[$slug], [], 301);
         }
 
-        $page = Page::select('pages.*', 'categories.name as category_name')
+        $page = Page::select(
+                'pages.*',
+                'categories.name as category_name',
+                'categories.slug as category_slug',
+                'categories.status as category_status',
+                'categories.deleted_at as category_deleted_at',
+            )
             ->leftjoin('categories', 'categories.id', '=', 'pages.category_id')
             ->with(['banner', 'visibleBlocks.reusableBlock'])
             ->publiclyAvailable()
@@ -63,6 +69,16 @@ class PageController extends Controller
             $block->setAttribute('is_reusable', (bool) $block->reusable_block_id);
             $block->unsetRelation('reusableBlock');
         });
+
+        $categorySlug = trim((string) $page->getAttribute('category_slug'));
+        if ($categorySlug !== ''
+            && (bool) $page->getAttribute('category_status')
+            && blank($page->getAttribute('category_deleted_at'))) {
+            $page->setAttribute('category_url', $this->seo->localizedUrl(
+                route('frontend.category', ['slug' => $categorySlug]),
+                (string) $page->language,
+            ));
+        }
 
         $meta_tag = $this->seo->metaForPage($page);
         if ($page->visibility === 'unlisted') {

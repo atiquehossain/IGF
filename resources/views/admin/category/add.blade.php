@@ -190,7 +190,7 @@
                                     </div>
 
                                     <div class="alert alert-info" role="note">
-                                        <strong>Search &amp; sharing:</strong> Create this category first, then use the guided editor for its Google preview, social image, visibility, permalink and schema.
+                                        <strong>Search &amp; Sharing:</strong> Create this category first, then use the guided editor for its Google preview, social image, visibility, permalink and schema.
                                     </div>
                                 </div>
                             @endforeach

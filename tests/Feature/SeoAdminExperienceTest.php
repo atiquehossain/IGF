@@ -69,12 +69,24 @@ class SeoAdminExperienceTest extends TestCase
     {
         $admin = $this->metadataAdmin();
         $category = $this->category(['slug' => 'old-address']);
-        app(SeoRedirectService::class)->create([
-            'from_path' => '/category/old-address/',
+        $redirects = app(SeoRedirectService::class);
+        $legacySource = $redirects->normalizeSourcePath('/category/old-address/');
+        $sourceHash = $redirects->sourceHash($legacySource);
+        // Represent an unsafe pre-guard row directly. New manual writes now
+        // reject a redirect that would shadow this still-live category, while
+        // the controlled slug-change workflow must remain able to reuse and
+        // repair the historical row after the old address stops being live.
+        $legacy = new SeoRedirect();
+        $legacy->forceFill([
+            'from_path' => $legacySource,
+            'normalized_from_path' => $legacySource,
+            'from_path_hash' => $sourceHash,
+            'source_scope_hash' => $redirects->scopeHash($sourceHash, null),
+            'locale' => null,
             'to_url' => '/category/temporary-target',
             'status_code' => 301,
             'is_active' => true,
-        ]);
+        ])->saveQuietly();
 
         $payload = $this->payload();
         $payload['expected_seo_version'] = $this->seoToken($category, 'en');
@@ -90,6 +102,37 @@ class SeoAdminExperienceTest extends TestCase
             'to_url' => '/category/new-address',
             'status_code' => 301,
             'is_active' => true,
+            'locale' => 'en',
+        ]);
+    }
+
+    public function test_draft_permalink_change_keeps_the_automatic_redirect_disabled(): void
+    {
+        $admin = $this->metadataAdmin();
+        $page = Page::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Draft clean-water expansion',
+            'sub_title' => 'Editorial work in progress.',
+            'slug' => 'draft-clean-water-old',
+            'language' => 'en',
+            'status' => 0,
+            'publication_status' => 'draft',
+            'visibility' => 'public',
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')->put(
+            route('seo.content.update', ['page', $page->id]),
+            $this->payload(['permalink_slug' => 'draft-clean-water-new'])
+        );
+
+        $response->assertRedirect(route('seo.content.edit', ['page', $page->id]))
+            ->assertSessionHas('message', 'Search settings saved. The old-address redirect is disabled until this content is publicly available.');
+        $this->assertSame('draft-clean-water-new', $page->fresh()->slug);
+        $this->assertDatabaseHas('seo_redirects', [
+            'from_path' => '/page/draft-clean-water-old',
+            'to_url' => '/page/draft-clean-water-new',
+            'status_code' => 301,
+            'is_active' => false,
             'locale' => 'en',
         ]);
     }
@@ -110,7 +153,7 @@ class SeoAdminExperienceTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('seo.index', ['locale' => 'bn']))
             ->assertOk()
-            ->assertSee('Preview environment: search indexing is blocked here')
+            ->assertSee('Preview environment: every page is marked noindex.')
             ->assertDontSee('Search indexing is enabled.')
             ->assertSee('English-only impact page')
             ->assertSee('Create the translation before editing SEO')
@@ -258,7 +301,7 @@ class SeoAdminExperienceTest extends TestCase
             $this->assertStringNotContainsString('name="meta_title[', $markup);
             $this->assertStringNotContainsString('name="meta_keyword[', $markup);
             $this->assertStringNotContainsString('name="meta_description[', $markup);
-            $this->assertStringContainsString('Search &amp; sharing', $markup);
+            $this->assertStringContainsString('Search &amp; Sharing', $markup);
         }
 
         foreach ([

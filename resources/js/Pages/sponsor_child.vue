@@ -10,7 +10,11 @@
             <a class="igf-primary-link" href="#sponsorship-form">{{ settings.hero_cta_label }} <span aria-hidden="true">&#8595;</span></a>
           </div>
           <figure class="igf-sponsor__hero-media">
-            <img :src="settings.hero_image" :alt="settings.hero_image_alt">
+            <picture>
+              <source v-if="heroMedia.avifSrcset" type="image/avif" :srcset="heroMedia.avifSrcset" :sizes="heroMedia.sizes">
+              <source v-if="heroMedia.webpSrcset" type="image/webp" :srcset="heroMedia.webpSrcset" :sizes="heroMedia.sizes">
+              <img :src="heroMedia.src" :alt="settings.hero_image_alt" :width="heroMedia.width" :height="heroMedia.height" loading="eager" fetchpriority="high" decoding="async">
+            </picture>
             <figcaption><strong>{{ money(baseContributionAmount) }}</strong><span>{{ settings.monthly_period_label }}</span></figcaption>
           </figure>
         </div>
@@ -91,6 +95,7 @@ import { usePage } from '@inertiajs/vue3';
 import Layout from '../layouts/App.vue';
 import { useGlobal } from '../Shared/composables/global';
 import { formatMoney, interpolateSetting } from '../Shared/composables/siteSettings';
+import { responsiveImagePresentation } from '../Shared/composables/responsiveImage';
 
 const page = usePage();
 const { $toast } = useGlobal();
@@ -99,6 +104,7 @@ const isFormValid = ref(false);
 const loading = ref(false);
 const showConfirmDialog = ref(false);
 const settings = computed(() => page.props.siteSettings?.sponsor_page || {});
+const heroMedia = computed(() => responsiveImagePresentation(settings.value.hero_image, '(max-width: 900px) 100vw, 50vw'));
 const regional = computed(() => page.props.siteSettings?.regional || {});
 const baseContributionAmount = computed(() => Math.max(1, Number(settings.value.monthly_amount) || 1500));
 

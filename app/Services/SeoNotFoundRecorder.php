@@ -16,6 +16,9 @@ final class SeoNotFoundRecorder
     public function record(Request $request): void
     {
         $path = $this->paths->normalize($request->getPathInfo());
+        if ($this->paths->isFrameworkNoise($path)) {
+            return;
+        }
         $locale = preg_match('/^[a-z]{2}(?:-[A-Z]{2})?$/', app()->getLocale())
             ? app()->getLocale()
             : (string) config('app.fallback_locale', 'en');

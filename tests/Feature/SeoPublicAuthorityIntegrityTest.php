@@ -14,6 +14,19 @@ class SeoPublicAuthorityIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // These tests exercise page/route ownership precedence. The separate
+        // public-output policy tests cover the environment-wide noindex
+        // override, so opt into the production indexing contract here.
+        config([
+            'app.env' => 'production',
+            'seo.robots.indexing_enabled' => true,
+        ]);
+    }
+
     public function test_curated_static_route_seo_overrides_the_controller_fallback_in_raw_html(): void
     {
         SeoMetadata::create([

@@ -205,7 +205,10 @@ Route::prefix('admin')->group(function () {
         Route::get('seo/bulk', 'Admin\SeoController@bulkIndex')->name('seo.bulk.index');
         Route::put('seo/bulk', 'Admin\SeoController@bulkUpdate')->name('seo.bulk.update');
         Route::get('seo/bulk/export', 'Admin\SeoController@bulkExport')->name('seo.bulk.export');
+        Route::get('seo/internal-links', 'Admin\InternalLinkAssistantController@index')->name('seo.internal-links.index');
         Route::get('seo/media-assets', 'Admin\SeoController@mediaIndex')->name('seo.media.index');
+        Route::get('seo/performance', 'Admin\SeoPerformanceController@index')->name('seo.performance.index');
+        Route::post('seo/performance/refresh', 'Admin\SeoPerformanceController@refresh')->middleware('throttle:3,1')->name('seo.performance.refresh');
         Route::post('seo/review/request', 'Admin\SeoController@requestReview')->name('seo.review.request');
         Route::post('seo/review/resolve', 'Admin\SeoController@resolveReview')->name('seo.review.resolve');
         Route::post('seo/revisions/{revision}/restore', 'Admin\SeoController@restoreRevision')->name('seo.revisions.restore');
@@ -422,13 +425,29 @@ Route::prefix('admin')->group(function () {
     });
 });
 
-Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group(function () {
+// Crawler endpoints are deliberately stateless. Keeping session/CSRF/Inertia
+// middleware here would attach cookies to otherwise public, cacheable files and
+// prevent a shared cache or CDN from treating them as one canonical response.
+Route::withoutMiddleware([
+    \App\Http\Middleware\EncryptCookies::class,
+    \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \App\Http\Middleware\EnsureActiveApprovedMember::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \App\Http\Middleware\VerifyCsrfToken::class,
+    \App\Http\Middleware\HandleInertiaRequests::class,
+    \App\Http\Middleware\SetLocale::class,
+    \App\Http\Middleware\TrackSeoNotFound::class,
+])->group(function () {
     Route::get('sitemap.xml', 'SeoPublicController@sitemap')->name('seo.sitemap');
     Route::get('sitemap-index.xml', 'SeoPublicController@sitemapIndex')->name('seo.sitemap.index');
     Route::get('sitemap-{locale}.xml', 'SeoPublicController@sitemapLocale')
         ->where('locale', '[a-z]{2}')
         ->name('seo.sitemap.locale');
     Route::get('robots.txt', 'SeoPublicController@robots')->name('seo.robots');
+});
+
+Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group(function () {
     Route::get('language/{language?}', 'Vue\HomeController@language')->name('frontend.language');
     Route::get('/', 'Vue\HomeController@index')->name('frontend.home');
     Route::get('page/{slug?}', 'Vue\PageController@page')->name('frontend.page');

@@ -23,11 +23,16 @@ class Locale
         if ($request->method() === 'GET') {
             $segment = $request->segment(1);
             $locales = app(LocalizationManager::class)->publicLocales();
+            $fallback = (string) config('app.fallback_locale', 'en');
+            if (!in_array($fallback, $locales, true)) {
+                $fallback = (string) ($locales[0] ?? 'en');
+            }
             $queryLocale = (string) $request->query(config('seo.locale_query_parameter', 'lang'), '');
             if ($queryLocale !== '' && in_array($queryLocale, $locales, true)) {
                 $segment = $queryLocale;
             } elseif (!in_array($segment, $locales, true)) {
-                $segment = session('locale') ?: config('app.fallback_locale');
+                $storedLocale = (string) session('locale', '');
+                $segment = in_array($storedLocale, $locales, true) ? $storedLocale : $fallback;
             //     return redirect()->to(implode('/', [$segment]));
             }
             session(['locale' => $segment]);

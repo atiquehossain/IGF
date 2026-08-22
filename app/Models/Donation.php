@@ -24,6 +24,7 @@ class Donation extends Model
         'destination_name_snapshot',
         'project_uuid_snapshot',
         'project_name_snapshot',
+        'donation_frequency',
     ];
 
     protected $fillable = [
@@ -45,6 +46,7 @@ class Donation extends Model
         'project_uuid_snapshot',
         'project_name_snapshot',
         'requested_payment_method',
+        'donation_frequency',
         'amount',
         'transaction_id',
         'payment_status',

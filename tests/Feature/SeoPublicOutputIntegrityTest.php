@@ -17,6 +17,12 @@ class SeoPublicOutputIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['app.env' => 'production', 'seo.robots.indexing_enabled' => true]);
+    }
+
     public function test_initial_head_is_single_managed_safe_and_uses_the_same_route_precedence_as_navigation(): void
     {
         $home = $this->makePage('home', 'en');
@@ -297,7 +303,7 @@ class SeoPublicOutputIntegrityTest extends TestCase
             ->assertDontSee('<loc>' . url('/event/english-community-day') . '</loc>', false);
     }
 
-    public function test_sitemap_obeys_noindex_keeps_locs_same_origin_and_uses_the_newest_lastmod(): void
+    public function test_sitemap_obeys_noindex_excludes_external_canonicals_and_uses_the_newest_lastmod(): void
     {
         $home = $this->makePage('home', 'en');
         SeoMetadata::create([
@@ -317,14 +323,24 @@ class SeoPublicOutputIntegrityTest extends TestCase
             'exclude_from_sitemap' => false,
         ]);
 
-        $public = $this->makePage('same-origin-fallback', 'en');
+        $external = $this->makePage('external-canonical-copy', 'en');
+        SeoMetadata::create([
+            'seoable_type' => Page::class,
+            'seoable_id' => $external->id,
+            'locale' => 'en',
+            'canonical_url' => 'https://outside.example/authoritative-copy',
+            'robots_index' => true,
+            'exclude_from_sitemap' => false,
+        ]);
+
+        $public = $this->makePage('same-origin-canonical', 'en');
         $public->forceFill(['updated_at' => now()->subDays(3)])->saveQuietly();
         $seoUpdatedAt = now()->subDay()->startOfSecond();
         $publicSeo = SeoMetadata::create([
             'seoable_type' => Page::class,
             'seoable_id' => $public->id,
             'locale' => 'en',
-            'canonical_url' => 'https://outside.example/phishing-canonical',
+            'canonical_url' => url('/preferred-local-canonical'),
             'robots_index' => true,
             'exclude_from_sitemap' => false,
         ]);
@@ -344,8 +360,9 @@ class SeoPublicOutputIntegrityTest extends TestCase
 
         $this->assertStringNotContainsString('<loc>' . url('/') . '</loc>', $content);
         $this->assertStringNotContainsString('/page/hidden-from-search', $content);
-        $this->assertStringContainsString('<loc>' . url('/page/same-origin-fallback') . '</loc>', $content);
+        $this->assertStringNotContainsString('/page/external-canonical-copy', $content);
         $this->assertStringNotContainsString('outside.example', $content);
+        $this->assertStringContainsString('<loc>' . url('/preferred-local-canonical') . '</loc>', $content);
         $this->assertStringNotContainsString('operational-route-must-not-index', $content);
         $this->assertStringContainsString('<lastmod>' . $seoUpdatedAt->toAtomString() . '</lastmod>', $content);
         $this->assertStringNotContainsString('<priority>', $content);
@@ -414,10 +431,17 @@ class SeoPublicOutputIntegrityTest extends TestCase
     public function test_robots_is_fail_closed_outside_explicitly_opted_in_production(): void
     {
         config(['app.env' => 'staging', 'seo.robots.indexing_enabled' => true]);
-        $this->assertContains('Disallow: /', explode("\n", $this->get('/robots.txt')->assertOk()->getContent()));
+        $staging = $this->get('/contact-us')->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        $staging->assertSee('name="robots" content="noindex,nofollow,noarchive"', false)
+            ->assertInertia(fn ($page) => $page->where('seoPolicy.robots', 'noindex,nofollow,noarchive'));
+        $this->assertContains('Allow: /', explode("\n", $this->get('/robots.txt')->assertOk()->getContent()));
 
         config(['app.env' => 'production', 'seo.robots.indexing_enabled' => false]);
-        $this->assertContains('Disallow: /', explode("\n", $this->get('/robots.txt')->assertOk()->getContent()));
+        $this->get('/contact-us')->assertOk()
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
+            ->assertSee('name="robots" content="noindex,nofollow,noarchive"', false);
+        $this->assertContains('Allow: /', explode("\n", $this->get('/robots.txt')->assertOk()->getContent()));
 
         config(['app.env' => 'production', 'seo.robots.indexing_enabled' => true]);
         $lines = explode("\n", $this->get('/robots.txt')->assertOk()->getContent());
@@ -425,6 +449,44 @@ class SeoPublicOutputIntegrityTest extends TestCase
         $this->assertNotContains('Disallow: /', $lines);
         $this->assertContains('Disallow: /admin', $lines);
         $this->assertTrue(collect($lines)->contains(fn (string $line) => str_contains($line, '/sitemap-index.xml')));
+        $this->get('/contact-us')->assertOk()
+            ->assertHeaderMissing('X-Robots-Tag')
+            ->assertSee('name="robots" content="index,follow"', false);
+    }
+
+    public function test_cacheable_crawler_endpoints_are_stateless_and_never_set_cookies(): void
+    {
+        foreach (['/robots.txt', '/sitemap.xml', '/sitemap-index.xml', '/sitemap-en.xml'] as $path) {
+            $response = $this->get($path)->assertOk();
+
+            $this->assertSame([], $response->headers->getCookies(), $path . ' must not set cookies.');
+            $this->assertStringContainsString('public', (string) $response->headers->get('Cache-Control'));
+        }
+    }
+
+    public function test_language_switch_never_redirects_to_an_external_referer(): void
+    {
+        $this->get('/language/en', ['Referer' => 'https://evil.example/phish'])
+            ->assertRedirect(route('frontend.home'));
+
+        $safe = route('frontend.contactUs') . '?from=language-switch';
+        $this->get('/language/en', ['Referer' => $safe])
+            ->assertRedirect($safe);
+    }
+
+    public function test_disabled_session_locale_is_revalidated_against_public_locales(): void
+    {
+        TranslationLocale::whereKey('bn')->update([
+            'is_enabled' => false,
+            'enabled_at' => null,
+        ]);
+
+        $response = $this->withSession(['locale' => 'bn'])
+            ->get('/contact-us')
+            ->assertOk();
+
+        $response->assertHeader('Content-Language', 'en');
+        $this->assertSame('en', session('locale'));
     }
 
     public function test_the_shared_route_registry_excludes_operational_endpoints(): void
@@ -467,8 +529,10 @@ class SeoPublicOutputIntegrityTest extends TestCase
         $this->assertStringNotContainsString('head-key="keywords"', $vue);
 
         $header = file_get_contents(resource_path('js/layouts/AppHeader.vue'));
+        $localeSwitcher = file_get_contents(resource_path('js/Shared/composables/publicLocaleSwitcher.js'));
         $this->assertStringContainsString('v-for="(link, index) in localeLinks"', $header);
-        $this->assertStringContainsString('resolveSeoAlternates', $header);
+        $this->assertStringContainsString('usePublicLocaleSwitcher', $header);
+        $this->assertStringContainsString('resolveSeoAlternates', $localeSwitcher);
         $this->assertStringContainsString('resolveSeoAlternates', $vue);
         $this->assertStringContainsString('seoAlternates', $vue);
         $this->assertStringNotContainsString('href="/language/en"', $header);

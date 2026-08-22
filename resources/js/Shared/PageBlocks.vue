@@ -30,7 +30,7 @@
             v-for="(slide, slideIndex) in heroSlides(block)"
             :key="`${block.uuid}-background-${slideIndex}`"
             :class="{'is-active': slideIndex === activeHeroIndex(block)}"
-            :style="heroBackgroundStyle(slide)"
+            :style="slideIndex === activeHeroIndex(block) ? heroBackgroundStyle(slide) : undefined"
           />
         </div>
         <div class="igf-page-block__overlay" :style="heroOverlayStyle(block)" />
@@ -110,7 +110,7 @@
       <div v-else-if="block.type === 'media_text'" class="igf-page-block__inner igf-media-shell">
         <div class="igf-media-text" :class="{'igf-media-text--reverse': block.content?.image_position === 'right'}">
           <div class="igf-media-text__image">
-            <img v-if="block.content?.image" :src="block.content.image" :alt="block.content.image_alt || ''">
+            <img v-if="block.content?.image" :src="block.content.image" :srcset="responsiveImage(block.content.image, '(max-width: 900px) 100vw, 45vw').webpSrcset || undefined" :sizes="responsiveImage(block.content.image, '(max-width: 900px) 100vw, 45vw').sizes" :width="responsiveImage(block.content.image).width" :height="responsiveImage(block.content.image).height" :alt="block.content.image_alt || ''" loading="lazy" decoding="async">
           </div>
           <div class="igf-media-text__content">
             <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
@@ -142,7 +142,7 @@
             :aria-label="givingAriaLabel(item)"
           >
             <span class="igf-giving-card__media" aria-hidden="true">
-              <img v-if="item.image" :src="item.image" alt="">
+              <img v-if="item.image" :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 33vw').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 33vw').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" alt="" loading="lazy" decoding="async">
               <i v-else class="fa-solid fa-hand-holding-heart" />
             </span>
             <span class="igf-giving-card__copy">
@@ -167,7 +167,7 @@
         </div>
         <div v-if="block.content?.items?.length" class="igf-card-grid">
           <a v-for="(item, index) in block.content.items" :key="index" class="igf-card" :href="safeHref(item.url, '#')">
-            <div v-if="item.image" class="igf-card__media"><img :src="item.image" :alt="item.image_alt || item.heading || ''"></div>
+            <div v-if="item.image" class="igf-card__media"><img :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || item.heading || ''" loading="lazy" decoding="async"></div>
             <div class="igf-card__content"><h3>{{ item.heading }}</h3><p v-if="item.body">{{ item.body }}</p><span class="igf-card__link">{{ item.link_label || blockLabel(block, 'item_link_label', 'causes_item_link_label', 'Learn more') }} →</span></div>
           </a>
         </div>
@@ -185,7 +185,7 @@
         </div>
         <div v-if="block.content?.items?.length" class="igf-event-cards">
           <a v-for="(item, index) in block.content.items" :key="index" :href="safeHref(item.url, '#')">
-            <img v-if="item.image" :src="item.image" :alt="item.image_alt || item.heading || ''">
+            <img v-if="item.image" :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || item.heading || ''" loading="lazy" decoding="async">
             <span class="igf-event-cards__date"><strong>{{ eventDay(item) }}</strong><small>{{ eventMonth(item, shared.event_date_fallback) }}</small></span>
             <span class="igf-event-cards__copy"><h3>{{ item.heading }}</h3><p v-if="item.body">{{ item.body }}</p><b>{{ item.link_label || blockLabel(block, 'item_link_label', 'events_item_link_label', 'Read more') }} →</b></span>
           </a>
@@ -201,7 +201,7 @@
           <i class="fa-solid fa-quote-left" aria-hidden="true" />
           <blockquote>{{ activeTestimonial(block).quote }}</blockquote>
           <div class="igf-testimonial-person">
-            <img v-if="activeTestimonial(block).photo" :src="activeTestimonial(block).photo" :alt="activeTestimonial(block).name || ''">
+            <img v-if="activeTestimonial(block).photo" :src="activeTestimonial(block).photo" :srcset="responsiveImage(activeTestimonial(block).photo, '88px').webpSrcset || undefined" sizes="88px" :width="responsiveImage(activeTestimonial(block).photo).width" :height="responsiveImage(activeTestimonial(block).photo).height" :alt="activeTestimonial(block).name || ''" loading="lazy" decoding="async">
             <span><strong>{{ activeTestimonial(block).name }}</strong><small>{{ activeTestimonial(block).designation }}</small></span>
           </div>
           <nav v-if="block.content.items.length > 1" :aria-label="shared.testimonials_navigation_label">
@@ -235,7 +235,7 @@
           <div>
             <header><h3>{{ block.content?.news_title || shared.updates_news_title }}</h3><a :href="safeHref(block.content?.news_url || shared.updates_news_url, '/events')">{{ block.content?.news_link_label || shared.updates_news_link_label }}</a></header>
             <a v-for="(item, index) in newsItems(block)" :key="index" class="igf-news-row" :href="safeHref(item.url, '#')">
-              <img v-if="item.image" :src="item.image" :alt="item.image_alt || ''">
+              <img v-if="item.image" :src="item.image" :srcset="responsiveImage(item.image, '96px').webpSrcset || undefined" sizes="96px" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || ''" loading="lazy" decoding="async">
               <span><small>{{ item.date || item.eyebrow }}</small><strong>{{ item.heading }}</strong></span>
             </a>
           </div>
@@ -338,7 +338,7 @@
             :href="safeHref(item.url) || null"
           >
             <div v-if="item.image" class="igf-card__media">
-              <img :src="item.image" :alt="item.image_alt || ''">
+              <img :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || ''" loading="lazy" decoding="async">
               <span v-if="item.status" class="igf-card__status">{{ item.status }}</span>
             </div>
             <div class="igf-card__content">
@@ -666,12 +666,27 @@
             <p>{{ block.content?.body }}</p>
           </div>
           <form class="igf-campaign__form" method="get" :action="safeHref(block.content?.primary_url, '/donate')">
-            <h3>{{ block.content?.form_title || shared.campaign_form_title }}</h3>
-            <div class="igf-amounts">
-              <label v-for="(amount, index) in campaignAmounts" :key="amount"><input type="radio" name="amount" :value="amount" :checked="index === Math.min(1, campaignAmounts.length - 1)"><span>{{ money(amount) }}</span></label>
+            <div class="igf-campaign__form-header">
+              <h3>{{ block.content?.form_title || shared.campaign_form_title }}</h3>
+              <p>{{ donationSettings.gift_subtitle }}</p>
             </div>
-            <label v-if="showCampaignCustomAmount" class="igf-custom-amount"><span class="sr-only">{{ block.content?.custom_amount_label || shared.campaign_custom_amount_label }}</span><b>৳</b><input name="custom_amount" min="1" max="10000000" step="1" type="number" :placeholder="block.content?.custom_amount_placeholder || shared.campaign_custom_amount_placeholder"></label>
+            <fieldset class="igf-campaign-frequency">
+              <legend class="sr-only">{{ donationSettings.frequency_accessible_label }}</legend>
+              <div class="igf-campaign-frequency__tabs" role="radiogroup" :aria-label="donationSettings.frequency_accessible_label" aria-describedby="campaign-frequency-note">
+                <label class="is-selected"><input type="radio" name="frequency" value="one_time" checked><span>{{ donationSettings.frequency_label || 'One-time' }}</span></label>
+                <button type="button" role="radio" aria-checked="false" disabled><span>{{ donationSettings.frequency_daily_label || 'Daily' }}</span><small>{{ donationSettings.frequency_coming_soon_label }}</small></button>
+                <button type="button" role="radio" aria-checked="false" disabled><span>{{ donationSettings.frequency_weekly_label || 'Weekly' }}</span><small>{{ donationSettings.frequency_coming_soon_label }}</small></button>
+                <button type="button" role="radio" aria-checked="false" disabled><span>{{ donationSettings.frequency_monthly_label || 'Monthly' }}</span><small>{{ donationSettings.frequency_coming_soon_label }}</small></button>
+              </div>
+              <p id="campaign-frequency-note"><i class="fa-solid fa-circle-info" aria-hidden="true" />{{ donationSettings.frequency_help }}</p>
+            </fieldset>
+            <div class="igf-amounts">
+              <label v-for="(option, index) in campaignAmountOptions" :key="option.amount" :class="{ 'is-featured': option.featured }"><input type="radio" name="amount" :value="option.amount" :checked="index === Math.min(1, campaignAmountOptions.length - 1)"><span><strong>{{ money(option.amount) }}</strong><small v-if="option.impact">{{ option.impact }}</small><i class="fa-solid fa-check" aria-hidden="true" /></span></label>
+            </div>
+            <label v-if="showCampaignCustomAmount" class="igf-custom-amount"><span class="sr-only">{{ block.content?.custom_amount_label || shared.campaign_custom_amount_label }}</span><b>৳</b><input name="custom_amount" min="10" max="500000" step="0.01" type="number" :placeholder="block.content?.custom_amount_placeholder || shared.campaign_custom_amount_placeholder"></label>
             <button class="igf-button igf-button--primary" type="submit">{{ block.content?.primary_label || shared.campaign_submit_label }}</button>
+            <p v-if="donationSettings.accountability_label" class="igf-campaign__assurance"><span aria-hidden="true" />{{ donationSettings.accountability_label }}</p>
+            <p v-if="donationSettings.gateway_heading" class="igf-campaign__secure"><i class="fa-solid fa-lock" aria-hidden="true" />{{ donationSettings.gateway_heading }}</p>
           </form>
         </div>
       </div>
@@ -721,17 +736,22 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { formatDate, formatMoney, formatNumber, interpolateSetting } from './composables/siteSettings';
+import { responsiveBackgroundPresentation, responsiveImagePresentation } from './composables/responsiveImage';
 
 const props = defineProps({ blocks: { type: Array, default: () => [] } });
 const page = usePage();
 const shared = computed(() => page.props.siteSettings?.shared_blocks || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
 const donationSettings = computed(() => page.props.siteSettings?.donation_page || {});
-const campaignAmounts = computed(() => {
+const campaignAmountOptions = computed(() => {
   const count = Math.min(5, Math.max(2, Number(donationSettings.value.amount_button_count) || 5));
   return [1, 2, 3, 4, 5]
-    .map(index => Number(donationSettings.value[`amount_${index}`]))
-    .filter(amount => Number.isFinite(amount) && amount > 0)
+    .map(index => ({
+      amount: Number(donationSettings.value[`amount_${index}`]),
+      impact: String(donationSettings.value[`amount_${index}_impact`] || ''),
+      featured: Number(donationSettings.value.featured_amount_index || 4) === index,
+    }))
+    .filter(option => Number.isFinite(option.amount) && option.amount > 0)
     .slice(0, count);
 });
 const showCampaignCustomAmount = computed(() => donationSettings.value.show_custom_amount !== false);
@@ -1178,7 +1198,10 @@ function activeHeroIndex(block) {
 function activeHeroSlide(block) { return heroSlides(block)[activeHeroIndex(block)] || {}; }
 function heroBackgroundStyle(slide) {
   const image = safeHref(slide?.image);
-  return image ? { backgroundImage: `url("${image.replaceAll('"', '\\"')}")` } : {};
+  return responsiveBackgroundPresentation(image);
+}
+function responsiveImage(value, sizes = '100vw') {
+  return responsiveImagePresentation(safeHref(value), sizes);
 }
 function heroOverlayStyle(block) {
   const opacity = Math.min(100, Math.max(0, Number(activeHeroSlide(block).overlay_opacity ?? 64))) / 100;
@@ -1357,8 +1380,10 @@ function subscribe() {
 .igf-page-block--hero { display:flex; min-height:var(--igf-hero-height,min(780px,86vh)); align-items:center; overflow:hidden; padding-top:clamp(90px,11vw,140px); padding-bottom:clamp(100px,13vw,160px); background:#202124; color:#fff; }
 .igf-hero-carousel__backgrounds,.igf-hero-carousel__backgrounds>span { position:absolute; inset:0; }
 .igf-hero-carousel__backgrounds { z-index:0; overflow:hidden; background:#202124; }
-.igf-hero-carousel__backgrounds>span { background:center/cover no-repeat; opacity:0; transform:scale(1.025); transition:opacity .65s ease,transform 6s ease; }
+.igf-hero-carousel__backgrounds>span { background-color:transparent; background-image:var(--igf-hero-image); background-image:var(--igf-hero-image-set-small,var(--igf-hero-image)); background-position:center; background-size:cover; background-repeat:no-repeat; opacity:0; transform:scale(1.025); transition:opacity .65s ease,transform 6s ease; }
 .igf-hero-carousel__backgrounds>span.is-active { opacity:1; transform:scale(1); }
+@media(min-width:700px) { .igf-hero-carousel__backgrounds>span { background-image:var(--igf-hero-image); background-image:var(--igf-hero-image-set-medium,var(--igf-hero-image)); } }
+@media(min-width:1200px) { .igf-hero-carousel__backgrounds>span { background-image:var(--igf-hero-image); background-image:var(--igf-hero-image-set-large,var(--igf-hero-image)); } }
 .igf-page-block__overlay { position:absolute; z-index:1; inset:0; background:rgba(21,22,23,var(--overlay-opacity,.64)); transition:background-color .35s ease; }
 .igf-page-block__hero-content { max-width:680px; padding:clamp(28px,5vw,48px); border:1px solid rgba(255,255,255,.16); border-radius:20px; background:rgba(31,32,34,.92); }
 .igf-page-block--hero.igf-page-block--campus .igf-page-block__hero-grid { display:grid; place-items:center; }
@@ -1654,27 +1679,49 @@ function subscribe() {
 .igf-testimonial-dot[aria-current="true"] span { width:18px; border-radius:99px; background:var(--orange); }
 .igf-page-block--programs { background:var(--surface); }
 .igf-page-block--programs .igf-card { min-height:230px; }
-.igf-campaign { display:grid; overflow:hidden; grid-template-columns:1fr 1fr; border:1px solid var(--line); border-radius:24px; background:#fff; box-shadow:0 16px 45px rgba(25,28,29,.1); }
+.igf-campaign { display:grid; overflow:hidden; grid-template-columns:minmax(0,.82fr) minmax(420px,1.18fr); border:1px solid #e3d8d0; border-radius:26px; background:#fff; box-shadow:0 24px 60px rgba(41,31,23,.13); }
 .igf-campaign__story,.igf-campaign__form { padding:clamp(30px,5vw,52px); }
-.igf-campaign__story { background:#f0f1f2; }
+.igf-campaign__story { display:flex; justify-content:center; flex-direction:column; background:linear-gradient(145deg,#292522 0%,#4d2c18 100%); color:#fff; }
+.igf-campaign__story :is(h2,p) { color:#fff; }
+.igf-campaign__story .igf-page-block__eyebrow { color:#ffbc8a; }
 .igf-campaign__story p:not(.igf-page-block__eyebrow) { font-size:18px; line-height:1.65; }
 .igf-progress-meta { display:flex; justify-content:space-between; gap:20px; margin-top:34px; font-size:13px; }
 .igf-progress-meta span { color:var(--muted); }
 .igf-progress { overflow:hidden; height:12px; margin-top:12px; border-radius:999px; background:#dcdcdc; }
 .igf-progress span { display:block; height:100%; border-radius:inherit; background:var(--orange); }
 .igf-progress-label { display:block; margin-top:7px; color:var(--brown); font-size:13px; text-align:right; }
-.igf-campaign__form h3 { margin-bottom:24px; font-size:26px; }
-.igf-choice-group { display:grid; grid-template-columns:1fr 1fr; padding:4px; border-radius:999px; background:#e4e5e6; }
-.igf-choice-group input,.igf-amounts input { position:absolute; opacity:0; pointer-events:none; }
-.igf-choice-group span { display:block; padding:10px; border-radius:999px; color:var(--muted); font-size:13px; font-weight:800; text-align:center; }
-.igf-choice-group input:checked+span { background:var(--orange); color:#fff; }
-.igf-amounts { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:22px 0; }
-.igf-amounts span { display:block; padding:11px 5px; border:1px solid #c9c5c1; border-radius:8px; font-weight:800; text-align:center; }
-.igf-amounts input:checked+span { border-color:var(--orange); background:#fff5ed; color:var(--brown); }
+.igf-campaign__form-header h3 { margin:0; font-size:30px; }
+.igf-campaign__form-header p { margin:5px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
+.igf-campaign-frequency { min-width:0; margin:19px 0 0; border:0; padding:0; }
+.igf-campaign-frequency__tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; border:1px solid #e5d9d0; border-radius:13px; padding:5px; background:#f4eee9; }
+.igf-campaign-frequency__tabs label,.igf-campaign-frequency__tabs button { display:flex; min-width:0; min-height:54px; align-items:center; justify-content:center; gap:1px; flex-direction:column; border:0; border-radius:9px; padding:6px 2px; background:transparent; color:#66625f; font:800 12px 'Hanken Grotesk',Arial,sans-serif; text-align:center; }
+.igf-campaign-frequency__tabs label.is-selected { background:var(--brown); color:#fff; box-shadow:0 5px 13px rgba(104,45,8,.22); }
+.igf-campaign-frequency__tabs button { cursor:not-allowed; }
+.igf-campaign-frequency__tabs button small { color:#895126; font-size:7px; font-weight:900; letter-spacing:.04em; line-height:1; text-transform:uppercase; }
+.igf-campaign-frequency__tabs input,.igf-amounts input { position:absolute; opacity:0; pointer-events:none; }
+.igf-campaign-frequency__tabs label:focus-within { outline:3px solid rgba(156,69,0,.28); outline-offset:2px; }
+.igf-campaign-frequency>p { display:flex; gap:7px; margin:8px 2px 0; color:#716a65; font-size:10px; line-height:1.4; }
+.igf-campaign-frequency>p i { margin-top:2px; color:var(--brown); }
+.igf-amounts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:19px 0 14px; }
+.igf-amounts label { position:relative; min-width:0; cursor:pointer; }
+.igf-amounts label>span { position:relative; display:grid; min-height:92px; align-content:center; gap:4px; border:1.5px solid #ddd1c8; border-radius:13px; padding:13px 40px 13px 14px; background:#fff; text-align:left; transition:border-color .16s,background-color .16s,transform .16s; }
+.igf-amounts label:hover>span { border-color:#cf8652; transform:translateY(-1px); }
+.igf-amounts label.is-featured>span { background:#fff7f0; }
+.igf-amounts strong { color:var(--brown); font:650 21px/1.1 'Literata',Georgia,serif; }
+.igf-amounts small { color:var(--muted); font-size:10px; font-weight:500; line-height:1.35; }
+.igf-amounts i { position:absolute; top:11px; right:11px; display:grid; width:20px; height:20px; place-items:center; border:1px solid #d8cec6; border-radius:50%; background:#fff; color:transparent; font-size:9px; }
+.igf-amounts input:checked+span { border-color:var(--orange); background:#ffe3cf; box-shadow:inset 0 0 0 1px var(--orange); }
+.igf-amounts input:checked+span i { border-color:var(--brown); background:var(--brown); color:#fff; }
+.igf-amounts label:focus-within>span { outline:3px solid rgba(156,69,0,.26); outline-offset:3px; }
 .igf-custom-amount { position:relative; display:flex; align-items:center; margin-bottom:20px; }
 .igf-custom-amount b { position:absolute; left:14px; }
-.igf-custom-amount input { width:100%; padding:13px 14px 13px 38px; border:1px solid #c9c5c1; border-radius:8px; }
-.igf-campaign__form .igf-button { width:100%; }
+.igf-custom-amount input { width:100%; padding:14px 14px 14px 38px; border:1px solid #c9c5c1; border-radius:12px; }
+.igf-custom-amount input:focus { border-color:var(--brown); outline:3px solid rgba(156,69,0,.2); }
+.igf-campaign__form .igf-button { width:100%; min-height:56px; border-radius:13px; font-size:15px; letter-spacing:0; text-transform:none; }
+.igf-campaign__assurance,.igf-campaign__secure { display:flex; align-items:center; justify-content:center; gap:7px; margin:12px 0 0; color:var(--muted); font-size:11px; text-align:center; }
+.igf-campaign__assurance>span { width:7px; height:7px; border-radius:50%; background:var(--orange); }
+.igf-campaign__secure { margin-top:5px; }
+.igf-campaign__secure i { color:var(--brown); }
 .igf-page-block--story .igf-media-shell { overflow:hidden; border-radius:24px; background:#eceeef; }
 .igf-page-block--story .igf-media-text { gap:0; }
 .igf-page-block--story .igf-media-text__content { padding:clamp(32px,5vw,62px); }
@@ -1851,6 +1898,8 @@ function subscribe() {
   .igf-stats { grid-template-columns:1fr; }
   .igf-page-block__eyebrow--inverse { font-size:10px; }
   .igf-card-grid { grid-template-columns:1fr; }
+  .igf-campaign-frequency__tabs { grid-template-columns:1fr 1fr; }
+  .igf-amounts { grid-template-columns:1fr; }
 }
 @media (max-width:479px) {
   .igf-campus-initiative-grid,.igf-campus-contribution-grid { grid-template-columns:1fr; }

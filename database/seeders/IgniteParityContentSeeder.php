@@ -831,6 +831,19 @@ class IgniteParityContentSeeder extends Seeder
             'exclude_from_sitemap' => false,
         ]);
 
+        // `/category/home` is an implementation archive containing only the
+        // canonical homepage. Keep it followable for safety, but do not publish
+        // the duplicate shell as a search result or sitemap entry.
+        SeoMetadata::withTrashed()->firstOrCreate([
+            'seoable_type' => Category::class,
+            'seoable_id' => $homeCategory->id,
+            'locale' => 'en',
+        ], [
+            'robots_index' => false,
+            'robots_follow' => true,
+            'exclude_from_sitemap' => true,
+        ]);
+
         $slides = [
             ['Igniting change', 'Empowering lives.', 'From classrooms to communities, our programs help people build a stronger future.', 'ywuogg10l98ly4qdoa3ujrb2bzr9218wp43dqcka-0d6907c3637e.webp', '/category/our-causes'],
             ['Empowering through education', 'Every child deserves a chance to learn.', 'Join us in breaking barriers through free, inclusive, quality education.', '9me3alpg8medhhf0jbids6pkbcuva3wqauewpza9-4ec17f01da4a.webp', '/page/education'],
@@ -884,7 +897,7 @@ class IgniteParityContentSeeder extends Seeder
             ]],
             ['44444444-4444-4444-8444-000000000006', 'cards', 'Featured Projects', [
                 'variant' => 'projects', 'eyebrow' => 'Field work', 'heading' => 'Featured projects',
-                'body' => 'Current initiatives with measurable, community-owned outcomes.', 'view_all_label' => 'View current projects', 'view_all_url' => '/projects/current-project',
+                'body' => 'Current initiatives with measurable, community-owned outcomes.', 'view_all_label' => 'View all projects', 'view_all_url' => '/projects',
                 'content_source' => 'projects', 'tag_slug' => 'current-project', 'selection_mode' => 'automatic',
                 'selected_items' => [], 'sort' => 'featured', 'limit' => 3, 'item_link_label' => 'Read more',
                 'empty_state' => 'Published projects will appear here automatically.',

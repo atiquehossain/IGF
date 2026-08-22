@@ -88,6 +88,11 @@ final class TechnicalSeoUrlPolicy
         if ($path === null) {
             return null;
         }
+        // One public resource must have one crawl identity. Links may spell
+        // the same path with literal or percent-encoded characters (for
+        // example, an apostrophe versus %27). Canonicalize each already-safe
+        // segment so those variants are fetched and counted only once.
+        $path = $this->canonicalAuditPath($path);
 
         $query = [];
         parse_str((string) ($parts['query'] ?? ''), $query);
@@ -181,5 +186,19 @@ final class TechnicalSeoUrlPolicy
         $collapsed = '/' . implode('/', $segments);
 
         return $collapsed === '' ? '/' : (rtrim($collapsed, '/') ?: '/');
+    }
+
+    private function canonicalAuditPath(string $path): string
+    {
+        if ($path === '/') {
+            return '/';
+        }
+
+        $segments = array_map(
+            static fn (string $segment): string => rawurlencode(rawurldecode($segment)),
+            explode('/', trim($path, '/'))
+        );
+
+        return '/' . implode('/', $segments);
     }
 }

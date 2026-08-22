@@ -23,6 +23,8 @@
     const schemaExpertWrap = one('[data-schema-expert-wrap]');
     const schemaLibraryNode = document.querySelector('[data-schema-library]');
     const schemaLibrary = (() => { try { return JSON.parse(schemaLibraryNode?.textContent || '{}'); } catch (_) { return {}; } })();
+    const contentAnalysisNode = document.querySelector('[data-content-analysis]');
+    const contentAnalysis = (() => { try { return JSON.parse(contentAnalysisNode?.textContent || '{}'); } catch (_) { return {}; } })();
     let dirty = false;
     let mediaReturn = null;
 
@@ -30,6 +32,7 @@
     const effectiveDescription = () => (auto?.checked ? description.dataset.fallback : description.value.trim()) || description.dataset.fallback || 'Add a clear description for this page.';
     const effectiveImage = () => image.value.trim() || image.dataset.fallback || '';
     const slugify = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9\u0980-\u09ff]+/g, '-').replace(/^-+|-+$/g, '');
+    const normalizePhraseText = value => String(value || '').normalize('NFKC').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
     const localizedEditorUrl = (value) => {
         try {
             const parsed = new URL(value, window.location.origin);
@@ -117,12 +120,15 @@
         renderImage(one('[data-share-thumb]'), effectiveImage(), 'No image');
         count(one('[data-title-count]'), auto?.checked ? title.dataset.fallback : title.value, 35, 60);
         count(one('[data-description-count]'), auto?.checked ? description.dataset.fallback : description.value, 120, 160);
-        const phrase = focusPhrase?.value.trim().toLocaleLowerCase() || '';
+        const phrase = normalizePhraseText(focusPhrase?.value);
         const phraseSlug = slugify(phrase);
+        const phraseMatchesSavedContentCheck = phrase !== '' && phrase === normalizePhraseText(contentAnalysis.saved_focus_phrase);
         const focusChecks = {
-            title: phrase !== '' && previewTitle.toLocaleLowerCase().includes(phrase),
-            description: phrase !== '' && previewDescription.toLocaleLowerCase().includes(phrase),
+            title: phrase !== '' && normalizePhraseText(previewTitle).includes(phrase),
+            description: phrase !== '' && normalizePhraseText(previewDescription).includes(phrase),
             url: phrase !== '' && (phraseSlug === '' || slugify(previewUrl).includes(phraseSlug)),
+            headings: phraseMatchesSavedContentCheck && Boolean(contentAnalysis.focus_in_headings),
+            body: phraseMatchesSavedContentCheck && Boolean(contentAnalysis.focus_in_body),
         };
         all('[data-focus-check]').forEach(item => {
             const complete = focusChecks[item.dataset.focusCheck] || false;
@@ -134,6 +140,22 @@
         syncSchema();
     };
 
+    let autoWasChecked = Boolean(auto?.checked);
+    const syncAutoFields = () => {
+        if (!auto || !title || !description) return;
+        const autoIsChecked = Boolean(auto.checked);
+        if (autoIsChecked && !autoWasChecked) {
+            title.dataset.customValue = title.value;
+            description.dataset.customValue = description.value;
+            title.value = title.dataset.fallback || '';
+            description.value = description.dataset.fallback || '';
+        } else if (!autoIsChecked && autoWasChecked) {
+            title.value = title.dataset.customValue || title.dataset.fallback || '';
+            description.value = description.dataset.customValue || description.dataset.fallback || '';
+        }
+        autoWasChecked = autoIsChecked;
+    };
+    auto?.addEventListener('change', syncAutoFields);
     form.querySelectorAll('input:not([type=hidden]),textarea:not([hidden]),select').forEach(control => control.addEventListener(control.matches('select,input[type=radio],input[type=checkbox]') ? 'change' : 'input', () => { setDirty(true); refresh(); }));
     all('[data-visibility]').forEach(radio => radio.addEventListener('change', () => {
         const visible = radio.value === 'index' && radio.checked;

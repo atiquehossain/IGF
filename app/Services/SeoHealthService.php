@@ -5,7 +5,7 @@ namespace App\Services;
 class SeoHealthService
 {
     /**
-     * @param array{title?: string, description?: string, focus_keyword?: string, image?: string, canonical?: string, default_url?: string, indexable?: bool, excluded?: bool} $values
+     * @param array{title?: string, description?: string, focus_keyword?: string, image?: string, canonical?: string, default_url?: string, indexable?: bool, excluded?: bool, content_analysis?: array<string, mixed>} $values
      * @return array{score: int, status: string, issues: array<int, array{key: string, label: string, tone: string, level: string}>, required_count: int, recommended_count: int}
      */
     public function evaluate(array $values): array
@@ -72,10 +72,42 @@ class SeoHealthService
             }
         }
 
+        foreach ((array) data_get($values, 'content_analysis.issues', []) as $contentIssue) {
+            if (!is_array($contentIssue) || blank($contentIssue['key'] ?? null) || blank($contentIssue['label'] ?? null)) {
+                continue;
+            }
+            if (collect($issues)->contains('key', (string) $contentIssue['key'])) {
+                continue;
+            }
+
+            $level = in_array($contentIssue['level'] ?? null, ['required', 'recommended', 'information'], true)
+                ? (string) $contentIssue['level']
+                : (($contentIssue['tone'] ?? null) === 'danger' ? 'required' : 'recommended');
+            $tone = in_array($contentIssue['tone'] ?? null, ['danger', 'warning', 'neutral'], true)
+                ? (string) $contentIssue['tone']
+                : ($level === 'required' ? 'danger' : 'warning');
+            $issues[] = $this->issue(
+                (string) $contentIssue['key'],
+                (string) $contentIssue['label'],
+                $tone,
+                $level
+            );
+            $score -= match ($level) {
+                'required' => 8,
+                'recommended' => 4,
+                default => 0,
+            };
+        }
+
         $score = max(0, min(100, $score));
         $actionable = collect($issues)->contains(
             fn (array $issue) => in_array($issue['level'], ['required', 'recommended'], true)
         );
+        // Completion is an action indicator, so 100% must mean there is
+        // genuinely nothing left for an editor to fix or review.
+        if ($actionable && $score === 100) {
+            $score = 95;
+        }
         $requiredCount = collect($issues)->where('level', 'required')->count();
         $recommendedCount = collect($issues)->where('level', 'recommended')->count();
 

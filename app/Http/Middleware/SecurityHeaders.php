@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SeoIndexingPolicy;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,11 @@ class SecurityHeaders
             'Content-Security-Policy',
             "base-uri 'self'; frame-ancestors 'self'; object-src 'none'",
         );
+        if (!app(SeoIndexingPolicy::class)->indexingAllowed()) {
+            // Header coverage protects non-Inertia and non-HTML responses too;
+            // the HTML head carries the same directive for browser hydration.
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+        }
 
         if ($this->mustNotStore($request)) {
             $response->headers->set('Cache-Control', 'private, no-store, max-age=0');

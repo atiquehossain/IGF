@@ -39,10 +39,15 @@
 <script setup>
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { resolveSeoAlternates } from '../Shared/seoMetadata';
+import { usePublicLocaleSwitcher } from '../Shared/composables/publicLocaleSwitcher';
 
 defineOptions({ name: 'AppHeader' });
 const inertiaPage = usePage();
+const {
+  enabled: showLanguage,
+  languageLabel,
+  links: localeLinks,
+} = usePublicLocaleSwitcher();
 const settings = computed(() => inertiaPage.props.siteSettings || {});
 const announcement = computed(() => ({
   enabled: Boolean(settings.value.header?.announcement_enabled),
@@ -61,24 +66,10 @@ const header = computed(() => ({
   annualReportsUrl: settings.value.header?.annual_reports_url || '/annual-report',
   contactLabel: settings.value.header?.contact_label || 'Contact',
   contactUrl: settings.value.header?.contact_url || '/contact-us',
-  englishLanguageLabel: settings.value.header?.english_language_label || 'EN',
-  banglaLanguageLabel: settings.value.header?.bangla_language_label || 'বাংলা',
   socialProfilesLabel: settings.value.header?.social_profiles_label || 'Social profiles',
 }));
 const phoneHref = computed(() => contact.value.phone_primary.replace(/[^+\d]/g, ''));
 const phoneSecondaryHref = computed(() => contact.value.phone_secondary.replace(/[^+\d]/g, ''));
-const localeLinks = computed(() => resolveSeoAlternates({
-  cluster: inertiaPage.props?.seoAlternates,
-  canonicalUrl: inertiaPage.url || '/',
-  currentLocale: inertiaPage.props?.seoLocale?.current || inertiaPage.props?.locale || 'en',
-}).links);
-const showLanguage = computed(() => Boolean(inertiaPage.props.publicLocaleSwitcherEnabled)
-  && settings.value.header?.show_language_switcher === true
-  && localeLinks.value.length > 1);
-const languageLabel = (locale) => ({
-  en: header.value.englishLanguageLabel,
-  bn: header.value.banglaLanguageLabel,
-}[locale] || String(locale).toUpperCase());
 </script>
 
 <style scoped>

@@ -19,6 +19,7 @@
       <meta head-key="og:type" property="og:type" content="website">
       <meta head-key="og:url" property="og:url" :content="metaTag.canonical_url || ''">
       <meta v-if="metaTag.og_image" head-key="og:image" property="og:image" :content="metaTag.og_image">
+      <meta v-if="ogImageAlt" head-key="og:image:alt" property="og:image:alt" :content="ogImageAlt">
       <meta head-key="og:description" property="og:description" :content="metaTag.og_description || metaTag.meta_description || ''">
       <meta head-key="og:site_name" property="og:site_name" :content="appName">
 
@@ -26,6 +27,7 @@
       <meta head-key="twitter:title" name="twitter:title" :content="metaTag.twitter_title || metaTag.og_title || seoTitle">
       <meta head-key="twitter:description" name="twitter:description" :content="metaTag.twitter_description || metaTag.og_description || metaTag.meta_description || ''">
       <meta v-if="metaTag.twitter_image || metaTag.og_image" head-key="twitter:image" name="twitter:image" :content="metaTag.twitter_image || metaTag.og_image">
+      <meta v-if="twitterImageAlt" head-key="twitter:image:alt" name="twitter:image:alt" :content="twitterImageAlt">
     </Head>
 
     <StructuredData v-if="schemaJson" :json="schemaJson" />
@@ -66,7 +68,7 @@ import AppFooter from './AppFooter';
 import SafeStyle from '../Shared/SafeStyle';
 import StructuredData from '../Shared/StructuredData';
 import WebsiteChat from '../Shared/WebsiteChat';
-import { resolveSeoAlternates, resolveSeoMetadata } from '../Shared/seoMetadata';
+import { resolveSeoAlternates, resolveSeoMetadata, resolveStructuredData } from '../Shared/seoMetadata';
 import { resolvePageCss } from '../Shared/pageCss';
 // import AppCookies from './AppCookies';
 
@@ -108,6 +110,7 @@ const metaTag = computed(() => {
     metaTag: inertiaPage.props?.meta_tag,
     routeSeo: inertiaPage.props?.routeSeo,
     contentSeo: inertiaPage.props?.contentSeo,
+    seoPolicy: inertiaPage.props?.seoPolicy,
   });
   return {
     ...merged,
@@ -123,13 +126,24 @@ const alternateLinks = computed(() => alternateCluster.value.links);
 const xDefaultUrl = computed(() => alternateCluster.value.xDefault);
 const appName = computed(() => inertiaPage.props?.siteSettings?.branding?.site_name || inertiaPage.props?.appName || 'Ignite Global Foundation');
 const seoTitle = computed(() => metaTag.value?.meta_title || title.value || appName.value);
+const defaultSocialImage = computed(() => String(inertiaPage.props?.seoDefaults?.og_image || ''));
+const defaultSocialImageAlt = computed(() => String(inertiaPage.props?.seoDefaults?.social_image_alt || '').trim());
+const ogImageAlt = computed(() => (
+  metaTag.value?.og_image === defaultSocialImage.value ? defaultSocialImageAlt.value : ''
+));
+const twitterImageAlt = computed(() => (
+  metaTag.value?.twitter_image === defaultSocialImage.value ? defaultSocialImageAlt.value : ''
+));
 const shellLabels = computed(() => ({
   skipLink: inertiaPage.props?.siteSettings?.header?.skip_link_label || 'Skip to main content',
 }));
 const schemaJson = computed(() => {
-  const schema = metaTag.value?.schema_markup;
-  if (!schema) return '';
-  return typeof schema === 'string' ? schema : JSON.stringify(schema);
+  return resolveStructuredData({
+    schema: metaTag.value?.schema_markup,
+    identity: inertiaPage.props?.seoSchemaIdentity,
+    metadata: metaTag.value,
+    locale: localeSeo.value.current,
+  });
 });
 
 const pageCss = computed(() => resolvePageCss(inertiaPage.component, inertiaPage.props?.data));

@@ -45,9 +45,11 @@ $navGroups = [
         ],
     ],
     [
-        'label' => 'SEO & Languages', 'icon' => 'fa-search',
+        'label' => 'Search & Languages', 'icon' => 'fa-search',
         'items' => [
-            ['route' => 'seo.index', 'label' => 'Search & Social Preview', 'icon' => 'fa-line-chart'],
+            ['route' => 'seo.index', 'label' => 'Search & Sharing', 'icon' => 'fa-line-chart'],
+            ['route' => 'seo.performance.index', 'label' => 'Search Performance', 'icon' => 'fa-area-chart'],
+            ['route' => 'seo.internal-links.index', 'label' => 'Internal Links', 'icon' => 'fa-link'],
             ['route' => 'seo.redirects.index', 'label' => 'Redirects', 'icon' => 'fa-random'],
             ['route' => 'seo.technical.index', 'label' => 'Technical SEO & 404s', 'icon' => 'fa-stethoscope'],
             ['route' => 'translations.index', 'label' => 'Translations', 'icon' => 'fa-language'],

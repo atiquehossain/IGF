@@ -5,7 +5,7 @@
 <main class="seo2">
     <header class="seo2-head">
         <div><h1>{{ $contentTitle }}</h1><p>{{ $contentLabel }} search and sharing settings. Plain-language recommendations are shown beside live previews.</p></div>
-        <div class="seo2-actions"><a class="seo2-btn" href="{{ route('seo.index', ['locale' => $locale]) }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> SEO dashboard</a></div>
+        <div class="seo2-actions"><a class="seo2-btn" href="{{ route('seo.index', ['locale' => $locale]) }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Search &amp; Sharing</a></div>
     </header>
     @include('admin.seo._indexing-status')
     @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif

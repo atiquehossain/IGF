@@ -9,7 +9,7 @@ class DonationPaymentMethodService
             'label' => 'bKash',
             'description' => 'Pay securely from your bKash account.',
             'logos' => [
-                ['src' => '/image/payment-methods/bkash.png'],
+                ['src' => '/image/payment-methods/bkash-reference.svg'],
             ],
         ],
         'nagad' => [
@@ -24,7 +24,7 @@ class DonationPaymentMethodService
             'description' => 'Pay securely with an eligible Visa or American Express card.',
             'networks' => ['Visa', 'American Express'],
             'logos' => [
-                ['src' => '/image/payment-methods/visa.png'],
+                ['src' => '/image/payment-methods/visa-reference.svg'],
                 ['src' => '/image/payment-methods/amex.png'],
             ],
         ],

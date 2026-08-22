@@ -7,19 +7,12 @@ import vuetify from './vuetify';  // Import your Vuetify configuration
 import Toast, { POSITION, useToast } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 
-import Datepicker from 'vue3-datepicker';
-import { createBootstrap, modalManagerPlugin } from 'bootstrap-vue-next';
-import * as BootstrapVueNext from 'bootstrap-vue-next';
-
 import VueCookies from 'vue-cookies';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 
 import mixin from './mixin/mixin.js';
 import baseMixin from './base';
 import ChangeFontSize from './libs/dynamic-font-size-changer';
 
-import 'bootstrap';
 import './bootstrap';
 
 function executeFontSizeChange() {
@@ -54,16 +47,9 @@ createInertiaApp({
     app.use(plugin);
     app.use(vuetify);
     app.use(Toast, { position: POSITION.TOP_RIGHT });
-    app.use(createBootstrap);
-    app.use(modalManagerPlugin);
     app.use(VueCookies, { expire: '7d' });
 
     app.component('Link', Link);
-    app.component('Datepicker', Datepicker);
-
-    Object.entries(BootstrapVueNext).forEach(([name, component]) => {
-      if (name.startsWith('B')) app.component(name, component);
-    });
 
     app.mixin(mixin);
     app.mixin(baseMixin);
@@ -80,6 +66,5 @@ createInertiaApp({
     app.config.globalProperties.$toast = useToast();
 
     app.mount(el);
-    AOS.init();
   },
 });

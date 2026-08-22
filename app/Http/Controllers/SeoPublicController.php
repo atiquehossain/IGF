@@ -11,6 +11,7 @@ use App\Models\Tag;
 use App\Services\CategoryLandingPageAliasService;
 use App\Services\LocalizationManager;
 use App\Services\SeoMetadataService;
+use App\Services\SeoIndexingPolicy;
 use App\Services\SeoRouteRegistry;
 use Carbon\CarbonInterface;
 use Closure;
@@ -24,6 +25,7 @@ class SeoPublicController extends Controller
 {
     public function __construct(
         private SeoMetadataService $seo,
+        private SeoIndexingPolicy $indexing,
         private SeoRouteRegistry $routes,
         private LocalizationManager $localization,
         private CategoryLandingPageAliasService $landingPageAliases,
@@ -59,11 +61,13 @@ class SeoPublicController extends Controller
 
     public function robots(): Response
     {
-        $indexingEnabled = config('app.env') === 'production'
-            && (bool) config('seo.robots.indexing_enabled', false);
-        $directives = $indexingEnabled
-            ? "Allow: /\nDisallow: /admin"
-            : "Disallow: /\nDisallow: /admin";
+        $indexingEnabled = $this->indexing->indexingAllowed();
+        // Page-level noindex (and the matching HTTP header) is the actual
+        // indexing control. Public crawling remains allowed so a crawler can
+        // observe that directive and remove an already-known URL. A private
+        // preview must use authentication/network access control instead.
+        $directives = ($indexingEnabled ? '' : "# Indexing disabled by page-level noindex directives.\n")
+            . "Allow: /\nDisallow: /admin";
 
         return response(
             "User-agent: *\n" . $directives . "\nSitemap: " . route('seo.sitemap.index')
@@ -244,7 +248,18 @@ class SeoPublicController extends Controller
 
     private function isIndexable(?SeoMetadata $metadata): bool
     {
-        return !$metadata || ($metadata->robots_index && !$metadata->exclude_from_sitemap);
+        if (!$metadata) {
+            return true;
+        }
+
+        $canonical = trim((string) $metadata->canonical_url);
+
+        return $metadata->robots_index
+            && !$metadata->exclude_from_sitemap
+            // A deliberately external canonical makes this local URL
+            // non-canonical, so listing the local fallback would send search
+            // engines two contradictory canonicalization signals.
+            && ($canonical === '' || $this->seo->isSameOrigin($canonical));
     }
 
     /** @return array<int, array{locale: string, url: string}> */

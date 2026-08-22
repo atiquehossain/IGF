@@ -10,6 +10,8 @@ use Auth;
 use App\Services\SiteSettingService;
 use App\Services\LocalizationManager;
 use App\Services\SeoMetadataService;
+use App\Services\SeoIndexingPolicy;
+use App\Services\PublicStructuredDataService;
 use App\Models\SplashScreen;
 use App\Services\ContentSanitizer;
 
@@ -79,9 +81,24 @@ class HandleInertiaRequests extends Middleware
             },
             'publicLocaleSwitcherEnabled' => fn () => app(LocalizationManager::class)->switcherEnabled(),
             'routeSeo' => fn () => $request->attributes->get('route_seo', []),
-            'seoDefaults' => fn () => [
-                'canonical_url' => app(SeoMetadataService::class)->localizedUrl($request->url(), app()->getLocale()),
-            ],
+            'seoDefaults' => function () use ($request): array {
+                $metadata = app(SeoMetadataService::class);
+                $social = $metadata->socialImageFallback(app()->getLocale());
+
+                return [
+                    'canonical_url' => $metadata->localizedUrl($request->url(), app()->getLocale()),
+                    'og_image' => $social['image'],
+                    'twitter_image' => $social['image'],
+                    'social_image_alt' => $social['alt'],
+                ];
+            },
+            // Identity is server-owned and reused when the final merged page
+            // metadata does not contain an explicit schema document. The page
+            // node itself is composed after all SEO authority layers merge.
+            'seoSchemaIdentity' => fn () => app(PublicStructuredDataService::class)->identityDocument(),
+            // This policy is deliberately merged after every controller,
+            // route, and content owner in both the raw and hydrated heads.
+            'seoPolicy' => fn () => app(SeoIndexingPolicy::class)->metadataOverride(),
             'seoLocale' => fn () => [
                 'current' => app()->getLocale(),
                 'default' => config('app.fallback_locale', 'en'),

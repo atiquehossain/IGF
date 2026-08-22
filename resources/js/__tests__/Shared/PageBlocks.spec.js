@@ -91,6 +91,19 @@ function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional =
         amount_button_count: '2',
         amount_1: 500,
         amount_2: 1000,
+        amount_1_impact: 'Learning materials',
+        amount_2_impact: 'Family support',
+        featured_amount_index: '2',
+        gift_subtitle: 'Every contribution strengthens the cause you choose.',
+        frequency_accessible_label: 'Donation frequency',
+        frequency_label: 'One-time',
+        frequency_daily_label: 'Daily',
+        frequency_weekly_label: 'Weekly',
+        frequency_monthly_label: 'Monthly',
+        frequency_coming_soon_label: 'Coming soon',
+        frequency_help: 'One-time gifts are charged once.',
+        accountability_label: 'Transparent, accountable giving',
+        gateway_heading: 'Secure payment options',
         ...donation,
       },
     },
@@ -768,8 +781,14 @@ describe('PageBlocks video and campaign settings', () => {
     const visible = mount(PageBlocks, { props: { blocks: [campaign] } });
     const input = visible.get('.igf-custom-amount input');
     expect(input.attributes('name')).toBe('custom_amount');
-    expect(input.attributes('max')).toBe('10000000');
-    expect(input.attributes('step')).toBe('1');
+    expect(input.attributes('min')).toBe('10');
+    expect(input.attributes('max')).toBe('500000');
+    expect(input.attributes('step')).toBe('0.01');
+    expect(visible.get('input[name="frequency"]').attributes('value')).toBe('one_time');
+    expect(visible.findAll('.igf-campaign-frequency__tabs button[disabled]')).toHaveLength(3);
+    expect(visible.findAll('.igf-amounts label')).toHaveLength(2);
+    expect(visible.get('.igf-amounts .is-featured small').text()).toBe('Family support');
+    expect(visible.get('.igf-campaign__assurance').text()).toBe('Transparent, accountable giving');
     visible.unmount();
   });
 });

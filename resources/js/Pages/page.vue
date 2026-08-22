@@ -5,6 +5,9 @@
         <v-container fluid class="page-container p-0">
             <PageBlocks v-if="page.visible_blocks?.length" :blocks="page.visible_blocks" />
             <article v-else v-html="page.description" class="igf-legacy-article" />
+            <nav v-if="page.category_url" class="igf-page-context" :aria-label="page.category_name">
+                <a :href="page.category_url"><span aria-hidden="true">←</span> {{ page.category_name }}</a>
+            </nav>
         </v-container>
     </layout>
 </template>
@@ -31,6 +34,9 @@ const hasHeroBlock = computed(() => (page.value?.visible_blocks || []).some(bloc
 .igf-legacy-article :deep(h2),.igf-legacy-article :deep(h3) { margin:1.3em 0 .5em; color:#191c1d; font-family:'Literata',Georgia,serif; letter-spacing:-.02em; }
 .igf-legacy-article :deep(a) { color:#9c4500; font-weight:700; }
 .igf-legacy-article :deep(img) { max-width:100%; height:auto; border-radius:14px; }
+.igf-page-context { width:min(calc(100% - 40px),1120px); margin:0 auto; padding:32px 0 72px; }
+.igf-page-context a { display:inline-flex; min-height:44px; align-items:center; gap:8px; color:#874000; font-weight:800; text-decoration:none; }
+.igf-page-context a:hover,.igf-page-context a:focus-visible { color:#592900; text-decoration:underline; text-underline-offset:4px; }
 @media(max-width:600px){.igf-legacy-article{width:min(calc(100% - 28px),900px)}}
 
 .author-details {

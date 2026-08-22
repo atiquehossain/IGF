@@ -4,12 +4,14 @@
     @php
       $pageProps = data_get($page ?? [], 'props', []);
       // Public SEO has one explicit authority order, mirrored by App.vue:
-      // defaults < controller fallback < curated route < owned content record.
+      // defaults < controller fallback < curated route < owned content record
+      // < deployment indexing policy.
       $seo = (object) array_merge(
         (array) data_get($pageProps, 'seoDefaults', ['canonical_url' => url()->current()]),
         (array) data_get($pageProps, 'meta_tag', []),
         (array) data_get($pageProps, 'routeSeo', []),
-        (array) data_get($pageProps, 'contentSeo', [])
+        (array) data_get($pageProps, 'contentSeo', []),
+        (array) data_get($pageProps, 'seoPolicy', app(\App\Services\SeoIndexingPolicy::class)->metadataOverride())
       );
       $seoService = app(\App\Services\SeoMetadataService::class);
       $seoLocale = (string) data_get($pageProps, 'seoLocale.current', app()->getLocale());
@@ -20,8 +22,33 @@
         $seoLocale,
         $seoDefaultLocale
       );
+      // Empty higher-authority fields mean "use the managed brand fallback",
+      // not "emit an invalid social card" and not "reuse stale route media".
+      $socialFallbackImage = $seoService->absolutePublicImageUrl(
+        data_get($pageProps, 'seoDefaults.og_image', '')
+      );
+      $ogCandidate = collect([
+        $seo->og_image ?? null,
+        $seo->meta_image ?? null,
+        $seo->twitter_image ?? null,
+      ])->first(fn ($value) => is_string($value) && trim($value) !== '');
+      $seo->og_image = $seoService->absolutePublicImageUrl(
+        $ogCandidate ?: $socialFallbackImage
+      ) ?: $socialFallbackImage;
+      $seo->twitter_image = $seoService->absolutePublicImageUrl(
+        $seo->twitter_image ?? $seo->og_image
+      ) ?: $seo->og_image;
+      $seo->social_image_alt = trim((string) data_get($pageProps, 'seoDefaults.social_image_alt', ''));
+      $seo->uses_default_og_image = $socialFallbackImage !== '' && $seo->og_image === $socialFallbackImage;
+      $seo->uses_default_twitter_image = $socialFallbackImage !== '' && $seo->twitter_image === $socialFallbackImage;
       $seoAlternates = $seoService->alternateUrls($seo->canonical_url, $seoPublicLocales, $seoDefaultLocale);
       $appName = (string) data_get($pageProps, 'appName', config('app.name'));
+      if (empty($seo->schema_markup)) {
+        $seo->schema_markup = app(\App\Services\PublicStructuredDataService::class)->fallbackForMetadata(
+          (array) $seo,
+          (array) data_get($pageProps, 'seoSchemaIdentity', [])
+        );
+      }
     @endphp
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,12 +69,14 @@
     <meta inertia="twitter:title" name="twitter:title" content="{{ $seo->twitter_title ?? $seo->meta_title ?? '' }}" />
     <meta inertia="twitter:description" name="twitter:description" content="{{ $seo->twitter_description ?? $seo->meta_description ?? '' }}" />
     @if(!empty($seo->twitter_image) || !empty($seo->og_image))<meta inertia="twitter:image" name="twitter:image" content="{{ $seo->twitter_image ?? $seo->og_image }}" />@endif
+    @if($seo->uses_default_twitter_image && $seo->social_image_alt !== '')<meta inertia="twitter:image:alt" name="twitter:image:alt" content="{{ $seo->social_image_alt }}" />@endif
 
     <!-- Open Graph data -->
     <meta inertia="og:title" property="og:title" content="{{ $seo->og_title ?? $seo->meta_title ?? '' }}" />
     <meta inertia="og:type" property="og:type" content="website" />
     <meta inertia="og:url" property="og:url" content="{{ $seo->canonical_url }}" />
     @if(!empty($seo->og_image))<meta inertia="og:image" property="og:image" content="{{ $seo->og_image }}" />@endif
+    @if($seo->uses_default_og_image && $seo->social_image_alt !== '')<meta inertia="og:image:alt" property="og:image:alt" content="{{ $seo->social_image_alt }}" />@endif
     <meta inertia="og:description" property="og:description" content="{{ $seo->og_description ?? $seo->meta_description ?? '' }}" />
     <meta inertia="og:site_name" property="og:site_name" content="{{ $appName }}" />
     @if(!empty($seo->schema_markup))
@@ -68,7 +97,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ $faviconUrl }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ $faviconUrl }}">
     <link rel="manifest" href="{{asset('image/favicon/site.webmanifest')}}">
-    @routes
+    @routes('frontend')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
   </head>
   <body>

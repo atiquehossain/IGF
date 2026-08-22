@@ -25,6 +25,21 @@ class PublicStructuredDataService
     ) {
     }
 
+    /**
+     * Server-owned organization and website identity reused by the raw and
+     * hydrated public heads. Page-specific nodes are added only after all SEO
+     * metadata authority layers have been resolved.
+     *
+     * @return array<string, mixed>
+     */
+    public function identityDocument(): array
+    {
+        return $this->validate([
+            '@context' => self::CONTEXT,
+            '@graph' => $this->identityNodes(),
+        ]);
+    }
+
     /** @param array<int, array{name: string, url: string}> $breadcrumbs */
     public function collection(
         string $name,
@@ -62,12 +77,23 @@ class PublicStructuredDataService
         ];
         $status = $statusMap[(string) $event->event_status] ?? null;
         $attendance = $attendanceMap[(string) $event->event_attendance_mode] ?? null;
+        // Google event eligibility requires a physical Place with an address.
+        // Online-only or incomplete event records remain honest WebPage nodes;
+        // they must never be mislabeled as an Article merely to gain a richer
+        // search appearance.
         $isEvent = $event->content_kind === 'event'
             && $startDate !== ''
             && $status !== null
             && $attendance !== null
-            && ($event->event_attendance_mode === 'online' || filled($event->location));
-        $node = $this->pageNode($isEvent ? 'Event' : 'Article', (string) $event->title, $description, $url);
+            && in_array($event->event_attendance_mode, ['offline', 'mixed'], true)
+            && filled($event->location);
+        $isArticle = $event->content_kind !== 'event';
+        $node = $this->pageNode(
+            $isEvent ? 'Event' : ($isArticle ? 'Article' : 'WebPage'),
+            (string) $event->title,
+            $description,
+            $url
+        );
         if ($isEvent) {
             $node += [
                 'startDate' => $startDate,
@@ -76,7 +102,7 @@ class PublicStructuredDataService
                 'eventAttendanceMode' => $attendance,
                 'organizer' => ['@id' => $this->organizationId()],
             ];
-        } else {
+        } elseif ($isArticle) {
             $node += [
                 'headline' => $this->text($event->title, 300),
                 'datePublished' => $this->date($event->published_at),
@@ -88,10 +114,17 @@ class PublicStructuredDataService
             ];
         }
 
-        if ($isEvent && in_array($event->event_attendance_mode, ['offline', 'mixed'], true)) {
+        if ($isEvent) {
             $place = [
                 '@type' => 'Place',
                 'name' => $this->text($event->location, 300),
+                // The managed location field is the only address assertion the
+                // editor has supplied. Preserve it verbatim as a PostalAddress
+                // instead of inventing locality, region, postcode, or country.
+                'address' => [
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => $this->text($event->location, 500),
+                ],
             ];
             $node['location'] = $event->event_attendance_mode === 'mixed'
                 ? [$place, [
@@ -99,11 +132,6 @@ class PublicStructuredDataService
                     'url' => $this->safeUrl($url),
                 ]]
                 : $place;
-        } elseif ($isEvent) {
-            $node['location'] = [
-                '@type' => 'VirtualLocation',
-                'url' => $this->safeUrl($url),
-            ];
         }
         if ($safeImage = $this->imageUrl($image)) {
             $node['image'] = [$safeImage];
@@ -178,9 +206,77 @@ class PublicStructuredDataService
         return $this->document([$this->breadcrumbNode($breadcrumbs), $node]);
     }
 
+    public function webpage(
+        string $name,
+        string $description,
+        string $url,
+        ?string $image = null,
+    ): array
+    {
+        $node = $this->pageNode('WebPage', $name, $description, $url);
+        if ($safeImage = $this->imageUrl($image)) {
+            $node['primaryImageOfPage'] = [
+                '@type' => 'ImageObject',
+                '@id' => $safeImage . '#primaryimage',
+                'url' => $safeImage,
+            ];
+        }
+
+        return $this->document([$node]);
+    }
+
+    /** Backward-compatible name retained for the home controller. */
     public function website(string $name, string $description, string $url): array
     {
-        return $this->document([$this->pageNode('WebPage', $name, $description, $url)]);
+        return $this->webpage($name, $description, $url);
+    }
+
+    /**
+     * Compose the generic page fallback from final, already-merged metadata.
+     * An explicit page/route schema always bypasses this method.
+     *
+     * @param array<string, mixed> $metadata
+     * @param array<string, mixed>|null $identity
+     * @return array<string, mixed>
+     */
+    public function fallbackForMetadata(array $metadata, ?array $identity = null): array
+    {
+        $identity ??= $this->identityDocument();
+        if ($this->semanticErrors($identity) !== []) {
+            $identity = $this->identityDocument();
+        }
+
+        $url = $this->safeUrl((string) ($metadata['canonical_url'] ?? ''));
+        $name = $this->text($metadata['meta_title'] ?? '', 300);
+        if ($url === '' || $name === '') {
+            return $identity;
+        }
+
+        $node = $this->pageNode(
+            'WebPage',
+            $name,
+            $this->text($metadata['meta_description'] ?? '', 1000),
+            $url
+        );
+        $image = $metadata['og_image'] ?? $metadata['twitter_image'] ?? null;
+        if ($safeImage = $this->imageUrl(is_string($image) ? $image : null)) {
+            $node['primaryImageOfPage'] = [
+                '@type' => 'ImageObject',
+                '@id' => $safeImage . '#primaryimage',
+                'url' => $safeImage,
+            ];
+        }
+
+        $identityNodes = collect($identity['@graph'] ?? [])
+            ->filter(fn ($candidate) => is_array($candidate)
+                && in_array($candidate['@type'] ?? null, ['NGO', 'Organization', 'WebSite'], true))
+            ->values()
+            ->all();
+
+        return $this->validate([
+            '@context' => self::CONTEXT,
+            '@graph' => [...$identityNodes, $node],
+        ]);
     }
 
     /**
@@ -243,7 +339,7 @@ class PublicStructuredDataService
         $contact = $settings['contact'] ?? [];
         $social = $settings['social'] ?? [];
         $root = url('/');
-        $logo = $this->imageUrl((string) ($branding['logo'] ?? ''));
+        $logo = $this->qualifiedLogoUrl((string) ($branding['logo'] ?? ''));
 
         $organization = [
             '@type' => 'NGO',
@@ -417,6 +513,31 @@ class PublicStructuredDataService
         $absolute = $this->metadata->absolutePublicImageUrl($value);
 
         return $this->safeUrl($absolute, true);
+    }
+
+    /**
+     * Google requires Organization logos to be at least 112 x 112. Local
+     * assets can be verified exactly; remote owner-supplied HTTPS assets are
+     * retained because their bytes are intentionally not fetched per request.
+     */
+    private function qualifiedLogoUrl(?string $value): string
+    {
+        $url = $this->imageUrl($value);
+        if ($url === '' || !$this->metadata->isSameOrigin($url)) {
+            return $url;
+        }
+
+        $path = rawurldecode((string) parse_url($url, PHP_URL_PATH));
+        $file = public_path(ltrim(str_replace('\\', '/', $path), '/'));
+        if (!is_file($file)) {
+            return '';
+        }
+        $dimensions = @getimagesize($file);
+        if (!is_array($dimensions) || (int) $dimensions[0] < 112 || (int) $dimensions[1] < 112) {
+            return '';
+        }
+
+        return $url;
     }
 
     private function text(mixed $value, int $limit): string

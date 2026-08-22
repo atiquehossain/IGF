@@ -14,10 +14,11 @@ use App\Models\SeoMetadata;
 use App\Models\SeoMetadataRevision;
 use App\Models\SeoRedirect;
 use App\Models\Tag;
-use App\Services\SeoHealthService;
 use App\Services\LocalizationManager;
 use App\Services\PageEditorVersionService;
+use App\Services\SeoContentAnalysisService;
 use App\Services\SeoEditorialReviewService;
+use App\Services\SeoHealthService;
 use App\Services\SeoMetadataEditorVersionService;
 use App\Services\SeoMetadataRevisionService;
 use App\Services\SeoMetadataService;
@@ -43,6 +44,7 @@ class SeoController extends Controller
         private SeoRedirectService $redirects,
         private SeoMetadataRevisionService $revisions,
         private SeoSchemaTemplateService $schemaTemplates,
+        private SeoContentAnalysisService $contentAnalysis,
         private SeoHealthService $health,
         private LocalizationManager $localization,
         private PageEditorVersionService $pageEditorVersions,
@@ -131,6 +133,8 @@ class SeoController extends Controller
             'locale' => $locale,
             'mediaAssets' => collect(),
             'dashboardTargets' => $dashboard['targets'],
+            'dashboardVisibleTargets' => $dashboard['visibleTargets'],
+            'dashboardPagination' => $dashboard['pagination'],
             'dashboardCounts' => $dashboard['counts'],
             'dashboardFilters' => $dashboard['filters'],
             'dashboardTypes' => $dashboard['types'],
@@ -370,6 +374,11 @@ class SeoController extends Controller
             $oldUrl = $this->publicUrl($currentModel, $type);
             $oldSlug = (string) $currentModel->getAttribute('slug');
             $newSlug = (string) (($data['permalink_slug'] ?? null) ?: $oldSlug);
+            $activateAutomaticRedirect = (bool) data_get(
+                $this->publicationState($currentModel, $type),
+                'is_live',
+                false
+            );
             if ($newSlug !== $oldSlug && !$this->permalinkEditable($currentModel, $type)) {
                 throw ValidationException::withMessages([
                     'permalink_slug' => $this->permalinkRestrictionMessage($currentModel, $type),
@@ -390,8 +399,15 @@ class SeoController extends Controller
                 $redirectLocale = in_array($type, ['page', 'category', 'event', 'annual_report'], true)
                     ? $data['locale']
                     : null;
-                $this->upsertAutomaticRedirect($oldUrl, $newUrl, $redirectLocale);
-                $message = 'Search settings saved and the old address now redirects permanently.';
+                $this->upsertAutomaticRedirect(
+                    $oldUrl,
+                    $newUrl,
+                    $redirectLocale,
+                    $activateAutomaticRedirect
+                );
+                $message = $activateAutomaticRedirect
+                    ? 'Search settings saved and the old address now redirects permanently.'
+                    : 'Search settings saved. The old-address redirect is disabled until this content is publicly available.';
             }
 
             $saved = $this->seo->updateForModel($currentModel, $data['seo'], $data['locale'], $existing);
@@ -444,7 +460,9 @@ class SeoController extends Controller
     {
         $templateKeys = array_merge(array_keys($this->schemaTemplates->options()), ['expert']);
         $data = $request->validate([
+            'selection_mode' => ['nullable', Rule::in(['explicit'])],
             'items' => ['required', 'array', 'min:1', 'max:25'],
+            'items.*.selected' => ['sometimes', 'boolean'],
             'items.*.owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project'])],
             'items.*.owner_id' => ['nullable', 'integer'],
             'items.*.route_name' => ['nullable', 'string', 'max:150'],
@@ -458,6 +476,23 @@ class SeoController extends Controller
             'items.*.indexable' => ['required', 'boolean'],
             'items.*.schema_template' => ['required', Rule::in($templateKeys)],
         ]);
+
+        // Forms rendered by the bulk workspace opt into explicit selection so
+        // an editor cannot accidentally save every visible row. Requests from
+        // older clients omit selection_mode and retain the former save-all
+        // contract for backwards compatibility.
+        if (($data['selection_mode'] ?? null) === 'explicit') {
+            $data['items'] = collect($data['items'])
+                ->filter(fn (array $item): bool => (bool) ($item['selected'] ?? false))
+                ->values()
+                ->all();
+            if ($data['items'] === []) {
+                throw ValidationException::withMessages([
+                    'items' => 'Select at least one editable row to save.',
+                ]);
+            }
+        }
+        unset($data['selection_mode']);
 
         $routeOwnerExpectations = $this->specialRouteOwnerExpectationsForBulkItems($data['items']);
         $pageRows = $this->pageRowsForBulkItems($data['items'], $routeOwnerExpectations);
@@ -883,6 +918,13 @@ class SeoController extends Controller
             $locale,
             $this->defaultLocale()
         );
+        $contentAnalysis = $this->contentAnalysis->analyze(
+            $model,
+            $kind,
+            $locale,
+            (string) $raw('focus_keyword'),
+            $defaultCanonical
+        );
         $health = $this->health->evaluate([
             'title' => $effectiveTitle,
             'description' => $effectiveDescription,
@@ -892,6 +934,7 @@ class SeoController extends Controller
             'default_url' => $defaultCanonical,
             'indexable' => (bool) ($source?->robots_index ?? true),
             'excluded' => (bool) ($source?->exclude_from_sitemap ?? false),
+            'content_analysis' => $contentAnalysis,
         ]);
         $publication = $this->publicationState($model, $kind);
         $seoEditorVersion = null;
@@ -951,6 +994,7 @@ class SeoController extends Controller
             'schema_suggested' => $suggestedTemplate,
             'generated_schemas' => $generatedSchemas,
             'health' => $health,
+            'content_analysis' => $contentAnalysis,
             'publication' => $publication,
             'review' => [
                 'status' => $reviewState['status'],
@@ -977,11 +1021,32 @@ class SeoController extends Controller
     private function dashboard(Request $request, string $locale): array
     {
         $allTargets = $this->dashboardTargets($locale);
+        $hasExplicitFilters = $request->hasAny(['search', 'type', 'issue']);
         $filters = [
             'search' => trim((string) $request->query('search')),
             'type' => (string) $request->query('type', 'all'),
-            'issue' => (string) $request->query('issue', 'all'),
+            'issue' => (string) $request->query('issue', $hasExplicitFilters ? 'all' : 'needs_attention'),
         ];
+        $allowedTypes = ['all', 'page', 'category', 'event', 'annual_report', 'project', 'route'];
+        $allowedIssues = [
+            'all',
+            'needs_attention',
+            'missing_title',
+            'missing_description',
+            'missing_image',
+            'duplicate_title',
+            'duplicate_description',
+            'focus_missing_title',
+            'focus_missing_description',
+            'hidden',
+            'missing_translation',
+        ];
+        if (!in_array($filters['type'], $allowedTypes, true)) {
+            $filters['type'] = 'all';
+        }
+        if (!in_array($filters['issue'], $allowedIssues, true)) {
+            $filters['issue'] = 'needs_attention';
+        }
         $targets = $allTargets->filter(function (array $target) use ($filters): bool {
             $matchesSearch = $filters['search'] === '' || str_contains(
                 mb_strtolower($target['label'] . ' ' . $target['url']),
@@ -994,16 +1059,39 @@ class SeoController extends Controller
 
             return $matchesSearch && $matchesType && $matchesIssue;
         })->values();
+        $pageName = 'seo_page';
+        $perPage = 12;
+        $page = max(1, (int) $request->query($pageName, 1));
+        $pagination = new LengthAwarePaginator(
+            $targets->forPage($page, $perPage)->values(),
+            $targets->count(),
+            $perPage,
+            $page,
+            [
+                'path' => $request->url(),
+                'pageName' => $pageName,
+            ]
+        );
+        $pagination->withQueryString();
         $liveTargets = $allTargets->where('is_live', true);
         $visible = $liveTargets->where('status', '!=', 'Hidden');
 
         return [
             'allTargets' => $allTargets,
             'targets' => $targets,
+            'visibleTargets' => $pagination->getCollection(),
+            'pagination' => $pagination,
             'counts' => [
                 'total' => $allTargets->count(),
                 'live' => $liveTargets->count(),
-                'draft' => $allTargets->where('is_live', false)->count(),
+                'indexable_live' => $visible->count(),
+                'draft' => $allTargets
+                    ->where('is_live', false)
+                    ->reject(fn (array $target): bool => data_get($target, 'publication.state') === 'missing_translation')
+                    ->count(),
+                'missing_translation' => $allTargets
+                    ->filter(fn (array $target): bool => data_get($target, 'publication.state') === 'missing_translation')
+                    ->count(),
                 'ready' => $liveTargets->where('status', 'Ready')->count(),
                 'attention' => $liveTargets->where('status', 'Needs attention')->count(),
                 'hidden' => $liveTargets->where('status', 'Hidden')->count(),
@@ -1028,7 +1116,11 @@ class SeoController extends Controller
         // in one snapshot, before reading owned metadata. If a Page SEO write
         // commits between these reads it advances the Page generation and the
         // rendered form remains safely stale.
-        $pageSnapshots = Page::withTrashed()->orderBy('uuid')->orderBy('id')->get();
+        $pageSnapshots = Page::withTrashed()
+            ->with(['visibleBlocks.reusableBlock'])
+            ->orderBy('uuid')
+            ->orderBy('id')
+            ->get();
         $pages = $pageSnapshots
             ->filter(fn (Page $page): bool => !$page->trashed() && (string) $page->language === $locale)
             ->sortBy('name')
@@ -1160,6 +1252,14 @@ class SeoController extends Controller
     ): array
     {
         $seo = $this->visibleSeoSnapshot($seoSnapshot);
+        $url = $this->publicUrl($model, $type, $locale);
+        $contentAnalysis = $this->contentAnalysis->analyze(
+            $model,
+            $type,
+            $locale,
+            (string) ($seo?->focus_keyword ?? ''),
+            $url
+        );
 
         return $this->targetArray(
             $this->contentIdentity($model, $type),
@@ -1172,7 +1272,7 @@ class SeoController extends Controller
                 default => 'Project · shared across languages',
             },
             $this->modelTitle($model),
-            $this->publicUrl($model, $type, $locale),
+            $url,
             route('seo.content.edit', ['type' => $type, 'id' => $model->getKey(), 'locale' => $locale]),
             $locale,
             $seo,
@@ -1186,6 +1286,7 @@ class SeoController extends Controller
                     ? null
                     : $this->seoEditorVersions->forModelSnapshot($model, $locale, $seoSnapshot),
                 'publication' => $this->publicationState($model, $type),
+                'content_analysis' => $contentAnalysis,
             ]
         );
     }
@@ -1207,6 +1308,7 @@ class SeoController extends Controller
             'default_url' => $url,
             'indexable' => $indexable,
             'excluded' => (bool) ($seo?->exclude_from_sitemap ?? false),
+            'content_analysis' => (array) ($owner['content_analysis'] ?? []),
         ]);
         $reviewState = $this->seoReviews->effectiveState($seo, $fallback, $url);
 
@@ -1234,6 +1336,7 @@ class SeoController extends Controller
             'is_editable' => (bool) ($owner['is_editable'] ?? true),
             'publication' => $owner['publication'] ?? $this->publicationState(null, 'route'),
             'is_live' => (bool) data_get($owner, 'publication.is_live', true),
+            'content_analysis' => (array) ($owner['content_analysis'] ?? []),
             'stored' => [
                 'mode' => $seo && (filled($seo->title) || filled($seo->description)) ? 'custom' : 'auto',
                 'title' => (string) ($seo?->title ?? ''),
@@ -1540,7 +1643,12 @@ class SeoController extends Controller
         return ['nullable', 'string', 'max:255', $rule];
     }
 
-    private function upsertAutomaticRedirect(string $oldUrl, string $newUrl, ?string $locale = null): void
+    private function upsertAutomaticRedirect(
+        string $oldUrl,
+        string $newUrl,
+        ?string $locale = null,
+        bool $active = true
+    ): void
     {
         $from = (string) (parse_url($oldUrl, PHP_URL_PATH) ?: '/');
         $to = (string) (parse_url($newUrl, PHP_URL_PATH) ?: '/');
@@ -1572,7 +1680,10 @@ class SeoController extends Controller
             'from_path' => $from,
             'to_url' => $to,
             'status_code' => 301,
-            'is_active' => true,
+            // A draft/private/scheduled destination must never receive live
+            // traffic. Preserve the old address as a reviewable rule, but
+            // require an editor to enable it after the destination is public.
+            'is_active' => $active,
             'locale' => $locale,
         ];
         $existing ? $this->redirects->update($existing, $payload) : $this->redirects->create($payload);
@@ -1595,6 +1706,14 @@ class SeoController extends Controller
         $seo = $request->input('seo');
         if (!is_array($seo)) {
             return;
+        }
+
+        // The guided editor displays inherited title/description text while
+        // automatic mode is enabled. Keep those preview values out of storage
+        // so later page-title changes continue to flow through automatically.
+        if ($request->boolean('seo_auto')) {
+            $seo['title'] = '';
+            $seo['description'] = '';
         }
 
         if (trim((string) ($seo['schema_markup'] ?? '')) === '[]') {
@@ -2462,20 +2581,24 @@ class SeoController extends Controller
     private function languageSummary(Collection $locales): Collection
     {
         $baseTargets = $this->dashboardTargets($this->defaultLocale(), false)->keyBy('key');
+        $baseIndexableLiveKeys = $baseTargets
+            ->filter(fn (array $target): bool => $target['is_live'] && $target['status'] !== 'Hidden')
+            ->keys();
 
-        return $locales->map(function ($locale) use ($baseTargets): array {
+        return $locales->map(function ($locale) use ($baseIndexableLiveKeys): array {
             $id = (string) $locale->id;
             $targets = $this->dashboardTargets($id, false)->keyBy('key');
-            $ready = $baseTargets->keys()->filter(
-                fn (string $key) => ($targets->get($key)['status'] ?? null) === 'Ready'
-            )->count();
+            $indexableLive = $targets->filter(
+                fn (array $target): bool => $target['is_live'] && $target['status'] !== 'Hidden'
+            );
+            $ready = $indexableLive->where('status', 'Ready')->count();
 
             return [
                 'id' => $id,
                 'name' => (string) $locale->name,
                 'ready' => $ready,
-                'total' => $baseTargets->count(),
-                'missing' => $baseTargets->keys()->diff($targets->keys())->count(),
+                'total' => $indexableLive->count(),
+                'missing' => $baseIndexableLiveKeys->diff($targets->keys())->count(),
             ];
         });
     }

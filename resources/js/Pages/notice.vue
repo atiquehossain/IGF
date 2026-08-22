@@ -6,26 +6,19 @@
       <v-row>
         <v-col md="2" cols="3">
           <div class="date-picker">
-            <b-input-group class="mb-3">
-              <b-input-group-append>
-                <b-form-datepicker
-                  v-model="selectValue"
-                  :date-format-options="{
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                  }"
-                  placeholder="mm/dd/yyyy"
-                  locale="en"
-                  @input="filterData()"
-                ></b-form-datepicker>
-              </b-input-group-append>
-            </b-input-group>
+            <label class="visually-hidden" for="notice-date">Filter notices by date</label>
+            <input
+              id="notice-date"
+              v-model="selectValue"
+              class="form-control mb-3"
+              type="date"
+              @change="filterData()"
+            >
           </div>
         </v-col>
 
-        <BCol md="7" cols="2"></BCol>
-        <BCol md="3" cols="10">
+        <v-col md="7" cols="2" />
+        <v-col md="3" cols="10">
           <div class="input-group mb-3">
             <input
               v-model="searchvalue"
@@ -40,7 +33,7 @@
               </button>
             </div>
           </div>
-        </BCol>
+        </v-col>
       </v-row>
     </div>
     <div class="container reports">

@@ -26,10 +26,11 @@ class EditorialGovernanceIntegrityTest extends TestCase
         $this->assertFalse(config('localization.public_switcher_enabled'));
         $this->assertSame(['en'], config('localization.public_locales'));
         $this->get('/language/bn')->assertNotFound();
-        $this->assertStringContainsString(
-            'inertiaPage.props.publicLocaleSwitcherEnabled',
-            file_get_contents(resource_path('js/layouts/AppHeader.vue'))
-        );
+        $header = file_get_contents(resource_path('js/layouts/AppHeader.vue'));
+        $switcher = file_get_contents(resource_path('js/Shared/composables/publicLocaleSwitcher.js'));
+
+        $this->assertStringContainsString('usePublicLocaleSwitcher', $header);
+        $this->assertStringContainsString('inertiaPage.props?.publicLocaleSwitcherEnabled', $switcher);
     }
 
     public function test_editorial_content_moves_to_shared_trash_and_restores_with_media_and_seo(): void

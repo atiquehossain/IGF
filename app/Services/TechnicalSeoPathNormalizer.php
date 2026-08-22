@@ -75,6 +75,29 @@ final class TechnicalSeoPathNormalizer
         return str_contains($path, self::REDACTED_SEGMENT);
     }
 
+    /** @return list<string> */
+    public function noisePrefixes(): array
+    {
+        return collect((array) config('technical-seo.not_found_ignored_prefixes', []))
+            ->map(fn (mixed $prefix): string => $this->normalize((string) $prefix))
+            ->filter(fn (string $prefix): bool => $prefix !== '/')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function isFrameworkNoise(string $path): bool
+    {
+        $path = $this->normalize($path);
+        foreach ($this->noisePrefixes() as $prefix) {
+            if ($path === $prefix || str_starts_with($path, $prefix . '/')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function looksSensitive(string $segment): bool
     {
         if (filter_var($segment, FILTER_VALIDATE_EMAIL)) {

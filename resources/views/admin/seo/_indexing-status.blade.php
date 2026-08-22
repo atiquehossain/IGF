@@ -1,6 +1,6 @@
 @php
     $isProduction = app()->environment('production');
-    $indexingEnabled = $isProduction && (bool) config('seo.robots.indexing_enabled');
+    $indexingEnabled = app(\App\Services\SeoIndexingPolicy::class)->indexingAllowed();
 @endphp
 @if($indexingEnabled)
     <div class="seo2-alert" role="status">
@@ -8,10 +8,10 @@
     </div>
 @elseif(!$isProduction)
     <div class="seo2-alert seo2-alert--warning" role="status">
-        <strong>Preview environment: search indexing is blocked here.</strong> That protects local and staging copies. At production launch, the deployment owner must explicitly set <code>SEO_INDEXING_ENABLED=true</code> after the final review.
+        <strong>Preview environment: every page is marked noindex.</strong> This is an SEO safeguard, not privacy or access control—protect a private preview with authentication, an IP allowlist or a VPN. At production launch, the deployment owner must explicitly set <code>SEO_INDEXING_ENABLED=true</code> after the final review.
     </div>
 @else
     <div class="seo2-alert seo2-alert--warning" role="status">
-        <strong>Search indexing is currently blocked.</strong> Your settings are saved and previewable, but search engines will remain blocked until the deployment owner enables <code>SEO_INDEXING_ENABLED=true</code> in production.
+        <strong>Every public page is currently marked noindex.</strong> Crawlers may read that directive so already-known URLs can be removed, but pages will remain ineligible for indexing until the deployment owner enables <code>SEO_INDEXING_ENABLED=true</code> in production.
     </div>
 @endif

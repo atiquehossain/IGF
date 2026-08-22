@@ -54,6 +54,76 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         ]);
         $this->assertSame('Ready', $ready['status']);
         $this->assertSame([], $ready['issues']);
+
+        $titleWarning = $service->evaluate([
+            'title' => str_repeat('Long search title ', 5),
+            'description' => str_repeat('Clear information for families and supporters. ', 3),
+            'image' => 'https://example.test/share.jpg',
+            'indexable' => true,
+        ]);
+        $this->assertSame('Needs attention', $titleWarning['status']);
+        $this->assertLessThan(100, $titleWarning['score'], 'A 100% score must not be shown beside an open SEO action.');
+    }
+
+    public function test_dashboard_defaults_to_actionable_paginated_rows_with_progressive_tools(): void
+    {
+        $admin = $this->adminWith(actions: ['seo.metadata.edit']);
+        foreach (range(1, 14) as $number) {
+            $this->page('seo-checklist-page-' . $number);
+        }
+
+        $response = $this->actingAs($admin, 'admin')->get(route('seo.index'));
+        $response->assertOk()
+            ->assertSee('Advanced SEO tools')
+            ->assertSee('Needs attention', false)
+            ->assertDontSee('>Improve<', false);
+
+        $this->assertSame('needs_attention', data_get($response->viewData('dashboardFilters'), 'issue'));
+        $visible = collect($response->viewData('dashboardVisibleTargets'));
+        $pagination = $response->viewData('dashboardPagination');
+        $counts = $response->viewData('dashboardCounts');
+        $this->assertInstanceOf(\Illuminate\Pagination\LengthAwarePaginator::class, $pagination);
+        $this->assertLessThanOrEqual(12, $visible->count());
+        $this->assertGreaterThan(12, $pagination->total());
+        $this->assertTrue($visible->every(fn (array $target): bool => $target['status'] === 'Needs attention'));
+        $this->assertSame($counts['indexable_live'], $counts['ready'] + $counts['attention']);
+        $this->assertMatchesRegularExpression('/Fix \d+ SEO issues?/', $response->getContent());
+
+        $secondPage = $this->get(route('seo.index', ['issue' => 'all', 'seo_page' => 2]))->assertOk();
+        $this->assertSame('all', data_get($secondPage->viewData('dashboardFilters'), 'issue'));
+        $this->assertSame(2, $secondPage->viewData('dashboardPagination')->currentPage());
+    }
+
+    public function test_auto_metadata_mode_shows_the_inherited_values_without_saving_an_override(): void
+    {
+        $admin = $this->adminWith(actions: ['seo.metadata.edit']);
+        $page = $this->page('inherited-search-preview');
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('seo.content.edit', ['page', $page->id]))
+            ->assertOk()
+            ->assertSee('Use the current page title and summary automatically')
+            ->assertSee('This inherited value is read-only and is not saved as a custom override.')
+            ->assertSee('data-inherited-value="' . e($page->name) . '"', false);
+
+        $this->assertTrue((bool) data_get($response->viewData('editor'), 'auto_content'));
+        $this->assertSame('', data_get($response->viewData('editor'), 'values.title'));
+
+        $payload = $this->editorPayload();
+        $payload['seo_auto'] = 1;
+        $payload['seo']['title'] = $page->name;
+        $payload['seo']['description'] = $page->sub_title;
+        $this->put(route('seo.content.update', ['page', $page->id]), $payload)
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $metadata = SeoMetadata::query()
+            ->where('seoable_type', Page::class)
+            ->where('seoable_id', $page->id)
+            ->where('locale', 'en')
+            ->firstOrFail();
+        $this->assertSame('', trim((string) $metadata->title));
+        $this->assertSame('', trim((string) $metadata->description));
     }
 
     public function test_view_only_role_can_inspect_but_cannot_edit_restore_or_review(): void
@@ -384,6 +454,29 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $this->assertFalse($missing['is_live']);
         $this->assertFalse($missing['publication']['is_live']);
         $this->assertSame('missing_translation', $missing['publication']['state']);
+
+        $banglaCounts = $banglaResponse->viewData('dashboardCounts');
+        $banglaTargets = collect($banglaResponse->viewData('dashboardTargets'));
+        $expectedMissingTranslations = $banglaTargets
+            ->filter(fn (array $target): bool => data_get($target, 'publication.state') === 'missing_translation')
+            ->count();
+        $expectedDrafts = $banglaTargets
+            ->where('is_live', false)
+            ->reject(fn (array $target): bool => data_get($target, 'publication.state') === 'missing_translation')
+            ->count();
+        $this->assertSame($expectedMissingTranslations, $banglaCounts['missing_translation']);
+        $this->assertSame($expectedDrafts, $banglaCounts['draft']);
+        $banglaResponse->assertSee(
+            '<strong>' . $expectedMissingTranslations . '</strong><span>Missing translations</span>',
+            false
+        );
+        $banglaSummary = collect($banglaResponse->viewData('languageSummary'))->firstWhere('id', 'bn');
+        $this->assertSame($banglaCounts['indexable_live'], $banglaSummary['total']);
+        $this->assertSame($banglaCounts['ready'], $banglaSummary['ready']);
+        $banglaResponse->assertSee(
+            'Bangla: ' . $banglaCounts['ready'] . ' of ' . $banglaCounts['indexable_live'] . ' indexable live pages ready',
+            false
+        );
     }
 
     public function test_media_picker_is_server_paginated_and_surfaces_dimensions_alt_and_crop_warnings(): void
@@ -420,7 +513,7 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
 
         $this->actingAs($admin, 'admin')->get(route('page.index'))
             ->assertOk()
-            ->assertSee('SEO Ready')
+            ->assertSee('SEO ready')
             ->assertSee(route('seo.content.edit', ['type' => 'page', 'id' => $page->id, 'locale' => 'en']), false);
     }
 

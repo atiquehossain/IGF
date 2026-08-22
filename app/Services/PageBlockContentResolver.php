@@ -38,13 +38,14 @@ class PageBlockContentResolver
         private ContentSanitizer $sanitizer,
         private TranslationCenterService $translations,
         private DonationDestinationService $destinations,
-        private SiteSettingService $siteSettings
+        private SiteSettingService $siteSettings,
+        private PublicImageOptimizationService $imageOptimization
     ) {
     }
 
     public function resolve(PageBlock $block): array
     {
-        $content = $block->resolvedContent();
+        $content = $this->imageOptimization->replaceBundledReferences($block->resolvedContent());
         if ($block->type === 'ways_to_give') {
             $content['items'] = $this->waysToGiveItems($content);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\Permission;
+use App\Models\SeoAuditAlert;
 use App\Models\SeoAuditIgnoreRule;
 use App\Models\SeoAuditIssue;
 use App\Models\SeoAuditRun;
@@ -11,8 +12,10 @@ use App\Models\SeoNotFoundHit;
 use App\Services\SeoManagedDestinationService;
 use App\Services\SeoRedirectService;
 use App\Services\TechnicalSeoAuditService;
+use App\Services\TechnicalSeoEditorLinkService;
 use App\Services\TechnicalSeoPathNormalizer;
 use App\Services\TechnicalSeoUrlPolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -32,6 +35,7 @@ final class TechnicalSeoController extends Controller
         private SeoRedirectService $redirects,
         private TechnicalSeoUrlPolicy $urls,
         private TechnicalSeoPathNormalizer $privacyPaths,
+        private TechnicalSeoEditorLinkService $editorLinks,
     ) {
     }
 
@@ -71,7 +75,7 @@ final class TechnicalSeoController extends Controller
                 ->from('seo_audit_ignore_rules')->whereColumn('seo_audit_ignore_rules.fingerprint', 'seo_audit_issues.fingerprint'));
         }
 
-        $notFoundQuery = SeoNotFoundHit::query()
+        $notFoundQuery = $this->visibleNotFoundQuery()
             ->when(($filters['not_found'] ?? 'open') === 'open', fn ($query) => $query->whereNull('resolved_at'))
             ->when(($filters['not_found'] ?? 'open') === 'resolved', fn ($query) => $query->whereNotNull('resolved_at'))
             ->orderByDesc('hits')->orderByDesc('last_seen_at');
@@ -79,8 +83,13 @@ final class TechnicalSeoController extends Controller
         $issues = $issueQuery->orderByRaw("CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")
             ->orderBy('issue_type')->paginate(25, ['*'], 'issues_page')->withQueryString();
         $notFoundHits = $notFoundQuery->paginate(15, ['*'], 'not_found_page')->withQueryString();
+        $liveNotFoundHits = $notFoundHits->getCollection()->mapWithKeys(fn (SeoNotFoundHit $hit) => [
+            $hit->id => $this->destinations->isManaged($hit->path, (string) $hit->locale),
+        ]);
         $suggestions = $notFoundHits->getCollection()->mapWithKeys(fn (SeoNotFoundHit $hit) => [
-            $hit->id => $this->destinations->suggestions($hit),
+            $hit->id => $liveNotFoundHits->get($hit->id, false)
+                ? []
+                : $this->destinations->suggestions($hit),
         ]);
 
         $latestCounts = $latestRun
@@ -90,24 +99,79 @@ final class TechnicalSeoController extends Controller
 
         $permission = app(Permission::class);
         $admin = $request->user('admin');
+        $latestComparison = $latestRun?->comparisonWithPrevious() ?? [
+            'has_baseline' => false,
+            'previous_run_id' => null,
+            'new' => 0,
+            'recurring' => 0,
+            'resolved' => 0,
+            'new_high' => 0,
+            'new_fingerprints' => [],
+            'recurring_fingerprints' => [],
+            'resolved_fingerprints' => [],
+        ];
+        $newFingerprints = array_fill_keys($latestComparison['new_fingerprints'], true);
+        $recurringFingerprints = array_fill_keys($latestComparison['recurring_fingerprints'], true);
+        $issueStates = $issues->getCollection()->mapWithKeys(fn (SeoAuditIssue $issue): array => [
+            $issue->id => isset($newFingerprints[$issue->fingerprint])
+                ? 'new'
+                : (isset($recurringFingerprints[$issue->fingerprint]) ? 'recurring' : null),
+        ]);
+        $issueActions = $issues->getCollection()->mapWithKeys(function (SeoAuditIssue $issue) use ($permission, $admin): array {
+            $actions = collect($this->editorLinks->actionsFor($issue))
+                ->filter(fn (array $action): bool => empty($action['permission'])
+                    || $permission->allows($admin, (string) $action['permission']))
+                ->values()
+                ->all();
+
+            return [$issue->id => $actions];
+        });
+        $inAppAlertsEnabled = (bool) config('technical-seo.alerts.in_app_enabled', true);
 
         return view('admin.seo.technical', [
             'title' => 'Technical SEO & 404 Center',
             'latestRun' => $latestRun,
             'latestCounts' => $latestCounts,
             'issues' => $issues,
+            'issueStates' => $issueStates,
+            'issueActions' => $issueActions,
             'ignoredFingerprints' => array_fill_keys($ignoredFingerprints, true),
             'ignoredRules' => $ignoredRules,
             'notFoundHits' => $notFoundHits,
             'suggestions' => $suggestions,
+            'liveNotFoundHits' => $liveNotFoundHits,
             'filters' => $filters + ['visibility' => 'open', 'not_found' => 'open'],
-            'open404Count' => SeoNotFoundHit::query()->whereNull('resolved_at')->count(),
+            'open404Count' => $this->visibleNotFoundQuery()->whereNull('resolved_at')->count(),
             'ignoredCount' => count($ignoredFingerprints),
+            'latestComparison' => $latestComparison,
+            'runHistory' => SeoAuditRun::query()->latest('id')->limit(12)->get(),
+            'auditAlerts' => $inAppAlertsEnabled
+                ? SeoAuditAlert::query()->with('run')->latest('id')->limit(6)->get()
+                : collect(),
+            'scheduleEnabled' => (bool) config('technical-seo.schedule_enabled'),
+            'inAppAlertsEnabled' => $inAppAlertsEnabled,
+            'emailAlertsEnabled' => (bool) config('technical-seo.alerts.email_enabled', false),
             'canViewMetadata' => $permission->allows($admin, 'seo.index'),
             'canScan' => $permission->allows($admin, 'seo.technical.scan'),
             'canIgnore' => $permission->allows($admin, 'seo.technical.ignore'),
             'canRedirect' => $permission->allows($admin, 'seo.technical.redirect'),
         ]);
+    }
+
+    private function visibleNotFoundQuery(): Builder
+    {
+        $query = SeoNotFoundHit::query();
+        foreach ($this->privacyPaths->noisePrefixes() as $prefix) {
+            $query->where(function (Builder $visible) use ($prefix): void {
+                $visible->where('path', '!=', $prefix)
+                    // SUBSTR keeps SQL wildcard characters such as the
+                    // leading underscore in /_debugbar literal on both the
+                    // SQLite test database and production MySQL.
+                    ->whereRaw('SUBSTR(path, 1, ?) != ?', [mb_strlen($prefix . '/'), $prefix . '/']);
+            });
+        }
+
+        return $query;
     }
 
     public function scan(Request $request)
@@ -155,6 +219,8 @@ final class TechnicalSeoController extends Controller
         ]);
         abort_if($this->privacyPaths->containsRedaction($hit->path), 422,
             'Redacted paths cannot become redirects. Create a redirect manually from a verified non-sensitive source.');
+        abort_if($this->destinations->isManaged($hit->path, (string) $hit->locale), 409,
+            'This address is live managed content now. Dismiss the stale 404 record instead of creating a redirect.');
         $destination = $this->urls->internalPath($data['destination'], '/');
         abort_unless($destination !== null
             && $destination === $data['destination']

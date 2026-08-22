@@ -15,6 +15,7 @@ use App\Models\SeoAuditRun;
 use App\Models\SeoNotFoundHit;
 use App\Models\Tag;
 use App\Services\SeoManagedDestinationService;
+use App\Services\SeoRedirectService;
 use App\Services\SeoRouteRegistry;
 use App\Services\TechnicalSeoAuditService;
 use App\Services\TechnicalSeoInternalFetcher;
@@ -23,9 +24,9 @@ use App\Services\TechnicalSeoUrlPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\ValidationException;
 use Mockery;
 use Tests\TestCase;
 
@@ -82,6 +83,9 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         $this->assertSame('/events?page=2&lang=bn', $policy->internalAuditTarget('/events?tracking=x&lang=bn&page=2', '/'));
         $this->assertSame('/events?page=3&lang=bn', $policy->internalAuditTarget('?lang=bn&page=3', '/events?lang=bn'));
         $this->assertSame('/events', $policy->internalAuditTarget('/events?page=1&utm_source=test', '/'));
+        $this->assertSame('/page/founder%27s-letter', $policy->internalAuditTarget('/page/founder%27s-letter', '/'));
+        $this->assertSame('/page/founder%27s-letter', $policy->internalAuditTarget("/page/founder's-letter", '/'));
+        $this->assertSame('/category/awards-%26-recognition', $policy->internalAuditTarget('/category/awards-&-recognition', '/'));
         $this->assertNull($policy->internalAuditTarget('/events?page[]=2', '/'));
         $this->assertNull($policy->internalAuditTarget('/events?lang=unsupported', '/'));
     }
@@ -137,6 +141,58 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
             $this->assertContains($type, $types, $type);
         }
         $this->assertLessThanOrEqual(10, count($calls), 'A bounded sitemap index/child pair plus at most eight URL fetches.');
+    }
+
+    public function test_audit_prioritizes_active_internal_redirect_destinations_and_flags_a_missing_target(): void
+    {
+        config([
+            'app.url' => 'http://localhost',
+            'seo.routes' => [],
+            'technical-seo.max_urls' => 1,
+            'technical-seo.max_seconds' => 5,
+            'technical-seo.max_response_bytes' => 64,
+        ]);
+        Page::create([
+            'uuid' => (string) str()->uuid(),
+            'name' => 'Draft redirect destination',
+            'sub_title' => '',
+            'slug' => 'draft-redirect-destination',
+            'status' => 0,
+            'publication_status' => 'draft',
+            'visibility' => 'public',
+            'language' => 'en',
+        ]);
+        app(SeoRedirectService::class)->create([
+            'from_path' => '/legacy-campaign',
+            'to_url' => '/page/draft-redirect-destination',
+            'status_code' => 301,
+            'is_active' => true,
+            'locale' => 'en',
+        ]);
+
+        $fetcher = Mockery::mock(TechnicalSeoInternalFetcher::class);
+        $fetcher->shouldReceive('fetch')->with('/sitemap-index.xml', 64)->once()
+            ->andReturn($this->response(404, 'text/html', ''));
+        $fetcher->shouldReceive('fetch')->with('/sitemap.xml', 64)->once()
+            ->andReturn($this->response(404, 'text/html', ''));
+        $fetcher->shouldReceive('fetch')->with('/page/draft-redirect-destination', 64)->once()
+            ->andReturn($this->response(404, 'text/html', 'missing'));
+
+        $run = (new TechnicalSeoAuditService(
+            $fetcher,
+            app(TechnicalSeoUrlPolicy::class),
+            app(SeoRouteRegistry::class)
+        ))->run('command');
+
+        $issue = $run->issues()
+            ->where('issue_type', 'http_4xx')
+            ->where('source_path', '/page/draft-redirect-destination')
+            ->sole();
+        $this->assertSame('completed_limited', $run->status);
+        $this->assertSame('high', $issue->severity);
+        $this->assertSame(404, $issue->http_status);
+        $this->assertSame('An active redirect destination does not load.', $issue->message);
+        $this->assertSame(['/legacy-campaign [en]'], $issue->evidence['redirect_sources']);
     }
 
     public function test_audit_keeps_english_and_bangla_sitemap_urls_as_distinct_crawl_identities(): void
@@ -203,6 +259,65 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         $this->assertFalse($run->issues()->where('issue_type', 'missing_h1')->exists());
         $this->assertFalse($run->issues()->where('issue_type', 'orphan_page')->where('source_path', '/linked')->exists());
         $this->assertTrue($run->issues()->where('issue_type', 'orphan_page')->where('source_path', '/orphan')->exists());
+    }
+
+    public function test_inertia_component_routes_are_counted_as_internal_links(): void
+    {
+        config([
+            'app.url' => 'http://localhost',
+            'seo.routes' => [],
+            'technical-seo.max_urls' => 17,
+            'technical-seo.max_seconds' => 5,
+        ]);
+        $paths = [
+            '/category-source', '/category-landing-source', '/events-source', '/project-source', '/zakat',
+            '/page/program-one', '/about-us', '/event/event-one', '/page/project-one', '/donate/zakat',
+        ];
+        $sitemap = '<?xml version="1.0"?><urlset>'
+            . collect($paths)->map(fn (string $path): string => '<url><loc>http://localhost' . $path . '</loc></url>')->implode('')
+            . '</urlset>';
+
+        $fetcher = Mockery::mock(TechnicalSeoInternalFetcher::class);
+        $calls = [];
+        $fetcher->shouldReceive('fetch')->andReturnUsing(function (string $target) use ($sitemap, &$calls): array {
+            $calls[] = $target;
+            $responses = [
+                '/sitemap-index.xml' => $this->response(200, 'application/xml', '<?xml version="1.0"?><sitemapindex><sitemap><loc>http://localhost/sitemap-en.xml</loc></sitemap></sitemapindex>'),
+                '/sitemap-en.xml' => $this->response(200, 'application/xml', $sitemap),
+                '/' => $this->response(200, 'text/html', $this->inertiaShell('/')),
+                '/category-source' => $this->response(200, 'text/html', $this->inertiaShell('/category-source', ['items' => [
+                    ['slug' => 'program-one'],
+                    ['slug' => 'about-us', 'public_url' => '/about-us'],
+                ]], 'category')),
+                '/category-landing-source' => $this->response(200, 'text/html', $this->inertiaShell('/category-landing-source', [
+                    'items' => [['slug' => 'landing-alias']],
+                    'landing_page' => ['visible_blocks' => [['type' => 'hero']]],
+                ], 'category')),
+                '/events-source' => $this->response(200, 'text/html', $this->inertiaShell('/events-source', ['items' => [['slug' => 'event-one']]], 'events')),
+                '/project-source' => $this->response(200, 'text/html', $this->inertiaShell('/project-source', ['items' => [['slug' => 'project-one']]], 'project')),
+                '/zakat' => $this->response(200, 'text/html', $this->inertiaShell('/zakat', [], 'zakat')),
+            ];
+            foreach (['/page/program-one', '/about-us', '/event/event-one', '/page/project-one', '/donate/zakat'] as $path) {
+                $responses[$path] = $this->response(200, 'text/html', $this->inertiaShell($path));
+            }
+
+            return $responses[$target] ?? $this->response(404, 'text/html', '');
+        });
+
+        $run = (new TechnicalSeoAuditService(
+            $fetcher,
+            app(TechnicalSeoUrlPolicy::class),
+            app(SeoRouteRegistry::class)
+        ))->run('command');
+
+        foreach (['/page/program-one', '/about-us', '/event/event-one', '/page/project-one', '/donate/zakat'] as $path) {
+            $this->assertFalse(
+                $run->issues()->where('issue_type', 'orphan_page')->where('source_path', $path)->exists(),
+                $path . ' should inherit its client-rendered incoming link.'
+            );
+        }
+        $this->assertNotContains('/page/about-us', $calls);
+        $this->assertNotContains('/page/landing-alias', $calls);
     }
 
     public function test_oversized_response_is_stopped_and_recorded_without_body_evidence(): void
@@ -272,7 +387,7 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         $this->get(route('seo.technical.index'))
             ->assertOk()
             ->assertViewHas('canViewMetadata', true)
-            ->assertSee('Search &amp; Social Preview', false);
+            ->assertSee('Search &amp; Sharing', false);
         $this->post(route('seo.technical.scan'))->assertForbidden();
         $this->assertContains('throttle:2,1', Route::getRoutes()->getByName('seo.technical.scan')->gatherMiddleware());
 
@@ -286,6 +401,53 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         $menu = AuthMenu::where('link', 'seo.technical.index')->firstOrFail();
         $action = MenuAction::where('link', 'seo.technical.redirect')->firstOrFail();
         $role->update(['permission' => (string) $menu->id, 'actionPermission' => (string) $action->id]);
+        $this->actingAs($admin, 'admin');
+
+        $livePage = Page::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Live redirect source',
+            'sub_title' => 'This content is already available.',
+            'slug' => 'live-redirect-source',
+            'status' => 1,
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'language' => 'en',
+            'published_at' => now()->subDay(),
+        ]);
+        $livePath = '/page/' . $livePage->slug;
+        $liveHit = SeoNotFoundHit::create([
+            'scope_hash' => hash('sha256', 'en|' . $livePath),
+            'path_hash' => hash('sha256', $livePath),
+            'path' => $livePath,
+            'locale' => 'en',
+            'hits' => 2,
+            'first_seen_at' => now()->subDay(),
+            'last_seen_at' => now(),
+        ]);
+
+        try {
+            app(SeoRedirectService::class)->create([
+                'from_path' => $livePath,
+                'to_url' => '/contact-us',
+                'status_code' => 301,
+                'is_active' => true,
+                'locale' => 'en',
+            ]);
+            $this->fail('A manual redirect must never shadow live managed content.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('from_path', $exception->errors());
+        }
+        $this->assertDatabaseMissing('seo_redirects', ['from_path' => $livePath]);
+
+        $inbox = $this->get(route('seo.technical.index'))->assertOk()->assertSee('Live again:');
+        $this->assertTrue((bool) $inbox->viewData('liveNotFoundHits')->get($liveHit->id));
+        $this->assertSame([], $inbox->viewData('suggestions')->get($liveHit->id));
+        $this->post(route('seo.technical.not-found.redirect', $liveHit), [
+            'destination' => '/contact-us',
+            'status_code' => 301,
+        ])->assertStatus(409);
+        $this->assertNull($liveHit->fresh()->resolved_at);
+
         $hit = SeoNotFoundHit::create([
             'scope_hash' => hash('sha256', 'en|/old-about'),
             'path_hash' => hash('sha256', '/old-about'),
@@ -397,10 +559,10 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         return '<html><head><title>Healthy</title><meta name="description" content="Healthy description"><link rel="canonical" href="' . $canonical . '"><script type="application/ld+json">{"@type":"WebPage"}</script></head><body><h1>Healthy</h1>' . $body . '</body></html>';
     }
 
-    private function inertiaShell(string $canonical, array $data = []): string
+    private function inertiaShell(string $canonical, array $data = [], string $component = 'test'): string
     {
         $page = htmlspecialchars(json_encode([
-            'component' => 'test',
+            'component' => $component,
             'props' => ['data' => $data, 'appMenus' => [], 'appFooterMenus' => []],
             'url' => $canonical,
             'version' => null,

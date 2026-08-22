@@ -16,6 +16,7 @@ class CategoryController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
+        private SeoMetadataService $seo,
     ) {
     }
 
@@ -59,6 +60,7 @@ class CategoryController extends Controller
                 : (str_starts_with($thumbnail, '/') || preg_match('#^https?://#i', $thumbnail)
                     ? $thumbnail
                     : '/storage/photos/1/page/' . $thumbnail));
+            $page->setAttribute('public_url', $this->seo->publicUrlForPage($page));
             return $page;
         });
 
@@ -67,7 +69,7 @@ class CategoryController extends Controller
         return Inertia::render('category')->with([
             'status' => true,
             'title' => $category->name,
-            'meta_tag' => app(SeoMetadataService::class)->metaForModel($category, [
+            'meta_tag' => $this->seo->metaForModel($category, [
                 'meta_keyword' => $category->meta_keyword,
                 'meta_title' => $category->meta_title ?: $category->name . ' | Ignite Global Foundation',
                 'meta_description' => $category->meta_description ?: trim(strip_tags((string) $category->description)),

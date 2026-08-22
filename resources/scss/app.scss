@@ -5,19 +5,11 @@
 @use "bootstrap/scss/bootstrap";
 
 // Fonts
-@import url("https://fonts.googleapis.com/css?family=Nunito");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css");
-@import url("https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css");
-@import url("https://fonts.googleapis.com/css?family=Lato:400,700");
-@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Literata:opsz,wght@7..72,500;600;700&display=swap");
 
-// Vuetify
-@import "vuetify/dist/vuetify.min.css";
+// Vuetify component styles are loaded once by resources/js/vuetify.js.
 @import "vuetify-theme-stylesheet.css";
-
-// Toastification
-@import "vue-toastification/dist/index.css";
 
 //vue scrool up
 

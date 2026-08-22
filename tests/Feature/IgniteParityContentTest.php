@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AnnualReport;
+use App\Models\Category;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MediaAsset;
@@ -47,6 +48,15 @@ class IgniteParityContentTest extends TestCase
         $this->assertSame('Ignite Global Foundation | Building Lasting Change', $homeSeo->title);
         $this->assertNotEmpty($homeSeo->description);
         $this->assertNotEmpty($homeSeo->og_image);
+        $homeCategory = Category::where('slug', 'home')->where('language', 'en')->firstOrFail();
+        $homeCategorySeo = SeoMetadata::query()
+            ->where('seoable_type', Category::class)
+            ->where('seoable_id', $homeCategory->id)
+            ->where('locale', 'en')
+            ->firstOrFail();
+        $this->assertFalse($homeCategorySeo->robots_index);
+        $this->assertTrue($homeCategorySeo->robots_follow);
+        $this->assertTrue($homeCategorySeo->exclude_from_sitemap);
         $this->assertSame(0, MediaAsset::where('path', 'like', 'media/ignite-live/%')->whereNull('alt_text')->count());
         $this->assertSame(6, PageMenu::where('type', 'main')->where('status', 1)->whereNull('parent_id')->count());
 

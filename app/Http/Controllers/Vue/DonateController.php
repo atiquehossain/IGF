@@ -155,6 +155,12 @@ class DonateController extends Controller
                 'selectedDestination' => $selectedDestination,
                 'selection_warning' => $selectionWarning,
                 'paymentMethods' => $this->paymentMethods->publicOptions($locale),
+                'donationFrequencies' => [
+                    ['key' => 'one_time', 'available' => true],
+                    ['key' => 'daily', 'available' => false],
+                    ['key' => 'weekly', 'available' => false],
+                    ['key' => 'monthly', 'available' => false],
+                ],
                 'checkout_key' => $this->sslCommerz->issueCheckoutKey(),
             ],
         ])->toResponse($request)->withHeaders([
@@ -194,6 +200,7 @@ class DonateController extends Controller
             'payment_cause' => ['required', 'string', 'max:255'],
             'project_uuid' => ['nullable', 'uuid'],
             'payment_method' => ['required', 'string', Rule::in($this->paymentMethods->publicKeys())],
+            'frequency' => ['nullable', 'string', Rule::in(['one_time'])],
             'checkout_key' => [
                 'required',
                 'string',
@@ -281,6 +288,7 @@ class DonateController extends Controller
                             'project_uuid_snapshot' => $project?->uuid,
                             'project_name_snapshot' => $project?->name,
                             'requested_payment_method' => $paymentMethod['key'],
+                            'donation_frequency' => $validated['frequency'] ?? 'one_time',
                             'amount' => $validated['amount'],
                             'transaction_id' => $tranId,
                             'payment_status' => 'Pending',

@@ -41,7 +41,7 @@ class DonationPaymentMethodBackendTest extends TestCase
                 ->has('data.paymentMethods', 3)
                 ->where('data.paymentMethods.0.key', 'bkash')
                 ->where('data.paymentMethods.0.logos', [
-                    ['src' => '/image/payment-methods/bkash.png'],
+                    ['src' => '/image/payment-methods/bkash-reference.svg'],
                 ])
                 ->where('data.paymentMethods.0.available', true)
                 ->where('data.paymentMethods.1.key', 'nagad')
@@ -51,7 +51,7 @@ class DonationPaymentMethodBackendTest extends TestCase
                 ->where('data.paymentMethods.1.available', false)
                 ->where('data.paymentMethods.2.key', 'card')
                 ->where('data.paymentMethods.2.logos', [
-                    ['src' => '/image/payment-methods/visa.png'],
+                    ['src' => '/image/payment-methods/visa-reference.svg'],
                     ['src' => '/image/payment-methods/amex.png'],
                 ])
                 ->where('data.paymentMethods.2.available', true)
@@ -62,6 +62,21 @@ class DonationPaymentMethodBackendTest extends TestCase
             );
 
         $response->assertDontSee('sandbox-password', false);
+    }
+
+    public function test_checkout_rejects_recurring_frequencies_until_a_recurring_provider_is_connected(): void
+    {
+        $cause = DonationType::create(['name' => 'Education', 'status' => 1]);
+        $this->configureGateway();
+
+        $this->postJson('/donate', array_merge($this->validPayload($cause, 'bkash'), [
+            'frequency' => 'monthly',
+        ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('frequency');
+
+        $this->assertDatabaseCount('donations', 0);
+        Http::assertNothingSent();
     }
 
     public function test_provider_identity_and_supported_networks_ignore_legacy_editable_brand_settings(): void
@@ -91,7 +106,7 @@ class DonationPaymentMethodBackendTest extends TestCase
         $this->assertNull($options['nagad']['networks']);
         $this->assertSame('Card', $options['card']['label']);
         $this->assertSame(['Visa', 'American Express'], $options['card']['networks']);
-        $this->assertSame([['src' => '/image/payment-methods/bkash.png']], $options['bkash']['logos']);
+        $this->assertSame([['src' => '/image/payment-methods/bkash-reference.svg']], $options['bkash']['logos']);
     }
 
     public function test_shared_readiness_requires_credentials_and_keeps_protected_configuration_private(): void
@@ -357,6 +372,7 @@ class DonationPaymentMethodBackendTest extends TestCase
         $this->assertDatabaseHas('donations', [
             'transaction_id' => $first->json('tran_id'),
             'payment_status' => 'Pending',
+            'donation_frequency' => 'one_time',
         ]);
         $this->assertDatabaseHas('ssl_commerz_transactions', [
             'tran_id' => $first->json('tran_id'),
@@ -1015,6 +1031,7 @@ class DonationPaymentMethodBackendTest extends TestCase
             'address' => 'Dhaka',
             'payment_cause' => $cause->uuid,
             'payment_method' => $method,
+            'frequency' => 'one_time',
             'checkout_key' => app(SSLCommerzService::class)->issueCheckoutKey(),
         ];
     }

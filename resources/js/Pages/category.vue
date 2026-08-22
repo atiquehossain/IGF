@@ -17,7 +17,7 @@
             <CategoryItemCard v-for="post in items" :key="post.uuid || post.id" :title="post.name"
               :subtitle="post.sub_title" :thumbnail="post.thumbnail" :image-alt="post.thumbnail_alt || post.name"
               :eyebrow="settings.category_card_eyebrow" :link-label="settings.category_card_link_label"
-              :link="route('frontend.page', post.slug)" />
+              :link="post.public_url || route('frontend.page', post.slug)" />
           </div>
           <div v-else class="igf-empty"><i class="fa-regular fa-folder-open" aria-hidden="true" /><h2>{{ settings.category_empty_title }}</h2><p>{{ settings.category_empty_body }}</p></div>
           <v-pagination v-if="properties?.total_page > 1" :model-value="properties.page" :length="properties.total_page"

@@ -113,7 +113,7 @@
             <ul>
                 <li><i class="fa fa-check-circle" aria-hidden="true"></i><span>One unpublished draft is created in the language you chose.</span></li>
                 <li><i class="fa fa-check-circle" aria-hidden="true"></i><span>The Simple Editor opens so you can add page sections and images.</span></li>
-                <li><i class="fa fa-check-circle" aria-hidden="true"></i><span>Search &amp; sharing settings remain in the guided SEO editor.</span></li>
+                <li><i class="fa fa-check-circle" aria-hidden="true"></i><span>Search &amp; Sharing settings remain in the guided SEO editor.</span></li>
                 <li><i class="fa fa-check-circle" aria-hidden="true"></i><span>An initial restore point is saved automatically.</span></li>
             </ul>
             <div class="draft-note"><strong>Nothing goes live now.</strong> A draft is not visible to website visitors until an authorized editor publishes it.</div>

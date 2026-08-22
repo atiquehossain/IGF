@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div class="igf-donate" :class="[`is-layout-${checkoutLayout}`, `is-card-${cardStyle}`]">
+    <div class="igf-donate" :class="[`is-layout-${checkoutLayout}`, `is-card-${cardStyle}`, { 'has-hero': settings.show_hero }]">
       <header v-if="settings.show_hero" class="igf-donate__hero">
         <div class="igf-shell igf-donate__hero-grid">
           <div>
@@ -32,124 +32,181 @@
           </aside>
 
           <div class="igf-donation-card">
-            <div v-if="settings.show_form_badge" class="igf-donation-card__header">
-              <span>{{ settings.form_badge }}</span>
-              <i class="fa-solid fa-shield-halved" aria-hidden="true" />
+            <div v-if="settings.show_form_badge || showLocaleSwitcher" class="igf-donation-card__toolbar">
+              <div v-if="settings.show_form_badge" class="igf-donation-card__header">
+                <span>{{ settings.form_badge }}</span>
+                <i class="fa-solid fa-shield-halved" aria-hidden="true" />
+              </div>
+              <nav v-if="showLocaleSwitcher" class="igf-donation-languages" :aria-label="settings.language_switcher_accessible_label || 'Language'">
+                <a v-for="link in localeLinks" :key="link.locale" :href="link.url" :hreflang="link.locale" :lang="link.locale"
+                  :aria-current="link.locale === currentLocale ? 'page' : undefined">
+                  {{ languageLabel(link.locale) }}
+                </a>
+              </nav>
             </div>
             <h2 id="donation-form-title">{{ settings.form_title }}</h2>
             <p v-if="settings.show_required_hint" class="igf-card-intro">{{ settings.required_hint }}</p>
 
             <v-form ref="form" v-model="isFormValid" @submit.prevent="submitDonation">
-              <div class="igf-frequency" :aria-label="settings.frequency_accessible_label">
-                <span><i class="fa-solid fa-circle-check" aria-hidden="true" /> {{ settings.frequency_label }}</span>
-                <small>{{ settings.frequency_help }}</small>
+              <div class="igf-checkout-grid">
+                <div class="igf-checkout-main">
+                  <ol class="igf-checkout-steps" :aria-label="settings.checkout_steps_accessible_label">
+                    <li class="is-current"><a href="#donation-step-gift"><span>1</span>{{ settings.gift_step_label }}</a></li>
+                    <li :class="{ 'is-current': checkoutRevealed }"><a href="#donation-step-checkout" :aria-disabled="!giftSelectionComplete" @click.prevent="giftSelectionComplete && revealCheckout()"><span>2</span>{{ settings.checkout_step_label }}</a></li>
+                  </ol>
+
+                  <section id="donation-step-gift" class="igf-checkout-section">
+                    <div class="igf-gift-intro">
+                      <h3 id="donation-gift-heading" ref="giftHeading" tabindex="-1">{{ settings.frequency_heading }}</h3>
+                      <p>{{ settings.gift_subtitle }}</p>
+                    </div>
+                    <fieldset class="igf-frequency-fieldset">
+                      <legend class="sr-only">{{ settings.frequency_accessible_label }}</legend>
+                      <div class="igf-frequency-tabs" role="radiogroup" :aria-label="settings.frequency_accessible_label" aria-describedby="donation-frequency-help">
+                        <button v-for="option in frequencyOptions" :key="option.key" type="button" role="radio"
+                          :class="{ 'is-selected': donation.frequency === option.key, 'is-unavailable': !option.available }"
+                          :aria-checked="donation.frequency === option.key" :disabled="!option.available"
+                          @click="selectFrequency(option)">
+                          <span>{{ option.label }}</span>
+                          <small v-if="!option.available">{{ settings.frequency_coming_soon_label }}</small>
+                        </button>
+                      </div>
+                      <p id="donation-frequency-help" class="igf-frequency-help"><i class="fa-solid fa-circle-info" aria-hidden="true" />{{ settings.frequency_help }}</p>
+                    </fieldset>
+
+                    <fieldset class="igf-fieldset">
+                      <legend>{{ settings.amount_legend }}</legend>
+                      <div class="igf-amount-options" :aria-label="settings.suggested_amounts_label">
+                        <button v-for="option in suggestedAmountOptions" :key="option.amount" type="button" data-test="suggested-amount"
+                          :class="{ 'is-selected': !customAmountActive && Number(donation.amount) === option.amount, 'is-featured': option.featured }"
+                          :aria-pressed="!customAmountActive && Number(donation.amount) === option.amount"
+                          @click="selectSuggestedAmount(option)">
+                          <span>{{ money(option.amount) }}</span>
+                          <small v-if="option.impact">{{ option.impact }}</small>
+                          <i class="fa-solid fa-check" aria-hidden="true" />
+                        </button>
+                        <button v-if="showCustomAmount" type="button" class="igf-custom-amount-option" data-test="custom-amount-option"
+                          :class="{ 'is-selected': customAmountActive }" :aria-pressed="customAmountActive"
+                          @click="activateCustomAmount">
+                          <span>{{ settings.other_amount_option_label }}</span>
+                          <small>{{ settings.other_amount_option_help }}</small>
+                          <i class="fa-solid fa-pencil" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <v-text-field v-if="customAmountActive" id="donation-custom-amount" v-model="donation.amount" type="number"
+                        :min="MIN_DONATION_AMOUNT" :max="MAX_DONATION_AMOUNT" step="0.01" :label="settings.other_amount_label"
+                        data-test="custom-amount-field" variant="outlined" hide-details="auto" :prefix="currencyPrefix" :suffix="currencySuffix" :rules="amountRules" required />
+                    </fieldset>
+
+                    <fieldset class="igf-fieldset">
+                      <legend>{{ settings.cause_legend }}</legend>
+                      <label class="igf-native-field" for="donation-cause"><span>{{ settings.cause_field_label }}</span><select id="donation-cause" v-model="donation.payment_cause" :aria-label="settings.cause_field_label" :disabled="donationTypes.length === 0" required><option disabled value="">{{ settings.cause_placeholder }}</option><option v-for="cause in donationTypes" :key="cause.uuid" :value="cause.uuid">{{ cause.name }}</option></select></label>
+                      <p v-if="settings.cause_help && donationTypes.length > 0" class="igf-field-help">{{ settings.cause_help }}</p>
+                      <p v-if="donationTypes.length === 0" class="igf-cause-alert" role="status">{{ settings.causes_unavailable_message }}</p>
+                      <p v-if="selectionWarning" class="igf-selection-warning" role="alert">{{ selectionWarning }}</p>
+                      <label v-if="selectedCause?.project_selection === 'optional'" class="igf-native-field igf-project-field" for="donation-project">
+                        <span>{{ settings.project_field_label }}</span>
+                        <select id="donation-project" v-model="donation.project_uuid" aria-describedby="donation-project-help">
+                          <option value="">{{ settings.project_placeholder }}</option>
+                          <option v-for="project in projectOptions" :key="project.uuid" :value="project.uuid">{{ project.name }}</option>
+                        </select>
+                      </label>
+                      <p v-if="selectedCause?.project_selection === 'optional'" id="donation-project-help" class="igf-field-help">{{ settings.project_help }}</p>
+                      <div v-if="selectedCause?.project_selection === 'fixed'" class="igf-fixed-project" role="status" aria-live="polite">
+                        <span>{{ settings.project_field_label }}</span>
+                        <strong>{{ selectedProject?.name || confirmedDestinationName }}</strong>
+                        <small>{{ settings.destination_page_explanation }}</small>
+                      </div>
+                      <div v-if="selectedCause" id="donation-destination-summary" class="igf-destination-summary" role="status" aria-live="polite">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true" />
+                        <div>
+                          <small>{{ settings.destination_label }}</small>
+                          <strong>{{ confirmedDestinationName }}</strong>
+                          <p>{{ destinationExplanation }}</p>
+                        </div>
+                      </div>
+                    </fieldset>
+
+                    <button type="button" class="igf-step-continue" :disabled="!giftSelectionComplete" @click="revealCheckout">
+                      {{ settings.continue_gift_label }} <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  </section>
+
+                  <section v-show="checkoutRevealed" id="donation-step-checkout" class="igf-checkout-section igf-checkout-section--details">
+                    <div class="igf-checkout-section__heading">
+                      <div><span>2</span><h3 id="donation-checkout-heading" ref="checkoutHeading" tabindex="-1">{{ settings.checkout_step_label }}</h3></div>
+                      <button type="button" @click="hideCheckout">{{ settings.edit_gift_label }}</button>
+                    </div>
+
+                    <fieldset class="igf-fieldset">
+                      <legend>{{ settings.details_legend }}</legend>
+                      <div class="igf-details-grid">
+                        <v-text-field v-model="donation.donor_name" :label="settings.name_field_label" autocomplete="name" variant="outlined"
+                          hide-details="auto" :rules="[v => !!v || settings.name_required_message]" required />
+                        <v-text-field v-model="donation.email" :label="settings.email_field_label" autocomplete="email" type="email"
+                          variant="outlined" hide-details="auto" :rules="emailRules" required />
+                        <v-text-field v-model="donation.phone" :label="settings.phone_field_label" autocomplete="tel" inputmode="tel"
+                          variant="outlined" hide-details="auto" :rules="[v => !!v || settings.phone_required_message]" required />
+                        <v-text-field v-model="donation.address" :label="settings.address_field_label" autocomplete="street-address" variant="outlined"
+                          hide-details="auto" :rules="[v => !!v || settings.address_required_message]" required />
+                      </div>
+                    </fieldset>
+
+                    <fieldset class="igf-fieldset igf-payment-methods" :aria-describedby="paymentMethodDescriptionIds" :aria-invalid="showPaymentMethodError ? 'true' : 'false'">
+                      <legend>{{ settings.payment_method_legend }}</legend>
+                      <p id="payment-method-help" class="igf-field-help">{{ settings.payment_method_help }}</p>
+                      <div v-if="paymentMethods.length" class="igf-payment-method-grid" data-test="payment-method-options">
+                        <label v-for="method in paymentMethods" :key="method.key" class="igf-payment-method"
+                          :class="{ 'is-selected': donation.payment_method === method.key, 'is-unavailable': !method.available }" :for="paymentMethodDomId(method)">
+                          <input :id="paymentMethodDomId(method)" v-model="donation.payment_method" type="radio" name="payment_method"
+                            :value="method.key" :disabled="!method.available" required :aria-describedby="paymentMethodDescriptionId(method)"
+                            @change="paymentMethodTouched = true">
+                          <span v-if="method.logos.length" class="igf-payment-method__logos" :class="{ 'has-multiple': method.logos.length > 1 }" aria-hidden="true">
+                            <img v-for="logo in method.logos" :key="logo.src" :src="logo.src" alt="" width="122" height="44">
+                          </span>
+                          <span v-else class="igf-payment-method__icon" aria-hidden="true"><i :class="paymentMethodIcon(method.key)" /></span>
+                          <span class="igf-payment-method__copy">
+                            <strong>{{ method.label }}</strong>
+                            <small v-if="method.description">{{ method.description }}</small>
+                            <small v-if="method.networks" class="igf-payment-method__networks">{{ paymentMethodNetworks(method.networks) }}</small>
+                            <small v-if="!method.available && hasAvailablePaymentMethod" :id="`${paymentMethodDomId(method)}-unavailable`" class="igf-payment-method__unavailable">{{ method.unavailable_reason || settings.payment_method_unavailable_label }}</small>
+                          </span>
+                          <span v-if="method.available" class="igf-payment-method__check" aria-hidden="true"><i class="fa-solid fa-check" /></span>
+                        </label>
+                      </div>
+                      <p v-if="!hasAvailablePaymentMethod" id="payment-methods-unavailable" class="igf-cause-alert" role="status">{{ settings.payment_methods_unavailable_message }}</p>
+                      <p v-if="showPaymentMethodError" id="payment-method-error" class="igf-field-error" role="alert">{{ settings.payment_method_required_message }}</p>
+                    </fieldset>
+
+                    <div v-if="settings.show_gateway_note" class="igf-gateway-note">
+                      <i class="fa-solid fa-shield-halved" aria-hidden="true" />
+                      <div><strong>{{ settings.gateway_heading }}</strong><p>{{ settings.gateway_note }}</p></div>
+                    </div>
+                    <p class="igf-privacy-note"><i class="fa-solid fa-lock" aria-hidden="true" /> {{ settings.privacy_note }}</p>
+                  </section>
+                </div>
+
+                <aside class="igf-donation-review" aria-live="polite" data-test="donation-review">
+                  <div class="igf-donation-review__heading"><span><i class="fa-solid fa-receipt" aria-hidden="true" /></span><div><small>{{ settings.form_badge }}</small><h3>{{ settings.summary_heading }}</h3></div></div>
+                  <dl>
+                    <div><dt>{{ settings.summary_frequency_label }}</dt><dd>{{ selectedFrequencyLabel }}</dd></div>
+                    <div><dt>{{ settings.summary_amount_label }}</dt><dd>{{ summaryAmount }}</dd></div>
+                    <div><dt>{{ settings.summary_destination_label }}</dt><dd>{{ confirmedDestinationName || settings.summary_pending_label }}</dd></div>
+                    <div><dt>{{ settings.summary_payment_label }}</dt><dd>{{ selectedPaymentMethod?.label || settings.summary_pending_label }}</dd></div>
+                  </dl>
+                  <p>{{ settings.summary_help }}</p>
+                  <v-btn v-show="checkoutRevealed" type="submit" class="igf-submit" block :disabled="!canAttemptSubmit" :loading="loading">
+                    {{ submitButtonLabel }} <span aria-hidden="true">&rarr;</span>
+                  </v-btn>
+                  <p v-if="settings.show_legal_links && legalLinks.length" class="igf-terms">
+                    {{ settings.legal_prefix }}
+                    <template v-for="(link, index) in legalLinks" :key="link.url">
+                      <a :href="link.url">{{ link.label }}</a><template v-if="index < legalLinks.length - 1">{{ index === legalLinks.length - 2 ? ` ${settings.legal_joiner} ` : ', ' }}</template>
+                    </template>.
+                    {{ settings.redirect_note }}
+                  </p>
+                </aside>
               </div>
-
-              <fieldset class="igf-fieldset">
-                <legend>{{ settings.amount_legend }}</legend>
-                <div class="igf-amount-options" :style="{ '--amount-columns': amountColumns }" :aria-label="settings.suggested_amounts_label">
-                  <button v-for="amount in suggestedAmounts" :key="amount" type="button"
-                    :class="{ 'is-selected': Number(donation.amount) === amount }"
-                    :aria-pressed="Number(donation.amount) === amount"
-                    @click="donation.amount = amount">
-                    {{ money(amount) }}
-                  </button>
-                </div>
-                <v-text-field v-if="showCustomAmount" v-model="donation.amount" type="number" :min="MIN_DONATION_AMOUNT" :max="MAX_DONATION_AMOUNT" step="0.01" :label="settings.other_amount_label"
-                  variant="outlined" hide-details="auto" :prefix="currencyPrefix" :suffix="currencySuffix" :rules="amountRules" required />
-              </fieldset>
-
-              <fieldset class="igf-fieldset">
-                <legend>{{ settings.cause_legend }}</legend>
-                <label class="igf-native-field" for="donation-cause"><span>{{ settings.cause_field_label }}</span><select id="donation-cause" v-model="donation.payment_cause" :aria-label="settings.cause_field_label" :disabled="donationTypes.length === 0" required><option disabled value="">{{ settings.cause_placeholder }}</option><option v-for="cause in donationTypes" :key="cause.uuid" :value="cause.uuid">{{ cause.name }}</option></select></label>
-                <p v-if="settings.cause_help && donationTypes.length > 0" class="igf-field-help">{{ settings.cause_help }}</p>
-                <p v-if="donationTypes.length === 0" class="igf-cause-alert" role="status">{{ settings.causes_unavailable_message }}</p>
-                <p v-if="selectionWarning" class="igf-selection-warning" role="alert">{{ selectionWarning }}</p>
-                <label v-if="selectedCause?.project_selection === 'optional'" class="igf-native-field igf-project-field" for="donation-project">
-                  <span>{{ settings.project_field_label }}</span>
-                  <select
-                    id="donation-project"
-                    v-model="donation.project_uuid"
-                    aria-describedby="donation-project-help"
-                  >
-                    <option value="">{{ settings.project_placeholder }}</option>
-                    <option v-for="project in projectOptions" :key="project.uuid" :value="project.uuid">{{ project.name }}</option>
-                  </select>
-                </label>
-                <p v-if="selectedCause?.project_selection === 'optional'" id="donation-project-help" class="igf-field-help">{{ settings.project_help }}</p>
-                <div v-if="selectedCause?.project_selection === 'fixed'" class="igf-fixed-project" role="status" aria-live="polite">
-                  <span>{{ settings.project_field_label }}</span>
-                  <strong>{{ selectedProject?.name || confirmedDestinationName }}</strong>
-                  <small>{{ settings.destination_page_explanation }}</small>
-                </div>
-                <div v-if="selectedCause" id="donation-destination-summary" class="igf-destination-summary" role="status" aria-live="polite">
-                  <i class="fa-solid fa-location-dot" aria-hidden="true" />
-                  <div>
-                    <small>{{ settings.destination_label }}</small>
-                    <strong>{{ confirmedDestinationName }}</strong>
-                    <p>{{ destinationExplanation }}</p>
-                  </div>
-                </div>
-              </fieldset>
-
-              <fieldset class="igf-fieldset igf-payment-methods" :aria-describedby="paymentMethodDescriptionIds" :aria-invalid="showPaymentMethodError ? 'true' : 'false'">
-                <legend>{{ settings.payment_method_legend }}</legend>
-                <p id="payment-method-help" class="igf-field-help">{{ settings.payment_method_help }}</p>
-                <div v-if="paymentMethods.length" class="igf-payment-method-grid" data-test="payment-method-options">
-                  <label v-for="method in paymentMethods" :key="method.key"
-                    class="igf-payment-method"
-                    :class="{ 'is-selected': donation.payment_method === method.key, 'is-unavailable': !method.available }"
-                    :for="paymentMethodDomId(method)">
-                    <input :id="paymentMethodDomId(method)" v-model="donation.payment_method" type="radio"
-                      name="payment_method" :value="method.key" :disabled="!method.available" required
-                      :aria-describedby="paymentMethodDescriptionId(method)"
-                      @change="paymentMethodTouched = true">
-                    <span v-if="method.logos.length" class="igf-payment-method__logos" :class="{ 'has-multiple': method.logos.length > 1 }" aria-hidden="true">
-                      <img v-for="logo in method.logos" :key="logo.src" :src="logo.src" alt="" width="64" height="32">
-                    </span>
-                    <span v-else class="igf-payment-method__icon" aria-hidden="true"><i :class="paymentMethodIcon(method.key)" /></span>
-                    <span class="igf-payment-method__copy">
-                      <strong>{{ method.label }}</strong>
-                      <small v-if="method.description">{{ method.description }}</small>
-                      <small v-if="method.networks" class="igf-payment-method__networks">{{ paymentMethodNetworks(method.networks) }}</small>
-                      <small v-if="!method.available && hasAvailablePaymentMethod" :id="`${paymentMethodDomId(method)}-unavailable`" class="igf-payment-method__unavailable">
-                        {{ method.unavailable_reason || settings.payment_method_unavailable_label }}
-                      </small>
-                    </span>
-                    <span v-if="method.available" class="igf-payment-method__check" aria-hidden="true"><i class="fa-solid fa-check" /></span>
-                  </label>
-                </div>
-                <p v-if="!hasAvailablePaymentMethod" id="payment-methods-unavailable" class="igf-cause-alert" role="status">{{ settings.payment_methods_unavailable_message }}</p>
-                <p v-if="showPaymentMethodError" id="payment-method-error" class="igf-field-error" role="alert">{{ settings.payment_method_required_message }}</p>
-              </fieldset>
-
-              <fieldset class="igf-fieldset">
-                <legend>{{ settings.details_legend }}</legend>
-                <div class="igf-details-grid">
-                  <v-text-field v-model="donation.donor_name" :label="settings.name_field_label" autocomplete="name" variant="outlined"
-                    hide-details="auto" :rules="[v => !!v || settings.name_required_message]" required />
-                  <v-text-field v-model="donation.email" :label="settings.email_field_label" autocomplete="email" type="email"
-                    variant="outlined" hide-details="auto" :rules="emailRules" required />
-                  <v-text-field v-model="donation.phone" :label="settings.phone_field_label" autocomplete="tel" inputmode="tel"
-                    variant="outlined" hide-details="auto" :rules="[v => !!v || settings.phone_required_message]" required />
-                  <v-text-field v-model="donation.address" :label="settings.address_field_label" autocomplete="street-address" variant="outlined"
-                    hide-details="auto" :rules="[v => !!v || settings.address_required_message]" required />
-                </div>
-              </fieldset>
-
-              <div v-if="settings.show_gateway_note" class="igf-gateway-note">
-                <i class="fa-solid fa-shield-halved" aria-hidden="true" />
-                <div><strong>{{ settings.gateway_heading }}</strong><p>{{ settings.gateway_note }}</p></div>
-              </div>
-              <p class="igf-privacy-note"><i class="fa-solid fa-lock" aria-hidden="true" /> {{ settings.privacy_note }}</p>
-              <v-btn type="submit" class="igf-submit" block :disabled="!canAttemptSubmit" :loading="loading">
-                {{ settings.submit_label }} <span aria-hidden="true">&rarr;</span>
-              </v-btn>
-              <p v-if="settings.show_legal_links" class="igf-terms">
-                {{ settings.legal_prefix }}
-                <a v-if="settings.privacy_link_url && settings.privacy_link_label" :href="settings.privacy_link_url">{{ settings.privacy_link_label }}</a><template v-if="settings.privacy_link_url && settings.refund_link_url"> {{ settings.legal_joiner }} </template><a v-if="settings.refund_link_url && settings.refund_link_label" :href="settings.refund_link_url">{{ settings.refund_link_label }}</a>.
-                {{ settings.redirect_note }}
-              </p>
             </v-form>
           </div>
         </div>
@@ -159,15 +216,22 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, nextTick, onMounted, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Layout from '../layouts/App.vue';
 import { useGlobal } from '../Shared/composables/global';
+import { usePublicLocaleSwitcher } from '../Shared/composables/publicLocaleSwitcher';
 import { donationAmountFromUrl, formatMoney, interpolateSetting, regionalSettings } from '../Shared/composables/siteSettings';
 
 const inertiaPage = usePage();
 const { $toast } = useGlobal();
+const {
+  currentLocale,
+  enabled: showLocaleSwitcher,
+  languageLabel,
+  links: localeLinks,
+} = usePublicLocaleSwitcher();
 const settings = computed(() => inertiaPage.props.siteSettings?.donation_page || {});
 const contact = computed(() => inertiaPage.props.siteSettings?.contact || {});
 const regional = computed(() => regionalSettings(inertiaPage.props.siteSettings?.regional));
@@ -178,15 +242,45 @@ const cardStyle = computed(() => ['soft', 'outlined', 'elevated'].includes(setti
 const MIN_DONATION_AMOUNT = 10;
 const MAX_DONATION_AMOUNT = 500000;
 const SAFE_PAYMENT_METHOD_LOGOS = Object.freeze({
-  bkash: ['/image/payment-methods/bkash.png'],
+  bkash: ['/image/payment-methods/bkash-reference.svg'],
   nagad: ['/image/payment-methods/nagad.png'],
-  card: ['/image/payment-methods/visa.png', '/image/payment-methods/amex.png'],
+  card: ['/image/payment-methods/visa-reference.svg', '/image/payment-methods/amex.png'],
 });
 const amountButtonCount = computed(() => Math.min(5, Math.max(2, Number(settings.value.amount_button_count) || 5)));
-const suggestedAmounts = computed(() => [settings.value.amount_1, settings.value.amount_2, settings.value.amount_3, settings.value.amount_4, settings.value.amount_5]
-  .map(Number).filter(isAllowedDonationAmount).slice(0, amountButtonCount.value));
+const suggestedAmountOptions = computed(() => [1, 2, 3, 4, 5]
+  .map(index => ({
+    amount: Number(settings.value[`amount_${index}`]),
+    impact: String(settings.value[`amount_${index}_impact`] || ''),
+    featured: Number(settings.value.featured_amount_index || 4) === index,
+  }))
+  .filter(option => isAllowedDonationAmount(option.amount))
+  .slice(0, amountButtonCount.value));
+const suggestedAmounts = computed(() => suggestedAmountOptions.value.map(option => option.amount));
 const showCustomAmount = computed(() => settings.value.show_custom_amount !== false);
-const amountColumns = computed(() => String(Math.min(suggestedAmounts.value.length || 2, 5)));
+const frequencyOptions = computed(() => {
+  const labels = {
+    one_time: settings.value.frequency_label || 'One-time',
+    daily: settings.value.frequency_daily_label || 'Daily',
+    weekly: settings.value.frequency_weekly_label || 'Weekly',
+    monthly: settings.value.frequency_monthly_label || 'Monthly',
+  };
+  const provided = Array.isArray(inertiaPage.props.data?.donationFrequencies)
+    ? inertiaPage.props.data.donationFrequencies
+    : [
+      { key: 'one_time', available: true },
+      { key: 'daily', available: false },
+      { key: 'weekly', available: false },
+      { key: 'monthly', available: false },
+    ];
+
+  return provided
+    .filter(option => option && Object.prototype.hasOwnProperty.call(labels, option.key))
+    .map(option => ({
+      key: option.key,
+      label: labels[option.key],
+      available: option.key === 'one_time' && option.available !== false,
+    }));
+});
 const paymentMethods = computed(() => {
   const methods = Array.isArray(inertiaPage.props.data?.paymentMethods)
     ? inertiaPage.props.data.paymentMethods
@@ -209,9 +303,14 @@ const donationTypes = ref([]);
 const form = ref(null);
 const isFormValid = ref(false);
 const loading = ref(false);
+const giftHeading = ref(null);
+const checkoutHeading = ref(null);
+const checkoutRevealed = ref(false);
+const customAmountActive = ref(false);
+const customAmountDraft = ref('');
 const paymentMethodTouched = ref(false);
 const selectionWarning = ref(String(inertiaPage.props.data?.selection_warning || ''));
-const donation = ref({ amount: '', donor_name: '', email: '', phone: '', address: '', payment_cause: '', project_uuid: '', payment_method: '', checkout_key: '' });
+const donation = ref({ amount: '', donor_name: '', email: '', phone: '', address: '', payment_cause: '', project_uuid: '', payment_method: '', frequency: 'one_time', checkout_key: '' });
 const submittedPayloadFingerprint = ref(null);
 const checkoutKeyNeedsRefresh = ref(false);
 const selectedCause = computed(() => donationTypes.value.find(cause => [cause.uuid, cause.slug].includes(donation.value.payment_cause)) || null);
@@ -231,9 +330,30 @@ const selectedPaymentMethodAvailable = computed(() => paymentMethods.value.some(
 const hasAvailablePaymentMethod = computed(() => paymentMethods.value.some(method => method.available));
 const showPaymentMethodError = computed(() => paymentMethodTouched.value && !selectedPaymentMethodAvailable.value);
 const paymentMethodDescriptionIds = computed(() => showPaymentMethodError.value ? 'payment-method-help payment-method-error' : 'payment-method-help');
+const selectedPaymentMethod = computed(() => paymentMethods.value.find(method => method.key === donation.value.payment_method) || null);
+const selectedFrequencyLabel = computed(() => frequencyOptions.value.find(option => option.key === donation.value.frequency)?.label
+  || settings.value.frequency_label
+  || 'One-time');
+const giftSelectionComplete = computed(() => isAllowedDonationAmount(donation.value.amount)
+  && !!donation.value.payment_cause
+  && donation.value.frequency === 'one_time'
+  && projectSelectionSatisfied.value
+  && donationTypes.value.length > 0);
+const summaryAmount = computed(() => isAllowedDonationAmount(donation.value.amount)
+  ? money(donation.value.amount)
+  : settings.value.summary_pending_label);
+const submitButtonLabel = computed(() => isAllowedDonationAmount(donation.value.amount)
+  ? interpolateSetting(settings.value.submit_with_amount_label || 'Continue securely with {amount}', { amount: money(donation.value.amount) })
+  : settings.value.submit_label);
+const legalLinks = computed(() => [
+  { label: settings.value.terms_link_label, url: settings.value.terms_link_url },
+  { label: settings.value.privacy_link_label, url: settings.value.privacy_link_url },
+  { label: settings.value.refund_link_label, url: settings.value.refund_link_url },
+].filter(link => String(link.label || '').trim() !== '' && String(link.url || '').trim() !== ''));
 const canAttemptSubmit = computed(() => isFormValid.value
   && isAllowedDonationAmount(donation.value.amount)
   && !!donation.value.payment_cause
+  && donation.value.frequency === 'one_time'
   && projectSelectionSatisfied.value
   && !loading.value
   && donationTypes.value.length > 0
@@ -261,6 +381,7 @@ const materialPayloadFingerprint = computed(() => JSON.stringify({
   payment_cause: String(donation.value.payment_cause || ''),
   project_uuid: String(donation.value.project_uuid || ''),
   payment_method: String(donation.value.payment_method || ''),
+  frequency: String(donation.value.frequency || ''),
 }));
 
 watch(materialPayloadFingerprint, fingerprint => {
@@ -278,6 +399,49 @@ function isAllowedDonationAmount(value) {
 
 function hasSupportedCurrencyPrecision(value) {
   return /^(?:0|[1-9]\d{0,5})(?:\.\d{1,2})?$/.test(String(value ?? '').trim());
+}
+
+function selectFrequency(option) {
+  if (option?.available) donation.value.frequency = option.key;
+}
+
+function selectSuggestedAmount(option) {
+  if (customAmountActive.value && String(donation.value.amount ?? '').trim() !== '') {
+    customAmountDraft.value = String(donation.value.amount);
+  }
+
+  customAmountActive.value = false;
+  donation.value.amount = option.amount;
+}
+
+async function activateCustomAmount() {
+  if (!showCustomAmount.value) return;
+
+  const currentAmount = String(donation.value.amount ?? '').trim();
+  const currentIsSuggested = suggestedAmounts.value.includes(Number(currentAmount));
+  if (!currentIsSuggested && currentAmount !== '') {
+    customAmountDraft.value = currentAmount;
+  }
+
+  customAmountActive.value = true;
+  donation.value.amount = customAmountDraft.value;
+  await nextTick();
+  document.getElementById('donation-custom-amount')?.focus();
+}
+
+async function revealCheckout() {
+  if (!giftSelectionComplete.value) return;
+
+  checkoutRevealed.value = true;
+  await nextTick();
+  checkoutHeading.value?.focus();
+}
+
+async function hideCheckout() {
+  checkoutRevealed.value = false;
+  await nextTick();
+  giftHeading.value?.focus();
+  document.getElementById('donation-step-gift')?.scrollIntoView?.({ block: 'start' });
 }
 
 function paymentMethodDomId(method) {
@@ -362,8 +526,13 @@ onMounted(() => {
   });
   if (requestedAmount !== null && isAllowedDonationAmount(requestedAmount)) {
     donation.value.amount = requestedAmount;
-  } else if (!showCustomAmount.value && suggestedAmounts.value.length > 0) {
-    donation.value.amount = suggestedAmounts.value[0];
+    customAmountActive.value = showCustomAmount.value && !suggestedAmounts.value.includes(Number(requestedAmount));
+    customAmountDraft.value = customAmountActive.value ? String(requestedAmount) : '';
+  } else if (suggestedAmounts.value.length > 0) {
+    donation.value.amount = suggestedAmountOptions.value.find(option => option.featured)?.amount
+      || suggestedAmounts.value[0];
+    customAmountActive.value = false;
+    customAmountDraft.value = '';
   }
 });
 
@@ -428,20 +597,22 @@ function acceptReplacementCheckoutKey(value) {
 <style scoped lang="scss">
 .igf-donate { --orange:#ff7500; --action-orange:#9c4500; --action-orange-hover:#783300; --brown:#9c4500; --ink:#191c1d; --muted:#5e5d66; --surface:#f8f9fa; --line:#e4ded9; overflow:hidden; background:#fff; color:var(--ink); font-family:'Hanken Grotesk',Arial,sans-serif; }
 .igf-shell { width:min(calc(100% - 40px),1200px); margin-inline:auto; }
-.igf-donate__hero { padding:clamp(80px,10vw,130px) 0 clamp(70px,8vw,105px); background:#211f1e; color:#fff; }
+.igf-donate__hero { padding:clamp(52px,7vw,82px) 0 clamp(88px,8vw,112px); background:#211f1e; color:#fff; }
 .igf-donate__hero-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(300px,.75fr); align-items:end; gap:clamp(40px,8vw,100px); }
 .igf-eyebrow { margin:0 0 15px; color:#ffad72; font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
 .igf-donate h1,.igf-donate h2 { font-family:'Literata',Georgia,serif; letter-spacing:-.03em; }
-.igf-donate h1 { max-width:780px; margin:0; font-size:clamp(44px,6vw,72px); font-weight:650; line-height:1.05; }
-.igf-donate__lead { max-width:700px; margin:24px 0 0; color:#ddd9d6; font-size:clamp(18px,2vw,21px); line-height:1.65; }
+.igf-donate h1 { max-width:780px; margin:0; font-size:clamp(40px,5vw,62px); font-weight:650; line-height:1.05; }
+.igf-donate__lead { max-width:700px; margin:20px 0 0; color:#ddd9d6; font-size:clamp(17px,1.8vw,20px); line-height:1.6; }
 .igf-trust-list { display:grid; gap:18px; margin:0; padding:0; list-style:none; }
 .igf-trust-list li { display:grid; grid-template-columns:38px 1fr; gap:13px; align-items:start; }
 .igf-trust-list i { display:grid; width:38px; height:38px; place-items:center; border:1px solid rgba(255,173,114,.36); border-radius:50%; color:#ffad72; }
 .igf-trust-list strong,.igf-trust-list span { display:block; }
 .igf-trust-list strong { margin-bottom:3px; color:#fff; font-size:14px; }
 .igf-trust-list span { color:#bdb9b6; font-size:12px; line-height:1.5; }
-.igf-donate__section { padding:clamp(70px,9vw,120px) 0; background:var(--surface); }
+.igf-donate__section { padding:clamp(54px,7vw,88px) 0; background:var(--surface); }
+.has-hero .igf-donate__section { padding-top:0; }
 .igf-donate__layout { display:grid; grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr); align-items:start; gap:clamp(45px,8vw,105px); }
+.has-hero .igf-donate__layout { position:relative; z-index:2; margin-top:-68px; }
 .igf-donate__aside { position:sticky; top:120px; padding-top:30px; }
 .igf-donate__aside .igf-eyebrow { color:var(--brown); }
 .igf-donate__aside h2 { margin:0 0 20px; font-size:clamp(32px,4vw,46px); font-weight:620; line-height:1.12; }
@@ -451,25 +622,71 @@ function acceptReplacementCheckoutKey(value) {
 .igf-help-card>i { color:var(--orange); font-size:21px; }
 .igf-help-card strong,.igf-help-card a { display:block; }
 .igf-help-card a { margin-top:4px; color:var(--muted); font-size:13px; text-decoration:none; }
-.igf-donation-card { border:1px solid var(--line); border-top:5px solid var(--orange); border-radius:18px; padding:clamp(25px,5vw,52px); background:#fff; box-shadow:0 12px 34px rgba(25,28,29,.07); }
+.igf-donation-card { border:1px solid #e6d9cf; border-top:5px solid var(--orange); border-radius:24px; padding:clamp(25px,5vw,52px); background:#fff; box-shadow:0 24px 60px rgba(41,31,23,.12); }
 .is-card-outlined .igf-donation-card { border-width:2px; border-top-width:5px; box-shadow:none; }
 .is-card-elevated .igf-donation-card { border-color:transparent; box-shadow:0 22px 55px rgba(25,28,29,.16); }
 .is-card-soft .igf-donation-card { background:linear-gradient(145deg,#fff 0%,#fffaf6 100%); }
-.is-layout-centered .igf-donate__layout { width:min(calc(100% - 40px),930px); grid-template-columns:1fr; gap:32px; }
+.is-layout-centered .igf-donate__layout { width:min(calc(100% - 40px),1100px); grid-template-columns:1fr; gap:32px; }
 .is-layout-centered .igf-donate__aside { position:static; display:grid; grid-template-columns:minmax(0,1fr) minmax(220px,.52fr); align-items:end; gap:30px; padding-top:0; }
 .is-layout-centered .igf-help-card { margin-top:0; border:1px solid var(--line); border-radius:12px; padding:20px; background:#fff; }
-.igf-donation-card__header { display:flex; justify-content:space-between; margin-bottom:8px; color:var(--brown); font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.is-layout-centered .igf-donation-card { order:1; }
+.is-layout-centered .igf-donate__aside { order:2; }
+.igf-donation-card__toolbar { display:flex; min-height:31px; align-items:center; justify-content:space-between; gap:18px; margin-bottom:8px; }
+.igf-donation-card__header { display:flex; align-items:center; gap:8px; color:var(--brown); font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.igf-donation-languages { display:inline-flex; gap:4px; border:1px solid #e3d5ca; border-radius:999px; padding:3px; background:#f7f1ec; }
+.igf-donation-languages a { min-width:42px; border-radius:999px; padding:6px 10px; color:#665f5a; font-size:11px; font-weight:800; line-height:1; text-align:center; text-decoration:none; }
+.igf-donation-languages a[aria-current="page"] { background:var(--action-orange); color:#fff; }
 .igf-donation-card h2 { margin:0; font-size:clamp(34px,4vw,46px); font-weight:650; }
 .igf-card-intro { margin:10px 0 24px; color:var(--muted); font-size:13px; }
-.igf-frequency { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:14px; margin:0 0 26px; border:1px solid #f0c4a4; border-radius:10px; padding:13px 15px; background:#fff6ef; }
-.igf-frequency span { color:var(--brown); font-size:13px; font-weight:850; white-space:nowrap; }
-.igf-frequency i { margin-right:5px; color:var(--orange); }
-.igf-frequency small { color:#786c64; font-size:11px; line-height:1.45; }
+.igf-checkout-grid { display:grid; gap:28px; }
+.is-layout-centered .igf-checkout-grid { grid-template-columns:minmax(0,1fr) minmax(245px,.43fr); align-items:start; }
+.igf-checkout-main { min-width:0; }
+.igf-checkout-steps { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:18px 0 22px; padding:0; list-style:none; }
+.igf-checkout-steps a { display:flex; min-height:48px; align-items:center; gap:9px; border:1px solid #dfd5cd; border-radius:11px; padding:8px 11px; background:#f7f3ef; color:#68635f; font-size:11px; font-weight:800; line-height:1.2; text-decoration:none; }
+.igf-checkout-steps a>span { display:grid; width:26px; height:26px; flex:0 0 26px; place-items:center; border:1px solid #cfc1b7; border-radius:50%; background:#fff; color:var(--brown); font-size:11px; }
+.igf-checkout-steps li.is-current a { border-color:#d89768; background:#fff5ec; color:var(--brown); }
+.igf-checkout-steps li.is-current a>span { border-color:var(--action-orange); background:var(--action-orange); color:#fff; }
+.igf-checkout-steps a[aria-disabled="true"] { cursor:not-allowed; opacity:.68; }
+.igf-checkout-section { min-width:0; scroll-margin-top:130px; }
+.igf-checkout-section--details { border-top:1px solid var(--line); padding-top:26px; }
+.igf-checkout-section__heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:8px; }
+.igf-checkout-section__heading>div { display:flex; align-items:center; gap:10px; }
+.igf-checkout-section__heading>div>span { display:grid; width:30px; height:30px; place-items:center; border-radius:50%; background:var(--action-orange); color:#fff; font-size:12px; font-weight:850; }
+.igf-checkout-section__heading h3 { margin:0; font-family:'Literata',Georgia,serif; font-size:21px; font-weight:650; letter-spacing:-.02em; }
+.igf-gift-intro h3:focus-visible,.igf-checkout-section__heading h3:focus-visible { border-radius:4px; outline:3px solid rgba(156,69,0,.3); outline-offset:4px; }
+.igf-checkout-section__heading>button { border:0; border-bottom:1px solid currentColor; padding:3px 0; background:transparent; color:var(--brown); font-size:11px; font-weight:800; cursor:pointer; }
+.igf-gift-intro { margin:26px 0 15px; }
+.igf-gift-intro h3 { margin:0; color:var(--ink); font-family:'Literata',Georgia,serif; font-size:21px; font-weight:650; letter-spacing:-.02em; }
+.igf-gift-intro p { margin:4px 0 0; color:var(--muted); font-size:13px; line-height:1.5; }
+.igf-frequency-fieldset { min-width:0; margin:0 0 25px; border:0; padding:0; }
+.igf-frequency-tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; border:1px solid #e7d9ce; border-radius:13px; padding:5px; background:#f4eee9; }
+.igf-frequency-tabs button { display:flex; min-width:0; min-height:56px; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:0; border-radius:9px; padding:7px 3px; background:transparent; color:#5f625f; font:800 12px 'Hanken Grotesk',Arial,sans-serif; cursor:pointer; }
+.igf-frequency-tabs button.is-selected { background:var(--action-orange); color:#fff; box-shadow:0 5px 13px rgba(156,69,0,.2); }
+.igf-frequency-tabs button.is-unavailable { color:#77726e; cursor:not-allowed; }
+.igf-frequency-tabs button small { color:#895126; font-size:7px; font-weight:900; letter-spacing:.04em; line-height:1.05; text-transform:uppercase; }
+.igf-frequency-tabs button.is-selected small { color:#ffe2ca; }
+.igf-frequency-help { display:flex; gap:7px; margin:9px 2px 0; color:#716a65; font-size:10.5px; line-height:1.45; }
+.igf-frequency-help i { margin-top:2px; color:var(--brown); }
+.igf-step-continue { display:flex; width:100%; min-height:54px; align-items:center; justify-content:center; gap:8px; border:0; border-radius:12px; padding:13px 18px; background:var(--action-orange); color:#fff; font:800 15px/1.2 'Hanken Grotesk',Arial,sans-serif; cursor:pointer; box-shadow:0 8px 18px rgba(156,69,0,.2); }
+.igf-step-continue:hover:not(:disabled) { background:var(--action-orange-hover); }
+.igf-step-continue:focus-visible { outline:3px solid rgba(156,69,0,.3); outline-offset:3px; }
+.igf-step-continue:disabled { background:#d2c7be; color:#6d6661; cursor:not-allowed; box-shadow:none; }
 .igf-fieldset { min-width:0; margin:0 0 30px; border:0; border-top:1px solid var(--line); padding:26px 0 0; }
 .igf-fieldset legend { width:auto; margin:0 0 16px; padding:0; color:var(--ink); font-size:14px; font-weight:800; }
-.igf-amount-options { display:grid; grid-template-columns:repeat(var(--amount-columns,5),minmax(0,1fr)); gap:9px; margin-bottom:14px; }
-.igf-amount-options button { min-height:48px; border:1px solid #cfc7c1; border-radius:8px; background:#fff; color:var(--ink); font-weight:800; cursor:pointer; }
-.igf-amount-options button:hover,.igf-amount-options button.is-selected { border-color:var(--orange); background:#fff3e9; color:var(--brown); box-shadow:inset 0 0 0 1px var(--orange); }
+.igf-amount-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; margin-bottom:15px; }
+.igf-amount-options button { position:relative; display:grid; min-height:98px; align-content:center; gap:5px; border:1.5px solid #ddd1c8; border-radius:14px; padding:15px 42px 15px 16px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s; }
+.igf-amount-options button:hover { border-color:#cf8652; transform:translateY(-1px); }
+.igf-amount-options button>span { color:var(--brown); font-family:'Literata',Georgia,serif; font-size:24px; font-weight:650; letter-spacing:-.02em; line-height:1.1; }
+.igf-amount-options button>small { color:var(--muted); font:500 11px/1.35 'Hanken Grotesk',Arial,sans-serif; }
+.igf-amount-options button>i { position:absolute; top:13px; right:13px; display:grid; width:22px; height:22px; place-items:center; border:1px solid #d8cec6; border-radius:50%; background:#fff; color:transparent; font-size:10px; }
+.igf-amount-options button.is-featured { background:#fff7f0; }
+.igf-amount-options button.is-selected { border-color:var(--orange); background:#ffe3cf; box-shadow:inset 0 0 0 1px var(--orange); }
+.igf-amount-options button.is-selected>span { color:var(--brown); }
+.igf-amount-options button.is-selected>i { border-color:var(--action-orange); background:var(--action-orange); color:#fff; }
+.igf-amount-options .igf-custom-amount-option { border-style:dashed; background:#faf8f6; }
+.igf-amount-options .igf-custom-amount-option>i { color:var(--brown); }
+.igf-amount-options .igf-custom-amount-option.is-selected { border-style:solid; background:#ffe3cf; }
+.igf-amount-options .igf-custom-amount-option.is-selected>i { color:#fff; }
 .igf-details-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .igf-donation-card :deep(.v-field) { border-radius:9px; background:#fff; }
 .igf-donation-card :deep(.v-field--focused) { color:var(--brown); }
@@ -483,22 +700,22 @@ function acceptReplacementCheckoutKey(value) {
 .igf-destination-summary { display:grid; grid-template-columns:38px minmax(0,1fr); align-items:start; gap:12px; margin-top:18px; padding:15px; border:1px solid #e8c8b0; border-radius:11px; background:#fff7f0; }
 .igf-destination-summary>i { display:grid; width:38px; height:38px; place-items:center; border-radius:50%; background:#fff; color:var(--brown); }.igf-destination-summary small,.igf-destination-summary strong { display:block; }.igf-destination-summary small { margin-bottom:3px; color:var(--brown); font-size:10px; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }.igf-destination-summary strong { color:var(--ink); font-size:15px; line-height:1.35; }.igf-destination-summary p { margin:5px 0 0; color:var(--muted); font-size:11px; line-height:1.5; }
 .igf-payment-methods>.igf-field-help { margin:-7px 0 15px; }
-.igf-payment-method-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; }
-.igf-payment-method { position:relative; display:grid; grid-template-columns:58px minmax(0,1fr) 24px; align-items:start; gap:9px; min-height:122px; margin:0; border:1px solid #d2cbc5; border-radius:12px; padding:17px 12px; background:#fff; color:var(--ink); cursor:pointer; transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s; }
+.igf-payment-method-grid { display:grid; grid-template-columns:1fr; gap:11px; }
+.igf-payment-method { position:relative; display:grid; grid-template-columns:132px minmax(0,1fr) 24px; align-items:center; gap:14px; min-height:102px; margin:0; border:1px solid #d2cbc5; border-radius:12px; padding:16px 18px; background:#fff; color:var(--ink); cursor:pointer; transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s; }
 .igf-payment-method:hover { border-color:#dd9461; transform:translateY(-1px); }
 .igf-payment-method:focus-within { border-color:var(--orange); outline:3px solid rgba(255,117,0,.23); outline-offset:3px; }
 .igf-payment-method.is-selected { border-color:var(--orange); background:#fff5ec; box-shadow:inset 0 0 0 1px var(--orange); }
-.igf-payment-method.is-unavailable { grid-template-columns:58px minmax(0,1fr); border-style:dashed; background:#f4f2f0; color:#6f6965; cursor:not-allowed; }
+.igf-payment-method.is-unavailable { grid-template-columns:132px minmax(0,1fr); border-style:dashed; background:#f4f2f0; color:#6f6965; cursor:not-allowed; }
 .igf-payment-method.is-unavailable:hover { border-color:#d2cbc5; transform:none; }
 .igf-payment-method>input { position:absolute; width:1px; height:1px; margin:0; opacity:0; pointer-events:none; }
 .igf-payment-method__icon { display:grid; width:42px; height:42px; place-items:center; border-radius:11px; background:#fff0e4; color:var(--brown); font-size:18px; }
 .igf-payment-method.is-unavailable .igf-payment-method__icon { background:#e7e3df; color:#756e69; }
-.igf-payment-method__logos { display:flex; width:58px; height:42px; align-items:center; justify-content:center; gap:5px; border-radius:9px; padding:5px; background:#fff; }
-.igf-payment-method__logos img { display:block; width:auto; max-width:48px; height:auto; max-height:30px; object-fit:contain; }
-.igf-payment-method__logos.has-multiple img { max-width:22px; max-height:24px; }
+.igf-payment-method__logos { display:flex; width:132px; height:58px; align-items:center; justify-content:flex-start; gap:7px; border-radius:10px; padding:7px 5px; background:#fff; }
+.igf-payment-method__logos img { display:block; width:auto; max-width:122px; height:auto; max-height:44px; object-fit:contain; }
+.igf-payment-method__logos.has-multiple img { max-width:52px; max-height:36px; }
 .igf-payment-method__copy { display:grid; align-content:start; gap:4px; min-width:0; }
-.igf-payment-method__copy strong { font-size:14px; line-height:1.3; }
-.igf-payment-method__copy small { color:var(--muted); font-size:10px; font-weight:500; line-height:1.42; }
+.igf-payment-method__copy strong { font-size:16px; line-height:1.3; }
+.igf-payment-method__copy small { color:var(--muted); font-size:12px; font-weight:500; line-height:1.42; }
 .igf-payment-method__copy .igf-payment-method__networks { color:var(--brown); font-weight:800; letter-spacing:.02em; }
 .igf-payment-method__copy .igf-payment-method__unavailable { color:#7a3d19; font-weight:750; }
 .igf-payment-method__check { display:grid; width:22px; height:22px; place-items:center; border:1px solid #cfc7c1; border-radius:50%; background:#fff; color:transparent; font-size:10px; }
@@ -511,14 +728,26 @@ function acceptReplacementCheckoutKey(value) {
 .igf-gateway-note p { margin:3px 0 0; color:var(--muted); font-size:11px; line-height:1.55; }
 .igf-privacy-note { display:flex; gap:9px; margin:0 0 18px; color:var(--muted); font-size:12px; line-height:1.55; }
 .igf-privacy-note i { margin-top:2px; color:var(--brown); }
-.igf-submit { min-height:54px!important; border-radius:999px!important; background:var(--action-orange)!important; color:#fff!important; font-size:13px!important; font-weight:800!important; letter-spacing:.035em!important; text-transform:uppercase!important; box-shadow:0 7px 18px rgba(156,69,0,.24)!important; }
+.igf-donation-review { position:sticky; top:118px; display:grid; gap:16px; border:1px solid #e2d4c8; border-radius:17px; padding:20px; background:#fff9f4; box-shadow:0 12px 30px rgba(67,47,31,.08); }
+.igf-donation-review__heading { display:flex; align-items:center; gap:11px; }
+.igf-donation-review__heading>span { display:grid; width:38px; height:38px; flex:0 0 38px; place-items:center; border-radius:50%; background:#fff; color:var(--brown); box-shadow:0 4px 12px rgba(67,47,31,.08); }
+.igf-donation-review__heading small { display:block; color:var(--brown); font-size:8px; font-weight:850; letter-spacing:.08em; line-height:1.2; text-transform:uppercase; }
+.igf-donation-review__heading h3 { margin:2px 0 0; font-family:'Literata',Georgia,serif; font-size:20px; font-weight:650; letter-spacing:-.02em; }
+.igf-donation-review dl { display:grid; gap:0; margin:0; }
+.igf-donation-review dl>div { display:grid; grid-template-columns:minmax(72px,.7fr) minmax(0,1.3fr); gap:10px; border-top:1px solid #eadfd6; padding:11px 0; }
+.igf-donation-review dt { color:#766f69; font-size:10px; font-weight:750; }
+.igf-donation-review dd { margin:0; color:var(--ink); font-size:12px; font-weight:800; line-height:1.35; text-align:right; overflow-wrap:anywhere; }
+.igf-donation-review>p:not(.igf-terms) { margin:0; color:var(--muted); font-size:10.5px; line-height:1.5; }
+.igf-submit { min-height:58px!important; border-radius:13px!important; background:var(--action-orange)!important; color:#fff!important; font-size:16px!important; font-weight:800!important; letter-spacing:0!important; text-transform:none!important; box-shadow:0 9px 20px rgba(156,69,0,.24)!important; }
 .igf-submit:hover { background:var(--action-orange-hover)!important; }
 .igf-submit:focus-visible { outline:3px solid rgba(156,69,0,.3)!important; outline-offset:3px!important; }
 .igf-terms { margin:15px 0 0; color:#777277; font-size:11px; line-height:1.5; text-align:center; }
 .igf-terms a { color:var(--brown); }
 .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+@media (max-width:1000px) { .is-layout-centered .igf-checkout-grid { grid-template-columns:1fr; } .igf-donation-review { position:static; } }
 @media (max-width:900px) { .igf-donate__hero-grid,.igf-donate__layout { grid-template-columns:1fr; } .igf-trust-list { grid-template-columns:repeat(3,1fr); } .igf-donate__aside,.is-layout-centered .igf-donate__aside { position:static; grid-template-columns:1fr; padding-top:0; } .is-layout-centered .igf-help-card { margin-top:0; } }
-@media (max-width:700px) { .igf-amount-options { grid-template-columns:1fr 1fr; } .igf-frequency { grid-template-columns:1fr; } }
-@media (max-width:620px) { .igf-payment-method-grid { grid-template-columns:1fr; } .igf-payment-method { grid-template-columns:70px minmax(0,1fr) 24px; padding-inline:15px; } .igf-payment-method.is-unavailable { grid-template-columns:70px minmax(0,1fr); } .igf-payment-method__logos { width:70px; } .igf-payment-method__logos img { max-width:60px; } .igf-payment-method__logos.has-multiple img { max-width:27px; } }
-@media (max-width:640px) { .igf-shell,.is-layout-centered .igf-donate__layout { width:min(calc(100% - 28px),1200px); } .igf-trust-list,.igf-details-grid { grid-template-columns:1fr; } .igf-donate__hero { padding-block:70px; } .igf-donation-card { border-radius:13px; padding-inline:20px; } }
+@media (max-width:700px) { .igf-amount-options { grid-template-columns:1fr 1fr; } .igf-frequency-tabs { grid-template-columns:1fr 1fr; } }
+@media (max-width:620px) { .igf-payment-method { grid-template-columns:132px minmax(0,1fr) 22px; gap:11px; padding-inline:14px; } .igf-payment-method.is-unavailable { grid-template-columns:132px minmax(0,1fr); } }
+@media (max-width:640px) { .igf-shell,.is-layout-centered .igf-donate__layout { width:min(calc(100% - 28px),1200px); } .igf-trust-list,.igf-details-grid { grid-template-columns:1fr; } .igf-donate__hero { padding:48px 0 92px; } .has-hero .igf-donate__layout { margin-top:-56px; } .igf-donation-card { border-radius:17px; padding:24px 20px; } .igf-checkout-steps a { min-height:44px; padding-inline:8px; } }
+@media (max-width:480px) { .igf-payment-method { grid-template-columns:96px minmax(0,1fr) 22px; gap:9px; padding:13px 11px; } .igf-payment-method.is-unavailable { grid-template-columns:96px minmax(0,1fr); } .igf-payment-method__logos { width:96px; padding-inline:2px; } .igf-payment-method__logos img { max-width:92px; } .igf-payment-method__logos.has-multiple { gap:4px; } .igf-payment-method__logos.has-multiple img { max-width:41px; } .igf-payment-method__copy strong { font-size:14px; } .igf-payment-method__copy small { font-size:11px; } .igf-amount-options { gap:8px; } .igf-amount-options button { min-height:84px; padding:12px 34px 12px 12px; } .igf-amount-options button>span { font-size:20px; } .igf-amount-options button>small { font-size:10px; } .igf-checkout-grid { gap:20px; } .igf-donation-review { padding:17px; } }
 </style>

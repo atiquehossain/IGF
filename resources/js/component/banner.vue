@@ -1,11 +1,19 @@
 <template>
   <header v-if="banner" class="igf-page-hero">
-    <img
-      v-if="banner.imageUrl"
-      class="igf-page-hero__media"
-      :src="banner.imageUrl"
-      :alt="banner.imageAlt"
-    >
+    <picture v-if="banner.imageUrl" class="igf-page-hero__picture">
+      <source v-if="banner.media.avifSrcset" type="image/avif" :srcset="banner.media.avifSrcset" :sizes="banner.media.sizes">
+      <source v-if="banner.media.webpSrcset" type="image/webp" :srcset="banner.media.webpSrcset" :sizes="banner.media.sizes">
+      <img
+        class="igf-page-hero__media"
+        :src="banner.media.src"
+        :alt="banner.imageAlt"
+        :width="banner.media.width"
+        :height="banner.media.height"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      >
+    </picture>
     <div class="igf-page-hero__overlay" />
     <div class="igf-page-hero__inner">
       <p v-if="banner.eyebrow" class="igf-page-hero__eyebrow">{{ banner.eyebrow }}</p>
@@ -23,13 +31,20 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { presentBanner } from '../Shared/composables/bannerPresentation';
+import { responsiveImagePresentation } from '../Shared/composables/responsiveImage';
 
 defineOptions({ name: 'Banner' });
 const inertiaPage = usePage();
 const bannerDefaults = computed(() => inertiaPage.props?.siteSettings?.banners || {});
 const banner = computed(() => {
   const raw = inertiaPage.props?.data?.banner || null;
-  if (raw) return presentBanner(raw, bannerDefaults.value);
+  if (raw) {
+    const presentation = presentBanner(raw, bannerDefaults.value);
+    return {
+      ...presentation,
+      media: responsiveImagePresentation(presentation.imageUrl),
+    };
+  }
 
   const subject = inertiaPage.props?.data?.page
     || inertiaPage.props?.data?.about_us
@@ -37,17 +52,22 @@ const banner = computed(() => {
     || null;
   if (!subject) return null;
 
-  return presentBanner({
+  const presentation = presentBanner({
     headline: subject.name || subject.title || inertiaPage.props?.title || '',
     subheadline: subject.sub_title || '',
     description: '',
     path: '',
   }, bannerDefaults.value);
+  return {
+    ...presentation,
+    media: responsiveImagePresentation(presentation.imageUrl),
+  };
 });
 </script>
 
 <style scoped lang="scss">
 .igf-page-hero { position:relative; display:flex; min-height:var(--igf-hero-height,min(590px,70vh)); align-items:flex-end; padding:clamp(80px,10vw,125px) clamp(20px,5vw,48px); overflow:hidden; background:#242220 center/cover no-repeat; color:#fff; font-family:'Hanken Grotesk',Arial,sans-serif; }
+.igf-page-hero__picture { position:absolute; inset:0; }
 .igf-page-hero__media { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .igf-page-hero__overlay { position:absolute; inset:0; background:rgba(21,22,23,.68); }
 .igf-page-hero__inner { position:relative; z-index:1; width:min(100%,var(--igf-content-width,1200px)); margin:0 auto; }

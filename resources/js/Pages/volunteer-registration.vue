@@ -10,7 +10,11 @@
             <a class="igf-primary-link" href="#volunteer-form">{{ settings.hero_cta_label }} <span aria-hidden="true">&#8595;</span></a>
           </div>
           <figure class="igf-volunteer__hero-media">
-            <img :src="settings.hero_image" :alt="settings.hero_image_alt">
+            <picture>
+              <source v-if="heroMedia.avifSrcset" type="image/avif" :srcset="heroMedia.avifSrcset" :sizes="heroMedia.sizes">
+              <source v-if="heroMedia.webpSrcset" type="image/webp" :srcset="heroMedia.webpSrcset" :sizes="heroMedia.sizes">
+              <img :src="heroMedia.src" :alt="settings.hero_image_alt" :width="heroMedia.width" :height="heroMedia.height" loading="eager" fetchpriority="high" decoding="async">
+            </picture>
           </figure>
         </div>
       </section>
@@ -62,6 +66,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import Layout from '../layouts/App.vue';
 import { useGlobal } from '../Shared/composables/global';
 import { interpolateSetting } from '../Shared/composables/siteSettings';
+import { responsiveImagePresentation } from '../Shared/composables/responsiveImage';
 
 const page = usePage();
 const { $toast } = useGlobal();
@@ -69,6 +74,7 @@ const form = ref(null);
 const isFormValid = ref(false);
 const loading = ref(false);
 const settings = computed(() => page.props.siteSettings?.volunteer_page || {});
+const heroMedia = computed(() => responsiveImagePresentation(settings.value.hero_image, '(max-width: 900px) 100vw, 50vw'));
 const causes = computed(() => page.props.data?.causes || []);
 const steps = computed(() => [1, 2, 3].map(index => ({ title: settings.value[`step_${index}_title`], body: settings.value[`step_${index}_body`] })));
 const registration = ref(emptyForm());

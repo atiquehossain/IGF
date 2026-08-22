@@ -64,6 +64,10 @@ class SeoRedirectService
         '/email/verify',
     ];
 
+    public function __construct(private SeoManagedDestinationService $destinations)
+    {
+    }
+
     public function create(array $input, ?int $actorId = null): SeoRedirect
     {
         return DB::transaction(function () use ($input, $actorId): SeoRedirect {
@@ -214,6 +218,11 @@ class SeoRedirectService
         $this->assertAllowedTargetPath($targetPath);
 
         if ($active) {
+            if ($this->destinations->isManaged($source, $locale)) {
+                throw ValidationException::withMessages([
+                    'from_path' => 'This source is currently live managed content. Disable or move the content before creating a redirect from its old address.',
+                ]);
+            }
             $this->assertNoChain($source, $targetPath, $locale, $redirect->exists ? (int) $redirect->getKey() : null);
         }
 

@@ -2,7 +2,7 @@
   <footer class="site-footer">
     <div class="site-footer__grid">
       <div class="footer-brand">
-        <a href="/" class="footer-brand__name"><img :src="branding.footerLogo" :alt="branding.footerLogoAlt"></a>
+        <a href="/" class="footer-brand__name"><img :src="branding.footerLogo" :alt="branding.footerLogoAlt" :width="branding.footerLogoWidth" :height="branding.footerLogoHeight" decoding="async"></a>
         <small v-if="branding.tagline" class="footer-brand__tagline">{{ branding.tagline }}</small>
         <p>{{ footer.about }}</p>
         <div class="footer-contact">
@@ -53,6 +53,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { responsiveImagePresentation } from '../Shared/composables/responsiveImage';
 
 defineOptions({ name: 'AppFooter' });
 const inertiaPage = usePage();
@@ -60,10 +61,14 @@ const settings = computed(() => inertiaPage.props.siteSettings || {});
 const branding = computed(() => {
   const values = settings.value.branding || {};
   const siteName = values.site_name || inertiaPage.props.appName || 'Ignite Global Foundation';
+  const footerLogo = values.footer_logo || values.logo || '/image/logo-footer.png';
+  const footerLogoMedia = responsiveImagePresentation(footerLogo);
   return {
     siteName,
-    footerLogo: values.footer_logo || values.logo || '/image/logo-footer.png',
+    footerLogo,
     footerLogoAlt: values.footer_logo_alt || values.logo_alt || siteName,
+    footerLogoWidth: footerLogoMedia.width,
+    footerLogoHeight: footerLogoMedia.height,
     tagline: values.tagline || '',
   };
 });

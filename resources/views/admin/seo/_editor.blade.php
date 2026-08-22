@@ -2,6 +2,11 @@
     $values = $editor['values'];
     $fallback = $editor['fallback'];
     $effective = $editor['effective'];
+    $autoContent = (bool) old('seo_auto', $editor['auto_content']);
+    $customTitleValue = (string) old('seo.title', $values['title']);
+    $customDescriptionValue = (string) old('seo.description', $values['description']);
+    $displayTitleValue = $autoContent ? $fallback['title'] : $customTitleValue;
+    $displayDescriptionValue = $autoContent ? $fallback['description'] : $customDescriptionValue;
     $isIndexable = (bool) old('seo.robots_index', $values['robots_index']);
     $schemaValue = old('seo.schema_markup', $values['schema_markup']);
     $schemaMode = old('schema_template', $editor['schema_selected']);
@@ -14,6 +19,13 @@
     $canOpenPage = $canOpenPage ?? true;
     $seoRevisionDiffs = $seoRevisionDiffs ?? collect();
     $seoRevisionCanonicalPolicies = $seoRevisionCanonicalPolicies ?? collect();
+    $contentAnalysis = (array) ($editor['content_analysis'] ?? ['available' => false, 'issues' => []]);
+    $contentAnalysisJson = json_encode([
+        'available' => (bool) ($contentAnalysis['available'] ?? false),
+        'saved_focus_phrase' => (string) $values['focus_keyword'],
+        'focus_in_headings' => (bool) ($contentAnalysis['focus_in_headings'] ?? false),
+        'focus_in_body' => (bool) ($contentAnalysis['focus_in_body'] ?? false),
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
     $reviewStatusLabel = match($editor['review']['status']) {
         'pending' => 'Review requested',
         'approved' => 'SEO approved',
@@ -25,7 +37,7 @@
 <section class="seo2-card seo2-editor" id="seo-editor" aria-labelledby="seo-editor-title">
     <header class="seo2-card__head">
         <div>
-            <h2 id="seo-editor-title">Search &amp; sharing editor</h2>
+            <h2 id="seo-editor-title">Search &amp; Sharing editor</h2>
             <p><strong>{{ $editorTitle }}</strong> <span aria-hidden="true">·</span> {{ strtoupper($editor['locale']) }} <span aria-hidden="true">·</span> <span data-final-url-label>{{ $effective['url'] }}</span></p>
         </div>
         <div class="seo2-actions">
@@ -55,17 +67,20 @@
                         <h3>How this page appears in Google</h3>
                         <p class="seo2-section__intro">Use clear, natural wording. The preview updates while you type; Google may still adjust the final result.</p>
                         <label class="seo2-auto">
-                            <input type="checkbox" name="seo_auto" value="1" data-auto-content @checked(old('seo_auto', $editor['auto_content']))>
-                            <span><strong>Automatically use the page content</strong><small>Recommended for everyday editing. Turn this off only when you want custom search wording.</small></span>
+                            <input type="hidden" name="seo_auto" value="0">
+                            <input type="checkbox" name="seo_auto" value="1" data-auto-content @checked($autoContent)>
+                            <span><strong>Use the current page title and summary automatically</strong><small>The inherited text is shown below and updates whenever the page content changes. Turn this off only for custom search wording.</small></span>
                         </label>
                         <div class="seo2-field">
                             <label for="seo2-title">Search title <span class="seo2-inherited">Using page title</span><span class="seo2-counter" data-title-count aria-live="polite"></span></label>
-                            <input id="seo2-title" name="seo[title]" maxlength="255" value="{{ old('seo.title', $values['title']) }}" data-seo-title data-fallback="{{ $fallback['title'] }}" autocomplete="off">
+                            <input id="seo2-title" name="seo[title]" maxlength="255" value="{{ $displayTitleValue }}" data-seo-title data-fallback="{{ $fallback['title'] }}" data-custom-value="{{ $customTitleValue }}" data-inherited-value="{{ $fallback['title'] }}" autocomplete="off" @readonly($autoContent)>
+                            <p class="seo2-help seo2-inherited-note">This inherited value is read-only and is not saved as a custom override. The counter measures the text shown here.</p>
                             <p class="seo2-help">Aim for 35–60 characters and put the clearest words first.</p>
                         </div>
                         <div class="seo2-field">
                             <label for="seo2-description">Search description <span class="seo2-inherited">Using page summary</span><span class="seo2-counter" data-description-count aria-live="polite"></span></label>
-                            <textarea id="seo2-description" name="seo[description]" maxlength="500" data-seo-description data-fallback="{{ $fallback['description'] }}">{{ old('seo.description', $values['description']) }}</textarea>
+                            <textarea id="seo2-description" name="seo[description]" maxlength="500" data-seo-description data-fallback="{{ $fallback['description'] }}" data-custom-value="{{ $customDescriptionValue }}" data-inherited-value="{{ $fallback['description'] }}" @readonly($autoContent)>{{ $displayDescriptionValue }}</textarea>
+                            <p class="seo2-help seo2-inherited-note">This inherited value is read-only and is not saved as a custom override. The counter measures the text shown here.</p>
                             <p class="seo2-help">Aim for 120–160 characters. Explain what visitors will find and why it matters.</p>
                         </div>
                         <div class="seo2-field">
@@ -76,6 +91,7 @@
                                 <li data-focus-check="title">Use the phrase naturally in the search title</li>
                                 <li data-focus-check="description">Use it naturally in the description</li>
                                 <li data-focus-check="url">Keep the page address related and readable</li>
+                                @if($contentAnalysis['available'] ?? false)<li data-focus-check="headings">Use it naturally in a saved page heading</li><li data-focus-check="body">Use it naturally in the saved page body</li>@endif
                             </ul>
                         </div>
                     </section>
@@ -156,7 +172,7 @@
 
                 <aside class="seo2-editor-side" aria-label="Live previews">
                     <section class="seo2-section seo2-checklist">
-                        <div class="seo2-checklist__head"><div><h3>Before publishing</h3><p class="seo2-section__intro">{{ $editor['publication']['label'] }} · {{ $editor['health']['score'] }}% complete</p></div><span class="seo2-chip {{ $editor['health']['status']==='Needs attention' ? 'seo2-chip--danger' : ($editor['health']['status']==='Hidden' ? 'seo2-chip--neutral' : '') }}">{{ $editor['health']['status'] }}</span></div>
+                        <div class="seo2-checklist__head"><div><h3>SEO setup completeness</h3><p class="seo2-section__intro">{{ $editor['publication']['label'] }} · {{ $editor['health']['score'] }}% complete</p></div><span class="seo2-chip {{ $editor['health']['status']==='Needs attention' ? 'seo2-chip--danger' : ($editor['health']['status']==='Hidden' ? 'seo2-chip--neutral' : '') }}">{{ $editor['health']['status'] }}</span></div>
                         <div class="seo2-checklist__counts"><strong>{{ $editor['health']['required_count'] }} required</strong><span>{{ $editor['health']['recommended_count'] }} recommended</span></div>
                         <ul class="seo2-checklist__items">@forelse($editor['health']['issues'] as $issue)<li class="is-{{ $issue['level'] }}"><strong>{{ ucfirst($issue['level']) }}:</strong> {{ $issue['label'] }}</li>@empty<li class="is-complete"><strong>Complete:</strong> No outstanding SEO actions.</li>@endforelse</ul>
                         <div class="seo2-review"><strong>{{ $reviewStatusLabel }}</strong>@if($editor['review']['note'])<p>{{ $editor['review']['note'] }}</p>@endif
@@ -164,6 +180,22 @@
                             @if($canReviewMetadata && $editor['review']['status'] === 'pending')<div class="seo2-review__actions"><button class="seo2-btn seo2-btn--soft" type="submit" form="seo-review-approve-form">Approve</button><label class="seo2-field"><span>Reviewer note</span><textarea name="note" form="seo-review-changes-form" maxlength="2000" required placeholder="Explain what needs to change"></textarea></label><button class="seo2-btn" type="submit" form="seo-review-changes-form">Request changes</button></div>@endif
                         </div>
                     </section>
+                    @if($contentAnalysis['available'] ?? false)
+                    <section class="seo2-section" data-saved-content-analysis>
+                        <h3>Saved page content</h3>
+                        <p class="seo2-section__intro">Rule-based {{ $contentAnalysis['locale_label'] }} checks review the page body without AI or keyword-density scoring.</p>
+                        <div class="seo2-checklist__counts">
+                            <strong>{{ $contentAnalysis['word_count'] }} words · {{ $contentAnalysis['readability'] }}</strong>
+                            <span>H1: {{ $contentAnalysis['h1_count'] }} · H2: {{ $contentAnalysis['h2_count'] }}</span>
+                        </div>
+                        <ul class="seo2-checklist__items">
+                            <li class="{{ $contentAnalysis['image_count'] > $contentAnalysis['images_with_alt'] ? 'is-required' : 'is-complete' }}"><strong>Image text:</strong> {{ $contentAnalysis['images_with_alt'] }}/{{ $contentAnalysis['image_count'] }} content images covered</li>
+                            <li class="is-information"><strong>Links:</strong> {{ $contentAnalysis['internal_link_count'] }} internal · {{ $contentAnalysis['external_link_count'] }} external</li>
+                            @if(empty($contentAnalysis['issues']))<li class="is-complete"><strong>Complete:</strong> Saved content has no outstanding structure or readability actions.</li>@endif
+                        </ul>
+                        <p class="seo2-help">These results use the last saved page content. Save content changes, then reload this editor to refresh them.</p>
+                    </section>
+                    @endif
                     <section class="seo2-section">
                         <div class="seo2-actions" style="justify-content:space-between;margin-bottom:13px"><h3 style="margin:0">Google preview</h3><div class="seo2-preview-toggle" aria-label="Preview size"><button class="seo2-btn" type="button" data-preview-device="desktop" aria-pressed="true">Desktop</button><button class="seo2-btn" type="button" data-preview-device="mobile" aria-pressed="false">Mobile</button></div></div>
                         <div class="seo2-google" data-google-preview data-device="desktop"><span class="seo2-google__url" data-preview-url>{{ $effective['url'] }}</span><strong class="seo2-google__title" data-preview-title>{{ $effective['title'] }}</strong><span class="seo2-google__description" data-preview-description>{{ $effective['description'] }}</span></div>
@@ -209,7 +241,7 @@
                 </aside>
             </div>
 
-            @if($canEditMetadata)<div class="seo2-savebar"><span class="seo2-dirty" data-dirty-status role="status" aria-live="polite">Unsaved changes</span><button class="seo2-btn seo2-btn--primary" type="submit"><i class="fa fa-save" aria-hidden="true"></i> Save search &amp; sharing</button></div>@endif
+            @if($canEditMetadata)<div class="seo2-savebar"><span class="seo2-dirty" data-dirty-status role="status" aria-live="polite">Unsaved changes</span><button class="seo2-btn seo2-btn--primary" type="submit"><i class="fa fa-save" aria-hidden="true"></i> Save Search &amp; Sharing</button></div>@endif
         </form>
     </div>
 </section>
@@ -233,6 +265,7 @@
 @endif
 
 <script type="application/json" data-schema-library>@json($editor['generated_schemas'])</script>
+<script type="application/json" data-content-analysis>{!! $contentAnalysisJson !!}</script>
 <div class="seo2-modal" data-media-modal data-media-endpoint="{{ route('seo.media.index') }}" role="dialog" aria-modal="true" aria-labelledby="seo2-media-title" hidden>
     <div class="seo2-modal__dialog"><header class="seo2-modal__head"><div><h2 id="seo2-media-title">Choose a social image</h2><small>Recommended: 1200 × 630 with useful alternative text.</small></div><div class="seo2-actions">@if($canViewMedia)<a class="seo2-btn seo2-btn--soft" href="{{ route('media.index', ['type'=>'image']) }}" target="_blank" rel="noopener"><i class="fa {{ $canUploadMedia ? 'fa-upload' : 'fa-picture-o' }}" aria-hidden="true"></i> {{ $canUploadMedia ? 'Upload or manage images' : 'Open Media Library' }}</a>@endif<button class="seo2-btn" type="button" data-media-close aria-label="Close image picker"><i class="fa fa-times" aria-hidden="true"></i></button></div></header><div class="seo2-modal__search"><label class="seo2-sr" for="seo2-media-search">Search uploaded images</label><input id="seo2-media-search" type="search" placeholder="Search file name or alt text" data-media-search><span data-media-result-status aria-live="polite"></span></div><div class="seo2-media-grid" data-media-grid><div class="seo2-empty"><p>Loading images…</p></div></div><footer class="seo2-media-pages"><button class="seo2-btn" type="button" data-media-previous>Previous</button><span data-media-page-status></span><button class="seo2-btn" type="button" data-media-next>Next</button></footer></div>
 </div>

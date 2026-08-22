@@ -12,6 +12,7 @@ use App\Models\Banner;
 use App\Helper\StaticUtil;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
+use App\Services\PublicImageOptimizationService;
 use App\Services\PublicStructuredDataService;
 use App\Services\SeoMetadataService;
 use Exception;
@@ -22,6 +23,7 @@ class HomeController extends Controller
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
         private PublicStructuredDataService $structuredData,
+        private PublicImageOptimizationService $imageOptimization,
     ) {
     }
 
@@ -62,7 +64,7 @@ class HomeController extends Controller
                 ->orderBy('order_by', 'ASC')
                 ->get();
             $sliders->each(function (Banner $banner) {
-                $image = (string) $banner->getRawOriginal('image');
+                $image = $this->imageOptimization->optimizedFallback((string) $banner->getRawOriginal('image'));
                 $banner->setAttribute('image', $image === '' || str_starts_with($image, '/')
                     ? $image
                     : '/storage/photos/1/banner/' . $image);
@@ -163,12 +165,18 @@ class HomeController extends Controller
         }
     }
 
-    public function language(string $language = 'en')
+    public function language(Request $request, string $language = 'en')
     {
         abort_unless(in_array($language, app(\App\Services\LocalizationManager::class)->publicLocales(), true), 404);
         Session()->put('locale', $language);
         app()->setLocale($language);
 
-        return redirect()->back();
+        $referer = trim((string) $request->headers->get('referer', ''));
+        $seo = app(SeoMetadataService::class);
+        $fallback = (string) ($seo->localizedUrl(route('frontend.home'), $language) ?: route('frontend.home'));
+
+        // Never trust redirect()->back() here: Referer is controlled by the
+        // caller and may contain an external phishing destination.
+        return redirect()->to($referer !== '' && $seo->isSameOrigin($referer) ? $referer : $fallback);
     }
 }

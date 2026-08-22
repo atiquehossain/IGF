@@ -30,7 +30,7 @@ class NoCodePublicTemplateIntegrityTest extends TestCase
     public function test_public_vue_templates_render_customizer_values_instead_of_fixed_headings(): void
     {
         $bindings = [
-            'donate.vue' => ['settings.title', 'settings.submit_label', 'settings.privacy_note', 'settings.amount_legend', 'settings.cause_field_label', 'settings.value.checkout_layout', 'settings.value.amount_5', 'settings.gateway_note', 'settings.refund_link_url'],
+            'donate.vue' => ['settings.title', 'settings.value.submit_with_amount_label', 'settings.value.submit_label', 'settings.privacy_note', 'settings.amount_legend', 'settings.cause_field_label', 'settings.value.checkout_layout', 'settings.value[`amount_${index}`]', 'settings.gateway_note', 'settings.value.refund_link_url'],
             'contactUs.vue' => ['content.details_title', 'content.name_field_label', 'content.success_message'],
             'sponsor_child.vue' => ['settings.hero_cta_label', 'settings.children_field_label', 'settings.sending_label'],
             'volunteer-registration.vue' => ['settings.process_eyebrow', 'settings.cause_field_label', 'settings.causes_unavailable'],

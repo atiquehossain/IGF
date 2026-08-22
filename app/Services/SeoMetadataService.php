@@ -15,6 +15,37 @@ use Illuminate\Support\Facades\Schema;
 
 class SeoMetadataService
 {
+    /**
+     * Return the deterministic, owner-editable social-card fallback without
+     * hiding missing page-specific images in the SEO editor or health report.
+     * The hierarchy reuses existing managed brand imagery and never calls an
+     * external service or fabricates media.
+     *
+     * @return array{image: string, alt: string}
+     */
+    public function socialImageFallback(?string $locale = null): array
+    {
+        $settings = app(SiteSettingService::class)->values($locale ?: app()->getLocale(), true);
+        $candidates = [
+            data_get($settings, 'branding.social_share_image'),
+            data_get($settings, 'sponsor_page.hero_image'),
+            data_get($settings, 'volunteer_page.hero_image'),
+            data_get($settings, 'branding.logo'),
+        ];
+        $image = collect($candidates)
+            ->map(fn ($value) => $this->absolutePublicImageUrl(is_string($value) ? $value : ''))
+            ->first(fn (string $value) => $value !== '') ?: '';
+
+        return [
+            'image' => $image,
+            'alt' => trim((string) data_get(
+                $settings,
+                'branding.social_share_image_alt',
+                data_get($settings, 'branding.logo_alt', config('app.name'))
+            )),
+        ];
+    }
+
     public function updateForPage(Page $page, array $data): SeoMetadata
     {
         return $this->updateForModel($page, $data, $page->language ?: app()->getLocale());
@@ -77,6 +108,18 @@ class SeoMetadataService
     {
         $defaultLocale = (string) config('app.fallback_locale', 'en');
         $slug = (string) $page->slug;
+        $landingOwner = app(CategoryLandingPageAliasService::class)->categoryForPage(
+            $page,
+            (string) ($page->language ?: app()->getLocale()),
+        );
+        if ($landingOwner && filled($landingOwner->slug)) {
+            return (string) $this->localizedUrl(
+                route('frontend.category', ['slug' => $landingOwner->slug]),
+                (string) ($page->language ?: $defaultLocale),
+                $defaultLocale,
+            );
+        }
+
         $routes = app(SeoRouteRegistry::class)->all();
         $definition = $routes->first(fn (array $candidate) => ($candidate['page_slug'] ?? null) === $slug);
         if (!$definition && filled($page->uuid)) {

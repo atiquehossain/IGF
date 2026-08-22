@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SeoAuditIssue;
 use App\Models\SeoAuditRun;
+use App\Models\SeoRedirect;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
@@ -18,6 +19,7 @@ final class TechnicalSeoAuditService
         private TechnicalSeoInternalFetcher $fetcher,
         private TechnicalSeoUrlPolicy $urls,
         private SeoRouteRegistry $routes,
+        private ?TechnicalSeoAlertService $alerts = null,
     ) {
     }
 
@@ -59,6 +61,15 @@ final class TechnicalSeoAuditService
                 ]);
             }
 
+            try {
+                // Alert delivery is deliberately isolated from the scan. A
+                // missing mail transport or an alert-table deployment lag can
+                // never turn a safely completed crawl into a failed crawl.
+                ($this->alerts ?? app(TechnicalSeoAlertService::class))->recordFor($run->fresh());
+            } catch (Throwable $exception) {
+                report($exception);
+            }
+
             $this->pruneSnapshots();
 
             return $run->fresh('issues');
@@ -81,22 +92,29 @@ final class TechnicalSeoAuditService
      */
     private function crawl(): array
     {
-        $maxUrls = max(1, min(500, (int) config('technical-seo.max_urls', 120)));
+        $maxUrls = max(1, min(500, (int) config('technical-seo.max_urls', 150)));
         $maxSeconds = max(1, min(120, (int) config('technical-seo.max_seconds', 20)));
         $maxBytes = max(64, min(5242880, (int) config('technical-seo.max_response_bytes', 1048576)));
         $maxLinks = max(1, min(1000, (int) config('technical-seo.max_links_per_page', 250)));
         $maxIssues = min(5000, $maxUrls * 20);
         $started = hrtime(true);
 
-        $seeds = array_values(array_unique(array_merge(
+        $redirectTargetInventory = $this->activeRedirectTargets($maxUrls);
+        $redirectTargets = $redirectTargetInventory['targets'];
+        $redirectSeeds = array_keys($redirectTargets);
+        $ordinarySeeds = array_values(array_unique(array_merge(
             $this->routeSeeds(),
             $this->sitemapTargets($maxBytes)
         )));
+        $seedCandidates = array_values(array_unique(array_merge($redirectSeeds, $ordinarySeeds)));
         // Reserve part of the budget for the links and images discovered on
-        // sitemap pages; otherwise a large sitemap could consume the entire
-        // budget before a single broken target is checked.
-        $seedBudget = $maxUrls === 1 ? 1 : max(1, (int) floor($maxUrls * 0.7));
-        $seeds = array_slice($seeds, 0, $seedBudget);
+        // sitemap pages. Active redirect targets come first and may expand the
+        // seed share because a redirect to a missing destination is a live
+        // traffic failure that must not depend on the target appearing in a
+        // sitemap or page link.
+        $discoverySeedBudget = $maxUrls === 1 ? 1 : max(1, (int) floor($maxUrls * 0.7));
+        $seedBudget = min($maxUrls, max($discoverySeedBudget, count($redirectSeeds)));
+        $seeds = array_slice($seedCandidates, 0, $seedBudget);
         $seedSet = array_fill_keys($seeds, true);
 
         $queue = $seeds;
@@ -107,7 +125,7 @@ final class TechnicalSeoAuditService
         $analyzedSeeds = [];
         $pageCanonicals = [];
         $issues = [];
-        $truncated = false;
+        $truncated = $redirectTargetInventory['truncated'] || count($seedCandidates) > count($seeds);
 
         while ($queue !== [] && count($responses) < $maxUrls) {
             if ((hrtime(true) - $started) / 1_000_000_000 >= $maxSeconds) {
@@ -125,18 +143,30 @@ final class TechnicalSeoAuditService
                 continue;
             }
             if ($response['status'] >= 500) {
+                $isRedirectTarget = isset($redirectTargets[$path]);
                 $this->addIssue($issues, $maxIssues, 'http_5xx', 'high', $path, null, $response['status'],
-                    'This public URL returned a server error.');
+                    $isRedirectTarget
+                        ? 'An active redirect destination returned a server error.'
+                        : 'This public URL returned a server error.',
+                    $isRedirectTarget ? ['redirect_sources' => $redirectTargets[$path]] : []);
                 continue;
             }
             if ($response['status'] >= 400) {
+                $isRedirectTarget = isset($redirectTargets[$path]);
                 $this->addIssue($issues, $maxIssues, 'http_4xx', 'high', $path, null, $response['status'],
-                    'This managed public URL returned an error.');
+                    $isRedirectTarget
+                        ? 'An active redirect destination does not load.'
+                        : 'This managed public URL returned an error.',
+                    $isRedirectTarget ? ['redirect_sources' => $redirectTargets[$path]] : []);
                 continue;
             }
             if ($response['status'] >= 300) {
+                $isRedirectTarget = isset($redirectTargets[$path]);
                 $this->addIssue($issues, $maxIssues, 'redirect_page', 'medium', $path, null, $response['status'],
-                    'A sitemap or managed page redirects instead of loading directly.');
+                    $isRedirectTarget
+                        ? 'An active redirect destination redirects again. Point the rule directly to its final address.'
+                        : 'A sitemap or managed page redirects instead of loading directly.',
+                    $isRedirectTarget ? ['redirect_sources' => $redirectTargets[$path]] : []);
                 continue;
             }
             if (!str_contains(strtolower($response['content_type']), 'text/html')) {
@@ -218,6 +248,48 @@ final class TechnicalSeoAuditService
             ->unique()
             ->values()
             ->all();
+    }
+
+    /**
+     * Active same-origin redirect destinations are priority crawl seeds. A
+     * destination can stop being public after a rule is created (for example,
+     * when an editor returns a page to draft), so graph validation at write
+     * time cannot replace this operational check.
+     *
+     * @return array{targets:array<string,list<string>>,truncated:bool}
+     */
+    private function activeRedirectTargets(int $maxTargets): array
+    {
+        $targets = [];
+        $truncated = false;
+
+        SeoRedirect::query()
+            ->where('is_active', true)
+            ->lazyById(100, 'id', 'id')
+            ->each(function (SeoRedirect $redirect) use (&$targets, &$truncated, $maxTargets): bool {
+                $target = $this->urls->internalAuditTarget((string) $redirect->to_url, '/');
+                if ($target === null) {
+                    return true;
+                }
+                if (!isset($targets[$target]) && count($targets) >= $maxTargets) {
+                    $truncated = true;
+
+                    return false;
+                }
+
+                $locale = trim((string) ($redirect->locale ?? ''));
+                $source = (string) $redirect->from_path . ($locale !== '' ? ' [' . $locale . ']' : ' [all locales]');
+                $targets[$target][] = $source;
+
+                return true;
+            });
+
+        foreach ($targets as &$sources) {
+            $sources = array_values(array_unique($sources));
+        }
+        unset($sources);
+
+        return ['targets' => $targets, 'truncated' => $truncated];
     }
 
     /**
@@ -459,6 +531,78 @@ final class TechnicalSeoAuditService
         foreach (['data', 'siteSettings', 'contentSeo', 'seoAlternates'] as $key) {
             if (array_key_exists($key, $props)) {
                 $this->appendPropResources($resources, $resourceKeys, $props[$key], $source, $maxLinks, $key);
+            }
+        }
+
+        $component = (string) ($page['component'] ?? '');
+        $componentItems = (array) data_get($props, 'data.items', []);
+        if ($component === 'category'
+            && count((array) data_get($props, 'data.landing_page.visible_blocks', [])) > 0) {
+            // The category component renders the landing-page blocks instead
+            // of its archive cards, so those item slugs are not live links.
+            $componentItems = [];
+        }
+
+        $this->appendComponentResources(
+            $resources,
+            $resourceKeys,
+            $component,
+            $componentItems,
+            $source,
+            $maxLinks,
+        );
+    }
+
+    /**
+     * Some public Vue components receive slugs and build their final hrefs in
+     * the browser. Recover only these known route contracts so the crawler sees
+     * the same links as a visitor without interpreting arbitrary slug fields as
+     * URLs.
+     *
+     * @param list<array{kind:string,target:string}> $resources
+     * @param array<string,bool> $resourceKeys
+     * @param array<int|string,mixed> $items
+     */
+    private function appendComponentResources(
+        array &$resources,
+        array &$resourceKeys,
+        string $component,
+        array $items,
+        string $source,
+        int $maxLinks,
+    ): void {
+        $prefix = match ($component) {
+            'category', 'project' => '/page/',
+            'events' => '/event/',
+            default => null,
+        };
+
+        if ($prefix !== null) {
+            foreach ($items as $item) {
+                if (!is_array($item) || count($resources) >= $maxLinks) {
+                    continue;
+                }
+                if (filled($item['public_url'] ?? null)) {
+                    // appendPropResources already recovered the controller's
+                    // canonical destination. Do not also invent its legacy
+                    // `/page/{slug}` alias.
+                    continue;
+                }
+                $slug = trim((string) ($item['slug'] ?? ''));
+                if ($slug === '') {
+                    continue;
+                }
+                $target = $this->urls->internalAuditTarget($prefix . rawurlencode($slug), $source);
+                if ($target !== null) {
+                    $this->appendResource($resources, $resourceKeys, 'link', $target, $maxLinks);
+                }
+            }
+        }
+
+        if ($component === 'zakat' && count($resources) < $maxLinks) {
+            $target = $this->urls->internalAuditTarget('/donate/zakat', $source);
+            if ($target !== null) {
+                $this->appendResource($resources, $resourceKeys, 'link', $target, $maxLinks);
             }
         }
     }

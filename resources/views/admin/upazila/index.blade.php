@@ -6,6 +6,7 @@
     $canEdit = app(\App\Http\Middleware\Permission::class)->allows(auth('admin')->user(), 'upazila.update');
 @endphp
 <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     <div class="row">
         @if($canCreate)
@@ -23,7 +24,7 @@
 
                                     <div class="form-group has-success">
                                         <label for="district_id" class="control-label mb-1">{{ $Lang->UpazilaTitle }}</label>
-                                        <select name="district_id" type="text" class="form-control">
+                                        <select id="district_id" name="district_id" class="form-control">
                                             <option value="">{{ $Lang->Common->PleaseSelect }} </option>
                                             @foreach($districts as $district)
                                             <option value="{{$district->id}}" {{ (old('district_id') == $district->id) ? "selected":"" }}>{{$district->name}}</option>
@@ -43,8 +44,8 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-3"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i> Create upazila</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                     </div>
 
                                 </form>
@@ -66,9 +67,10 @@
                         <div class="col-md-6">
                             <form action="{{ route('upazila.index')}}" method="get">
                                 <div class="input-group search-input-group">
-                                    <input type="search" name="search" value="{{@$search}}" class="form-control search-form-control">
+                                    <label class="sr-only" for="upazila-search">Search upazilas</label>
+                                    <input id="upazila-search" type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search upazilas">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
@@ -92,7 +94,7 @@
                                 <td> <span class="name">{{@$upazila->name}}</span> </td>
                                  <td> <span class="name">{{@$upazila->district->name}}</span> </td>
                                 <td>
-                                    <?=App\Link::action(@$upazila->id, @$upazila->status) ?>
+                                    <?=App\Link::action(@$upazila->id, @$upazila->status, 'upazila ' . ($upazila->name ?? '')) ?>
                                 </td>
                             </tr>
                             @endforeach
@@ -109,13 +111,13 @@
 
 {{-- Modal --}}
 @if($canEdit)
-<div class="modal fade" id="upazilaModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="mediumModalLabel" aria-hidden="true">
+<div class="modal fade" id="upazilaModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="upazilaModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
             <form action="{{route('upazila.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->UpazilaTitle }}</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <h2 class="card-title h5 mb-0" id="upazilaModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->UpazilaTitle }}</h2>
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -126,7 +128,7 @@
                     <input name="id" id="e_id" type="hidden" value="{{old('id')}}" class="form-control" required>
 
                     <div class="form-group has-success">
-                        <label for="district_id" class="control-label mb-1">{{ $Lang->UpazilaTitle }}</label>
+                        <label for="e_district_id" class="control-label mb-1">{{ $Lang->UpazilaTitle }}</label>
                         <select name="district_id" type="text" class="form-control" id="e_district_id">
                             <option value="">{{ $Lang->Common->PleaseSelect }} </option>
                             @foreach($districts as $district)
@@ -139,7 +141,7 @@
                     </div>
 
                     <div class="form-group has-success">
-                        <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                        <label for="e_name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
                         <input id="e_name" name="name" type="text" value="{{old('name')}}" class="form-control" required>
                         @if($errors->has('name'))
                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
@@ -148,8 +150,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i> Save upazila</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>

@@ -4,6 +4,7 @@ $custom_inline_css = '';
 ?>
 @section('content')
   <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
     <div class="row">
       <div class="col-12">
         <div class="card">
@@ -13,8 +14,8 @@ $custom_inline_css = '';
                 <h4 class="card-title">{{ $title }}</h4>
               </div>
               <div class="col-md-6">
-                <a class="btn btn-sm btn-secondary float-right" href="{{ route('notice.board.index') }}" id="go-back">
-                  <i class="fa fa-arrow-circle-left"></i> {{ $Lang->Common->GoBack }}
+                <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('notice.board.index') }}" id="go-back">
+                  <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                 </a>
               </div>
             </div>
@@ -26,10 +27,8 @@ $custom_inline_css = '';
               @method('PUT')
 
               @php
-                $isValidUrl = filter_var(@$notice_board->image_path, FILTER_VALIDATE_URL);
-                if (empty($isValidUrl) && $notice_board) {
-                    $notice_board->image_path = route('notice.board.image', $notice_board->image_path);
-                }
+                $mediaUrls = app(\App\Services\AdminMediaUrlResolver::class);
+                $noticeImageUrl = $mediaUrls->image($notice_board?->getRawOriginal('image_path'), 'notice_board');
               @endphp
 
               <input name="id" type="hidden" class="form-control" value="{{ @$notice_board->id }}">
@@ -37,7 +36,7 @@ $custom_inline_css = '';
                 <div class="col-6">
                   <div class="form-group has-success">
                     <label for="title" class="control-label mb-1">{{ $Lang->Common->Form->Title }}</label>
-                    <input name="title" type="text" value="{{ $notice_board->title }}" class="form-control"
+                    <input id="title" name="title" type="text" value="{{ $notice_board->title }}" class="form-control"
                       data-e2e="title">
                     @if ($errors->has('title'))
                       <small class="help-block form-text text-danger">{{ $errors->first('title') }}</small>
@@ -48,7 +47,7 @@ $custom_inline_css = '';
                 <div class="col-6">
                   <div class="form-group">
                     <label for="sub_title" class="control-label mb-1">{{ $Lang->Common->Form->SubTitle }}</label>
-                    <input name="sub_title" type="text" class="form-control" value="{{ $notice_board->sub_title }}"
+                    <input id="sub_title" name="sub_title" type="text" class="form-control" value="{{ $notice_board->sub_title }}"
                       data-e2e="sub-title">
                     @if ($errors->has('sub_title'))
                       <small class="help-block form-text text-danger">{{ $errors->first('sub_title') }}</small>
@@ -96,7 +95,7 @@ $custom_inline_css = '';
                 <div class="col-md-3">
                   <div class="form-group">
                     <label for="order_by" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
-                    <input name="order_by" type="number" class="form-control" value="{{ @$notice_board->order_by }}"
+                    <input id="order_by" name="order_by" type="number" class="form-control" value="{{ @$notice_board->order_by }}"
                       data-e2e="order-by">
                     @if ($errors->has('order_by'))
                       <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
@@ -107,7 +106,7 @@ $custom_inline_css = '';
                 <div class="col-3">
                   <div class="form-group has-success">
                     <label for="published_at" class="control-label mb-1">Date of Release <span>*</span></label>
-                    <input name="published_at" type="text"
+                    <input id="published_at" name="published_at" type="text"
                       value="{{ date('d-m-Y', strtotime(@$notice_board->published_at)) }}"
                       class="form-control datepicker" readonly required>
                     @if ($errors->has('published_at'))
@@ -119,7 +118,7 @@ $custom_inline_css = '';
                 <div class="col-3">
                   <div class="form-group has-success">
                     <label for="location" class="control-label mb-1">{{ $Lang->Common->Form->Location }}</label>
-                    <input name="location" type="text" value="{{ @$notice_board->location }}" class="form-control">
+                    <input id="location" name="location" type="text" value="{{ @$notice_board->location }}" class="form-control">
                     @if ($errors->has('location'))
                       <small class="help-block form-text text-danger">{{ $errors->first('location') }}</small>
                     @endif
@@ -133,7 +132,9 @@ $custom_inline_css = '';
                     <div class="file-upload">
                       <label for="image_path" class="file-upload_label">
                         <img class="file-upload_img" id="upload_img"
-                          src="{{ $notice_board->image_path ?? asset('/') . 'image/no-image.png' }}">
+                          src="{{ $noticeImageUrl }}"
+                          onerror="this.onerror=null;this.src='{{ $mediaUrls->fallback() }}'"
+                          alt="Current event image">
                       </label>
                       <input type="file" onchange="changefile(event, `upload_img`)" name="image_path"
                         value="{{ old('image_path') }}" id="image_path" class="file-upload_input" data-e2e="image_path">
@@ -148,7 +149,7 @@ $custom_inline_css = '';
                 <div class="col-md-12">
                   <div class="form-group has-success">
                     <label for="description">{{ $Lang->Common->Form->Description }}</label>
-                    <textarea class="form-control form-control-danger my-editor" name="description" data-e2e="description">{{ $notice_board->description }}</textarea>
+                    <textarea id="description" class="form-control form-control-danger my-editor" name="description" data-e2e="description">{{ $notice_board->description }}</textarea>
                     @if ($errors->has('description'))
                       <small class="help-block form-text text-danger">{{ $errors->first('description') }}</small>
                     @endif
@@ -156,8 +157,8 @@ $custom_inline_css = '';
                 </div>
                 <div class="col-md-12">
                   <div class="form-group has-success">
-                    <label for="description">CSS</label>
-                    <textarea class="form-control form-control-danger" name="inline_css" rows="6" data-e2e="inline-css"> {{ $notice_board->inline_css }}</textarea>
+                    <label for="inline_css">CSS</label>
+                    <textarea id="inline_css" class="form-control form-control-danger" name="inline_css" rows="6" data-e2e="inline-css"> {{ $notice_board->inline_css }}</textarea>
                     @if ($errors->has('inline_css'))
                       <small class="help-block form-text text-danger">{{ $errors->first('inline_css') }}</small>
                     @endif
@@ -167,11 +168,11 @@ $custom_inline_css = '';
               </div>
 
               <div class="col-md-12 m-b-20 text-right">
-                <button type="submit" class="btn btn-success btn-sm" name="save">
-                  <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
+                <button type="submit" class="btn igf-btn igf-btn-primary igf-btn-compact" name="save">
+                  <i class="fa fa-save" aria-hidden="true"></i> Save event
                 </button>
-                <button type="submit" name="save_and_update" value="1" class="btn btn-success btn-sm">
-                  <i class="fa fa-save"></i> {{ $Lang->Common->SaveAndUpdate }}
+                                <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
+                                    <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing
                 </button>
               </div>
             </form>

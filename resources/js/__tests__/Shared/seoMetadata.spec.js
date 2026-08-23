@@ -40,12 +40,15 @@ describe('public SEO authority resolution', () => {
       seoDefaults: {
         og_image: 'https://ignite.test/brand-share.jpg',
         twitter_image: 'https://ignite.test/brand-share.jpg',
+        social_image_alt: 'Ignite community programs',
       },
       routeSeo: { og_image: 'https://ignite.test/stale-route.jpg' },
       contentSeo: { og_image: '', twitter_image: '' },
     })).toMatchObject({
       og_image: 'https://ignite.test/brand-share.jpg',
       twitter_image: 'https://ignite.test/brand-share.jpg',
+      og_image_alt: 'Ignite community programs',
+      twitter_image_alt: 'Ignite community programs',
     });
   });
 
@@ -55,20 +58,49 @@ describe('public SEO authority resolution', () => {
       contentSeo: {
         og_image: 'https://cdn.example.org/story.jpg',
         twitter_image: 'https://cdn.example.org/story-x.jpg',
+        social_image_alt: ' Children <b>learning</b>\n together ',
       },
     })).toMatchObject({
       og_image: 'https://cdn.example.org/story.jpg',
       twitter_image: 'https://cdn.example.org/story-x.jpg',
+      og_image_alt: 'Children learning together',
+      twitter_image_alt: 'Children learning together',
+    });
+  });
+
+  test('a custom image never inherits the managed brand image description', () => {
+    expect(resolveSeoMetadata({
+      seoDefaults: {
+        og_image: 'https://ignite.test/brand-share.jpg',
+        social_image_alt: 'Ignite community programs',
+      },
+      contentSeo: {
+        og_image: 'https://cdn.example.org/story.jpg',
+        twitter_image: 'https://cdn.example.org/story.jpg',
+        social_image_alt: '',
+      },
+    })).toMatchObject({
+      og_image_alt: '',
+      twitter_image_alt: '',
     });
   });
 
   test('unsafe social image schemes fail closed to the managed fallback', () => {
     expect(resolveSeoMetadata({
-      seoDefaults: { og_image: 'https://ignite.test/brand-share.jpg' },
-      contentSeo: { og_image: 'javascript:alert(1)', twitter_image: 'data:image/png;base64,abc' },
+      seoDefaults: {
+        og_image: 'https://ignite.test/brand-share.jpg',
+        social_image_alt: 'Ignite community programs',
+      },
+      contentSeo: {
+        og_image: 'javascript:alert(1)',
+        twitter_image: 'data:image/png;base64,abc',
+        social_image_alt: 'Description for the rejected image',
+      },
     })).toMatchObject({
       og_image: 'https://ignite.test/brand-share.jpg',
       twitter_image: 'https://ignite.test/brand-share.jpg',
+      og_image_alt: 'Ignite community programs',
+      twitter_image_alt: 'Ignite community programs',
     });
   });
 

@@ -177,7 +177,7 @@ class AdminViewOnlyPermissionUxTest extends TestCase
         $this->actingAs($deleter, 'admin')
             ->get(route('subscriber.index'))
             ->assertOk()
-            ->assertSee('class="btn btn-sm btn-danger trash"', false)
+            ->assertSee('class="btn igf-btn igf-btn-danger igf-btn-compact trash"', false)
             ->assertSee(route('subscriber.destroy', Subscriber::firstOrFail()->id), false)
             ->assertDontSee('send-email-btn', false)
             ->assertDontSee('Send Email to Subscriber')

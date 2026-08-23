@@ -22,7 +22,7 @@ class MyMenu
             ->orderBy('order_by', 'ASC')->get();
     }
 
-    public static function menuUi()
+    public static function menuUi(array $excludedRoutes = [])
     {
         $admin = Auth::guard('admin')->user();
         if (!$admin) {
@@ -35,55 +35,74 @@ class MyMenu
         // omit child-only grants, and do not represent owner bypass.
         $role_menu = self::menuTree()->toArray();
         $html = '';
-        $routeName = (string) \Request::route()?->getName();
-        $userMenuAction = AuthMenu::where('link', $routeName)->first();
-        if (!empty($userMenuAction->parent_id)) {
-            $userMenuAction = AuthMenu::where('id', $userMenuAction->parent_id)->first();
-        }
+        $routeName = (string) Route::currentRouteName();
+        $activeMenu = self::findBestActiveLeaf(
+            $role_menu,
+            $routeName,
+            $admin,
+            $permissions,
+            $excludedRoutes
+        );
+        $activeLeafId = $activeMenu['id'] ?? null;
+        $activePath = $activeMenu['path'] ?? [];
 
-        foreach ($role_menu as $key => $element) {
+        foreach ($role_menu as $element) {
             if (!is_array($element)) {
                 continue;
             }
 
             $children = is_array($element['children'] ?? null) ? $element['children'] : [];
             $hasChildren = $children !== [];
-            $subchild = $hasChildren ? self::subMenu($children, 0, $admin, $permissions) : '';
+            $subchild = $hasChildren
+                ? self::subMenu(
+                    $children,
+                    0,
+                    $admin,
+                    $permissions,
+                    $excludedRoutes,
+                    $activeLeafId,
+                    $activePath
+                )
+                : '';
             if (($hasChildren && trim($subchild) === '')
-                || (!$hasChildren && !self::canRenderLeaf($element, $admin, $permissions))) {
+                || (!$hasChildren && !self::canRenderLeaf($element, $admin, $permissions, $excludedRoutes))) {
                 continue;
             }
 
             $menuLink = self::permittedRouteUrl($element['link'] ?? null, $admin, $permissions);
-            $parentMenuActive = '';
-            $rooMenuActive = '';
-            $userMenu = AuthMenu::where('id', @$userMenuAction->id)->first();
-            if (@$userMenu->id == $element['id']) {
-                $parentMenuActive = 'active show';
-                $rooMenuActive = 'active';
-            }
+            $elementId = (string) ($element['id'] ?? '');
+            $isActiveBranch = in_array($elementId, $activePath, true);
+            $isCurrentLeaf = $activeLeafId !== null && $elementId === $activeLeafId;
             if ($hasChildren) {
                 $fa_icon = AdminUi::iconClass($element['icon'] ?? null);
                 $menuName = AdminUi::label($element['name'] ?? '');
-                $html .= '<li class="menu-item-has-children dropdown ' . $parentMenuActive . '">';
-                $html .= '<a href="' . $menuLink . '" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+                $branchClass = $isActiveBranch ? ' active show' : '';
+                $html .= '<li class="menu-item-has-children dropdown' . $branchClass . '">';
+                $html .= '<a href="' . $menuLink . '" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="' . ($isActiveBranch ? 'true' : 'false') . '">';
                 $html .= ' <i class="menu-icon fa ' . $fa_icon . '"></i>' . $menuName . '</a>';
 
-                $html .= ' <ul class="sub-menu children dropdown-menu ' . $parentMenuActive . '"> ' . $subchild . '</ul>';
+                $html .= ' <ul class="sub-menu children dropdown-menu' . $branchClass . '"> ' . $subchild . '</ul>';
                 $html .= '</li>';
             } else {
                 $fa_icon = AdminUi::iconClass($element['icon'] ?? null);
                 $menuName = AdminUi::label($element['name'] ?? '');
-                $active = ($key == 0) ? $rooMenuActive : "";
-                $html .= '<li class="' . $active . '">';
-                $html .= '<a  href="' . $menuLink . '"> <i class="menu-icon fa ' . $fa_icon . '"></i>' . $menuName . '</a>';
+                $html .= '<li class="' . ($isCurrentLeaf ? 'active' : '') . '">';
+                $html .= '<a href="' . $menuLink . '"' . ($isCurrentLeaf ? ' class="active" aria-current="page"' : '') . '> <i class="menu-icon fa ' . $fa_icon . '"></i>' . $menuName . '</a>';
                 $html .= '</li>';
             }
         }
         return $html;
     }
 
-    public static function subMenu($child, $depth, $admin = null, ?Permission $permissions = null)
+    public static function subMenu(
+        $child,
+        $depth,
+        $admin = null,
+        ?Permission $permissions = null,
+        array $excludedRoutes = [],
+        ?string $activeLeafId = null,
+        array $activePath = []
+    )
     {
         $admin ??= Auth::guard('admin')->user();
         $permissions ??= app(Permission::class);
@@ -92,41 +111,49 @@ class MyMenu
         }
 
         $html = "";
-        $routeName = (string) \Request::route()?->getName();
         if (!empty($child)) {
-            foreach ($child as $key => $element) {
+            foreach ($child as $element) {
                 if (!is_array($element)) {
                     continue;
                 }
 
                 $children = is_array($element['children'] ?? null) ? $element['children'] : [];
                 $hasChildren = $children !== [];
-                $subchild = $hasChildren ? self::subMenu($children, $depth + 1, $admin, $permissions) : '';
+                $subchild = $hasChildren
+                    ? self::subMenu(
+                        $children,
+                        $depth + 1,
+                        $admin,
+                        $permissions,
+                        $excludedRoutes,
+                        $activeLeafId,
+                        $activePath
+                    )
+                    : '';
                 if (($hasChildren && trim($subchild) === '')
-                    || (!$hasChildren && !self::canRenderLeaf($element, $admin, $permissions))) {
+                    || (!$hasChildren && !self::canRenderLeaf($element, $admin, $permissions, $excludedRoutes))) {
                     continue;
                 }
 
-                $userMenu = AuthMenu::where('link', @$routeName)->first();
-                $childActive = '';
-                if (@$userMenu->id == $element['id']) {
-                    $childActive = 'active';
-                }
+                $elementId = (string) ($element['id'] ?? '');
+                $isActiveBranch = in_array($elementId, $activePath, true);
+                $isCurrentLeaf = $activeLeafId !== null && $elementId === $activeLeafId;
                 if ($hasChildren) {
                     $fa_icon = AdminUi::iconClass($element['icon'] ?? null);
                     $menuName = AdminUi::label($element['name'] ?? '');
                     $menuLink = self::permittedRouteUrl($element['link'] ?? null, $admin, $permissions);
+                    $branchClass = $isActiveBranch ? ' active show' : '';
 
-                    $html .= '<li class="menu-item-has-children dropdown">';
-                    $html .= '<a href="' . $menuLink . '" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+                    $html .= '<li class="menu-item-has-children dropdown' . $branchClass . '">';
+                    $html .= '<a href="' . $menuLink . '" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="' . ($isActiveBranch ? 'true' : 'false') . '">';
                     $html .= ' <i class="menu-icon fa ' . $fa_icon . '"></i>' . $menuName . '</a>';
-                    $html .= '<ul class="sub-menu children dropdown-menu">' . $subchild . '</ul>';
+                    $html .= '<ul class="sub-menu children dropdown-menu' . $branchClass . '">' . $subchild . '</ul>';
                     $html .= '</li>';
                 } else {
                     $fa_icon = AdminUi::iconClass($element['icon'] ?? null);
                     $menuName = AdminUi::label($element['name'] ?? '');
                     $menuLink = self::permittedRouteUrl($element['link'] ?? null, $admin, $permissions);
-                    $html .= '<li><i class="fa ' . $fa_icon . '"></i><a class="' . $childActive . '" href="' . $menuLink . '">' . $menuName . '</a>';
+                    $html .= '<li class="' . ($isCurrentLeaf ? 'active' : '') . '"><i class="fa ' . $fa_icon . '"></i><a' . ($isCurrentLeaf ? ' class="active" aria-current="page"' : '') . ' href="' . $menuLink . '">' . $menuName . '</a>';
                     $html .= '</li>';
                 }
             }
@@ -134,11 +161,109 @@ class MyMenu
         return $html;
     }
 
-    private static function canRenderLeaf(array $element, $admin, Permission $permissions): bool
+    /**
+     * @param array<int, array<string, mixed>> $elements
+     * @param array<int, string> $ancestorIds
+     * @return array{id: string, path: array<int, string>, exact: bool, prefixLength: int}|null
+     */
+    private static function findBestActiveLeaf(
+        array $elements,
+        string $currentRouteName,
+        $admin,
+        Permission $permissions,
+        array $excludedRoutes,
+        array $ancestorIds = []
+    ): ?array {
+        if ($currentRouteName === '') {
+            return null;
+        }
+
+        $best = null;
+        foreach ($elements as $element) {
+            if (!is_array($element)) {
+                continue;
+            }
+
+            $elementId = (string) ($element['id'] ?? '');
+            $path = [...$ancestorIds, $elementId];
+            $children = is_array($element['children'] ?? null) ? $element['children'] : [];
+            if ($children !== []) {
+                $candidate = self::findBestActiveLeaf(
+                    $children,
+                    $currentRouteName,
+                    $admin,
+                    $permissions,
+                    $excludedRoutes,
+                    $path
+                );
+                if (self::isBetterActiveMatch($candidate, $best)) {
+                    $best = $candidate;
+                }
+                continue;
+            }
+
+            if (!self::canRenderLeaf($element, $admin, $permissions, $excludedRoutes)) {
+                continue;
+            }
+
+            $leafRouteName = trim((string) ($element['link'] ?? ''));
+            $isExact = $leafRouteName === $currentRouteName;
+            $prefix = self::activeRoutePrefix($leafRouteName);
+            if (!$isExact && ($prefix === '' || !str_starts_with($currentRouteName, $prefix . '.'))) {
+                continue;
+            }
+
+            $candidate = [
+                'id' => $elementId,
+                'path' => $path,
+                'exact' => $isExact,
+                'prefixLength' => strlen($prefix),
+            ];
+            if (self::isBetterActiveMatch($candidate, $best)) {
+                $best = $candidate;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * An index menu represents its complete resource route namespace. Custom
+     * destinations (for example report.youtubeMeta) keep their full route as
+     * the prefix so unrelated siblings do not become current accidentally.
+     */
+    private static function activeRoutePrefix(string $routeName): string
+    {
+        return str_ends_with($routeName, '.index')
+            ? substr($routeName, 0, -strlen('.index'))
+            : $routeName;
+    }
+
+    /**
+     * @param array{exact: bool, prefixLength: int}|null $candidate
+     * @param array{exact: bool, prefixLength: int}|null $current
+     */
+    private static function isBetterActiveMatch(?array $candidate, ?array $current): bool
+    {
+        if ($candidate === null) {
+            return false;
+        }
+        if ($current === null) {
+            return true;
+        }
+        if ($candidate['exact'] !== $current['exact']) {
+            return $candidate['exact'];
+        }
+
+        return $candidate['prefixLength'] > $current['prefixLength'];
+    }
+
+    private static function canRenderLeaf(array $element, $admin, Permission $permissions, array $excludedRoutes = []): bool
     {
         $routeName = trim((string) ($element['link'] ?? ''));
 
         return $routeName !== ''
+            && !in_array($routeName, $excludedRoutes, true)
             && Route::has($routeName)
             && $permissions->allows($admin, $routeName);
     }

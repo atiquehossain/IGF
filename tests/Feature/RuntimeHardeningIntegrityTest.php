@@ -93,7 +93,7 @@ class RuntimeHardeningIntegrityTest extends TestCase
         config()->set('security.hsts.max_age', 86400);
 
         $this->get('/admin/login')->assertHeaderMissing('Strict-Transport-Security');
-        $this->get('https://localhost/admin/login')
+        $this->get('https://localhost:8000/admin/login')
             ->assertHeader('Strict-Transport-Security', 'max-age=86400');
     }
 
@@ -174,7 +174,11 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $this->assertStringNotContainsString('<button type="submit" class="btn btn-larger btn-block" />', $login);
 
         $actions = file_get_contents(app_path('Link.php'));
-        $this->assertStringContainsString('<button type="button" class="btn btn-warning', $actions);
+        $this->assertStringContainsString('class="igf-action-group" role="group"', $actions);
+        $this->assertStringContainsString('igf-btn igf-btn-secondary igf-btn-compact', $actions);
+        $this->assertStringContainsString('igf-btn igf-btn-danger igf-btn-compact trash', $actions);
+        $this->assertStringContainsString('<span>Edit</span>', $actions);
+        $this->assertStringContainsString('<span>Delete</span>', $actions);
         $this->assertStringContainsString('aria-pressed=', $actions);
         $this->assertStringContainsString('data-item-label=', $actions);
 
@@ -274,8 +278,8 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $workflow = file_get_contents(base_path('.github/workflows/quality.yml'));
         $pipeline = file_get_contents(base_path('bitbucket-pipelines.yml'));
 
-        $this->assertStringContainsString("Cypress.env('ADMIN_USERNAME')", $commands);
-        $this->assertStringContainsString("Cypress.env('ADMIN_PASSWORD')", $commands);
+        $this->assertStringContainsString("cy.env(['ADMIN_USERNAME', 'ADMIN_PASSWORD'], { log: false })", $commands);
+        $this->assertStringNotContainsString('Cypress.env(', $commands);
         $this->assertStringNotContainsString("type('super_admin')", $commands);
         $this->assertStringNotContainsString("type('123456')", $commands);
         $this->assertStringContainsString('DB_CONNECTION=sqlite', $environment);
@@ -283,6 +287,7 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $this->assertStringContainsString('APP_URL=http://127.0.0.1:8001', $environment);
         $this->assertStringContainsString('LOCAL_ADMIN_PASSWORD=', $environment);
         $this->assertStringContainsString("baseUrl: 'http://127.0.0.1:8001/'", $cypressConfig);
+        $this->assertStringContainsString('allowCypressEnv: false', $cypressConfig);
         $this->assertStringContainsString('browser-smoke:', $workflow);
         $this->assertStringContainsString('npm run cypress:smoke', $workflow);
         $this->assertStringContainsString('name: Isolated administrator browser smoke', $pipeline);

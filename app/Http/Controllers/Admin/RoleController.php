@@ -9,9 +9,11 @@ use App\Models\MenuAction;
 use App\Models\Role;
 use App\Services\AdminAuditService;
 use App\Services\AdminAuthorityService;
+use App\Support\AdminPermissionRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
@@ -170,23 +172,29 @@ class RoleController extends Controller
         $canEditRolePermissions = app(\App\Http\Middleware\Permission::class)
             ->allows($actor, 'role.permission.store');
         $authMenus = AuthMenu::query()
-            ->with(['children' => fn ($query) => $query->with('menuAction')])
+            ->with(['menuAction', 'children' => fn ($query) => $query->with('menuAction')])
             ->whereNull('parent_id')
             ->where('status', 1)
             ->orderBy('order_by')
             ->get();
+
+        $authMenus = $authMenus
+            ->filter(fn (AuthMenu $menu) => $this->filterRoutableMenu($menu))
+            ->values();
 
         return view('admin.role.permission')->with(compact('title', 'role', 'authMenus', 'canEditRolePermissions'));
     }
 
     public function permissionStore(Request $request)
     {
+        $routableMenuIds = $this->routableMenuIds();
+        $routableActionIds = $this->routableActionIds($routableMenuIds);
         $data = $request->validate([
             'id' => ['required', 'integer', Rule::exists('roles', 'id')],
             'permission' => ['nullable', 'array'],
-            'permission.*' => ['integer', Rule::exists('auth_menus', 'id')],
+            'permission.*' => ['integer', Rule::in($routableMenuIds->all())],
             'actionPermission' => ['nullable', 'array'],
-            'actionPermission.*' => ['integer', Rule::exists('menu_actions', 'id')],
+            'actionPermission.*' => ['integer', Rule::in($routableActionIds->all())],
         ]);
         $actor = $this->actor();
         $permissions = collect($data['permission'] ?? [])->map(fn ($id) => (int) $id)->unique()->sort()->values();
@@ -266,6 +274,56 @@ class RoleController extends Controller
             'action_count' => $actionIds->count(),
             'sha256' => hash('sha256', $menuIds->implode(',') . '|' . $actionIds->implode(',')),
         ];
+    }
+
+    private function filterRoutableMenu(AuthMenu $menu): bool
+    {
+        $children = $menu->children
+            ->filter(fn (AuthMenu $child) => $this->filterRoutableMenu($child))
+            ->values();
+        $menu->setRelation('children', $children);
+
+        $menu->loadMissing('menuAction');
+        $menu->setRelation('menuAction', $menu->menuAction
+            ->filter(fn (MenuAction $action) => $this->isRoutableAction($action))
+            ->values());
+
+        return Route::has((string) $menu->link) || $children->isNotEmpty();
+    }
+
+    /** @return \Illuminate\Support\Collection<int, int> */
+    private function routableMenuIds(): \Illuminate\Support\Collection
+    {
+        return AuthMenu::query()
+            ->where('status', 1)
+            ->get(['id', 'link'])
+            ->filter(fn (AuthMenu $menu) => Route::has((string) $menu->link))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values();
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, int>  $menuIds
+     * @return \Illuminate\Support\Collection<int, int>
+     */
+    private function routableActionIds(\Illuminate\Support\Collection $menuIds): \Illuminate\Support\Collection
+    {
+        return MenuAction::query()
+            ->where('status', 1)
+            ->whereIn('auth_menu_id', $menuIds)
+            ->get(['id', 'link'])
+            ->filter(fn (MenuAction $action) => $this->isRoutableAction($action))
+            ->map(fn (MenuAction $action) => (int) $action->id)
+            ->values();
+    }
+
+    private function isRoutableAction(MenuAction $action): bool
+    {
+        $capability = trim((string) $action->link);
+
+        return $capability !== ''
+            && (Route::has($capability) || AdminPermissionRegistry::isRegisteredCapability($capability));
     }
 
     /** @return \Illuminate\Support\Collection<int, int> */

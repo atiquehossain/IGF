@@ -14,6 +14,8 @@
     .tc-publish-button:hover,.tc-publish-button:focus-visible,.tc-save:hover,.tc-save:focus-visible{background:#783300}
     .tc-publish-button:focus-visible,.tc-save:focus-visible{outline:3px solid rgba(156,69,0,.28);outline-offset:2px}
     .tc-publish-button[disabled],.tc-save:disabled{background:#d7d2ce;color:#514e4b}
+    .translation-center,.tc-workspace,.tc-sidebar,.tc-main,.tc-panel,.tc-tools,.tc-sheet-wrap{min-width:0;max-width:100%}.tc-filter-links a,.tc-publish-button,.tc-tools input,.tc-tools select,.tc-filter-button,.tc-reset,.tc-save{min-height:44px}.tc-filter-links a{align-items:center}.tc-copy{width:44px;min-width:44px;height:44px;min-height:44px}.tc-target textarea{padding-right:52px}.tc-pagination .page-link{width:44px;min-width:44px;height:44px;min-height:44px}.tc-pagination nav{overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+    @media(max-width:760px){.tc-tools input,.tc-tools select,.tc-filter-button,.tc-reset{width:100%}.tc-search input{min-width:0}.tc-savebar{max-width:calc(100vw - 24px);gap:8px}.tc-savebar span{min-width:0}.tc-save{flex:0 0 auto}.tc-sheet-wrap{overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}}
 </style>
 
 <main class="translation-center">
@@ -93,7 +95,7 @@
                 <div class="tc-search"><label for="translation-search">Find any text</label><input id="translation-search" name="search" value="{{ $search }}" placeholder="Search pages, buttons, menus, or wording…"></div>
                 <div><label for="translation-status">Status</label><select id="translation-status" name="status"><option value="">All rows</option><option value="missing" @selected($status === 'missing')>Missing required</option><option value="translated" @selected($status === 'translated')>Translated only</option><option value="optional" @selected($status === 'optional')>Optional / unpublished</option></select></div>
                 <button class="tc-filter-button" type="submit">Apply</button>
-                <a class="tc-reset" href="{{ route('translations.index') }}">Reset</a>
+                <a class="tc-reset btn igf-btn igf-btn-tertiary" href="{{ route('translations.index') }}"><i class="fa fa-undo" aria-hidden="true"></i> Reset</a>
             </form>
 
             @if($canEditTranslations)
@@ -103,7 +105,7 @@
             @else
                 <div id="translation-form" data-read-only="true">
             @endif
-                <div class="tc-sheet-wrap">
+                <div class="tc-sheet-wrap table-responsive" role="region" aria-label="Scrollable translation spreadsheet" tabindex="0">
                     <table class="tc-sheet">
                         <thead><tr><th scope="col">#</th><th scope="col">Page / location</th><th scope="col">English</th><th scope="col">বাংলা</th><th scope="col">Status</th></tr></thead>
                         <tbody>

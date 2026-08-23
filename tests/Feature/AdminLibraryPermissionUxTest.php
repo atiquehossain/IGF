@@ -197,6 +197,36 @@ class AdminLibraryPermissionUxTest extends TestCase
             ->assertDontSee('data-url="'.route('content.trash.restore', ['category', $this->trashedCategory->id]).'"', false);
     }
 
+    public function test_media_cards_prioritize_descriptions_and_report_where_an_asset_is_used(): void
+    {
+        Page::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Page using the library image',
+            'sub_title' => 'Usage tracking test',
+            'slug' => 'page-using-the-library-image',
+            'status' => 1,
+            'language' => 'en',
+            'thumbnail' => $this->media->url,
+        ]);
+
+        $admin = $this->makeAdmin(['media.index'], ['media.edit']);
+
+        $this->actingAs($admin, 'admin')->get(route('media.index'))
+            ->assertOk()
+            ->assertSee('Permission test image')
+            ->assertSee('File details')
+            ->assertSee($this->media->original_name)
+            ->assertSee('Edit description')
+            ->assertSee('Check usage')
+            ->assertDontSee('Move to trash');
+
+        $this->getJson(route('media.index', ['usage' => $this->media->uuid]))
+            ->assertOk()
+            ->assertJsonPath('asset', $this->media->uuid)
+            ->assertJsonPath('references.pages', 1)
+            ->assertJsonPath('total', 1);
+    }
+
     public function test_registered_canonical_capabilities_are_queryable_without_weakening_route_overrides(): void
     {
         foreach ([

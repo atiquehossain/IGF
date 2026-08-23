@@ -12,6 +12,7 @@
 
 @section('content')
   <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     @if($tagsAreReadOnly)
       <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review projects, but your role cannot create, edit, publish, or remove them.</div>
@@ -48,7 +49,7 @@
                         <div class="form-group has-success">
                           <label for="banner_id" class="control-label mb-1">{{ $Lang->Common->Form->Select }}
                             {{ $Lang->BannerTitle }}</label>
-                          <select name="banner_id" type="text" class="form-control" data-e2e="banner-id">
+                          <select id="banner_id" name="banner_id" class="form-control" data-e2e="banner-id">
                             <option value="">{{ $Lang->Common->Form->Select }} {{ $Lang->Common->Page }}</option>
                             @foreach ($banners as $banner)
                               <option value="{{ $banner->id }}"
@@ -65,10 +66,10 @@
                     </div>
 
                     <div class="form-actions form-group text-right">
-                      <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-lock fa-lg"></i>&nbsp;
-                        {{ $Lang->Common->Submit }}</button>
-                      <button type="button" class="btn btn-danger cancel mt-3"><i
-                          class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                      <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i>
+                        Create project</button>
+                      <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i
+                          class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                     </div>
 
                   </form>
@@ -90,10 +91,11 @@
               <div class="col-md-6">
                 <form action="{{ route('tag.index') }}" method="get">
                   <div class="input-group search-input-group">
-                    <input type="search" name="search" value="{{ @$search }}"
-                      class="form-control search-form-control">
+                    <label class="sr-only" for="tag-search">Search projects</label>
+                    <input id="tag-search" type="search" name="search" value="{{ @$search }}"
+                      class="form-control search-form-control" aria-label="Search projects">
                     <span class="input-group-prepend">
-                      <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i>
+                      <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i>
                         {{ $Lang->Common->Search }}</button>
                     </span>
                   </div>
@@ -117,13 +119,13 @@
                     <td> <span class="name">{{ @$tag->name }}</span> </td>
                     <td>
                       @if($canEditTags)
-                        <button type="button" class="edit btn btn-info btn-sm1" data-id="{{ $tag->id }}" aria-label="Edit project" title="Edit project"><i class="fa fa-edit" aria-hidden="true"></i></button>
+                        <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $tag->id }}" aria-label="Edit project" title="Edit project"><i class="fa fa-edit" aria-hidden="true"></i> Edit</button>
                       @endif
                       @if($canPublishTags)
-                        <button type="button" class="btn btn-warning btn-sm1 status" data-id="{{ $tag->id }}" data-url="{{ route('tag.status', $tag->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $tag->status ? 'Unpublish' : 'Publish' }} project" title="{{ $tag->status ? 'Unpublish' : 'Publish' }} project" aria-pressed="{{ $tag->status ? 'true' : 'false' }}"><i class="fa text-white {{ $tag->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
+                        <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" data-id="{{ $tag->id }}" data-url="{{ route('tag.status', $tag->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $tag->status ? 'Unpublish' : 'Publish' }} project" title="{{ $tag->status ? 'Unpublish' : 'Publish' }} project" aria-pressed="{{ $tag->status ? 'true' : 'false' }}"><i class="fa {{ $tag->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i> {{ $tag->status ? 'Unpublish' : 'Publish' }}</button>
                       @endif
                       @if($canDeleteTags)
-                        <button type="button" class="btn btn-danger btn-sm1 trash" data-id="{{ $tag->id }}" data-url="{{ route('tag.destroy', $tag->id) }}" data-token="{{ csrf_token() }}" data-item-label="project {{ $tag->name }}" aria-label="Delete project" title="Delete project"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                        <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash" data-id="{{ $tag->id }}" data-url="{{ route('tag.destroy', $tag->id) }}" data-token="{{ csrf_token() }}" data-item-label="project {{ $tag->name }}" aria-label="Delete project" title="Delete project"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</button>
                       @endif
                       @if(!$canEditTags && !$canPublishTags && !$canDeleteTags)<span class="badge badge-light">View only</span>@endif
                     </td>
@@ -143,13 +145,13 @@
   {{-- Modal --}}
   @if($canEditTags)
   <div class="modal fade" id="tagModal" tabindex="-1" role="dialog" data-backdrop="static"
-    aria-labelledby="mediumModalLabel" aria-hidden="true">
+    aria-labelledby="tagModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
       <div class="modal-content">
         <form action="{{ route('tag.update') }}" method="POST" enctype="multipart/form-data">
           <div class="modal-header">
-            <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->TagTitle }}</strong>
-            <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+            <h2 class="card-title h5 mb-0" id="tagModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->TagTitle }}</h2>
+            <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -161,7 +163,7 @@
               required>
 
             <div class="form-group has-success">
-              <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }}<span>*</span></label>
+              <label for="e_name" class="control-label mb-1">{{ $Lang->Common->Form->Name }}<span>*</span></label>
               <input id="e_name" name="name" type="text" value="{{ old('name') }}" class="form-control"
                 required>
               @if ($errors->has('name'))
@@ -170,7 +172,7 @@
             </div>
 
             <div class="form-group has-success">
-              <label for="banner_id" class="control-label mb-1">{{ $Lang->Common->Form->Select }}
+              <label for="e_banner_id" class="control-label mb-1">{{ $Lang->Common->Form->Select }}
                 {{ $Lang->BannerTitle }}</label>
               <select id="e_banner_id" name="banner_id" type="text" class="form-control" data-e2e="banner-id">
                 <option value="">{{ $Lang->Common->Form->Select }} {{ $Lang->Common->Page }}</option>
@@ -187,10 +189,10 @@
 
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp;
-              {{ $Lang->Common->Submit }}</button>
-            <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i
-                class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+            <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i>
+              Save project</button>
+            <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i
+                class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
           </div>
         </form>
       </div>

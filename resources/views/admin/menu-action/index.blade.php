@@ -34,9 +34,9 @@
                                     <strong class="card-title">{{ $Lang->Common->New }} {{ $Lang->MenuTitle }}{{ $Lang->Common->Action }}... ( {{ @$authMenu->name }} )</strong>
                                 </div>
                                 <div class="col-lg-5 col-md-12">
-                                    @if($canViewMenus)<a class="btn btn-sm btn-secondary float-right" style="line-height: .5"
+                                    @if($canViewMenus)<a class="btn igf-btn igf-btn-secondary igf-btn-compact float-right"
                                         href="{{ route('menu.index') }}">
-                                        <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
+                                        <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                     </a>@endif
                                 </div>
                             </div>
@@ -107,10 +107,10 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-1"><i
-                                                class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-1"><i
-                                                class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i
+                                                class="fa fa-plus" aria-hidden="true"></i> Create action</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i
+                                                class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                     </div>
 
                                 </form>
@@ -197,10 +197,10 @@
                                         </div>
 
                                         <div class="form-actions form-group text-right">
-                                            <button type="submit" class="btn btn-info submit_ mt-1"><i
-                                                    class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                            <button type="button" class="btn btn-danger cancel mt-1"><i
-                                                    class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                            <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i
+                                                    class="fa fa-save" aria-hidden="true"></i> Save action</button>
+                                            <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i
+                                                    class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -224,7 +224,7 @@
                                         <input type="search" name="search" value="{{ @$search }}"
                                             class="form-control search-form-control">
                                         <span class="input-group-prepend">
-                                            <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search"
+                                            <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search"
                                                     aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                         </span>
                                     </div>
@@ -252,28 +252,28 @@
                                         <td> <span class="name">{{ @$menu->order_by }}</span> </td>
                                         <td>
                                             @if($canEditMenuActions)
-                                            <button type="button" class="edit btn btn-info btn-sm1"
+                                            <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact"
                                                 data-id="{{ @$menu->id }}" aria-label="Edit {{ $menu->name }}" title="Edit {{ $menu->name }}">
-                                                <i class="fa fa-edit" aria-hidden="true"></i>
+                                                <i class="fa fa-edit" aria-hidden="true"></i> Edit
                                             </button>
                                             @endif
 
                                             @if($canPublishMenuActions)
-                                            <button type="button" class="btn btn-warning btn-sm1 status"
+                                            <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status"
                                                 data-id="{{ @$menu->id }}"
                                                 data-url="{{ route('menu.action.status', @$menu->id) }}"
                                                 data-token="{{ csrf_token() }}" aria-label="{{ $menu->status ? 'Deactivate' : 'Activate' }} {{ $menu->name }}" title="{{ $menu->status ? 'Deactivate' : 'Activate' }} {{ $menu->name }}" aria-pressed="{{ $menu->status ? 'true' : 'false' }}">
-                                                <i class="fa text-white {{ $menu->status == 1 ? 'fa-check-square' : 'fa-square' }}"
-                                                    aria-hidden="true"></i>
+                                                <i class="fa {{ $menu->status == 1 ? 'fa-check-square' : 'fa-square' }}"
+                                                    aria-hidden="true"></i> {{ $menu->status ? 'Deactivate' : 'Activate' }}
                                             </button>
                                             @endif
 
                                             @if($canDeleteMenuActions)
-                                            <button type="button" class="btn btn-danger btn-sm1 trash"
+                                            <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash"
                                                 data-id="{{ @$menu->id }}"
                                                 data-url="{{ route('menu.action.destroy', @$menu->id) }}"
                                                 data-token="{{ csrf_token() }}" aria-label="Delete {{ $menu->name }}" title="Delete {{ $menu->name }}">
-                                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                                <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
                                             </button>
                                             @endif
                                             @if($menuActionsAreReadOnly)<span class="badge badge-light">View only</span>@endif

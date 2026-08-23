@@ -11,6 +11,7 @@
     $hasSubscriberActions = $canEmailSubscribers || $canDeleteSubscribers;
   @endphp
   <div class="content pb-0">
+    <h1 class="sr-only">Email subscribers</h1>
     <div class="row">
       <div class="col-lg-12 col-md-12">
         <div class="card">
@@ -24,15 +25,15 @@
               </div>
               <div class="col-md-9">
                 @if($canExportSubscribers)
-                  <a href="{{ route('subscriber-excel-download.index') }}" class="btn btn-primary float-right mb-2 btn-sm"
-                    target="_blank" rel="noopener">Export as Excel</a>
+                  <a href="{{ route('subscriber-excel-download.index') }}" class="btn igf-btn igf-btn-secondary igf-btn-compact float-right mb-2"
+                    target="_blank" rel="noopener"><i class="fa fa-download" aria-hidden="true"></i> Export subscriber list</a>
                 @endif
                 <form action="{{ route('subscriber.filter') }}" method="post" class="form-inline float-right mr-2" role="search">@csrf
                   <label class="sr-only" for="subscriber-search">Search subscriber email</label>
                   <input id="subscriber-search" type="search" name="search" value="{{ $search }}" maxlength="100" autocomplete="off" required class="form-control form-control-sm mr-1" placeholder="Subscriber email">
-                  <button type="submit" class="btn btn-info btn-sm">Search</button>
+                  <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
                 </form>
-                @if($search !== '')<form action="{{ route('subscriber.search.clear') }}" method="post" class="float-right mr-2">@csrf<button type="submit" class="btn btn-light btn-sm">Clear</button></form>@endif
+                @if($search !== '')<form action="{{ route('subscriber.search.clear') }}" method="post" class="float-right mr-2">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary"><i class="fa fa-undo" aria-hidden="true"></i> Clear</button></form>@endif
               </div>
             </div>
           </div>
@@ -53,17 +54,17 @@
                     @if($hasSubscriberActions)
                       <td>
                         @if($canEmailSubscribers)
-                        <button type="button" class="btn btn-sm btn-info send-email-btn"
+                        <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact send-email-btn"
                           data-email="{{ $message->email }}" title="Send email" aria-label="Send email to {{ $message->email }}">
-                          <i class="fa fa-envelope" aria-hidden="true"></i>
+                          <i class="fa fa-envelope" aria-hidden="true"></i> Email
                         </button>
                         @endif
                         @if($canDeleteSubscribers)
-                          <button type="button" class="btn btn-sm btn-danger trash"
+                          <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash"
                             data-id="{{ $message->id }}" data-url="{{ route('subscriber.destroy', $message->id) }}"
                             data-item-label="subscriber {{ $message->email }}"
                             aria-label="Remove {{ $message->email }} from subscribers" title="Remove subscriber">
-                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                            <i class="fa fa-trash-o" aria-hidden="true"></i> Remove
                           </button>
                         @endif
                       </td>
@@ -89,8 +90,8 @@
         @csrf
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Send Email to Subscriber</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            <h2 class="modal-title h5 mb-0" id="emailModalLabel">Send Email to Subscriber</h2>
+            <button type="button" class="close btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <div class="modal-body">
             <input type="hidden" name="email" id="emailToSend">
@@ -112,8 +113,8 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Send</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn igf-btn igf-btn-primary"><i class="fa fa-paper-plane" aria-hidden="true"></i> Send email</button>
+            <button type="button" class="btn igf-btn igf-btn-secondary" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Close</button>
           </div>
         </div>
       </form>

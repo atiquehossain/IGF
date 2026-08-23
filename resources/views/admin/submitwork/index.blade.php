@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     <div class="row">
         <div class="col-md-12">
@@ -14,13 +15,14 @@
                         <div class="col-md-4">
                             <form action="{{ route('submitwork.index')}}" method="get">
                                 <div class="input-group search-input-group_">
-                                    <select name="search" class="form-control" required>
+                                    <label class="sr-only" for="submission-status-filter">Filter submissions by status</label>
+                                    <select id="submission-status-filter" name="search" class="form-control" required>
                                         <option value="Submission" <?= @$search == 'Submission' ? 'selected' : '' ?>>{{ $Lang->Resource->Submission }}</option>
                                         <option value="Accept" <?= @$search == 'Accept' ? 'selected' : '' ?>>{{ $Lang->Resource->Accept }}</option>
                                         <option value="Not Accepted" <?= @$search == 'Not Accepted' ? 'selected' : '' ?>>{{ $Lang->Common->Form->NotAccepted }}</option>
                                     </select>
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-filter" aria-hidden="true"></i> Apply status filter</button>
                                     </span>
                                 </div>
                             </form>
@@ -46,15 +48,13 @@
                                 <td> <span class="">{{@$submitwork->user->name}}</span> </td>
                                 <td> <span class="">{{@$submitwork->user->phone_no}}</span> </td>
                                 <td>
-                                    <a href="{{@$submitwork->post_url}}" target="_blank">
-                                        <img class="rounded" src="{{route('submitwork.image',@$submitwork->asset)}}" alt="{{@$submitwork->asset}}">
+                                    <a href="{{@$submitwork->post_url}}" target="_blank" rel="noopener" aria-label="Open submission from {{ $submitwork->user->name ?? 'user' }} in a new tab">
+                                        <img class="rounded" src="{{route('submitwork.image',@$submitwork->asset)}}" alt="Submission preview from {{ $submitwork->user->name ?? 'user' }}">
                                     </a>
                                 </td>
                                 <td>
                                     <?php if ($submitwork->status == 'Submission') { ?>
-                                        <a href="javascript:void(0)">
-                                            <span class="edit badge badge-pending" data-id="{{ $submitwork->id }}">{{@$submitwork->status}}</span>
-                                        </a>
+                                        <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $submitwork->id }}" aria-label="Review submission from {{ $submitwork->user->name ?? 'user' }}"><i class="fa fa-eye" aria-hidden="true"></i> Review</button>
                                     <?php } else if ($submitwork->status == 'Accept') { ?>
                                         <span class="badge badge-complete">{{@$submitwork->status}}</span>
                                     <?php } else { ?>
@@ -62,7 +62,7 @@
                                     <?php } ?>
                                 </td>
                                 <td>
-                                    <?= App\Link::action(@$submitwork->id, true) ?>
+                                    <?= App\Link::action(@$submitwork->id, true, 'submission from ' . ($submitwork->user->name ?? 'user')) ?>
                                 </td>
                             </tr>
                             @endforeach
@@ -79,13 +79,13 @@
 </div>
 
 {{-- Modal --}}
-<div class="modal fade" id="submitworkModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="mediumModalLabel" aria-hidden="true">
+<div class="modal fade" id="submitworkModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="submitworkModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
             <form action="{{route('submitwork.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->Common->SubmitWork }}</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <h2 class="card-title h5 mb-0" id="submitworkModalTitle">Review submitted work</h2>
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -95,7 +95,7 @@
                     <input name="id" id="e_id" type="hidden" value="{{old('id')}}" class="form-control" required>
 
                     <div class="form-group has-success">
-                        <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                        <label for="sw_status" class="control-label mb-1">Review status <span>*</span></label>
                         <select name="status" id="sw_status" class="form-control" required>
                             <option value="Submission">{{ $Lang->Resource->Submission }}</option>
                             <option value="Accept">Accept</option>
@@ -116,8 +116,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i> Save review</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>

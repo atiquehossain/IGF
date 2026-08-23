@@ -10,7 +10,7 @@
 </div>
 
 @include('admin.layouts.scripts')
-
+@yield('custom-js')
 
 <script>
     @if (Session::has('message'))

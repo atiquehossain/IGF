@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\AuthMenu;
 use App\Models\DonationType;
+use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MenuAction;
 use App\Models\Role;
@@ -280,6 +281,64 @@ class AdminInlineCrudPermissionUxTest extends TestCase
             ->assertSee('<button type="button" class="input-group-text open_album" aria-label="Create a new album"', false)
             ->assertSee('action="'.route('album.store').'"', false)
             ->assertSee('id="albamModal"', false);
+    }
+
+    public function test_gallery_list_uses_clear_stateful_actions_without_exposing_forbidden_controls(): void
+    {
+        $published = Gallery::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Community kitchen',
+            'type' => 'gallery',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $draft = Gallery::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'School supplies',
+            'type' => 'gallery',
+            'language' => 'en',
+            'status' => 0,
+        ]);
+        $editor = $this->makeAdmin('Gallery action editor', ['gallery.index'], [
+            'gallery.create',
+            'gallery.edit',
+            'gallery.status',
+            'gallery.destroy',
+        ]);
+
+        $response = $this->actingAs($editor, 'admin')->get(route('gallery.index'))
+            ->assertOk()
+            ->assertSee('class="btn igf-btn igf-btn-secondary igf-btn-compact"', false)
+            ->assertSee('class="btn igf-btn igf-btn-primary igf-btn-compact"', false)
+            ->assertSee('Add gallery item')
+            ->assertSee('role="group" aria-label="Actions for gallery item Community kitchen"', false)
+            ->assertSee('aria-label="Edit gallery item Community kitchen"', false)
+            ->assertSee('aria-label="Unpublish gallery item Community kitchen"', false)
+            ->assertSee('aria-label="Publish gallery item School supplies"', false)
+            ->assertSee('aria-label="Delete gallery item Community kitchen"', false)
+            ->assertSee('<span>Edit</span>', false)
+            ->assertSee('<span>Unpublish</span>', false)
+            ->assertSee('<span>Publish</span>', false)
+            ->assertSee('<span>Delete</span>', false)
+            ->assertSee('class="igf-danger-action"', false)
+            ->assertSee('class="edit btn igf-btn igf-btn-secondary igf-btn-compact"', false)
+            ->assertSee('class="btn igf-btn igf-btn-secondary igf-btn-compact status"', false)
+            ->assertSee('class="btn igf-btn igf-btn-danger igf-btn-compact trash"', false)
+            ->assertSee('data-id="'.$published->uuid.'"', false)
+            ->assertSee('data-id="'.$draft->uuid.'"', false)
+            ->assertSee('data-url="'.route('gallery.status', $published->uuid).'"', false)
+            ->assertSee('data-url="'.route('gallery.destroy', $published->uuid).'"', false);
+
+        $this->assertSame(2, substr_count($response->getContent(), 'class="igf-action-group"'));
+
+        $viewer = $this->makeAdmin('Gallery list viewer', ['gallery.index']);
+        $this->actingAs($viewer, 'admin')->get(route('gallery.index'))
+            ->assertOk()
+            ->assertSee($published->name)
+            ->assertDontSee('Add gallery item')
+            ->assertDontSee('class="igf-action-group"', false)
+            ->assertDontSee('data-url="'.route('gallery.status', $published->uuid).'"', false)
+            ->assertDontSee('data-url="'.route('gallery.destroy', $published->uuid).'"', false);
     }
 
     public function test_donation_cause_screen_has_accessible_guided_controls_and_refreshes_publication_state(): void

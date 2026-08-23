@@ -26,57 +26,54 @@ class Link {
         $menuAction = MenuAction::where('auth_menu_id', $userMenus->id)->where('status', 1)->orderBy('order_by', 'asc')->get();
         $permissions = app(Permission::class);
 
-        $data_link = '';
+        $actionButtons = [];
         $safeId = htmlspecialchars((string) $id, ENT_QUOTES, 'UTF-8');
         $safeItemLabel = AdminUi::label(trim((string) $itemLabel) ?: 'record #'.$safeId);
+        $isPublished = (int) $status === 1;
 
         if (!empty(@$menuAction)) {
             foreach (@$menuAction as $action) {
                 if (Route::has($action->link) && $permissions->allows($admin, $action->link)) {
-                    $fallbackLabel = match ((int) $action->type) {
-                        2 => 'Edit item',
-                        3 => 'Change publication status',
-                        4 => 'Delete item',
-                        8 => 'View item',
-                        default => 'Item action',
-                    };
-                    $actionLabel = AdminUi::label(trim((string) $action->name) ?: $fallbackLabel);
-
                     // Edit
                     if ($action->type == 2) {
-                        $edit_icon = AdminUi::iconClass($action->icon, 'fa-edit');
-                        $data_link .= '<button type="button" class="edit btn btn-info btn-sm1" data-id="' . $safeId . '" aria-label="' . $actionLabel . '" title="' . $actionLabel . '"><i class="fa ' . $edit_icon . '" aria-hidden="true"></i></button> ';
+                        $label = 'Edit ' . $safeItemLabel;
+                        $actionButtons[] = '<button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="' . $safeId . '" aria-label="' . $label . '" title="' . $label . '"><i class="fa fa-edit" aria-hidden="true"></i><span>Edit</span></button>';
                     }
 
                     // View
-                     if ($action->type == 8) {
-                        $view_icon = AdminUi::iconClass($action->icon, 'fa-eye');
-                        $data_link .= '<a href="' . route($action->link, $id) . '" class="btn btn-danger btn-sm1" aria-label="' . $actionLabel . '" title="' . $actionLabel . '"><i class="fa ' . $view_icon . '" aria-hidden="true"></i></a> ';
+                    if ($action->type == 8) {
+                        $label = 'View ' . $safeItemLabel;
+                        $actionButtons[] = '<a href="' . AdminUi::label(route($action->link, $id)) . '" class="btn igf-btn igf-btn-secondary igf-btn-compact" aria-label="' . $label . '" title="' . $label . '"><i class="fa fa-eye" aria-hidden="true"></i><span>View</span></a>';
                     }
 
                     // Publication Status
                     if ($action->type == 3) {
-                        $icon = ($status == 1) ? 'fa-check-square' : 'fa-square';
-                        $data_link .= '<button type="button" class="btn btn-warning btn-sm1 status" aria-label="' . $actionLabel . '" title="' . $actionLabel . '" aria-pressed="' . ($status == 1 ? 'true' : 'false') . '" data-id="' . $safeId . '"' .
-                                'data-url="' . route($action->link, $id) . '" data-token="' . csrf_token() . '">' .
-                                '<i class="fa text-white ' . $icon . '" aria-hidden="true"></i>' .
-                                '</button> ';
+                        $verb = $isPublished ? 'Unpublish' : 'Publish';
+                        $icon = $isPublished ? 'fa-eye-slash' : 'fa-eye';
+                        $label = $verb . ' ' . $safeItemLabel;
+                        $actionButtons[] = '<button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" aria-label="' . $label . '" title="' . $label . '" aria-pressed="' . ($isPublished ? 'true' : 'false') . '" data-item-label="' . $safeItemLabel . '" data-active-action="Unpublish" data-inactive-action="Publish" data-active-icon="fa-eye-slash" data-inactive-icon="fa-eye" data-id="' . $safeId . '"' .
+                                ' data-url="' . AdminUi::label(route($action->link, $id)) . '" data-token="' . AdminUi::label(csrf_token()) . '">' .
+                                '<i class="fa ' . $icon . '" aria-hidden="true"></i><span>' . $verb . '</span>' .
+                                '</button>';
                     }
 
                     // Delete
                     if ($action->type == 4) {
-                        $data_link .= '<button type="button" class="btn btn-danger btn-sm1 trash" aria-label="' . $actionLabel . '" title="' . $actionLabel . '" data-item-label="' . $safeItemLabel . '" data-id="' . $safeId . '"
-                                       data-url="' . route($action->link, $id) . '" data-token="' . csrf_token() . '">
-                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
-                                    </button> ';
+                        $label = 'Delete ' . $safeItemLabel;
+                        $actionButtons[] = '<span class="igf-danger-action"><button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash" aria-label="' . $label . '" title="' . $label . '" data-item-label="' . $safeItemLabel . '" data-id="' . $safeId . '"' .
+                                ' data-url="' . AdminUi::label(route($action->link, $id)) . '" data-token="' . AdminUi::label(csrf_token()) . '">' .
+                                '<i class="fa fa-trash-o" aria-hidden="true"></i><span>Delete</span>' .
+                                '</button></span>';
                     }
                 }
             }
         }
 
+        if ($actionButtons === []) {
+            return '';
+        }
 
-
-        return $data_link;
+        return '<span class="igf-action-group" role="group" aria-label="Actions for ' . $safeItemLabel . '">' . implode('', $actionButtons) . '</span>';
     }
 
 }

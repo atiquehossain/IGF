@@ -73,7 +73,8 @@ class SeoContentQualityWorkflowTest extends TestCase
             ->assertSee('Select all editable rows')
             ->assertSee('Save selected rows')
             ->assertSee('data-bulk-title-quality', false)
-            ->assertSee('data-bulk-description-quality', false);
+            ->assertSee('data-bulk-description-quality', false)
+            ->assertSee('Social image description for', false);
 
         $this->put(route('seo.bulk.update'), [
             'selection_mode' => 'explicit',
@@ -87,6 +88,7 @@ class SeoContentQualityWorkflowTest extends TestCase
             'seoable_type' => Category::class,
             'seoable_id' => $selected->id,
             'title' => 'Selected metadata title',
+            'social_image_alt' => 'Families participating in a community program',
         ]);
         $this->assertDatabaseMissing('seo_metadata', [
             'seoable_type' => Category::class,
@@ -139,6 +141,7 @@ class SeoContentQualityWorkflowTest extends TestCase
             'title' => $title,
             'description' => 'Learn how this community program delivers practical support, useful information and measurable local outcomes for families across Bangladesh.',
             'image' => 'https://example.test/share.jpg',
+            'image_alt' => 'Families participating in a community program',
             'indexable' => 1,
             'schema_template' => 'none',
         ];

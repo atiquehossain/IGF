@@ -38,7 +38,7 @@ class SeoMetadataService
 
         return [
             'image' => $image,
-            'alt' => trim((string) data_get(
+            'alt' => $this->socialImageAltText(data_get(
                 $settings,
                 'branding.social_share_image_alt',
                 data_get($settings, 'branding.logo_alt', config('app.name'))
@@ -155,6 +155,7 @@ class SeoMetadataService
             'og_title' => $fallback['meta_title'],
             'og_description' => $fallback['meta_description'],
             'og_image' => $fallback['meta_image'],
+            'social_image_alt' => null,
             'twitter_card' => 'summary_large_image',
             'twitter_title' => $fallback['meta_title'],
             'twitter_description' => $fallback['meta_description'],
@@ -169,6 +170,7 @@ class SeoMetadataService
 
         $meta['og_image'] = $this->absolutePublicImageUrl($meta['og_image'] ?? '');
         $meta['twitter_image'] = $this->absolutePublicImageUrl($meta['twitter_image'] ?? ($meta['og_image'] ?? ''));
+        $meta['social_image_alt'] = $this->socialImageAltText($meta['social_image_alt'] ?? '');
 
         return $meta;
     }
@@ -239,8 +241,19 @@ class SeoMetadataService
 
         $meta['og_image'] = $this->absolutePublicImageUrl($meta['og_image'] ?? '');
         $meta['twitter_image'] = $this->absolutePublicImageUrl($meta['twitter_image'] ?? ($meta['og_image'] ?? ''));
+        $meta['social_image_alt'] = $this->socialImageAltText($meta['social_image_alt'] ?? '');
 
         return $meta;
+    }
+
+    public function socialImageAltText(mixed $value): string
+    {
+        $value = is_scalar($value) ? (string) $value : '';
+        $value = strip_tags($value);
+        $value = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '';
+        $value = preg_replace('/\s+/u', ' ', trim($value)) ?? '';
+
+        return mb_substr($value, 0, 420);
     }
 
     public function absolutePublicImageUrl(?string $value): string

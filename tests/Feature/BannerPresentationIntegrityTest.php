@@ -62,6 +62,32 @@ class BannerPresentationIntegrityTest extends TestCase
         $this->assertDatabaseCount('banners', 0);
     }
 
+    public function test_banner_update_refreshes_an_unchanged_generated_legacy_heading(): void
+    {
+        $admin = $this->makeAdmin('banner.update');
+        Role::whereKey($admin->role)->update(['is_owner' => true]);
+        $banner = Banner::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => '<b>Original headline</b> Original support',
+            'headline' => 'Original headline',
+            'subheadline' => 'Original support',
+            'type' => 'banner-home',
+            'language' => 'en',
+            'status' => 0,
+        ]);
+
+        $this->actingAs($admin, 'admin')->put(route('banner.update'), [
+            'uuid' => $banner->uuid,
+            'language' => ['en' => 'en'],
+            'name' => ['en' => $banner->name],
+            'headline' => ['en' => 'Updated headline'],
+            'subheadline' => ['en' => 'Updated support'],
+            'type' => ['en' => 'banner-home'],
+        ])->assertRedirect(route('banner.index'));
+
+        $this->assertSame('<b>Updated headline</b> Updated support', $banner->fresh()->name);
+    }
+
     public function test_public_page_receives_structured_banner_content_and_normalized_media_url(): void
     {
         $banner = Banner::create([

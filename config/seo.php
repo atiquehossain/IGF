@@ -21,8 +21,9 @@ return [
     'sitemap_cache_seconds' => 300,
 
     'robots' => [
-        // Indexing is fail-closed. Production must explicitly opt in, while
-        // local, testing and staging environments always block crawlers.
+        // Indexing is fail-closed. Production must explicitly opt in. When
+        // disabled, public pages remain crawlable so their page-level robots
+        // metadata and matching X-Robots-Tag noindex directive can be observed.
         'indexing_enabled' => filter_var(env('SEO_INDEXING_ENABLED', false), FILTER_VALIDATE_BOOL),
     ],
 

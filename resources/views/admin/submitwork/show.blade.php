@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     <div class="row">
         <div class="col-md-12">
@@ -43,8 +44,8 @@
                             <tr>
                                 <td>Image : </td>
                                 <td>
-                                    <a href="{{@$submitwork->post_url}}" target="_blank">
-                                        <img class="img-fluid" src="{{route('submitwork.image',@$submitwork->asset)}}" alt="{{@$submitwork->asset}}">
+                                    <a href="{{@$submitwork->post_url}}" target="_blank" rel="noopener" aria-label="Open submitted work in a new tab">
+                                        <img class="img-fluid" src="{{route('submitwork.image',@$submitwork->asset)}}" alt="Submitted work preview">
                                     </a>
                                 </td>
                             </tr>

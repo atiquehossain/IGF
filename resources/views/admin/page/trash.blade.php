@@ -15,7 +15,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Page trash</strong>
-            <a class="btn btn-sm btn-secondary" href="{{ $canViewPages ? route('page.index') : route('dashboard.index') }}"><i class="fa fa-arrow-left"></i> {{ $canViewPages ? 'Back to pages' : 'Back to dashboard' }}</a>
+            <a class="btn igf-btn igf-btn-secondary" href="{{ $canViewPages ? route('page.index') : route('dashboard.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $canViewPages ? 'Back to Content Hub' : 'Back to dashboard' }}</a>
         </div>
         <div class="card-body">
             <p class="text-muted">Deleted pages remain recoverable here. Permanent deletion also removes their blocks, revisions, and SEO metadata and cannot be undone.</p>
@@ -29,7 +29,7 @@
                     <div class="input-group-append"><button class="btn btn-info" type="submit">Search</button></div>
                 </div>
             </form>
-            <div class="table-responsive">
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Deleted pages">
                 <table class="table" id="page-trash-table">
                     <thead><tr><th>Page</th><th>Slug</th><th>Deleted</th><th class="text-right">Actions</th></tr></thead>
                     <tbody>
@@ -39,8 +39,8 @@
                                 <td>{{ $page->slug }}</td>
                                 <td>{{ $page->deleted_at?->format('M j, Y g:i A') }}</td>
                                 <td class="text-right">
-                                    @if($canRestorePages)<button class="btn btn-sm btn-success restore-page" data-url="{{ route('page.trash.restore', $page->uuid) }}">Restore</button>@endif
-                                    @if($canPermanentlyDeletePages)<button class="btn btn-sm btn-danger force-delete-page" data-url="{{ route('page.trash.force-destroy', $page->uuid) }}">Delete permanently</button>@endif
+                                    @if($canRestorePages)<button type="button" class="btn btn-sm btn-success restore-page" data-url="{{ route('page.trash.restore', $page->uuid) }}">Restore</button>@endif
+                                    @if($canPermanentlyDeletePages)<button type="button" class="btn btn-sm btn-danger force-delete-page" data-url="{{ route('page.trash.force-destroy', $page->uuid) }}">Delete permanently</button>@endif
                                     @if($screenIsReadOnly)<span class="badge badge-light">View only</span>@endif
                                 </td>
                             </tr>
@@ -59,14 +59,59 @@
 @section('custom-js')
 <script>
 (() => {
-    const token = document.querySelector('meta[name="csrf-token"]').content;
+    const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+    async function jsonPayload(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            if (response.redirected || [401, 419].includes(response.status)) {
+                throw new Error('Your admin session has expired. Reload the page, sign in, and try again.');
+            }
+            if (response.status === 403) {
+                throw new Error('You no longer have permission to perform this action. Reload the page to refresh your access.');
+            }
+            throw new Error('The server returned an unexpected response. Reload the page and try again.');
+        }
+
+        try {
+            return await response.json();
+        } catch (error) {
+            throw new Error('The server response could not be read. Please try again.');
+        }
+    }
+
     async function act(button, method, confirmMessage) {
-        if (confirmMessage && !confirm(confirmMessage)) return;
-        const response = await fetch(button.dataset.url, {method, headers:{'Accept':'application/json','X-CSRF-TOKEN':token}});
-        const payload = await response.json();
-        if (!response.ok) { toastrMsg('error', payload.message); return; }
-        toastrMsg('success', payload.message);
-        button.closest('tr').remove();
+        if (button.disabled || (confirmMessage && !window.confirm(confirmMessage))) return;
+
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+        setAdminBusy(true);
+
+        try {
+            const response = await fetch(button.dataset.url, {
+                method,
+                credentials: 'same-origin',
+                headers: {'Accept':'application/json','X-Requested-With':'XMLHttpRequest','X-CSRF-TOKEN':token}
+            });
+            const payload = await jsonPayload(response);
+            if (!response.ok) {
+                throw new Error(payload.message || 'The action could not be completed.');
+            }
+            toastrMsg('success', payload.message || 'The page trash was updated.');
+            const row = button.closest('tr');
+            const nextRowAction = row?.nextElementSibling?.querySelector('button, a');
+            row?.remove();
+            const tableRegion = document.getElementById('page-trash-table')?.closest('.table-responsive');
+            (nextRowAction || tableRegion)?.focus();
+        } catch (error) {
+            toastrMsg('error', error.message || 'The action could not be completed. Check your connection and try again.');
+        } finally {
+            if (document.contains(button)) {
+                button.disabled = false;
+                button.removeAttribute('aria-busy');
+            }
+            setAdminBusy(false);
+        }
     }
     document.querySelectorAll('.restore-page').forEach(button => button.addEventListener('click', () => act(button, 'POST')));
     document.querySelectorAll('.force-delete-page').forEach(button => button.addEventListener('click', () => act(button, 'DELETE', 'Permanently delete this page and all associated data? This cannot be undone.')));

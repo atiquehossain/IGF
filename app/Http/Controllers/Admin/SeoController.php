@@ -473,6 +473,7 @@ class SeoController extends Controller
             'items.*.title' => ['nullable', 'string', 'max:255'],
             'items.*.description' => ['nullable', 'string', 'max:500'],
             'items.*.image' => ['nullable', 'url:http,https', 'max:2048'],
+            'items.*.image_alt' => ['nullable', 'string', 'max:420'],
             'items.*.indexable' => ['required', 'boolean'],
             'items.*.schema_template' => ['required', Rule::in($templateKeys)],
         ]);
@@ -596,7 +597,7 @@ class SeoController extends Controller
         return response()->streamDownload(function () use ($targets): void {
             $stream = fopen('php://output', 'wb');
             fwrite($stream, "\xEF\xBB\xBF");
-            fputcsv($stream, ['Content', 'Type', 'Language', 'Publication', 'SEO status', 'Search title', 'Search description', 'Social image', 'Visibility', 'Schema template', 'Public URL']);
+            fputcsv($stream, ['Content', 'Type', 'Language', 'Publication', 'SEO status', 'Search title', 'Search description', 'Social image', 'Social image description', 'Visibility', 'Schema template', 'Public URL']);
             foreach ($targets as $target) {
                 fputcsv($stream, array_map(fn ($value) => $this->safeCsvCell((string) $value), [
                     $target['label'],
@@ -607,6 +608,7 @@ class SeoController extends Controller
                     $target['effective_title'],
                     $target['effective_description'],
                     $target['effective_image'],
+                    $target['effective_image_alt'],
                     $target['stored']['indexable'] ? 'Show in search' : 'Hidden',
                     $target['stored']['schema_template'],
                     $target['url'],
@@ -896,6 +898,7 @@ class SeoController extends Controller
         $title = $copying ? ((string) $raw('title') ?: (string) ($sourceFallback['meta_title'] ?? '')) : (string) $raw('title');
         $description = $copying ? ((string) $raw('description') ?: (string) ($sourceFallback['meta_description'] ?? '')) : (string) $raw('description');
         $image = $this->absoluteImageUrl((string) ($raw('og_image') ?: $raw('twitter_image') ?: ($copying ? ($sourceFallback['meta_image'] ?? '') : '')));
+        $imageAlt = $this->seo->socialImageAltText($raw('social_image_alt'));
         $schema = $source?->schema_markup;
         $effectiveTitle = $title ?: (string) ($fallback['meta_title'] ?? '');
         $effectiveDescription = $description ?: (string) ($fallback['meta_description'] ?? '');
@@ -972,6 +975,7 @@ class SeoController extends Controller
                 'og_title' => (string) $raw('og_title'),
                 'og_description' => (string) $raw('og_description'),
                 'og_image' => $image,
+                'social_image_alt' => $imageAlt,
                 'twitter_card' => (string) $raw('twitter_card', 'summary_large_image'),
                 'twitter_title' => (string) $raw('twitter_title'),
                 'twitter_description' => (string) $raw('twitter_description'),
@@ -984,6 +988,7 @@ class SeoController extends Controller
                 'title' => $effectiveTitle,
                 'description' => $effectiveDescription,
                 'image' => $effectiveImage,
+                'image_alt' => $imageAlt,
                 'url' => $effectiveUrl,
             ],
             'auto_content' => !$copying && trim((string) ($seo?->title ?? '')) === '' && trim((string) ($seo?->description ?? '')) === '',
@@ -1328,6 +1333,7 @@ class SeoController extends Controller
             'effective_title' => (string) ($meta['meta_title'] ?? ''),
             'effective_description' => (string) ($meta['meta_description'] ?? ''),
             'effective_image' => (string) ($meta['og_image'] ?? ''),
+            'effective_image_alt' => $this->seo->socialImageAltText($meta['social_image_alt'] ?? ''),
             'owner_type' => $owner['owner_type'] ?? $type,
             'owner_id' => $owner['owner_id'] ?? null,
             'route_name' => $owner['route_name'] ?? null,
@@ -1342,6 +1348,7 @@ class SeoController extends Controller
                 'title' => (string) ($seo?->title ?? ''),
                 'description' => (string) ($seo?->description ?? ''),
                 'image' => (string) ($seo?->og_image ?? ''),
+                'image_alt' => $this->seo->socialImageAltText($seo?->social_image_alt),
                 'indexable' => (bool) ($seo?->robots_index ?? true),
                 'schema_template' => $this->schemaTemplates->detect(is_array($seo?->schema_markup) ? $seo->schema_markup : null),
                 'review_status' => $reviewState['status'],
@@ -2160,6 +2167,7 @@ class SeoController extends Controller
             'title' => $item['mode'] === 'auto' ? null : trim((string) ($item['title'] ?? '')),
             'description' => $item['mode'] === 'auto' ? null : trim((string) ($item['description'] ?? '')),
             'og_image' => $image ?: null,
+            'social_image_alt' => $item['image_alt'] ?? null,
             'twitter_image' => $image ?: null,
             'robots_index' => $indexable,
             'robots_follow' => (bool) ($metadata?->robots_follow ?? true),
@@ -2284,6 +2292,7 @@ class SeoController extends Controller
             'robots_index' => 'Search visibility',
             'robots_follow' => 'Follow links',
             'og_image', 'twitter_image' => 'Social image',
+            'social_image_alt' => 'Social image description',
             'og_title', 'twitter_title' => 'Social title',
             'og_description', 'twitter_description' => 'Social description',
             'schema_markup' => 'Structured data',
@@ -2446,6 +2455,7 @@ class SeoController extends Controller
             'seo.og_title' => ['nullable', 'string', 'max:255'],
             'seo.og_description' => ['nullable', 'string', 'max:500'],
             'seo.og_image' => ['nullable', 'url:http,https', 'max:2048'],
+            'seo.social_image_alt' => ['nullable', 'string', 'max:420'],
             'seo.twitter_card' => ['required', Rule::in(['summary', 'summary_large_image'])],
             'seo.twitter_title' => ['nullable', 'string', 'max:255'],
             'seo.twitter_description' => ['nullable', 'string', 'max:500'],

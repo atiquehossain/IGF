@@ -12,6 +12,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
     @if($membersAreReadOnly)
         <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review team member names, photos, and roles, but your role cannot create, edit, publish, or remove team members.</div>
     @endif
@@ -31,7 +32,9 @@
                                     <div class="form-group text-center">
                                         <div class="file-upload">
                                             <label for="latestNewsimage" class="file-upload_label">
-                                                <img class="file-upload_img" id="upload_img" src="{{ asset('/')}}image/no-image.png">
+                                                <img class="file-upload_img" id="upload_img" src="{{ asset('image/no-image.png') }}"
+                                                    onerror="this.onerror=null;this.src='{{ asset('image/no-image.png') }}'"
+                                                    alt="Team member photo preview">
                                             </label>
                                             <input type="file" onchange="changefile(event, 'upload_img')" name="image" id="latestNewsimage" class="file-upload_input" accept="image/jpeg,image/png,image/webp">
                                         </div>
@@ -109,8 +112,8 @@
 
                                     <div class="form-group has-success">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <label class="mb-0">Social links</label>
-                                            <button type="button" class="btn btn-outline-info btn-sm add-social-link" data-social-scope="create"><i class="fa fa-plus" aria-hidden="true"></i> Add link</button>
+                                            <strong class="mb-0">Social links</strong>
+                                            <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact add-social-link" data-social-scope="create"><i class="fa fa-plus" aria-hidden="true"></i> Add link</button>
                                         </div>
                                         <small class="form-text text-muted mb-2">Add any public profile using a complete http:// or https:// URL.</small>
                                         <div id="create_social_links" class="social-links-editor"></div>
@@ -126,8 +129,8 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-3"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i> Create team member</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                     </div>
 
                                 </form>
@@ -149,9 +152,10 @@
                         <div class="col-md-6">
                             <form action="{{ route('latest.news.index')}}" method="get">
                                 <div class="input-group search-input-group">
-                                    <input type="search" name="search" value="{{@$search}}" class="form-control search-form-control">
+                                    <label class="sr-only" for="team-member-search">Search team members</label>
+                                    <input id="team-member-search" type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search team members">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
@@ -175,9 +179,9 @@
                                 <td> #{{@$news->id}} </td>
                                 <td class="avatar">
                                     <div class="round-img">
-                                        <img class="rounded" src="{{route('latest.news.image', [
-                                            @$news->path
-                                        ]) }}" alt="Photo of {{ $news->name }}">
+                                        <img class="rounded" src="{{ $news->display_image_url }}"
+                                            onerror="this.onerror=null;this.src='{{ asset('image/no-image.png') }}'"
+                                            alt="Photo of {{ $news->name }}">
                                     </div>
                                 </td>
 
@@ -185,13 +189,13 @@
                                 <td> <span>{{@$news->description}}</span> </td>
                                 <td>
                                     @if($canEditMembers)
-                                        <button type="button" class="edit btn btn-info btn-sm1" data-id="{{ $news->id }}" aria-label="Edit team member" title="Edit team member"><i class="fa fa-edit" aria-hidden="true"></i></button>
+                                        <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $news->id }}" aria-label="Edit team member" title="Edit team member"><i class="fa fa-edit" aria-hidden="true"></i> Edit</button>
                                     @endif
                                     @if($canPublishMembers)
-                                        <button type="button" class="btn btn-warning btn-sm1 status" data-id="{{ $news->id }}" data-url="{{ route('latest.news.status', $news->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $news->status ? 'Unpublish' : 'Publish' }} team member" title="{{ $news->status ? 'Unpublish' : 'Publish' }} team member" aria-pressed="{{ $news->status ? 'true' : 'false' }}"><i class="fa text-white {{ $news->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" data-id="{{ $news->id }}" data-url="{{ route('latest.news.status', $news->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $news->status ? 'Unpublish' : 'Publish' }} team member" title="{{ $news->status ? 'Unpublish' : 'Publish' }} team member" aria-pressed="{{ $news->status ? 'true' : 'false' }}"><i class="fa {{ $news->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i> {{ $news->status ? 'Unpublish' : 'Publish' }}</button>
                                     @endif
                                     @if($canDeleteMembers)
-                                        <button type="button" class="btn btn-danger btn-sm1 trash" data-id="{{ $news->id }}" data-url="{{ route('latest.news.destroy', $news->id) }}" data-token="{{ csrf_token() }}" data-item-label="team member {{ $news->name }}" aria-label="Delete team member" title="Delete team member"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash" data-id="{{ $news->id }}" data-url="{{ route('latest.news.destroy', $news->id) }}" data-token="{{ csrf_token() }}" data-item-label="team member {{ $news->name }}" aria-label="Delete team member" title="Delete team member"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</button>
                                     @endif
                                     @if(!$canEditMembers && !$canPublishMembers && !$canDeleteMembers)<span class="badge badge-light">View only</span>@endif
                                 </td>
@@ -210,13 +214,13 @@
 
 {{-- Modal --}}
 @if($canEditMembers)
-<div class="modal fade" id="latestNewsModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="mediumModalLabel" aria-hidden="true">
+<div class="modal fade" id="latestNewsModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="teamMemberModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form class="fileUploadFormEdit" action="{{route('latest.news.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->OurMembers }}</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <h2 class="card-title h5 mb-0" id="teamMemberModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->OurMembers }}</h2>
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -229,7 +233,9 @@
                     <div class="form-group text-center">
                         <div class="file-upload">
                             <label for="elatestNewsimage" class="file-upload_label">
-                                <img class="file-upload_img" id="eupload_img" src="{{ asset('/')}}image/no-image.png" >
+                                <img class="file-upload_img" id="eupload_img" src="{{ asset('image/no-image.png') }}"
+                                    onerror="this.onerror=null;this.src='{{ asset('image/no-image.png') }}'"
+                                    alt="Team member photo preview">
                             </label>
                             <input type="file" onchange="changefile(event, 'eupload_img')" name="image" id="elatestNewsimage" class="file-upload_input" accept="image/jpeg,image/png,image/webp">
                         </div>
@@ -256,7 +262,7 @@
                     </div> --}}
 
                     <div class="form-group has-success">
-                        <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                        <label for="e_name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
                         <input id="e_name" name="name" type="text" value="{{old('name')}}" class="form-control" required>
                         @if($errors->has('name'))
                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
@@ -307,8 +313,8 @@
 
                     <div class="form-group has-success">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="mb-0">Social links</label>
-                            <button type="button" class="btn btn-outline-info btn-sm add-social-link" data-social-scope="edit"><i class="fa fa-plus" aria-hidden="true"></i> Add link</button>
+                            <strong class="mb-0">Social links</strong>
+                            <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact add-social-link" data-social-scope="edit"><i class="fa fa-plus" aria-hidden="true"></i> Add link</button>
                         </div>
                         <small class="form-text text-muted mb-2">Add any public profile using a complete http:// or https:// URL.</small>
                         <div id="edit_social_links" class="social-links-editor"></div>
@@ -325,8 +331,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i> Save team member</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>
@@ -380,7 +386,7 @@
                             '<input id="' + idPrefix + '_url" class="form-control" type="url" maxlength="2048" placeholder="https://www.linkedin.com/in/..." autocomplete="url" name="social_links[' + index + '][url]">' +
                         '</div>' +
                         '<div class="form-group col-md-1 mb-2">' +
-                            '<button type="button" class="btn btn-outline-danger remove-social-link" aria-label="Remove this social link"><i class="fa fa-times" aria-hidden="true"></i></button>' +
+                            '<button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact remove-social-link" aria-label="Remove this social link"><i class="fa fa-times" aria-hidden="true"></i> Remove</button>' +
                         '</div>' +
                     '</div>' +
                 '</div>'
@@ -453,7 +459,7 @@
                         form.find('#e_biography').val(res.data.biography || '');
                         form.find('#e_order_by').val(res.data.order_by || 0);
                         form.find('#e_legacy_url').val(res.data.url || '');
-                        form.find('#eupload_img').attr('src', res.data.path);
+                        form.find('#eupload_img').attr('src', res.data.path || "{{ asset('image/no-image.png') }}");
                         form.find('select[name=category_id]').val(res.data.category_id);
                         hydrateSocialLinks('edit', res.data.social_links || []);
                     }

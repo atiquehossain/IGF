@@ -17,9 +17,7 @@ class MyYoutube
     public static function _singleVideo($id)
     {
         $videoId = self::normalizeVideoId($id);
-        $apiKey = (string) config('services.youtube.api_key');
-
-        if ($videoId === null || $apiKey === '' || Cache::get(self::CIRCUIT_KEY, false)) {
+        if ($videoId === null) {
             return (object) ['items' => []];
         }
 
@@ -27,6 +25,11 @@ class MyYoutube
         $cached = Cache::get($cacheKey);
         if (is_array($cached)) {
             return json_decode(json_encode($cached));
+        }
+
+        $apiKey = (string) config('services.youtube.api_key');
+        if ($apiKey === '' || Cache::get(self::CIRCUIT_KEY, false)) {
+            return (object) ['items' => []];
         }
 
         try {

@@ -32,7 +32,7 @@
             <div id="new_admin">
                 <div class="card">
                     <div class="card-header">
-                        <strong class="card-title">{{ $Lang->Common->New }}{{ $Lang->Common->AdminUser }}</strong>
+                        <strong class="card-title">Create administrator</strong>
                     </div>
                     <div class="card-body">
                         <div class="card-body">
@@ -55,8 +55,8 @@
                                     </div>
                                     <div class="col-6">
                                         <div class="form-group has-success">
-                                            <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
-                                            <input name="name" type="text" value="{{old('name')}}" class="form-control" aria-label="{{ $Lang->Common->Form->Name }}" required>
+                                            <label for="new-admin-name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                                            <input id="new-admin-name" name="name" type="text" value="{{old('name')}}" class="form-control" required>
                                             @if($errors->has('name'))
                                             <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                                             @endif
@@ -87,8 +87,8 @@
                                 <div class="row">
                                     <div class="col-8">
                                         <div class="form-group">
-                                            <label for="address" class="control-label mb-1"> {{ $Lang->Common->Form->Address }}</label>
-                                            <textarea name="address" rows="3" placeholder="address..." class="form-control" aria-label="{{ $Lang->Common->Form->Address }}">{{old('address')}}</textarea>
+                                            <label for="new-admin-address" class="control-label mb-1"> {{ $Lang->Common->Form->Address }}</label>
+                                            <textarea id="new-admin-address" name="address" rows="3" placeholder="Address" class="form-control">{{old('address')}}</textarea>
                                             @if($errors->has('address'))
                                             <small class="help-block form-text text-danger">{{ $errors->first('address') }}</small>
                                             @endif
@@ -113,8 +113,8 @@
                                 </div>
 
                                 <div class="form-actions form-group text-right">
-                                    <button type="submit" class="btn btn-info submit_ mt-1"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                    <button type="button" class="btn btn-danger cancel mt-1"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+                                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i class="fa fa-user-plus" aria-hidden="true"></i> Create administrator</button>
                                 </div>
 
                             </form>
@@ -125,9 +125,9 @@
             @endif
             @if($canEditAdmins)
             <div id="edit_admin" style="display: none">
-                <div class="card" id="edit_admin">
+                <div class="card">
                     <div class="card-header">
-                        <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->Common->AdminUser }}</strong>
+                        <strong class="card-title">Edit administrator</strong>
                     </div>
                     <div class="card-body">
                         <div id="pay-invoice">
@@ -154,8 +154,8 @@
                                         </div>
                                         <div class="col-6">
                                             <div class="form-group has-success">
-                                                <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }}  <span>*</span></label>
-                                                <input name="name" type="text" value="{{old('name')}}" class="form-control" aria-label="{{ $Lang->Common->Form->Name }}" required>
+                                                <label for="edit-admin-name" class="control-label mb-1">{{ $Lang->Common->Form->Name }}  <span>*</span></label>
+                                                <input id="edit-admin-name" name="name" type="text" value="{{old('name')}}" class="form-control" required>
                                                 @if($errors->has('name'))
                                                 <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                                                 @endif
@@ -165,16 +165,16 @@
                                     </div>
 
                                     <div class="form-group has-success">
-                                        <label for="username" class="control-label mb-1">{{ $Lang->Common->Form->UserName }} <span>*</span></label>
-                                        <input id="edit-admin-username" name="username" type="text" class="form-control" placeholder="" aria-label="{{ $Lang->Common->Form->UserName }}" readonly>
+                                        <label for="edit-admin-username" class="control-label mb-1">{{ $Lang->Common->Form->UserName }} <span>*</span></label>
+                                        <input id="edit-admin-username" name="username" type="text" class="form-control" placeholder="" readonly>
                                         @if($errors->has('username'))
                                         <small class="help-block form-text text-danger">{{ $errors->first('username') }}</small>
                                         @endif
                                     </div>
 
                                     <div class="form-group has-success">
-                                        <label for="mobile" class="control-label mb-1">{{ $Lang->Common->Form->Mobile }} </label>
-                                        <input id="edit-admin-mobile" name="mobile" type="tel" maxlength="30" class="form-control" aria-label="{{ $Lang->Common->Form->Mobile }}">
+                                        <label for="edit-admin-mobile" class="control-label mb-1">{{ $Lang->Common->Form->Mobile }} </label>
+                                        <input id="edit-admin-mobile" name="mobile" type="tel" maxlength="30" class="form-control">
                                         @if($errors->has('mobile'))
                                         <small class="help-block form-text text-danger">{{ $errors->first('mobile') }}</small>
                                         @endif
@@ -183,8 +183,8 @@
                                     <div class="row">
                                         <div class="col-8">
                                             <div class="form-group">
-                                                <label for="address" class="control-label mb-1"> {{ $Lang->Common->Form->Address }}</label>
-                                                <textarea name="address" rows="3" placeholder="address..." class="form-control" aria-label="{{ $Lang->Common->Form->Address }}"></textarea>
+                                                <label for="edit-admin-address" class="control-label mb-1"> {{ $Lang->Common->Form->Address }}</label>
+                                                <textarea id="edit-admin-address" name="address" rows="3" placeholder="Address" class="form-control"></textarea>
                                                 @if($errors->has('address'))
                                                 <small class="help-block form-text text-danger">{{ $errors->first('address') }}</small>
                                                 @endif
@@ -209,8 +209,8 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-1"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-1"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i class="fa fa-check" aria-hidden="true"></i> Save administrator</button>
                                     </div>
                                 </form>
                             </div>
@@ -234,12 +234,12 @@
                                 <div class="input-group search-input-group">
                                     <input type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search administrators">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
                                     </span>
                                 </div>
                             </form>
                             @if($search !== '')
-                                <form action="{{ route('admin.search.clear') }}" method="post" class="mt-1 text-right">@csrf<button type="submit" class="btn btn-light btn-sm">Clear private search</button></form>
+                                <form action="{{ route('admin.search.clear') }}" method="post" class="mt-1 text-right">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary igf-btn-compact">Clear search</button></form>
                             @endif
                         </div>
                     </div>
@@ -260,25 +260,25 @@
                                 <td> <span class="name">{{@$admin->name}}</span> </td>
                                 <td> <span class="parent">{{@$admin->username}}</span> </td>
                                 <td> <span class="parent">{{@$admin->mobile}}</span> </td>
-                                <td>
+                                <td><span class="igf-action-group" role="group" aria-label="Actions for {{ $admin->name }}">
                                     @if($canEditAdmins && $admin->can_be_managed)
-                                        <button type="button" class="edit btn btn-info btn-sm1" data-id="{{ $admin->id }}" aria-label="Edit administrator" title="Edit administrator"><i class="fa fa-edit" aria-hidden="true"></i></button>
+                                        <button type="button" class="edit btn igf-icon-btn igf-btn-secondary" data-id="{{ $admin->id }}" aria-label="Edit administrator" title="Edit administrator"><i class="fa fa-edit" aria-hidden="true"></i></button>
                                     @endif
                                     @if($canResetAdminPasswords && $admin->can_be_managed)
-                                        <a href="{{ route('admin.reset', $admin->id) }}" class="btn btn-secondary btn-sm1" aria-label="Reset administrator password" title="Reset administrator password"><i class="fa fa-key" aria-hidden="true"></i></a>
+                                        <a href="{{ route('admin.reset', $admin->id) }}" class="btn igf-icon-btn igf-btn-secondary" aria-label="Reset administrator password" title="Reset administrator password"><i class="fa fa-key" aria-hidden="true"></i></a>
                                     @endif
                                     @if($canPublishAdmins && $admin->can_be_managed)
-                                        <button type="button" class="btn btn-warning btn-sm1 status" data-id="{{ $admin->id }}" data-url="{{ route('admin.status', $admin->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $admin->status ? 'Deactivate' : 'Activate' }} administrator" title="{{ $admin->status ? 'Deactivate' : 'Activate' }} administrator" aria-pressed="{{ $admin->status ? 'true' : 'false' }}"><i class="fa text-white {{ $admin->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-icon-btn igf-btn-secondary status" data-id="{{ $admin->id }}" data-url="{{ route('admin.status', $admin->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $admin->status ? 'Deactivate' : 'Activate' }} administrator" title="{{ $admin->status ? 'Deactivate' : 'Activate' }} administrator" aria-pressed="{{ $admin->status ? 'true' : 'false' }}"><i class="fa {{ $admin->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
                                     @endif
                                     @if($canDeleteAdmins && $admin->can_be_managed)
-                                        <button type="button" class="btn btn-danger btn-sm1 trash" data-id="{{ $admin->id }}" data-url="{{ route('admin.destroy', $admin->id) }}" data-token="{{ csrf_token() }}" data-item-label="administrator {{ $admin->name }}" aria-label="Delete administrator" title="Delete administrator"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                        <span class="igf-danger-action"><button type="button" class="btn igf-icon-btn igf-btn-danger trash" data-id="{{ $admin->id }}" data-url="{{ route('admin.destroy', $admin->id) }}" data-token="{{ csrf_token() }}" data-item-label="administrator {{ $admin->name }}" aria-label="Delete administrator" title="Delete administrator"><i class="fa fa-trash-o" aria-hidden="true"></i></button></span>
                                     @endif
                                     @if(!$admin->can_be_managed)
                                         <span class="badge badge-light" title="Self, owner, and equal or higher-ranked administrators are protected.">Protected</span>
                                     @elseif(!$canEditAdmins && !$canResetAdminPasswords && !$canPublishAdmins && !$canDeleteAdmins)
                                         <span class="badge badge-light">View only</span>
                                     @endif
-                                </td>
+                                </span></td>
                             </tr>
                             @endforeach
                         </tbody>

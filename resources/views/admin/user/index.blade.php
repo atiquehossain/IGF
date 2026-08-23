@@ -49,7 +49,7 @@
                                 <td> <span class="">{{@$user->gender}}</span> </td>
                                 <td> <span class="">{{@$user->provider_type}}</span> </td>
                                 <td>
-                                    <?= App\Link::action(@$user->id, true) ?>
+                                    <?= App\Link::action(@$user->id, true, 'user ' . ($user->name ?? '')) ?>
                                 </td>
                             </tr>
                             @endforeach

@@ -47,7 +47,7 @@
                                     <tr id="{{ @$album->uuid }}">
                                         <td> <span class="name">{{ @$album->name }}</span> </td>
                                         <td>
-                                            <?=App\Link::action(@$album->uuid, @$album->status)?>
+                                            <?=App\Link::action(@$album->uuid, @$album->status, 'album ' . ($album->name ?? ''))?>
                                         </td>
                                     </tr>
                                 @endforeach

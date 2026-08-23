@@ -27,6 +27,8 @@ class SeoHealthService
             $score += 30;
             if (mb_strlen($title) > 60) {
                 $issues[] = $this->issue('long_title', 'Search title may be cut off', 'warning');
+            } elseif (mb_strlen($title) < 35) {
+                $issues[] = $this->issue('short_title', 'Search title could be more descriptive', 'warning');
             }
         }
 
@@ -36,7 +38,7 @@ class SeoHealthService
             $score += 30;
             if (mb_strlen($description) > 160) {
                 $issues[] = $this->issue('long_description', 'Description may be cut off', 'warning');
-            } elseif (mb_strlen($description) < 70) {
+            } elseif (mb_strlen($description) < 120) {
                 $issues[] = $this->issue('short_description', 'Description could explain more', 'warning');
             }
         }

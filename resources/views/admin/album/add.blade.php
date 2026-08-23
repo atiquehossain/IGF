@@ -12,8 +12,8 @@
                                 <h4 class="card-title">{{ $title }}</h4>
                             </div>
                             <div class="col-md-6">
-                                <a class="btn btn-sm btn-secondary float-right" href="{{ route('album.index') }}" id="go-back">
-                                    <i class="fa fa-arrow-circle-left"></i> {{ $Lang->Common->GoBack }}
+                                <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('album.index') }}" id="go-back">
+                                    <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
                             </div>
                         </div>
@@ -64,8 +64,8 @@
                                 <button type="submit" class="btn btn-success btn-sm" name="save" value="1">
                                     <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
                                 </button>
-                                <button type="submit" name="save_and_update" value="1" class="btn btn-success btn-sm">
-                                    <i class="fa fa-save"></i> {{ $Lang->Common->SaveAndUpdate }}
+                                <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
+                                    <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing
                                 </button>
                             </div>
 

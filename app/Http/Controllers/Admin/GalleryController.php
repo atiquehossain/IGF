@@ -14,6 +14,7 @@ use App\Rules\ValidateUniqueRule;
 use App\Helper\Seq;
 use App\Helper\Translation;
 use App\Helper\IgfFile;
+use App\Services\AdminMediaUrlResolver;
 use App\Services\SafeMediaReplacementService;
 
 use Exception;
@@ -21,8 +22,10 @@ use Throwable;
 
 class GalleryController extends Controller
 {
-    public function __construct(private SafeMediaReplacementService $media)
-    {
+    public function __construct(
+        private SafeMediaReplacementService $media,
+        private AdminMediaUrlResolver $mediaUrls,
+    ) {
     }
 
     public function index(Request $request)
@@ -36,6 +39,15 @@ class GalleryController extends Controller
             ->where('galleries.language', app()->getLocale())
             ->orderBy('galleries.id', 'ASC')
             ->paginate(15);
+
+        $gallerys->getCollection()->each(function (Gallery $gallery): void {
+            $gallery->setAttribute('display_image_url', $this->mediaUrls->image(
+                $gallery->getRawOriginal('path') ?: $gallery->getRawOriginal('image'),
+                'gallery',
+                (int) $gallery->id,
+                '430X360',
+            ));
+        });
 
         return view('admin.gallery.index')->with(compact('title', 'gallerys', 'search'));
     }
@@ -122,6 +134,14 @@ class GalleryController extends Controller
             $title = $request->Lang->Common->Edit . " " . $request->Lang->Menu->Gallery;
             $translations = Translation::languageList();
             $galleries = Gallery::where('uuid', $uuid)->get();
+            $galleries->each(function (Gallery $gallery): void {
+                $gallery->setAttribute('display_image_url', $this->mediaUrls->image(
+                    $gallery->getRawOriginal('path') ?: $gallery->getRawOriginal('image'),
+                    'gallery',
+                    (int) $gallery->id,
+                    'main',
+                ));
+            });
             $albums = Album::where('status', 1)->orderBy('id', 'ASC')->get();
             return view('admin.gallery.edit')->with(compact('title', 'translations', 'uuid', 'galleries', 'albums'));
         } catch (Exception $e) {

@@ -167,7 +167,7 @@ class BannerController extends Controller
                             'uuid' => $uuid,
                             'type' => $request->type[$language],
                             'language' => $language,
-                        ] + $this->contentForLanguage($request, $language) + ($asset ? [
+                        ] + $this->contentForLanguage($request, $language, $banner) + ($asset ? [
                             'image' => $asset->databaseValue,
                             'path' => $asset->databaseValue,
                         ] : []));
@@ -282,14 +282,14 @@ class BannerController extends Controller
         }
     }
 
-    private function contentForLanguage(Request $request, string $language): array
+    private function contentForLanguage(Request $request, string $language, ?Banner $existingBanner = null): array
     {
         $headline = $this->plainText($request->input("headline.$language"));
         $subheadline = $this->plainText($request->input("subheadline.$language"));
         $legacyName = trim((string) $request->input("name.$language"));
 
-        if ($legacyName === '') {
-            $legacyName = '<b>' . $headline . '</b>' . ($subheadline !== '' ? ' ' . $subheadline : '');
+        if ($legacyName === '' || $this->isUnchangedGeneratedLegacyName($legacyName, $existingBanner)) {
+            $legacyName = $this->generatedLegacyName($headline, $subheadline);
         }
 
         return [
@@ -303,6 +303,28 @@ class BannerController extends Controller
             'cta_url' => trim((string) $request->input("cta_url.$language")),
             'url' => trim((string) $request->input("url.$language")),
         ];
+    }
+
+    private function isUnchangedGeneratedLegacyName(string $submittedName, ?Banner $existingBanner): bool
+    {
+        if (!$existingBanner || !hash_equals(trim((string) $existingBanner->name), $submittedName)) {
+            return false;
+        }
+
+        $existingHeadline = $this->plainText($existingBanner->headline);
+        if ($existingHeadline === '') {
+            return false;
+        }
+
+        return hash_equals(
+            $this->generatedLegacyName($existingHeadline, $this->plainText($existingBanner->subheadline)),
+            $submittedName,
+        );
+    }
+
+    private function generatedLegacyName(string $headline, string $subheadline): string
+    {
+        return '<b>' . $headline . '</b>' . ($subheadline !== '' ? ' ' . $subheadline : '');
     }
 
     private function plainText(mixed $value): string

@@ -100,6 +100,49 @@ class TechnicalSeoCenterIntegrityTest extends TestCase
         $this->assertSame('/programs/disaster-response-and-resilience', $paths->normalize('/programs/disaster-response-and-resilience'));
     }
 
+    public function test_redirect_page_findings_are_exposed_and_filterable_in_the_technical_center(): void
+    {
+        $viewMenu = AuthMenu::where('link', 'seo.technical.index')->firstOrFail();
+        [$viewer, $viewerRole] = $this->makeAdmin('Redirect page viewer');
+        $viewerRole->update(['permission' => (string) $viewMenu->id]);
+        $run = SeoAuditRun::create([
+            'status' => 'completed',
+            'trigger' => 'command',
+            'started_at' => now(),
+            'completed_at' => now(),
+        ]);
+        SeoAuditIssue::create([
+            'run_id' => $run->id,
+            'fingerprint' => hash('sha256', 'redirect-page-filter'),
+            'issue_type' => 'redirect_page',
+            'severity' => 'medium',
+            'source_path' => '/old-location',
+            'target_path' => '/current-location',
+            'message' => 'This scanned page redirects.',
+        ]);
+        SeoAuditIssue::create([
+            'run_id' => $run->id,
+            'fingerprint' => hash('sha256', 'broken-link-filter'),
+            'issue_type' => 'broken_link',
+            'severity' => 'high',
+            'source_path' => '/another-page',
+            'target_path' => '/missing-location',
+            'message' => 'This link is broken.',
+        ]);
+
+        $response = $this->actingAs($viewer, 'admin')->get(route('seo.technical.index', [
+            'issue_type' => 'redirect_page',
+        ]));
+
+        $response->assertOk()
+            ->assertSee('value="redirect_page"', false)
+            ->assertSee('Redirecting pages')
+            ->assertSee('/old-location')
+            ->assertDontSee('/another-page')
+            ->assertViewHas('issues', fn ($issues): bool => $issues->count() === 1
+                && $issues->first()?->issue_type === 'redirect_page');
+    }
+
     public function test_audit_is_bounded_and_snapshots_structural_link_and_status_findings(): void
     {
         config([

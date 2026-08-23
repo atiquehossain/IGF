@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">Sponsorship enquiries</h1>
     <div class="card">
         <div class="card-header">
             <div class="d-flex flex-wrap align-items-center justify-content-between" style="gap:12px">
@@ -13,9 +14,9 @@
                 <form action="{{ route('sponsorships.search') }}" method="post" class="form-inline mb-2" role="search" aria-label="Search sponsorship enquiries">@csrf
                     <label class="sr-only" for="sponsor-search">Search</label>
                     <input id="sponsor-search" type="search" name="search" value="{{ $search }}" maxlength="100" autocomplete="off" required placeholder="Name, email, phone or reference" class="form-control form-control-sm mr-2">
-                    <button type="submit" class="btn btn-info btn-sm mr-2"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                    <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact mr-2"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
                 </form>
-                @if($search !== '')<form action="{{ route('sponsorships.search.clear') }}" method="post" class="d-inline">@csrf<button type="submit" class="btn btn-light btn-sm mb-2">Clear private search</button></form>@endif
+                @if($search !== '')<form action="{{ route('sponsorships.search.clear') }}" method="post" class="d-inline">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary igf-btn-compact mb-2"><i class="fa fa-undo" aria-hidden="true"></i> Clear private search</button></form>@endif
                 <form action="{{ route('sponsorships.index') }}" method="get" class="form-inline" aria-label="Filter sponsorship enquiries by status">
                     <label class="sr-only" for="sponsor-status">Status</label>
                     <select id="sponsor-status" name="workflow_status" class="form-control form-control-sm mr-2">
@@ -24,7 +25,7 @@
                             <option value="{{ $value }}" @selected($selectedStatus === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-filter" aria-hidden="true"></i> Filter</button>
+                    <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-filter" aria-hidden="true"></i> Apply status filter</button>
                 </form>
                 </div>
             </div>

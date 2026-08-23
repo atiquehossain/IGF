@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 use App\Models\Album;
 
@@ -40,13 +41,22 @@ class AlbumController extends Controller
 
     public function store(Request $request)
     {
-        $this->validate(request(), [
-            'id[*]' => 'required|string',
-            'name.*' =>  ['required', new ValidateUniqueRule('albums'),'nullable']
+        $validated = $request->validate([
+            'language' => ['required', 'array', 'min:1'],
+            'language.*' => ['required', 'string', 'max:10', 'regex:/^[A-Za-z0-9_-]+$/', 'distinct'],
+            'name' => ['required', 'array'],
+            'name.*' => ['required', 'string', 'max:255', new ValidateUniqueRule('albums')],
         ]);
 
-        try {
+        foreach ($validated['language'] as $language) {
+            if (!array_key_exists($language, $validated['name'])) {
+                throw ValidationException::withMessages([
+                    'name.'.$language => 'An album name is required for every language.',
+                ]);
+            }
+        }
 
+        try {
             DB::beginTransaction();
 
             $uuid = Seq::uuidV4();
@@ -56,20 +66,34 @@ class AlbumController extends Controller
                 $status = 0;
             }
 
-            foreach ($request->language as $language) {
-                Album::create([
+            $createdAlbums = [];
+            foreach ($validated['language'] as $language) {
+                $album = Album::create([
                     'uuid' => $uuid,
-                    'name' => @$request->name[$language],
+                    'name' => $validated['name'][$language],
                     'type' => 'albums',
                     'status' => $status,
                     'language' => $language,
                 ]);
+                $createdAlbums[] = [
+                    'id' => $album->id,
+                    'uuid' => $album->uuid,
+                    'name' => $album->name,
+                    'language' => $album->language,
+                ];
             }
             DB::commit();
             $notification = array(
                 'message' => $request->Lang->Common->Form->AddedSuccessfully,
                 'alert-type' => 'success',
             );
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $notification['message'],
+                    'albums' => $createdAlbums,
+                ], 201);
+            }
 
             if (@$request->save_and_update) {
                 return redirect(route('album.edit', $uuid))->with($notification);
@@ -80,11 +104,16 @@ class AlbumController extends Controller
             }
 
         } catch (Exception $e) {
-            DB::rollback();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
             $notification = array(
                 'message' => $request->Lang->Common->Form->NotCreate,
                 'alert-type' => 'error',
             );
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $notification['message']], 500);
+            }
             return back()->with($notification);
         }
     }

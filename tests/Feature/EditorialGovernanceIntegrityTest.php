@@ -128,7 +128,7 @@ class EditorialGovernanceIntegrityTest extends TestCase
         $this->asAdmin($admin)->get(route('seo.content.edit', ['category', $category->id]))
             ->assertOk()
             ->assertSee('Open Graph title')
-            ->assertSee('Schema markup');
+            ->assertSee('Structured data');
         $this->asAdmin($admin)->put(route('seo.content.update', ['category', $category->id]), $payload)
             ->assertRedirect(route('seo.content.edit', ['category', $category->id]));
 

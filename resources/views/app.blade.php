@@ -38,9 +38,25 @@
       $seo->twitter_image = $seoService->absolutePublicImageUrl(
         $seo->twitter_image ?? $seo->og_image
       ) ?: $seo->og_image;
-      $seo->social_image_alt = trim((string) data_get($pageProps, 'seoDefaults.social_image_alt', ''));
+      $authoredSocialImageAlt = '';
+      foreach (['contentSeo', 'routeSeo', 'meta_tag'] as $socialLayerName) {
+        $socialLayer = (array) data_get($pageProps, $socialLayerName, []);
+        if (array_key_exists('social_image_alt', $socialLayer)) {
+          $authoredSocialImageAlt = $seoService->socialImageAltText($socialLayer['social_image_alt']);
+          break;
+        }
+      }
+      $defaultSocialImageAlt = $seoService->socialImageAltText(
+        data_get($pageProps, 'seoDefaults.social_image_alt', '')
+      );
       $seo->uses_default_og_image = $socialFallbackImage !== '' && $seo->og_image === $socialFallbackImage;
       $seo->uses_default_twitter_image = $socialFallbackImage !== '' && $seo->twitter_image === $socialFallbackImage;
+      $seo->og_image_alt = empty($seo->og_image)
+        ? ''
+        : ($seo->uses_default_og_image ? $defaultSocialImageAlt : $authoredSocialImageAlt);
+      $seo->twitter_image_alt = empty($seo->twitter_image)
+        ? ''
+        : ($seo->uses_default_twitter_image ? $defaultSocialImageAlt : $authoredSocialImageAlt);
       $seoAlternates = $seoService->alternateUrls($seo->canonical_url, $seoPublicLocales, $seoDefaultLocale);
       $appName = (string) data_get($pageProps, 'appName', config('app.name'));
       if (empty($seo->schema_markup)) {
@@ -69,14 +85,14 @@
     <meta inertia="twitter:title" name="twitter:title" content="{{ $seo->twitter_title ?? $seo->meta_title ?? '' }}" />
     <meta inertia="twitter:description" name="twitter:description" content="{{ $seo->twitter_description ?? $seo->meta_description ?? '' }}" />
     @if(!empty($seo->twitter_image) || !empty($seo->og_image))<meta inertia="twitter:image" name="twitter:image" content="{{ $seo->twitter_image ?? $seo->og_image }}" />@endif
-    @if($seo->uses_default_twitter_image && $seo->social_image_alt !== '')<meta inertia="twitter:image:alt" name="twitter:image:alt" content="{{ $seo->social_image_alt }}" />@endif
+    @if($seo->twitter_image_alt !== '')<meta inertia="twitter:image:alt" name="twitter:image:alt" content="{{ $seo->twitter_image_alt }}" />@endif
 
     <!-- Open Graph data -->
     <meta inertia="og:title" property="og:title" content="{{ $seo->og_title ?? $seo->meta_title ?? '' }}" />
     <meta inertia="og:type" property="og:type" content="website" />
     <meta inertia="og:url" property="og:url" content="{{ $seo->canonical_url }}" />
     @if(!empty($seo->og_image))<meta inertia="og:image" property="og:image" content="{{ $seo->og_image }}" />@endif
-    @if($seo->uses_default_og_image && $seo->social_image_alt !== '')<meta inertia="og:image:alt" property="og:image:alt" content="{{ $seo->social_image_alt }}" />@endif
+    @if($seo->og_image_alt !== '')<meta inertia="og:image:alt" property="og:image:alt" content="{{ $seo->og_image_alt }}" />@endif
     <meta inertia="og:description" property="og:description" content="{{ $seo->og_description ?? $seo->meta_description ?? '' }}" />
     <meta inertia="og:site_name" property="og:site_name" content="{{ $appName }}" />
     @if(!empty($seo->schema_markup))

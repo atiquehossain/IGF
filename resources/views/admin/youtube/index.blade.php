@@ -15,17 +15,17 @@
                                 <div class="input-group d-flex justify-content-end">
                                     <form action="{{ route('youtube.index') }}" method="get">
                                         <div class="input-group search-input-group">
-                                            <input type="search" name="search" value="{{ @$search }}"
+                                            <input id="youtube-search" type="search" name="search" value="{{ @$search }}"
                                                 class="form-control search-form-control" aria-label="Search YouTube items">
                                             <span class="input-group-prepend">
-                                                <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search"
+                                                <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search"
                                                         aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                             </span>
                                         </div>
                                     </form>
                                     <?php if (!empty($addNewLink)) { ?>
-                                    <a class="btn btn-info btn-sm ml-1 pull-right" href="{{ route($addNewLink) }}">
-                                        <i class="fa fa-plus-circle"></i> {{ $Lang->Common->Add }} {{ $Lang->Common->New }}
+                                    <a class="btn igf-btn igf-btn-primary igf-btn-compact ml-1 pull-right" href="{{ route($addNewLink) }}">
+                                        <i class="fa fa-plus" aria-hidden="true"></i> Add YouTube item
                                     </a>
                                     <?php } ?>
                                 </div>
@@ -53,7 +53,7 @@
                                         <td> <span class="">{{@$youtube->activision_time}}</span> </td>
                                         <td> <span class="">{{@$youtube->duration_time}}</span> </td>
                                         <td>
-                                            <?= App\Link::action(@$youtube->uuid, @$youtube->status) ?>
+                                            <?= App\Link::action(@$youtube->uuid, @$youtube->status, 'YouTube video ' . ($youtube->name ?? '')) ?>
                                         </td>
                                     </tr>
                                 @endforeach

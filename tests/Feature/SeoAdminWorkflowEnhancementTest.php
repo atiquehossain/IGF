@@ -35,7 +35,7 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
     {
         $service = app(SeoHealthService::class);
         $recommended = $service->evaluate([
-            'title' => 'Community education in Bangladesh',
+            'title' => 'Community education programs in Bangladesh',
             'description' => str_repeat('Clear information for families and supporters. ', 3),
             'image' => '',
             'indexable' => true,
@@ -47,13 +47,42 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $this->assertSame('recommended', $recommended['issues'][0]['level']);
 
         $ready = $service->evaluate([
-            'title' => 'Community education in Bangladesh',
+            'title' => 'Community education programs in Bangladesh',
             'description' => str_repeat('Clear information for families and supporters. ', 3),
             'image' => 'https://example.test/share.jpg',
             'indexable' => true,
         ]);
         $this->assertSame('Ready', $ready['status']);
         $this->assertSame([], $ready['issues']);
+
+        $lowerBoundary = $service->evaluate([
+            'title' => str_repeat('T', 35),
+            'description' => str_repeat('D', 120),
+            'image' => 'https://example.test/share.jpg',
+            'indexable' => true,
+        ]);
+        $this->assertSame('Ready', $lowerBoundary['status']);
+        $this->assertSame([], $lowerBoundary['issues']);
+
+        $shortTitle = $service->evaluate([
+            'title' => str_repeat('T', 34),
+            'description' => str_repeat('D', 120),
+            'image' => 'https://example.test/share.jpg',
+            'indexable' => true,
+        ]);
+        $this->assertSame('Needs attention', $shortTitle['status']);
+        $this->assertContains('short_title', collect($shortTitle['issues'])->pluck('key')->all());
+
+        foreach ([70, 119] as $descriptionLength) {
+            $shortDescription = $service->evaluate([
+                'title' => str_repeat('T', 35),
+                'description' => str_repeat('D', $descriptionLength),
+                'image' => 'https://example.test/share.jpg',
+                'indexable' => true,
+            ]);
+            $this->assertSame('Needs attention', $shortDescription['status']);
+            $this->assertContains('short_description', collect($shortDescription['issues'])->pluck('key')->all());
+        }
 
         $titleWarning = $service->evaluate([
             'title' => str_repeat('Long search title ', 5),
@@ -137,12 +166,61 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $revision = app(SeoMetadataRevisionService::class)->capture($metadata);
 
         $this->actingAs($admin, 'admin')->get(route('seo.index'))
-            ->assertOk()->assertSee('Read-only SEO access');
+            ->assertOk()
+            ->assertSee('Read-only SEO access')
+            ->assertSee('SEO edit access includes both saving changes and restoring earlier versions.')
+            ->assertDontSee('Editing and restoring need separate permissions.');
         $this->get(route('seo.content.edit', ['page', $page->id]))
-            ->assertOk()->assertSee('Read-only SEO access')->assertDontSee('Save search &amp; sharing');
+            ->assertOk()
+            ->assertSee('Read-only SEO access')
+            ->assertSee('SEO edit access includes both saving changes and restoring earlier versions.')
+            ->assertDontSee('Editing and restoring need separate permissions.')
+            ->assertDontSee('Save search &amp; sharing');
         $this->put(route('seo.content.update', ['page', $page->id]), [])->assertForbidden();
         $this->post(route('seo.revisions.restore', $revision))->assertForbidden();
         $this->post(route('seo.review.resolve'), [])->assertForbidden();
+    }
+
+    public function test_restore_access_copy_matches_edit_and_restore_only_grants(): void
+    {
+        $page = $this->page('restore-access-copy');
+        $metadata = app(SeoMetadataService::class)->updateForModel($page, [
+            'title' => 'Earlier restorable search title for Ignite',
+            'description' => $this->description(),
+        ], 'en');
+        app(SeoMetadataRevisionService::class)->capture($metadata, 'Earlier restorable version');
+
+        $editor = $this->adminWith(actions: ['seo.metadata.edit']);
+        $this->actingAs($editor, 'admin')->get(route('seo.content.edit', ['page', $page->id]))
+            ->assertOk()
+            ->assertViewHas('canEditMetadata', true)
+            ->assertViewHas('canRestoreRevisions', true)
+            ->assertSee('Restore this version');
+
+        $restoreOnly = $this->adminWith(actions: ['seo.metadata.view', 'seo.metadata.restore']);
+        $this->actingAs($restoreOnly, 'admin')->get(route('seo.content.edit', ['page', $page->id]))
+            ->assertOk()
+            ->assertViewHas('canEditMetadata', false)
+            ->assertViewHas('canRestoreRevisions', true)
+            ->assertSee('Revision restore access.')
+            ->assertSee('Saving other SEO changes requires SEO edit access.')
+            ->assertSee('Restore this version')
+            ->assertDontSee('Editing and restoring need separate permissions.');
+    }
+
+    public function test_empty_schema_mode_is_labeled_as_automatic_site_schema(): void
+    {
+        $admin = $this->adminWith(actions: ['seo.metadata.edit']);
+        $page = $this->page('automatic-site-schema-label');
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('seo.content.edit', ['page', $page->id]));
+
+        $response->assertOk()
+            ->assertViewHas('editor', fn (array $editor): bool => $editor['schema_options']['none'] === 'No custom template (automatic site schema)')
+            ->assertSee('No custom template (automatic site schema)')
+            ->assertSee('the automatic public fallback still applies.')
+            ->assertDontSee('No structured data');
     }
 
     public function test_media_library_navigation_requires_view_permission_independently_from_upload_permission(): void
@@ -507,7 +585,7 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $admin = $this->adminWith(menus: ['page.index'], actions: ['seo.metadata.view']);
         $page = $this->page('content-hub-seo');
         app(SeoMetadataService::class)->updateForModel($page, [
-            'title' => 'Content hub SEO title', 'description' => $this->description(),
+            'title' => 'Ignite content hub search and sharing title', 'description' => $this->description(),
             'og_image' => 'https://example.test/share.jpg', 'robots_index' => true,
         ], 'en');
 

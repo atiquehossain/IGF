@@ -57,8 +57,8 @@
                                 </div>
 
                                 <div class="form-actions form-group text-right">
-                                    <button type="submit" class="btn btn-info submit_ mt-1"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                    <button type="button" class="btn btn-danger cancel mt-1"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i class="fa fa-plus" aria-hidden="true"></i> Create role</button>
+                                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                 </div>
 
                             </form>
@@ -81,7 +81,7 @@
                                 <div class="input-group search-input-group">
                                     <input type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search roles">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
@@ -104,16 +104,16 @@
                                 <td>{{ $role->security_rank }}</td>
                                 <td align="center">
                                     @if($canEditRoles && $role->can_be_managed)
-                                        <button type="button" class="edit btn btn-info btn-sm1" data-id="{{ $role->id }}" aria-label="Edit role" title="Edit role"><i class="fa fa-edit" aria-hidden="true"></i></button>
+                                        <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $role->id }}" aria-label="Edit role" title="Edit role"><i class="fa fa-edit" aria-hidden="true"></i> Edit</button>
                                     @endif
                                     @if($canViewRolePermissions && $role->can_be_managed)
-                                        <a href="{{ route('role.permission', $role->id) }}" class="btn btn-secondary btn-sm1" aria-label="View role permissions" title="View role permissions"><i class="fa fa-shield" aria-hidden="true"></i></a>
+                                        <a href="{{ route('role.permission', $role->id) }}" class="btn igf-btn igf-btn-secondary igf-btn-compact" aria-label="View role permissions" title="View role permissions"><i class="fa fa-shield" aria-hidden="true"></i> Permissions</a>
                                     @endif
                                     @if($canPublishRoles && $role->can_be_managed)
-                                        <button type="button" class="btn btn-warning btn-sm1 status" data-id="{{ $role->id }}" data-url="{{ route('role.status', $role->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $role->status ? 'Deactivate' : 'Activate' }} role" title="{{ $role->status ? 'Deactivate' : 'Activate' }} role" aria-pressed="{{ $role->status ? 'true' : 'false' }}"><i class="fa text-white {{ $role->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" data-id="{{ $role->id }}" data-url="{{ route('role.status', $role->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $role->status ? 'Deactivate' : 'Activate' }} role" title="{{ $role->status ? 'Deactivate' : 'Activate' }} role" aria-pressed="{{ $role->status ? 'true' : 'false' }}"><i class="fa {{ $role->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i> {{ $role->status ? 'Deactivate' : 'Activate' }}</button>
                                     @endif
                                     @if($canDeleteRoles && $role->can_be_managed)
-                                        <button type="button" class="btn btn-danger btn-sm1 trash" data-id="{{ $role->id }}" data-url="{{ route('role.destroy', $role->id) }}" data-token="{{ csrf_token() }}" data-item-label="role {{ $role->name }}" aria-label="Delete role" title="Delete role"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash" data-id="{{ $role->id }}" data-url="{{ route('role.destroy', $role->id) }}" data-token="{{ csrf_token() }}" data-item-label="role {{ $role->name }}" aria-label="Delete role" title="Delete role"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</button>
                                     @endif
                                     @if(!$role->can_be_managed)
                                         <span class="badge badge-light" title="Owner, equal-ranked, and higher-ranked roles are protected.">Protected</span>
@@ -142,7 +142,7 @@
             <form action="{{route('role.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->RoleTitle }}</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -178,8 +178,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i> Save role</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>

@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Helper\MyMenu;
 use App\Models\Admin;
 use App\Models\AuthMenu;
 use App\Models\Role;
 use Database\Seeders\AdminPermissionRegistrySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -90,10 +93,10 @@ class AdminLegacySidebarPermissionTest extends TestCase
         ]];
         $owner = $this->makeAdmin('Super Admin', (string) $donations->id, $serial);
 
-        $this->actingAs($owner, 'admin')
+        $response = $this->actingAs($owner, 'admin')
             ->get(route('dashboard.index'))
             ->assertOk()
-            ->assertSee('Advanced & Legacy Tools', false)
+            ->assertDontSee('Advanced & Legacy Tools', false)
             ->assertDontSee('Legacy owner tools')
             ->assertDontSee('Legacy donation queue')
             ->assertSee('Donation Records')
@@ -102,8 +105,49 @@ class AdminLegacySidebarPermissionTest extends TestCase
             ->assertDontSee('Forbidden legacy users')
             ->assertDontSee(route('admin.index'), false);
 
+        $this->assertSame(1, substr_count($response->getContent(), 'href="' . route('donations.index') . '"'));
+
         $this->get(route('donations.index'))->assertOk();
         $this->get(route('admin.index'))->assertForbidden();
+    }
+
+    public function test_forbidden_matching_leaf_never_receives_current_page_semantics(): void
+    {
+        $now = now();
+        DB::table('auth_menus')->updateOrInsert(
+            ['id' => 2],
+            [
+                'parent_id' => null,
+                'name' => 'Settings',
+                'link' => 'dashboard.index',
+                'icon' => null,
+                'order_by' => 10,
+                'status' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        $district = AuthMenu::where('link', 'district.index')->firstOrFail();
+        $admin = $this->makeAdmin('District-only legacy viewer', (string) $district->id, []);
+        Auth::guard('admin')->login($admin);
+
+        $currentRoute = new \ReflectionProperty(app('router'), 'current');
+        $currentRoute->setValue(app('router'), app('router')->getRoutes()->getByName('division.index'));
+        $forbiddenMatchHtml = MyMenu::menuUi();
+
+        $this->assertStringNotContainsString(route('division.index'), $forbiddenMatchHtml);
+        $this->assertStringContainsString(route('district.index'), $forbiddenMatchHtml);
+        $this->assertSame(0, substr_count($forbiddenMatchHtml, 'aria-current="page"'));
+
+        $currentRoute->setValue(app('router'), app('router')->getRoutes()->getByName('district.index'));
+        $permittedMatchHtml = MyMenu::menuUi();
+        $this->assertSame(1, substr_count($permittedMatchHtml, 'aria-current="page"'));
+
+        $document = new \DOMDocument();
+        @$document->loadHTML('<!doctype html><html><body><ul>'.$permittedMatchHtml.'</ul></body></html>');
+        $currentLink = (new \DOMXPath($document))->query('//a[@aria-current="page"]')->item(0);
+        $this->assertSame(route('district.index'), $currentLink->getAttribute('href'));
     }
 
     private function makeAdmin(string $name, string $menuPermissions, array $serial): Admin

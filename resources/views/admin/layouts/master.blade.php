@@ -29,4 +29,3 @@
 <div class="clearfix"></div>
 
 @include('admin.layouts.footer')
-@yield('custom-js')

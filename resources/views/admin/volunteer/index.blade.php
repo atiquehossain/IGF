@@ -7,6 +7,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">Volunteer applications</h1>
     <div class="card">
         <div class="card-header">
             <div class="d-flex flex-wrap align-items-center justify-content-between" style="gap:12px">
@@ -18,9 +19,9 @@
                 <form action="{{ route('volunteer.search') }}" method="post" class="form-inline mb-2" role="search" aria-label="Search volunteer applications">@csrf
                     <label class="sr-only" for="volunteer-search">Search</label>
                     <input id="volunteer-search" type="search" name="search" value="{{ $search }}" maxlength="100" autocomplete="off" required placeholder="Name, email, phone or institution" class="form-control form-control-sm mr-2">
-                    <button type="submit" class="btn btn-info btn-sm mr-2"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                    <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact mr-2"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
                 </form>
-                @if($search !== '')<form action="{{ route('volunteer.search.clear') }}" method="post" class="d-inline">@csrf<button type="submit" class="btn btn-light btn-sm mb-2">Clear private search</button></form>@endif
+                @if($search !== '')<form action="{{ route('volunteer.search.clear') }}" method="post" class="d-inline">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary igf-btn-compact mb-2"><i class="fa fa-undo" aria-hidden="true"></i> Clear private search</button></form>@endif
                 <form action="{{ route('volunteer.index') }}" method="get" class="form-inline" aria-label="Filter volunteer applications by status and date">
                     <label class="sr-only" for="volunteer-status">Status</label>
                     <select id="volunteer-status" name="workflow_status" class="form-control form-control-sm mr-2">
@@ -33,9 +34,9 @@
                     <input id="volunteer-from" type="date" name="from_date" value="{{ $from_date }}" class="form-control form-control-sm mr-2">
                     <label class="sr-only" for="volunteer-to">To date</label>
                     <input id="volunteer-to" type="date" name="to_date" value="{{ $to_date }}" class="form-control form-control-sm mr-2">
-                    <button type="submit" class="btn btn-info btn-sm mr-2"><i class="fa fa-filter" aria-hidden="true"></i> Filter</button>
+                    <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact mr-2"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button>
                     @if($canExportVolunteers)
-                        <a class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener" href="{{ route('volunteer.export.excel', request()->only(['workflow_status', 'from_date', 'to_date'])) }}">
+                        <a class="btn igf-btn igf-btn-secondary igf-btn-compact" target="_blank" rel="noopener" href="{{ route('volunteer.export.excel', request()->only(['workflow_status', 'from_date', 'to_date'])) }}">
                             <i class="fa fa-download" aria-hidden="true"></i> Export filtered list
                         </a>
                     @endif

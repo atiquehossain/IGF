@@ -7,6 +7,8 @@
     .igf-chat-filter-stack{display:grid;gap:10px}.igf-chat-filter--search{grid-template-columns:minmax(220px,1fr) auto}.igf-chat-filter--status{grid-template-columns:180px auto;justify-content:start}.igf-chat-clear-form{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:8px;background:#f7f4f1}.igf-chat-clear-form p{margin:0;color:var(--muted);font-size:13px}
     @media(max-width:900px){.igf-chat-grid{grid-template-columns:1fr}.igf-chat-filter{grid-template-columns:1fr 170px}.igf-chat-filter .igf-chat-button{grid-column:1/-1}.igf-chat-head{align-items:flex-start;flex-direction:column}}
     @media(max-width:650px){.igf-chat-admin{padding:0 12px}.igf-chat-head h1{font-size:32px}.igf-chat-metrics{grid-template-columns:1fr}.igf-chat-filter,.igf-chat-row{grid-template-columns:1fr}.igf-chat-tabs{width:100%}.igf-chat-tab{flex:1;justify-content:center}.igf-chat-table th:nth-child(3),.igf-chat-table td:nth-child(3){display:none}}
+    .igf-chat-admin,.igf-chat-grid,.igf-chat-stack,.igf-chat-card,.igf-chat-card__head,.igf-chat-card__body,.igf-chat-filter,.igf-chat-field,.igf-chat-table-wrap{min-width:0;max-width:100%}.igf-chat-field input,.igf-chat-field select,.igf-chat-button,.igf-chat-tab{min-height:44px}.igf-chat-check{min-height:44px}.igf-chat-table-wrap{overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}.igf-chat-table{min-width:680px}.igf-chat-faq summary{min-height:44px}
+    @media(max-width:650px){.igf-chat-head,.igf-chat-card__head,.igf-chat-clear-form,.igf-chat-faq summary{align-items:flex-start;flex-wrap:wrap}.igf-chat-head>.igf-chat-button,.igf-chat-filter .igf-chat-button,.igf-chat-clear-form .igf-chat-button{width:100%}.igf-chat-card__body{padding:16px}.igf-chat-tabs{max-width:100%;overflow-x:auto}.igf-chat-tab{min-width:max-content}.igf-chat-table{min-width:580px}}
 </style>
 
 <main class="igf-chat-admin">
@@ -53,7 +55,7 @@
                 @endif
                 </div>
             </div>
-            <div class="igf-chat-table-wrap">
+            <div class="igf-chat-table-wrap table-responsive" role="region" aria-label="Scrollable chat conversation records" tabindex="0">
                 <table class="igf-chat-table">
                     <thead><tr><th>Visitor</th><th>Latest message</th><th>Activity</th><th>Status</th><th><span class="igf-chat-visually-hidden">Action</span></th></tr></thead>
                     <tbody>

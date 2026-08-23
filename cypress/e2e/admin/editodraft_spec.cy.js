@@ -1,34 +1,27 @@
 /* eslint-disable no-undef */
-describe('Edito-draft', () => {
-  // cy.refreshDatabase();
-  before(() => {
-    // cy.seed();
-  });
+describe('Editor draft', () => {
+  const name = `Cypress editor draft ${Date.now().toString(36)}`;
+  const updatedName = `${name} updated`;
 
   beforeEach(() => {
     cy.loginWithUsername();
     cy.visit('/admin/edito-draft');
   });
 
-  it('create new edito-draft by save', () => {
-    cy.visit('/admin/edito-draft');
-
-    cy.get('[data-e2e=edito-draft-name]').type('edito-draft');
-    cy.get('[data-e2e=edito-draft-description]').type('edito-draft description');
-
-    cy.wait(1000);
+  it('creates a new editor draft', () => {
+    cy.get('[data-e2e="edito-draft-name"]').type(name);
+    cy.get('[data-e2e="edito-draft-description"]').type('Created by the isolated Cypress test suite.');
     cy.get('button[name="save"]').click();
-    cy.wait(1000);
+    cy.location('pathname').should('eq', '/admin/edito-draft');
+    cy.contains('#editorDraft_table tbody tr', name).should('be.visible');
   });
 
-  it('update edito-draft', () => {
-    cy.get('#editorDraft_table tbody tr a.edit').first().click();
-
-    cy.get('[data-e2e=edito-draft-name-edit]').type('edito-draft update');
-    cy.get('[data-e2e=edito-draft-description-edit]').type('edito-draft description update');
-
-    cy.wait(1000);
+  it('updates the editor draft created by the suite', () => {
+    cy.contains('#editorDraft_table tbody tr', name).find('button.edit').click();
+    cy.get('[data-e2e="edito-draft-name-edit"]').should('have.value', name).clear().type(updatedName);
+    cy.get('[data-e2e="edito-draft-description-edit"]').clear().type('Updated by the isolated Cypress test suite.');
     cy.get('button[name="update"]').click();
-    cy.wait(1000);
+    cy.location('pathname').should('eq', '/admin/edito-draft');
+    cy.contains('#editorDraft_table tbody tr', updatedName).should('be.visible');
   });
 });

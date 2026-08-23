@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="content pb-0">
+        <h1 class="sr-only">{{ $title }}</h1>
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -30,15 +31,16 @@
                                         <label class="sr-only" for="comment-private-search">Search comment text or page title</label>
                                         <input id="comment-private-search" type="search" name="search" value="{{ $search }}" maxlength="100" autocomplete="off" required class="form-control search-form-control" placeholder="Search comment text or page title">
                                     </div>
-                                    <div class="col-md-4"><button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button></div>
+                                    <div class="col-md-4"><button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button></div>
                                 </div>
                             </form>
-                            @if($search !== '')<form action="{{ route('comment.search.clear') }}" method="post" class="mb-2">@csrf<button type="submit" class="btn btn-light btn-sm">Clear private search</button></form>@endif
+                            @if($search !== '')<form action="{{ route('comment.search.clear') }}" method="post" class="mb-2">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary igf-btn-compact"><i class="fa fa-undo" aria-hidden="true"></i> Clear private search</button></form>@endif
                             <form action="{{ route('comment.index') }}" method="get" aria-label="Filter comments by order and status">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="">
-                                            <select name="order_by" class="form-control search-drop-form-control">
+                                            <label class="sr-only" for="comment-order">Comment order</label>
+                                            <select id="comment-order" name="order_by" class="form-control search-drop-form-control">
                                                 <option value="">{{ $Lang->Common->Form-> Select }} {{ $Lang->Common->Form->All }}</option>
                                                 <option value="1" @if ($order_by == 1) selected @endif>ASC
                                                 </option>
@@ -49,7 +51,8 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="">
-                                            <select name="status" class="form-control search-drop-form-control">
+                                            <label class="sr-only" for="comment-status">Publication status</label>
+                                            <select id="comment-status" name="status" class="form-control search-drop-form-control">
                                                 <option value="">{{ $Lang->Common->Form-> Select }} {{ $Lang->Common->Form->All }}</option>
                                                 <option value="1" @if ($status == 1) selected @endif>{{ $Lang->Common->Form->Publish }}
                                                 </option>
@@ -58,7 +61,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-12 mt-2"><button type="submit" class="btn btn-info btn-sm">Apply filters</button></div>
+                                    <div class="col-12 mt-2"><button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-filter" aria-hidden="true"></i> Apply filters</button></div>
                                 </div>
                             </form>
 
@@ -104,7 +107,7 @@
                                                     </td>
                                                     <?php if (!empty($deleteLink)) { ?>
                                                     <td>
-                                                        <?=App\Link::action(@$comment->id, @$comment->status)?>
+                                                        <?=App\Link::action(@$comment->id, @$comment->status, 'comment #' . ($comment->id ?? ''))?>
                                                     </td>
                                                     <?php } ?>
                                                 </tr>
@@ -141,14 +144,14 @@
     @if($canModerate)
     {{-- Modal --}}
     <div class="modal fade" id="commentPublishModal" tabindex="-1" role="dialog" data-backdrop="static"
-        aria-labelledby="mediumModalLabel" aria-hidden="true">
+        aria-labelledby="commentPublishModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <form class="fileUploadFormEdit" action="{{ route('page.status.comment') }}" method="POST"
                     enctype="multipart/form-data">
                     <div class="modal-header">
-                        <strong class="card-title">{{ $Lang->Common->Comment }} {{ $Lang->Common->Info }}</strong>
-                        <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                        <h2 class="card-title h5 mb-0" id="commentPublishModalTitle">Moderate comment</h2>
+                        <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -164,12 +167,12 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic">
+                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-check-square" aria-hidden="true">
                             </i>&nbsp;
-                            <span class="submit_type">{{ $Lang->Common->Submit }}</span>
+                            <span class="submit_type">Change moderation status</span>
                         </button>
-                        <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i
-                                class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i
+                                class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                     </div>
                 </form>
             </div>

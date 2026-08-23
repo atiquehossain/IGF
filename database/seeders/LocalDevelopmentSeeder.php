@@ -12,6 +12,7 @@ use App\Models\SslCommerzTransaction;
 use App\Models\Volunteer;
 use App\Models\VolunteerCause;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -342,6 +343,34 @@ class LocalDevelopmentSeeder extends Seeder
         );
 
         $this->call(IgniteParityContentSeeder::class);
+
+        if (app()->environment('testing')) {
+            $this->seedCypressYouTubeMetadata();
+        }
+    }
+
+    private function seedCypressYouTubeMetadata(): void
+    {
+        $videos = json_decode(
+            file_get_contents(database_path('seeders/seed-data/youtubes.seed-data.json')),
+            true,
+            flags: JSON_THROW_ON_ERROR
+        );
+
+        foreach (array_slice($videos, 0, 2) as $video) {
+            Cache::put('youtube-api:video:' . sha1($video['video_id']), [
+                'items' => [[
+                    'snippet' => [
+                        'publishedAt' => $video['published_at'],
+                        'title' => $video['title'],
+                        'description' => $video['description'],
+                        'thumbnails' => [
+                            'medium' => ['url' => $video['image']],
+                        ],
+                    ],
+                ]],
+            ], now()->addDay());
+        }
     }
 
     private function seedHomePage(): void

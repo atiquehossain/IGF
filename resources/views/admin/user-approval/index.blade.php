@@ -6,6 +6,7 @@
             ->allows(auth('admin')->user(), 'user-approval.edit');
     @endphp
     <div class="content pb-0">
+        <h1 class="sr-only">Member applications</h1>
         <div class="row">
             <div class="col-lg-12 col-md-12">
                 <div class="card">
@@ -27,17 +28,17 @@
                                                 maxlength="100" autocomplete="off" required
                                                 placeholder="Name, email, phone or organization">
                                             <span class="input-group-prepend">
-                                                <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search"
+                                                <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search"
                                                         aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                             </span>
                                         </div>
                                     </form>
                                     @if($search !== '')
-                                        <form action="{{ route('user-approval.search.clear') }}" method="post" class="ml-1">@csrf<button type="submit" class="btn btn-light btn-sm">Clear</button></form>
+                                        <form action="{{ route('user-approval.search.clear') }}" method="post" class="ml-1">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary"><i class="fa fa-undo" aria-hidden="true"></i> Clear</button></form>
                                     @endif
                                     <?php if (!empty($addNewLink)) { ?>
-                                    <a class="btn btn-info btn-sm ml-1 pull-right" href="{{ route($addNewLink) }}">
-                                        <i class="fa fa-plus-circle"></i> {{ $Lang->Common->Add }} {{ $Lang->Common->New }}
+                                    <a class="btn igf-btn igf-btn-primary igf-btn-compact ml-1 pull-right" href="{{ route($addNewLink) }}">
+                                        <i class="fa fa-plus" aria-hidden="true"></i> Add member application
                                     </a>
                                     <?php } ?>
                                 </div>
@@ -74,18 +75,18 @@
                                             ?>
                                         </td>
                                         <td class="d-flex" style="column-gap: 8px">
-                                            <a class="btn btn-primary" href="{{ route('user-approval.show',['id'=> @$user->id]) }}" aria-label="View application from {{ $user->name }}" title="View application"><i class="fa fa-eye" aria-hidden="true"></i></a>
+                                            <a class="btn igf-btn igf-btn-secondary igf-btn-compact" href="{{ route('user-approval.show',['id'=> @$user->id]) }}" aria-label="View application from {{ $user->name }}" title="View application"><i class="fa fa-eye" aria-hidden="true"></i> View</a>
                                             @if($canReviewApplications)
                                             <form action="{{ route('user-approval.update.approve',['id'=> @$user->id]) }}" method="post">
                                               @method('PUT')
                                               @csrf  
-                                              <button type="submit" class="btn btn-success" aria-label="Approve {{ $user->name }}" title="Approve application"><i class="fa fa-check-square" aria-hidden="true"></i></button>
+                                              <button type="submit" class="btn igf-btn igf-btn-primary igf-btn-compact" aria-label="Approve {{ $user->name }}" title="Approve application"><i class="fa fa-check" aria-hidden="true"></i> Approve</button>
                                             </form>
 
                                             <form action="{{ route('user-approval.update.reject',['id'=> @$user->id]) }}" method="post">
                                               @method('PUT')
                                               @csrf  
-                                              <button type="submit" class="btn btn-danger" aria-label="Reject {{ $user->name }}" title="Reject application"><i class="fa fa-times" aria-hidden="true"></i></button>
+                                              <button type="submit" class="btn igf-btn igf-btn-danger igf-btn-compact" aria-label="Reject {{ $user->name }}" title="Reject application"><i class="fa fa-times" aria-hidden="true"></i> Reject</button>
                                             </form>
                                             @else
                                                 <span class="badge badge-light">View only</span>

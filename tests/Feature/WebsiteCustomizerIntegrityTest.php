@@ -52,14 +52,14 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertOk()
             ->assertSee('Website Customizer')
             ->assertSee('New here? Follow these five simple steps')
-            ->assertSee('Pages &amp; sections', false)
+            ->assertSee('Content Hub')
             ->assertSee('Design &amp; layout', false)
             ->assertSee('Resize headings, images and cards')
             ->assertSee('Donation experience')
             ->assertSee('Layout, amounts, wording and help')
             ->assertSee('Navigation')
             ->assertSee('Media Library')
-            ->assertSee('Search &amp; sharing', false)
+            ->assertSee('Search &amp; Sharing', false)
             ->assertSee('Search previews, URLs and sharing')
             ->assertSee('Find a setting')
             ->assertSee('Website preview')
@@ -342,6 +342,34 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'group' => 'donation_page',
             'key' => 'enable_bkash',
         ]);
+    }
+
+    public function test_validation_failure_returns_to_customizer_even_when_public_preview_was_previous_page(): void
+    {
+        $admin = $this->makePageEditor();
+        config()->set('sslcommerz.store_id', '');
+        config()->set('sslcommerz.store_password', '');
+
+        $response = $this->actingAs($admin, 'admin')
+            ->from(route('frontend.home'))
+            ->put(route('site.settings.update'), [
+                'locale' => 'en',
+                'settings' => $this->defaultSettingsPayload(),
+            ]);
+
+        $response
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors('settings.donation_page.enable_bkash');
+
+        $this->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Website changes were not saved.')
+            ->assertSee('Keep at least one payment method enabled that is marked Ready in Payment provider status.');
+
+        $this->assertStringContainsString(
+            '$errors->has("settings.$groupKey.*")',
+            file_get_contents(resource_path('views/admin/site-settings/index.blade.php'))
+        );
     }
 
     public function test_zakat_settings_are_guided_price_inputs_with_a_real_checked_date_and_no_editable_rate_or_fixed_threshold(): void

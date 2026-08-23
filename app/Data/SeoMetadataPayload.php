@@ -22,6 +22,7 @@ final class SeoMetadataPayload
         'og_title',
         'og_description',
         'og_image',
+        'social_image_alt',
         'twitter_card',
         'twitter_title',
         'twitter_description',
@@ -39,6 +40,16 @@ final class SeoMetadataPayload
     public static function from(array $input): self
     {
         $attributes = Arr::only($input, self::WRITABLE_FIELDS);
+
+        if (array_key_exists('social_image_alt', $attributes)) {
+            $value = is_scalar($attributes['social_image_alt'])
+                ? (string) $attributes['social_image_alt']
+                : '';
+            $value = strip_tags($value);
+            $value = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '';
+            $value = preg_replace('/\s+/u', ' ', trim($value)) ?? '';
+            $attributes['social_image_alt'] = $value === '' ? null : mb_substr($value, 0, 420);
+        }
 
         if (array_key_exists('schema_markup', $attributes) && is_string($attributes['schema_markup'])) {
             if (trim($attributes['schema_markup']) === '') {

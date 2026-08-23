@@ -11,7 +11,7 @@ The main menu is organized by the part of the website you are responsible for:
 - **Website** contains Home & Pages, Header & Footer, Brand & Appearance, and Media Library.
 - **Content** contains Programs, Projects, Events & News, Team Members, Community Stories, Gallery, and Reports.
 - **Get Involved** contains donation, sponsorship, volunteer, subscriber, contact, and chat work.
-- **SEO & Languages** contains search previews and translations.
+- **Search & Languages** contains search previews, performance reporting, internal-link guidance, redirects, technical checks and translations.
 - **Users & Access** is available only to administrators with permission to manage people and roles.
 
 Older or technical managers are kept under **Advanced & Legacy Tools** and should not be needed for everyday editing.
@@ -52,7 +52,7 @@ Upload images and documents in **Media Library**. Page, Customizer, and Search &
 
 ## Search & Sharing (SEO 3.0)
 
-Open **SEO & Languages → Search & Social Preview** to enter the single **Search & Sharing** workspace. This replaces the older separate SEO forms. It is the normal place to manage search appearance, social sharing, page addresses, structured data, language completion, review, bulk changes, restore points, redirects, and technical findings.
+Open **Search & Languages → Search & Sharing** to enter the single **Search & Sharing** workspace. This replaces the older separate SEO forms. It is the normal place to manage search appearance, social sharing, page addresses, structured data, language completion, review, bulk changes, restore points, redirects, and technical findings.
 
 ### Start with the website checklist
 
@@ -121,7 +121,7 @@ Each active annual report has its own public HTML landing page at `/annual-repor
 
 ### Restore an earlier SEO version
 
-The editor creates a restore point before each save and shows which fields changed between versions. Under **Recent changes**, a user with restore permission can choose **Restore this version** to return to an earlier state. The current state is kept as another restore point, so the restore itself can be undone. A revision containing an external canonical may be restored only by a user who has both restore permission and the separate `seo.canonical.external` capability, after explicitly confirming that restoration. View, edit, review, restore, and external-canonical permissions are independent; read-only users cannot change or approve metadata.
+The editor creates a restore point before each save and shows which fields changed between versions. Under **Recent changes**, an SEO editor—or a user explicitly granted **Restore SEO revisions**—can choose **Restore this version** to return to an earlier state. The current state is kept as another restore point, so the restore itself can be undone. A revision containing an external canonical may be restored only by a user who can restore and also has the separate `seo.canonical.external` capability, after explicitly confirming that restoration. SEO edit access includes revision restore, while restore-only access can be delegated without allowing other metadata changes; read-only users cannot change, restore, or approve metadata.
 
 ### Technical SEO & 404 Center
 
@@ -141,9 +141,9 @@ Events & News, Projects, Gallery, and Annual Reports apply the archive policy au
 
 The sitemap is generated automatically from safe, public, indexable content. Use **View sitemap** to inspect it; do not maintain a manual list or sitemap priority values. Canonical URLs, language alternatives, `hreflang`, and sitemap membership follow the saved page and language settings.
 
-Crawler access is fail-closed. The generated `/robots.txt` references the sitemap but blocks crawling in local, test, and staging environments. A developer may set `SEO_INDEXING_ENABLED=true` in the production environment **only after the client has approved launch** and the final domain, HTTPS, canonical URLs, public visibility, and content have been checked. Do not enable it on a preview or staging domain.
+Search indexing is fail-closed, but public crawling is not blocked. The generated `/robots.txt` references the sitemaps, allows public pages to be crawled, and keeps `/admin` disallowed. In local, test, staging, or any environment where indexing is disabled, every page also sends `noindex,nofollow,noarchive` in its robots metadata and matching `X-Robots-Tag` response header so a crawler can read the instruction. A developer may set `SEO_INDEXING_ENABLED=true` in the production environment **only after the client has approved launch** and the final domain, HTTPS, canonical URLs, public visibility, and content have been checked. Do not enable it on a preview or staging domain; use authentication, an IP allowlist, or a VPN when the preview itself must be private.
 
-Search Console connection and performance-monitoring integrations are not included in this SEO workspace. They can be scoped as separate integrations later; the dashboard scores in this application measure content setup, not live Google rankings, traffic, or page speed.
+Open **Search & Languages → Search Performance** to view first-party Google data after a deployment owner connects it. Google Search Console supplies clicks, impressions, click-through rates, queries, top pages, opportunities, and submitted-sitemap status; Google Analytics 4 supplies organic landing-page sessions, engagement, and views. The deployment owner must enable `SEO_PERFORMANCE_ENABLED` and configure the approved Search Console property, GA4 property, and read-only service-account credentials on the server. The screen remains safe and useful when either source is not configured, and it never displays credentials. This reporting does not use AI, scrape Google results, track keyword positions, collect Core Web Vitals, or run Lighthouse/PageSpeed tests. Search & Sharing readiness scores still measure content setup rather than live performance.
 
 ### Safe launch checklist
 

@@ -10,7 +10,7 @@
 
 <main class="igf-thread">
     <header class="igf-thread-head">
-        <div><a class="igf-thread-back" href="{{ route('chat.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Chat inbox</a><h1>@if($conversation->user){{ $conversation->user->name ?: 'Member #'.$conversation->user->id }}@else{{ $conversation->guest_name ?: 'Guest visitor' }}@endif</h1><p>Conversation {{ substr($conversation->uuid, 0, 8) }}</p></div>
+        <div><a class="igf-thread-back btn igf-btn igf-btn-tertiary" href="{{ route('chat.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back to chat inbox</a><h1>@if($conversation->user){{ $conversation->user->name ?: 'Member #'.$conversation->user->id }}@else{{ $conversation->guest_name ?: 'Guest visitor' }}@endif</h1><p>Conversation {{ substr($conversation->uuid, 0, 8) }}</p></div>
         <span class="igf-thread-status">{{ $conversation->status }}</span>
     </header>
 

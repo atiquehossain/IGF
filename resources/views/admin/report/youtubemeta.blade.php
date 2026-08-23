@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="content pb-0">
+    <h1 class="sr-only">YouTube activity report</h1>
 
     <div class="row">
         <div class="col-md-12">
@@ -17,11 +18,11 @@
                                     <label class="sr-only" for="youtube-member-search">Search by member name, phone or email</label>
                                     <input class="form-control search-form-control" id="youtube-member-search" value="{{ $search }}" placeholder="Member name, phone or email" name="search" maxlength="100" autocomplete="off" type="search" required>
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
-                            @if($search !== '')<form action="{{ route('report.youtubeMeta.search.clear') }}" method="post" class="mt-1 text-right">@csrf<button type="submit" class="btn btn-light btn-sm">Clear private search</button></form>@endif
+                            @if($search !== '')<form action="{{ route('report.youtubeMeta.search.clear') }}" method="post" class="mt-1 text-right">@csrf<button type="submit" class="btn igf-btn igf-btn-tertiary"><i class="fa fa-undo" aria-hidden="true"></i> Clear private search</button></form>@endif
                         </div>
                     </div>
                 </div>
@@ -32,7 +33,7 @@
                     <div class="col-md-7 d-flex justify-content-between">
                         <div></div>
                         <div>
-                            <button type="button" class="btn btn-warning mr-2" onclick="printDiv('youtubeReport')"><i class="fa fa-print mr-1" aria-hidden="true"></i>Print report</button>
+                            <button type="button" class="btn igf-btn igf-btn-secondary mr-2" onclick="printDiv('youtubeReport')"><i class="fa fa-print mr-1" aria-hidden="true"></i> Print report</button>
                         </div>
                     </div>
                 </div>
@@ -45,7 +46,7 @@
                                 <th width="20%"><strong>{{ $Lang->Common->Form->Mobile }}/{{ $Lang->Common->Form->Email }} </strong></th>
                                 <th width="30%"><strong>{{ $Lang->Common->Form->Title }} </strong></th>
                                 <th width="15%"><strong>{{ $Lang->Resource->Hour }}/{{ $Lang->Resource->Minute}}</strong></th>
-                                <th width="15%"><strong>{{ $Lang->Resource->Watch }} <strong>{{ $Lang->Resource->Hr }}/<strong>{{ $Lang->Resource->Min }}</strong></th>
+                                <th width="15%"><strong>{{ $Lang->Resource->Watch }} {{ $Lang->Resource->Hr }}/{{ $Lang->Resource->Min }}</strong></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -54,8 +55,8 @@
                                 <td>{{@$watchs->name}}</td>
                                 <td>{{@$watchs->phone_no}}</td>
                                 <td>{{@$watchs->title}}</td>
-                                <td>{{@$watchs->yt_duration_time}} <strong>{{ $Lang->Resource->Min }}</td>
-                                <td>{{@$watchs->duration_time}} <strong>{{ $Lang->Resource->Min }}</td>
+                                <td>{{@$watchs->yt_duration_time}} {{ $Lang->Resource->Min }}</td>
+                                <td>{{@$watchs->duration_time}} {{ $Lang->Resource->Min }}</td>
                             </tr>
                             @endforeach
                         </tbody>

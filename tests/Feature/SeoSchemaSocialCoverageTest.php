@@ -72,6 +72,7 @@ class SeoSchemaSocialCoverageTest extends TestCase
             'locale' => 'en',
             'title' => 'Owned story title',
             'og_image' => 'https://cdn.example.org/owned-story.jpg',
+            'social_image_alt' => 'Children presenting their community project',
             'twitter_image' => 'https://cdn.example.org/owned-story-x.jpg',
             'robots_index' => true,
             'robots_follow' => true,
@@ -82,15 +83,39 @@ class SeoSchemaSocialCoverageTest extends TestCase
             ],
         ]);
 
-        $head = Str::before($this->get('/page/owned-schema')->assertOk()->getContent(), '</head>');
+        $response = $this->get('/page/owned-schema')->assertOk();
+        $head = Str::before($response->getContent(), '</head>');
         $this->assertStringContainsString('property="og:image" content="https://cdn.example.org/owned-story.jpg"', $head);
         $this->assertStringContainsString('name="twitter:image" content="https://cdn.example.org/owned-story-x.jpg"', $head);
-        $this->assertStringNotContainsString('property="og:image:alt"', $head);
+        $this->assertStringContainsString('property="og:image:alt" content="Children presenting their community project"', $head);
+        $this->assertStringContainsString('name="twitter:image:alt" content="Children presenting their community project"', $head);
+        $response->assertInertia(fn ($inertia) => $inertia
+            ->where('meta_tag.social_image_alt', 'Children presenting their community project')
+        );
 
         $schema = $this->schemaFrom($head);
         $this->assertSame('Article', $schema['@type']);
         $this->assertSame('Owned story title', $schema['headline']);
         $this->assertArrayNotHasKey('@graph', $schema);
+    }
+
+    public function test_custom_social_image_without_page_alt_does_not_reuse_the_brand_image_description(): void
+    {
+        $page = $this->makePage('custom-image-without-alt');
+        SeoMetadata::create([
+            'seoable_type' => Page::class,
+            'seoable_id' => $page->id,
+            'locale' => 'en',
+            'og_image' => 'https://cdn.example.org/different-story.jpg',
+            'twitter_image' => 'https://cdn.example.org/different-story.jpg',
+            'robots_index' => true,
+            'robots_follow' => true,
+        ]);
+
+        $head = Str::before($this->get('/page/custom-image-without-alt')->assertOk()->getContent(), '</head>');
+        $this->assertStringContainsString('property="og:image" content="https://cdn.example.org/different-story.jpg"', $head);
+        $this->assertStringNotContainsString('property="og:image:alt"', $head);
+        $this->assertStringNotContainsString('name="twitter:image:alt"', $head);
     }
 
     public function test_owner_can_replace_the_brand_fallback_without_code_changes(): void

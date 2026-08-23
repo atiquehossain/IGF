@@ -31,7 +31,7 @@
                                     </div>
 
                                     <div class="form-group has-success">
-                                        <label for="description">{{ $Lang->Common->Form->Description }}</label>
+                                        <label for="new-editor-draft-description">{{ $Lang->Common->Form->Description }}</label>
                                         <textarea id="new-editor-draft-description" class="form-control form-control-danger" name="description" rows="4" aria-label="{{ $Lang->Common->Form->Description }}" data-e2e="edito-draft-description">{{old('description')}}</textarea>
                                         @if ($errors->has('description'))
                                             <small class="help-block form-text text-danger">{{ $errors->first('description') }}</small>
@@ -39,8 +39,8 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-3" name="save"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-3"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3" name="save"><i class="fa fa-plus" aria-hidden="true"></i> Create editor draft</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                     </div>
 
                                 </form>
@@ -62,9 +62,9 @@
                         <div class="col-md-6">
                             <form action="{{ route('editorDraft.index')}}" method="get">
                                 <div class="input-group search-input-group">
-                                    <input type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search editor drafts">
+                                    <input id="editor-draft-search" type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search editor drafts">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
@@ -92,7 +92,7 @@
                                     <span class="">{{@$editorDraft->slug}}</span>
                                  </td>
                                 <td>
-                                    <?=App\Link::action(@$editorDraft->id, @$editorDraft->status) ?>
+                                    <?=App\Link::action(@$editorDraft->id, @$editorDraft->status, 'editor draft ' . ($editorDraft->name ?? '')) ?>
                                 </td>
                             </tr>
                             @endforeach
@@ -109,13 +109,13 @@
 
 {{-- Modal --}}
 @if($canEdit)
-<div class="modal fade" id="editorDraftModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="mediumModalLabel" aria-hidden="true">
+<div class="modal fade" id="editorDraftModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="editorDraftModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
             <form action="{{route('editorDraft.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->EditorDraftTitle }}</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <h2 class="card-title h5 mb-0" id="editorDraftModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->EditorDraftTitle }}</h2>
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -126,16 +126,16 @@
                     <input name="id" id="e_id" type="hidden" value="{{old('id')}}" class="form-control" required>
 
                     <div class="form-group has-success">
-                        <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
-                        <input name="name" type="text" value="{{old('name')}}" class="form-control" aria-label="{{ $Lang->Common->Form->Name }}" required data-e2e="edito-draft-name-edit">
+                        <label for="edit-editor-draft-name" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                        <input id="edit-editor-draft-name" name="name" type="text" value="{{old('name')}}" class="form-control" aria-label="{{ $Lang->Common->Form->Name }}" required data-e2e="edito-draft-name-edit">
                         @if($errors->has('name'))
                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                         @endif
                     </div>
 
                     <div class="form-group has-success">
-                        <label for="description">{{ $Lang->Common->Form->Description }}</label>
-                        <textarea class="form-control form-control-danger" name="description" rows="4" aria-label="{{ $Lang->Common->Form->Description }}" data-e2e="edito-draft-description-edit">{{old('description')}}</textarea>
+                        <label for="edit-editor-draft-description">{{ $Lang->Common->Form->Description }}</label>
+                        <textarea id="edit-editor-draft-description" class="form-control form-control-danger" name="description" rows="4" aria-label="{{ $Lang->Common->Form->Description }}" data-e2e="edito-draft-description-edit">{{old('description')}}</textarea>
                         @if ($errors->has('description'))
                             <small class="help-block form-text text-danger">{{ $errors->first('description') }}</small>
                         @endif
@@ -143,8 +143,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3" name="update"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3" name="update"><i class="fa fa-save" aria-hidden="true"></i> Save editor draft</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>

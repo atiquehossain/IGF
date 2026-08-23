@@ -438,6 +438,59 @@ class CmsController extends Controller
         }
     }
 
+    public function notices(Request $request)
+    {
+        $locale = $this->locale($request);
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:120'],
+            'search_date' => ['nullable', 'date_format:Y-m-d'],
+            'file_type' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        try {
+            $results = NoticeBoard::query()
+                ->publiclyReleased()
+                ->where('notice_type', 'notice-board')
+                ->where('language', $locale)
+                ->when(filled($validated['search'] ?? null), function ($query) use ($validated): void {
+                    $query->where('title', 'like', '%'.trim($validated['search']).'%');
+                })
+                ->when(filled($validated['search_date'] ?? null), function ($query) use ($validated): void {
+                    $query->whereDate('published_at', $validated['search_date']);
+                })
+                ->when(filled($validated['file_type'] ?? null), function ($query) use ($validated): void {
+                    $query->where('file_type', strtolower($validated['file_type']));
+                })
+                ->orderByDesc('published_at')
+                ->paginate(12);
+
+            $results->getCollection()->transform(static fn (NoticeBoard $notice): array => [
+                'id' => $notice->id,
+                'title' => (string) $notice->title,
+                'file_type' => (string) $notice->file_type,
+                'file_size' => (string) $notice->file_size,
+                'file_path' => (string) $notice->file_path,
+                'image_path' => $notice->image_path,
+                'url' => $notice->url,
+                'date_at' => $notice->published_at
+                    ? CarbonImmutable::parse($notice->published_at)->format('d-m-Y')
+                    : null,
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'properties' => [
+                    'page' => $results->currentPage(),
+                    'total_page' => $results->lastPage(),
+                    'total_count' => $results->total(),
+                ],
+                'data' => ['items' => $results->items()],
+            ]);
+        } catch (Throwable $exception) {
+            return $this->serverFailure($exception);
+        }
+    }
+
     private function locale(Request $request): string
     {
         return (string) data_get($request, 'share.locale', app()->getLocale());

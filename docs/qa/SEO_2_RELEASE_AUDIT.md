@@ -133,7 +133,7 @@ The release owner then recorded this no-follow smoke on the frozen tree:
 | `/admin/login` | `200` |
 | `/page/ignite-school-bawnia-campus` | `301` to `/category/visit-ignite-school` |
 
-The landing-page raw head had exactly one canonical, exactly one robots directive, and absolute same-origin Open Graph and X/Twitter images. Local `robots.txt` remained fail-closed with `Disallow: /`, as required.
+The landing-page raw head had exactly one canonical, exactly one robots directive, and absolute same-origin Open Graph and X/Twitter images. Local `robots.txt` remained fail-closed through page-level `noindex,nofollow,noarchive` metadata and the matching `X-Robots-Tag` header while still allowing public crawling, and continued to disallow `/admin`.
 
 ## 9. QA harness incident — CLOSED, no user data loss
 

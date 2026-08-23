@@ -48,7 +48,7 @@
         >
           <div class="resource-card">
             <a
-              :href="route('resources.publication.download', item.file_path)"
+              :href="route('notice.download', item.file_path)"
               target="_blank"
             >
               <v-img class="resource-img" :src="imagePath(item)" />
@@ -151,8 +151,7 @@ export default {
             page: 1,
             search_date: this.selectValue,
             search: this.searchvalue,
-            file_path: 'notice_board',
-            type: 'notice-board'
+            file_type: ''
           }
         });
         if (response.data.status) {
@@ -171,8 +170,7 @@ export default {
             page,
             search_date: this.selectValue,
             search: this.searchvalue,
-            file_path: 'notice_board',
-            type: 'notice-board'
+            file_type: ''
           }
         });
         if (response.data.status) {

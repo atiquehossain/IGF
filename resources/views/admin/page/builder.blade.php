@@ -45,7 +45,7 @@
     .igf-builder__topbar h1 { max-width:520px; margin:0; overflow:hidden; color:var(--igf-ink); font:700 20px/1.15 'Literata',serif; text-overflow:ellipsis; white-space:nowrap; }
     .igf-builder__topbar small { display:block; margin-top:3px; overflow:hidden; color:var(--igf-muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
     .igf-builder__viewport { display:flex; flex:0 0 auto; gap:2px; padding:3px; border-radius:8px; background:#edeeef; }
-    .igf-viewport-button { display:inline-flex; align-items:center; justify-content:center; width:32px; height:28px; padding:0; border:0; border-radius:6px; background:transparent; color:#6f6e75; cursor:pointer; }
+    .igf-viewport-button { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; padding:0; border:0; border-radius:6px; background:transparent; color:#6f6e75; cursor:pointer; }
     .igf-viewport-button.is-active { background:#fff; color:var(--igf-primary); box-shadow:0 1px 3px rgba(36,36,43,.12); }
     .igf-builder__actions { display:flex; align-items:center; gap:9px; min-width:0; }
     .igf-save-state { display:inline-flex; align-items:center; gap:6px; color:var(--igf-muted); font-size:12px; white-space:nowrap; }
@@ -80,7 +80,7 @@
     .igf-block-select { display:grid; width:100%; min-width:0; grid-template-columns:22px minmax(0,1fr); align-items:center; gap:8px; padding:3px; border:0; background:transparent; color:inherit; cursor:pointer; text-align:left; }
     .igf-block-select:focus-visible { border-radius:5px; outline:2px solid var(--igf-orange); outline-offset:2px; }
     .igf-order { display:flex; flex-direction:column; gap:2px; }
-    .igf-order button { width:28px; height:28px; padding:0; border:1px solid #d9dadb; border-radius:4px; background:#fff; color:#5e5d66; line-height:1; }
+    .igf-order button { width:44px; height:44px; padding:0; border:1px solid #d9dadb; border-radius:4px; background:#fff; color:#5e5d66; line-height:1; }
     .igf-field { margin-bottom:15px; }
     .igf-field label { display:flex; justify-content:space-between; margin-bottom:7px; color:#525158; font-size:12px; font-weight:800; letter-spacing:.02em; }
     .igf-field input,.igf-field textarea,.igf-field select { width:100%; min-height:40px; border:1px solid #d9dadb; border-radius:7px; padding:9px 10px; background:#f8f9fa; color:var(--igf-ink); font-size:13px; outline:0; }
@@ -108,23 +108,23 @@
     .igf-slide-card__head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid #ebe7e3; background:#f6f5f3; }
     .igf-slide-card__head strong { color:var(--igf-primary); font-size:12px; }
     .igf-slide-card__actions { display:flex; gap:4px; }
-    .igf-slide-card__actions button { min-width:30px; min-height:30px; border:1px solid #d5d0cb; border-radius:5px; background:#fff; color:#514c48; cursor:pointer; }
+    .igf-slide-card__actions button { min-width:44px; min-height:44px; border:1px solid #d5d0cb; border-radius:5px; background:#fff; color:#514c48; cursor:pointer; }
     .igf-slide-card__actions button:disabled { cursor:not-allowed; opacity:.38; }
     .igf-slide-card__body { padding:13px; }
     .igf-slide-card__body .igf-field:last-child { margin-bottom:0; }
     .igf-slide-limit { margin:-6px 0 12px; color:var(--igf-muted); font-size:11px; }
-    .igf-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:36px; border:1px solid #8c7163; border-radius:7px; padding:7px 13px; background:#fff; color:var(--igf-ink); font-size:12px; font-weight:800; cursor:pointer; text-decoration:none!important; white-space:nowrap; }
+    .igf-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; border:1px solid #8c7163; border-radius:7px; padding:7px 13px; background:#fff; color:var(--igf-ink); font-size:12px; font-weight:800; cursor:pointer; text-decoration:none!important; white-space:nowrap; }
     .igf-btn:hover { background:#f3f4f5; color:var(--igf-primary); }
     .igf-btn--primary { border-color:#9c4500; background:#9c4500; color:#fff!important; box-shadow:0 4px 10px rgba(120,51,0,.15); }
     .igf-btn--primary:hover,.igf-btn--primary:focus-visible { border-color:#783300; background:#783300; }
     .igf-btn--danger { border-color:#b42318; color:#b42318; }
-    .igf-btn--small { min-height:30px; padding:4px 8px; font-size:11px; }
+    .igf-btn--small { min-height:44px; padding:4px 8px; font-size:11px; }
     .igf-publish-control { position:relative; display:inline-flex; }
     .igf-publish-control > .igf-btn:first-child { border-radius:7px 0 0 7px; }
-    .igf-publish-control > .igf-btn:nth-child(2) { min-width:32px; margin-left:-1px; border-radius:0 7px 7px 0; padding-inline:8px; }
+    .igf-publish-control > .igf-btn:nth-child(2) { min-width:44px; margin-left:-1px; border-radius:0 7px 7px 0; padding-inline:8px; }
     .igf-publish-menu { position:absolute; z-index:50; top:calc(100% + 7px); right:0; width:190px; overflow:hidden; border:1px solid #dedbd9; border-radius:8px; padding:5px; background:#fff; box-shadow:0 12px 30px rgba(25,28,29,.16); }
     .igf-publish-menu[hidden] { display:none; }
-    .igf-publish-menu button { display:flex; width:100%; min-height:38px; align-items:center; gap:9px; border:0; border-radius:5px; padding:8px 10px; background:transparent; color:var(--igf-ink); font-size:12px; font-weight:800; text-align:left; cursor:pointer; }
+    .igf-publish-menu button { display:flex; width:100%; min-height:44px; align-items:center; gap:9px; border:0; border-radius:5px; padding:8px 10px; background:transparent; color:var(--igf-ink); font-size:12px; font-weight:800; text-align:left; cursor:pointer; }
     .igf-publish-menu button:hover,.igf-publish-menu button:focus-visible { background:#fff3e9; color:var(--igf-primary); outline:0; }
     .igf-muted { color:#747379; font-size:12px; line-height:1.55; }
     .igf-empty { padding:80px 24px; text-align:center; color:#77777c; }
@@ -180,7 +180,7 @@
         .igf-builder__topbar h1 { max-width:42vw; font-size:16px; }
         .igf-builder__topbar small,.igf-save-state { display:none; }
         .igf-builder__viewport { gap:0; }
-        .igf-viewport-button { width:29px; }
+        .igf-viewport-button { width:44px; }
         .igf-builder__actions { gap:5px; }
         #block-inspector .igf-builder__actions { flex-wrap:wrap; }
         .igf-btn { padding-inline:9px; }
@@ -220,9 +220,9 @@
             <a class="igf-btn" href="{{ route('page.builder.preview', ['uuid' => $page->uuid, 'locale' => $page->language]) }}" target="_blank" rel="noopener">Preview</a>
             @if($canEditBuilder)
                 <div class="igf-publish-control">
-                    <button type="button" class="igf-btn igf-btn--primary" id="save-page">Save page</button>
+                    <button type="button" class="igf-btn igf-btn--primary" id="save-page" disabled>Save page</button>
                     @if($canManagePublication)
-                        <button type="button" class="igf-btn igf-btn--primary" id="publish-menu-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="publish-menu" aria-label="Choose publication action"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
+                        <button type="button" class="igf-btn" id="publish-menu-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="publish-menu" aria-label="Choose publication action"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
                         <div class="igf-publish-menu" id="publish-menu" role="menu" hidden>
                             @foreach(['draft' => 'Save as draft', 'pending_review' => 'Submit for review', 'published' => 'Publish now', 'scheduled' => 'Schedule publication', 'private' => 'Make private'] as $value => $label)
                                 <button type="button" role="menuitem" data-publish-state="{{ $value }}">{{ $label }}</button>
@@ -263,7 +263,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <button type="button" class="igf-btn igf-btn--primary" id="add-block"><i class="fa fa-plus" aria-hidden="true"></i> Add block</button>
+                    <button type="button" class="igf-btn" id="add-block"><i class="fa fa-plus" aria-hidden="true"></i> Add block</button>
                 </div>
                 @endif
                 @if($canEditBuilder && $reusableBlocks->isNotEmpty())
@@ -351,10 +351,10 @@
                 <div class="igf-field"><label for="page-visibility">Visibility</label><select id="page-visibility" @disabled(!$canEditBuilder || !$canManagePublication)><option value="public" @selected($page->visibility === 'public')>Public</option><option value="unlisted" @selected($page->visibility === 'unlisted')>Unlisted</option><option value="private" @selected($page->visibility === 'private')>Private</option></select></div>
                 <div class="igf-field" id="schedule-field" @if($page->publication_status !== 'scheduled') hidden @endif><label for="scheduled-for">Publish at</label><input id="scheduled-for" type="datetime-local" value="{{ $page->scheduled_for?->format('Y-m-d\TH:i') }}" @disabled(!$canEditBuilder || !$canManagePublication)></div>
                 <div class="igf-seo-handoff">
-                    <strong><i class="fa fa-search" aria-hidden="true"></i> Search &amp; sharing</strong>
+                    <strong><i class="fa fa-search" aria-hidden="true"></i> Search &amp; Sharing</strong>
                     <p>SEO now has one guided workspace with live Google and social previews, URL controls, issue checks, schema templates, and restore points.</p>
                     @if($canEditSeo)
-                        <a class="igf-btn" href="{{ route('seo.content.edit', ['type' => 'page', 'id' => $page->getKey(), 'locale' => $page->language]) }}">Open Search &amp; sharing</a>
+                        <a class="igf-btn" href="{{ route('seo.content.edit', ['type' => 'page', 'id' => $page->getKey(), 'locale' => $page->language]) }}">Open Search &amp; Sharing</a>
                     @else
                         <p class="igf-muted">Your SEO editor manages this workspace.</p>
                     @endif
@@ -442,6 +442,10 @@
         else if (scope === 'all') state.dirtyScopes.clear();
         else state.dirtyScopes.delete(scope);
         document.getElementById('save-state').textContent = hasDirty() ? 'Unsaved changes' : 'Saved';
+        const savePageButton = document.getElementById('save-page');
+        if (savePageButton) savePageButton.disabled = !state.dirtyScopes.has('page');
+        const saveBlockButton = document.getElementById('save-block');
+        if (saveBlockButton) saveBlockButton.disabled = !state.dirtyScopes.has(blockScope());
     };
     const confirmBlockDiscard = action => {
         if (state.uploadingScopes.has(blockScope())) {
@@ -867,7 +871,7 @@
                 ? `<div class="igf-add"><strong>Reusable section</strong><p class="igf-muted">Content edits synchronize everywhere “${escapeHtml(block.reusable_name || block.label)}” is used. Detach it first for a page-only copy.</p>${permissions.edit ? '<button type="button" class="igf-btn igf-btn--small" id="detach-block">Detach from library</button>' : ''}</div>`
                 : `<div class="igf-add"><strong>Shared content is read only for your role</strong><p class="igf-muted">Visibility and schedule controls below apply only to this page. Detach for a page-only copy, or ask a Reusable Sections editor to update “${escapeHtml(block.reusable_name || block.label)}” everywhere.</p>${permissions.edit ? '<button type="button" class="igf-btn igf-btn--small" id="detach-block">Detach for this page</button>' : ''}</div>`)
             : (permissions.create ? '<button type="button" class="igf-btn" id="promote-block">Make reusable</button>' : '');
-        const saveAction = permissions.edit ? '<button type="button" class="igf-btn igf-btn--primary" id="save-block">Save block</button>' : '';
+        const saveAction = permissions.edit ? `<button type="button" class="igf-btn" id="save-block"${state.dirtyScopes.has(blockScope(block.uuid)) ? '' : ' disabled'}>Save section</button>` : '';
         const duplicateAction = permissions.create ? '<button type="button" class="igf-btn" id="duplicate-block">Duplicate</button>' : '';
         const promoteAction = permissions.create && !block.is_reusable ? '<button type="button" class="igf-btn" id="promote-block-bottom">Make reusable</button>' : '';
         const deleteAction = permissions.delete ? '<button type="button" class="igf-btn igf-btn--danger" id="delete-block">Delete</button>' : '';

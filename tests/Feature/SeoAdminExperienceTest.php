@@ -47,6 +47,7 @@ class SeoAdminExperienceTest extends TestCase
         $payload['seo']['robots_index'] = 0;
         $payload['seo']['exclude_from_sitemap'] = 0;
         $payload['seo']['og_image'] = '/storage/media/share.jpg';
+        $payload['seo']['social_image_alt'] = "  Families <b>planting trees</b>\n together  ";
         $payload['seo']['twitter_image'] = '/storage/media/share.jpg';
         $payload['seo']['schema_markup'] = '[]';
 
@@ -62,7 +63,34 @@ class SeoAdminExperienceTest extends TestCase
         $this->assertTrue($metadata->exclude_from_sitemap);
         $this->assertNull($metadata->schema_markup);
         $this->assertSame(url('/storage/media/share.jpg'), $metadata->og_image);
+        $this->assertSame('Families planting trees together', $metadata->social_image_alt);
         $this->assertSame(url('/storage/media/share.jpg'), $metadata->twitter_image);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('seo.content.edit', ['category', $category->id]))
+            ->assertOk()
+            ->assertSee('name="seo[social_image_alt]"', false)
+            ->assertSee('Families planting trees together');
+    }
+
+    public function test_social_image_description_is_bounded_before_metadata_is_saved(): void
+    {
+        $admin = $this->metadataAdmin();
+        $category = $this->category(['slug' => 'social-alt-limit']);
+        $payload = $this->payload();
+        $payload['expected_seo_version'] = $this->seoToken($category, 'en');
+        $payload['seo']['social_image_alt'] = str_repeat('a', 421);
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('seo.content.edit', ['category', $category->id]))
+            ->put(route('seo.content.update', ['category', $category->id]), $payload)
+            ->assertRedirect(route('seo.content.edit', ['category', $category->id]))
+            ->assertSessionHasErrors('seo.social_image_alt');
+
+        $this->assertDatabaseMissing('seo_metadata', [
+            'seoable_type' => Category::class,
+            'seoable_id' => $category->id,
+        ]);
     }
 
     public function test_permalink_change_reuses_a_normalized_legacy_redirect(): void
@@ -401,6 +429,7 @@ class SeoAdminExperienceTest extends TestCase
                 'og_title' => '',
                 'og_description' => '',
                 'og_image' => '',
+                'social_image_alt' => '',
                 'twitter_card' => 'summary_large_image',
                 'twitter_title' => '',
                 'twitter_description' => '',

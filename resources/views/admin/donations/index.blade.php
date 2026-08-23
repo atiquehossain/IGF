@@ -75,7 +75,7 @@
             </div>
           </div>
           <button type="submit" class="btn btn-info"><i class="fa fa-search" aria-hidden="true"></i> Apply filters</button>
-          <a href="{{ route('donations.index') }}" class="btn btn-light">Clear</a>
+          <a href="{{ route('donations.index') }}" class="btn igf-btn igf-btn-tertiary"><i class="fa fa-undo" aria-hidden="true"></i> Clear</a>
         </form>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 @section('content')
   <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     <div class="row">
       <div class="col-lg-12 col-md-12">
@@ -15,17 +16,18 @@
                 <div class="input-group d-flex justify-content-end">
                   <form action="{{ route('notice.board.index') }}" method="get">
                     <div class="input-group search-input-group">
-                      <input type="search" name="search" value="{{ @$search }}"
-                        class="form-control search-form-control">
+                      <label class="sr-only" for="notice-board-search">Search notices and events</label>
+                      <input id="notice-board-search" type="search" name="search" value="{{ @$search }}"
+                        class="form-control search-form-control" aria-label="Search notices and events">
                       <span class="input-group-prepend">
-                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i>
+                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i>
                           {{ $Lang->Common->Search }}</button>
                       </span>
                     </div>
                   </form>
                   <?php if (!empty($addNewLink)) { ?>
-                  <a class="btn btn-info btn-sm ml-1 pull-right" href="{{ route($addNewLink) }}">
-                    <i class="fa fa-plus-circle"></i> {{ $Lang->Common->Add }} {{ $Lang->Common->New }}
+                  <a class="btn igf-btn igf-btn-primary igf-btn-compact ml-1 pull-right" href="{{ route($addNewLink) }}">
+                    <i class="fa fa-plus" aria-hidden="true"></i> Add event
                   </a>
                   <?php } ?>
                 </div>
@@ -62,7 +64,7 @@
                     <td>{{ date('M d, Y', strtotime(@$notice_board->published_at)) }}</td>
                     <td>{{ @$notice_board->order_by }}</td>
                     <td>
-                      <?= App\Link::action(@$notice_board->id, @$notice_board->status) ?>
+                      <?= App\Link::action(@$notice_board->id, @$notice_board->status, 'notice ' . ($notice_board->title ?? '')) ?>
                     </td>
                   </tr>
                 @endforeach

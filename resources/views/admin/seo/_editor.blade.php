@@ -109,6 +109,11 @@
                                 <button class="seo2-btn" type="button" data-media-clear>Remove</button>
                             </div>
                         </div>
+                        <div class="seo2-field" style="margin-top:12px">
+                            <label for="seo2-share-image-alt">Image description <span class="seo2-optional">Recommended</span></label>
+                            <input id="seo2-share-image-alt" name="seo[social_image_alt]" maxlength="420" value="{{ old('seo.social_image_alt', $values['social_image_alt']) }}" data-share-image-alt placeholder="Example: Children learning together in an Ignite community classroom">
+                            <p class="seo2-help">Describe the image for people who cannot see it. Choosing an image from the Media Library copies its alternative text here; review it for this page.</p>
+                        </div>
                     </section>
 
                     <section class="seo2-section">
@@ -161,9 +166,9 @@
 
                             <section class="seo2-section" style="margin-top:15px">
                                 <h3>Structured data</h3>
-                                <p class="seo2-section__intro">Choose what kind of page this is. The system generates valid Schema markup for you.</p>
+                                <p class="seo2-section__intro">Choose an optional page-specific template. With no custom template, the public page uses the managed organization, website and generic page Schema automatically.</p>
                                 <div class="seo2-field"><label for="seo2-schema-template">Schema template</label><select id="seo2-schema-template" name="schema_template" data-schema-template>@foreach($editor['schema_options'] as $key => $label)<option value="{{ $key }}" @selected($schemaMode === $key)>{{ $label }} @if($editor['schema_suggested'] === $key) — recommended @endif</option>@endforeach<option value="expert" @selected($schemaMode === 'expert')>Expert: custom JSON</option></select></div>
-                                <div class="seo2-field" data-schema-generated-wrap @if($schemaMode === 'expert') hidden @endif><label for="seo2-schema-generated">Generated schema markup</label><textarea id="seo2-schema-generated" class="seo2-code" readonly data-schema-generated></textarea><p class="seo2-help">Generated automatically from the title, description, image and final URL above.</p></div>
+                                <div class="seo2-field" data-schema-generated-wrap @if($schemaMode === 'expert') hidden @endif><label for="seo2-schema-generated">Generated custom schema markup</label><textarea id="seo2-schema-generated" class="seo2-code" readonly data-schema-generated></textarea><p class="seo2-help">Page-specific templates use the title, description, image and final URL above. “No custom template” intentionally leaves this field empty; the automatic public fallback still applies.</p></div>
                                 <div class="seo2-field" data-schema-expert-wrap @if($schemaMode !== 'expert') hidden @endif><label for="seo2-schema-expert">Expert raw JSON-LD</label><textarea id="seo2-schema-expert" class="seo2-code" data-schema-expert>{{ $schemaValue }}</textarea><p class="seo2-help">Invalid JSON will not save. Use this only when supplied by an SEO specialist.</p></div>
                             </section>
                         </div>

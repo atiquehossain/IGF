@@ -7,10 +7,10 @@
 </style>
 
 <main class="draft-wizard">
-    <a class="draft-back" href="{{ route('page.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back to Pages</a>
+    <a class="draft-back btn igf-btn igf-btn-tertiary" href="{{ route('page.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back to Content Hub</a>
 
     <header class="draft-head">
-        <p class="draft-kicker">Pages · Quick Create</p>
+        <p class="draft-kicker">Content Hub · Quick Create</p>
         <h1>Create one page draft</h1>
         <p>Start with the few details people use to find and recognize the page. We will create a safe, unpublished draft in one language and open it in the Simple Editor.</p>
         <div class="draft-steps" aria-label="What happens next">
@@ -118,7 +118,7 @@
             </ul>
             <div class="draft-note"><strong>Nothing goes live now.</strong> A draft is not visible to website visitors until an authorized editor publishes it.</div>
             <button class="draft-submit" type="submit" data-e2e="create-page-draft"><i class="fa fa-arrow-right" aria-hidden="true"></i> Create draft and open Simple Editor</button>
-            <a class="draft-cancel" href="{{ route('page.index') }}">Cancel</a>
+            <a class="draft-cancel btn igf-btn igf-btn-tertiary" href="{{ route('page.index') }}"><i class="fa fa-times" aria-hidden="true"></i> Cancel</a>
         </aside>
     </form>
 </main>

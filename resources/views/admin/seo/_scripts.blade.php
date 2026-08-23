@@ -9,6 +9,7 @@
     const focusPhrase = one('[data-focus-phrase]');
     const auto = one('[data-auto-content]');
     const image = one('[data-share-image]');
+    const imageAlt = one('[data-share-image-alt]');
     const canonical = one('[data-canonical]');
     const slug = one('[data-permalink-slug]');
     const indexValue = one('[data-index-value]');
@@ -198,7 +199,7 @@
         assets.forEach(asset => {
             const card = mediaNode('article', 'seo2-media-option');
             const choose = mediaNode('button', '', '');
-            choose.type = 'button'; choose.dataset.mediaUrl = asset.url;
+            choose.type = 'button'; choose.dataset.mediaUrl = asset.url; choose.dataset.mediaAlt = asset.alt_text || '';
             choose.setAttribute('aria-label', `Choose ${asset.name}`);
             const preview = mediaNode('img'); preview.src = asset.url; preview.alt = asset.alt_text || ''; preview.loading = 'lazy';
             choose.appendChild(preview); choose.appendChild(mediaNode('span', '', asset.name));
@@ -235,11 +236,11 @@
     const closeMedia = () => { if (!modal) return; modal.hidden = true; mediaReturn?.focus(); mediaReturn = null; };
     one('[data-media-open]')?.addEventListener('click', event => { mediaReturn = event.currentTarget; modal.hidden = false; mediaSearch.value = ''; loadMedia(1); window.setTimeout(() => mediaSearch.focus(), 20); });
     modal?.querySelector('[data-media-close]')?.addEventListener('click', closeMedia);
-    modal?.addEventListener('click', event => { if (event.target === modal) closeMedia(); const option = event.target.closest('[data-media-url]'); if (!option) return; image.value = option.dataset.mediaUrl; image.dispatchEvent(new Event('input', {bubbles:true})); closeMedia(); });
+    modal?.addEventListener('click', event => { if (event.target === modal) closeMedia(); const option = event.target.closest('[data-media-url]'); if (!option) return; image.value = option.dataset.mediaUrl; if (imageAlt) imageAlt.value = option.dataset.mediaAlt || ''; image.dispatchEvent(new Event('input', {bubbles:true})); imageAlt?.dispatchEvent(new Event('input', {bubbles:true})); closeMedia(); });
     mediaSearch?.addEventListener('input', () => { window.clearTimeout(mediaTimer); mediaTimer = window.setTimeout(() => loadMedia(1), 250); });
     mediaPrevious?.addEventListener('click', () => loadMedia(Math.max(1, mediaPage - 1)));
     mediaNext?.addEventListener('click', () => loadMedia(Math.min(mediaLastPage, mediaPage + 1)));
-    one('[data-media-clear]')?.addEventListener('click', () => { image.value = ''; image.dispatchEvent(new Event('input', {bubbles:true})); });
+    one('[data-media-clear]')?.addEventListener('click', () => { image.value = ''; if (imageAlt) imageAlt.value = ''; image.dispatchEvent(new Event('input', {bubbles:true})); imageAlt?.dispatchEvent(new Event('input', {bubbles:true})); });
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape' && modal && !modal.hidden) { closeMedia(); return; }
         if (event.key !== 'Tab' || !modal || modal.hidden) return;

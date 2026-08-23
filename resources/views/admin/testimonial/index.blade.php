@@ -8,10 +8,12 @@
   $canPublishTestimonials = $permissions->allows($currentAdmin, 'testimonial.status');
   $canDeleteTestimonials = $permissions->allows($currentAdmin, 'testimonial.destroy');
   $testimonialsAreReadOnly = !$canCreateTestimonials && !$canEditTestimonials && !$canPublishTestimonials && !$canDeleteTestimonials;
+  $mediaUrls = app(\App\Services\AdminMediaUrlResolver::class);
 @endphp
 
 @section('content')
   <div class="content pb-0">
+    <h1 class="sr-only">{{ $title }}</h1>
 
     @if($testimonialsAreReadOnly)
       <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review testimonial names and photos, but your role cannot create, edit, publish, or remove testimonials.</div>
@@ -32,7 +34,7 @@
                     {{ csrf_field() }}
 
                     @if ($isLocalization)
-                      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                      <ul class="nav nav-pills mb-3" id="testimonial-create-tabs" role="tablist" aria-label="Testimonial language">
                         @foreach ($translations as $translation)
                           <?php
                           $isActive = '';
@@ -41,15 +43,15 @@
                           }
                           ?>
                           <li class="nav-item" data-id="{{ $translation->id }}">
-                            <a class="nav-link {{ $isActive }}" id="{{ $translation->id }}-tab" data-toggle="pill"
-                              href="#{{ $translation->id }}" role="tab" aria-controls="{{ $translation->id }}"
-                              aria-selected="true">{{ $translation->name }}</a>
+                            <a class="nav-link {{ $isActive }}" id="testimonial-create-tab-{{ $translation->id }}" data-toggle="pill"
+                              href="#testimonial-create-pane-{{ $translation->id }}" role="tab" aria-controls="testimonial-create-pane-{{ $translation->id }}"
+                              aria-selected="{{ $translation->id == 'en' ? 'true' : 'false' }}">{{ $translation->name }}</a>
                           </li>
                         @endforeach
                       </ul>
                     @endif
 
-                    <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-content" id="testimonial-create-tab-content">
                       @foreach ($translations as $translation)
                         <?php
                         $isActive = '';
@@ -58,18 +60,18 @@
                             $isActive = 'show active';
                         }
                         ?>
-                        <div class="tab-pane fade {{ $isActive }}" id="{{ $translation->id }}" role="tabpanel"
-                          aria-labelledby="{{ $translation->id }}-tab">
+                        <div class="tab-pane fade {{ $isActive }}" id="testimonial-create-pane-{{ $translation->id }}" role="tabpanel"
+                          aria-labelledby="testimonial-create-tab-{{ $translation->id }}">
 
                           <input name="language[{{ $lang }}]" type="hidden" class="form-control"
                             value="{{ $lang }}">
                           <div class="row">
                             <div class="col-md-12">
                               <div class="form-group has-success">
-                                <label for="name[{{ $lang }}]"
+                                <label for="testimonial-create-name-{{ $lang }}"
                                   class="control-label mb-1">{{ $Lang->Common->Form->Name }}
                                   <span>*</span></label>
-                                <input id="name[{{ $lang }}]" name="name[{{ $lang }}]" type="text"
+                                <input id="testimonial-create-name-{{ $lang }}" name="name[{{ $lang }}]" type="text"
                                   value="{{ old('name.' . $lang) }}" class="form-control" required>
                                 @if ($errors->has('name.' . $lang))
                                   <small
@@ -79,10 +81,10 @@
                             </div>
                             <div class="col-md-12">
                               <div class="form-group has-success">
-                                <label for="designation[{{ $lang }}]"
+                                <label for="testimonial-create-designation-{{ $lang }}"
                                   class="control-label mb-1">{{ $Lang->Common->Form->Designation }}
                                   <span>*</span></label>
-                                <input id="designation[{{ $lang }}]" name="designation[{{ $lang }}]"
+                                <input id="testimonial-create-designation-{{ $lang }}" name="designation[{{ $lang }}]"
                                   type="text" value="{{ old('designation.' . $lang) }}" class="form-control" required>
                                 @if ($errors->has('designation.' . $lang))
                                   <small
@@ -92,9 +94,9 @@
                             </div>
                             <div class="col-md-6">
                               <div class="form-group">
-                                <label for="order_by"
+                                <label for="testimonial-create-order-{{ $lang }}"
                                   class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
-                                <input name="order_by[{{ $lang }}]" type="number" class="form-control"
+                                <input id="testimonial-create-order-{{ $lang }}" name="order_by[{{ $lang }}]" type="number" class="form-control"
                                   value="{{ old('order_by.' . $lang) }}" data-e2e="page-order-by-{{ $lang }}">
                                 @if ($errors->has('order_by.' . $lang))
                                   <small
@@ -107,13 +109,15 @@
                                 <small class="help-block form-text text-info">{{ $Lang->Common->Form->Provide300px }}
                                   <br> {{ $Lang->Common->Form->Provide1180px_2 }}</small>
                                 <div class="file-upload">
-                                  <label for="photo{{ $lang }}" class="file-upload_label">
+                                  <label for="testimonial-create-photo-{{ $lang }}" class="file-upload_label">
                                     <img class="file-upload_img" id="upload_img_{{ $lang }}"
-                                      src="{{ asset('/') }}image/no-image.png">
+                                      src="{{ $mediaUrls->fallback() }}"
+                                      onerror="this.onerror=null;this.src='{{ $mediaUrls->fallback() }}'"
+                                      alt="Testimonial photo preview">
                                   </label>
                                   <input type="file" onchange="changefile(event, 'upload_img_{{ $lang }}')"
                                     name="photo[{{ $lang }}]" value="{{ old('photo.' . $lang) }}"
-                                    id="photo{{ $lang }}" class="file-upload_input"
+                                    id="testimonial-create-photo-{{ $lang }}" class="file-upload_input"
                                     data-e2e="photo-{{ $lang }}">
                                 </div>
                                 <div style="clear: both"></div>
@@ -126,10 +130,10 @@
 
                             <div class="col-md-12">
                               <div class="form-group has-success">
-                                <label for="testimonial[{{ $lang }}]"
+                                <label for="testimonial-create-body-{{ $lang }}"
                                   class="control-label mb-1">{{ $Lang->Common->Form->Testimonial }}
                                   <span>*</span></label>
-                                <textarea id="testimonial[{{ $lang }}]" name="testimonial[{{ $lang }}]" class="form-control"
+                                <textarea id="testimonial-create-body-{{ $lang }}" name="testimonial[{{ $lang }}]" class="form-control"
                                   rows="6" required>{{ old('testimonial.' . $lang) }}</textarea>
                                 @if ($errors->has('testimonial.' . $lang))
                                   <small
@@ -143,10 +147,10 @@
                     </div>
 
                     <div class="form-actions form-group text-right">
-                      <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-lock fa-lg"></i>&nbsp;
-                        {{ $Lang->Common->Submit }}</button>
-                      <button type="button" class="btn btn-danger cancel mt-3"><i
-                          class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                      <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i>
+                        Create testimonial</button>
+                      <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i
+                          class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                     </div>
 
                   </form>
@@ -168,10 +172,11 @@
               <div class="col-md-6">
                 <form action="{{ route('testimonial.index') }}" method="get">
                   <div class="input-group search-input-group">
-                    <input type="search" name="search" value="{{ @$search }}"
-                      class="form-control search-form-control">
+                    <label class="sr-only" for="testimonial-search">Search testimonials</label>
+                    <input id="testimonial-search" type="search" name="search" value="{{ @$search }}"
+                      class="form-control search-form-control" aria-label="Search testimonials">
                     <span class="input-group-prepend">
-                      <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search"
+                      <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search"
                           aria-hidden="true"></i>
                         {{ $Lang->Common->Search }}</button>
                     </span>
@@ -198,34 +203,35 @@
                     <td class="avatar">
                       <div class="round-img">
                         <img class="rounded"
-                            src="{{ str_starts_with((string) $testimonial->photo, '/') ? $testimonial->photo : route('testimonial.photo', [$testimonial->photo]) }}"
+                            src="{{ $mediaUrls->image($testimonial->getRawOriginal('photo'), 'testimonial') }}"
+                            onerror="this.onerror=null;this.src='{{ $mediaUrls->fallback() }}'"
                             alt="Photo of {{ $testimonial->name }}">
                       </div>
                     </td>
                     <td>
                       @if($canEditTestimonials)
-                      <button type="button" class="edit btn btn-info btn-sm1"
+                      <button type="button" class="edit btn igf-btn igf-btn-secondary igf-btn-compact"
                         data-id="{{ $testimonial->uuid }}" aria-label="Edit {{ $testimonial->name }}"
-                        title="Edit testimonial"><i class="fa fa-edit" aria-hidden="true"></i></button>
+                        title="Edit testimonial"><i class="fa fa-edit" aria-hidden="true"></i> Edit</button>
                       @endif
                       @if($canPublishTestimonials)
-                      <button type="button" class="btn btn-warning btn-sm1 status"
+                      <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status"
                         aria-label="{{ $testimonial->status ? 'Unpublish' : 'Publish' }} {{ $testimonial->name }}"
                         title="{{ $testimonial->status ? 'Unpublish' : 'Publish' }} testimonial"
                         aria-pressed="{{ $testimonial->status ? 'true' : 'false' }}"
                         data-id="{{ $testimonial->uuid }}"
                         data-url="{{ route('testimonial.status', $testimonial->uuid) }}"
                         data-token="{{ csrf_token() }}"><i
-                          class="fa text-white {{ $testimonial->status ? 'fa-check-square' : 'fa-square' }}"
-                          aria-hidden="true"></i></button>
+                          class="fa {{ $testimonial->status ? 'fa-check-square' : 'fa-square' }}"
+                          aria-hidden="true"></i> {{ $testimonial->status ? 'Unpublish' : 'Publish' }}</button>
                       @endif
                       @if($canDeleteTestimonials)
-                      <button type="button" class="btn btn-danger btn-sm1 trash"
+                      <button type="button" class="btn igf-btn igf-btn-danger igf-btn-compact trash"
                         aria-label="Delete {{ $testimonial->name }}" title="Delete testimonial"
                         data-item-label="testimonial from {{ $testimonial->name }}"
                         data-id="{{ $testimonial->uuid }}"
                         data-url="{{ route('testimonial.destroy', $testimonial->uuid) }}"
-                        data-token="{{ csrf_token() }}"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                        data-token="{{ csrf_token() }}"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</button>
                       @endif
                       @if(!$canEditTestimonials && !$canPublishTestimonials && !$canDeleteTestimonials)<span class="badge badge-light">View only</span>@endif
                     </td>
@@ -245,13 +251,13 @@
   {{-- Modal --}}
   @if($canEditTestimonials)
   <div class="modal fade" id="testimonialModal" tabindex="-1" role="dialog" data-backdrop="static"
-    aria-labelledby="mediumModalLabel" aria-hidden="true">
+    aria-labelledby="testimonialModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
       <div class="modal-content">
         <form action="{{ route('testimonial.update') }}" method="POST" enctype="multipart/form-data">
           <div class="modal-header">
-            <strong class="card-title">{{ $Lang->Common->Edit }} {{ $Lang->TestimonialTitle }}</strong>
-            <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+            <h2 class="card-title h5 mb-0" id="testimonialModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->TestimonialTitle }}</h2>
+            <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -262,7 +268,7 @@
             <input name="uuid" id="e_id" type="hidden" value="{{ old('uuid') }}" class="form-control"
               required>
             @if ($isLocalization)
-              <ul class="nav nav-pills mb-3" id="e_pills-tab" role="tablist">
+              <ul class="nav nav-pills mb-3" id="testimonial-edit-tabs" role="tablist" aria-label="Edit testimonial language">
                 @foreach ($translations as $translation)
                   <?php
                   $isActive = '';
@@ -271,14 +277,14 @@
                   }
                   ?>
                   <li class="nav-item" data-id="e_{{ $translation->id }}">
-                    <a class="nav-link {{ $isActive }}" id="e_{{ $translation->id }}-tab" data-toggle="pill"
-                      href="#e_{{ $translation->id }}" role="tab" aria-controls="e_{{ $translation->id }}"
-                      aria-selected="true">{{ $translation->name }}</a>
+                    <a class="nav-link {{ $isActive }}" id="testimonial-edit-tab-{{ $translation->id }}" data-toggle="pill"
+                      href="#testimonial-edit-pane-{{ $translation->id }}" role="tab" aria-controls="testimonial-edit-pane-{{ $translation->id }}"
+                      aria-selected="{{ $translation->id == 'en' ? 'true' : 'false' }}">{{ $translation->name }}</a>
                   </li>
                 @endforeach
               </ul>
             @endif
-            <div class="tab-content" id="e_pills-tabContent">
+            <div class="tab-content" id="testimonial-edit-tab-content">
               @foreach ($translations as $translation)
                 <?php
                 $isActive = '';
@@ -287,19 +293,19 @@
                     $isActive = 'show active';
                 }
                 ?>
-                <div class="tab-pane fade {{ $isActive }}" id="e_{{ $translation->id }}" role="tabpanel"
-                  aria-labelledby="e_{{ $translation->id }}-tab">
+                <div class="tab-pane fade {{ $isActive }}" id="testimonial-edit-pane-{{ $translation->id }}" role="tabpanel"
+                  aria-labelledby="testimonial-edit-tab-{{ $translation->id }}">
 
                   <input name="language[{{ $lang }}]" type="hidden" class="form-control"
-                    value="{{ $lang }}" id="e_language[{{ $lang }}]">
+                    value="{{ $lang }}" id="testimonial-edit-language-{{ $lang }}">
 
                   <div class="row">
                     <div class="col-md-12">
                       <div class="form-group has-success">
-                        <label for="name[{{ $lang }}]"
+                        <label for="testimonial-edit-name-{{ $lang }}"
                           class="control-label mb-1">{{ $Lang->Common->Form->Name }}
                           <span>*</span></label>
-                        <input id="e_name[{{ $lang }}]" name="name[{{ $lang }}]" type="text"
+                        <input id="testimonial-edit-name-{{ $lang }}" name="name[{{ $lang }}]" type="text"
                           value="{{ old('name.' . $lang) }}" class="form-control" required>
                         @if ($errors->has('name.' . $lang))
                           <small class="help-block form-text text-danger">{{ $errors->first('name.' . $lang) }}</small>
@@ -308,10 +314,10 @@
                     </div>
                     <div class="col-md-12">
                       <div class="form-group has-success">
-                        <label for="designation[{{ $lang }}]"
+                        <label for="testimonial-edit-designation-{{ $lang }}"
                           class="control-label mb-1">{{ $Lang->Common->Form->Designation }}
                           <span>*</span></label>
-                        <input id="e_designation[{{ $lang }}]" name="designation[{{ $lang }}]"
+                        <input id="testimonial-edit-designation-{{ $lang }}" name="designation[{{ $lang }}]"
                           type="text" value="{{ old('designation.' . $lang) }}" class="form-control" required>
                         @if ($errors->has('designation.' . $lang))
                           <small
@@ -321,9 +327,9 @@
                     </div>
                     <div class="col-md-6 col-sm-6">
                       <div class="form-group">
-                        <label for="order_by" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
+                        <label for="testimonial-edit-order-{{ $lang }}" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
                         <input name="order_by[{{ $lang }}]" type="number" class="form-control"
-                          id="e_order_by[{{ $lang }}]" value="{{ old('order_by.' . $lang) }}"
+                          id="testimonial-edit-order-{{ $lang }}" value="{{ old('order_by.' . $lang) }}"
                           data-e2e="page-order-by-{{ $lang }}">
                         @if ($errors->has('order_by.' . $lang))
                           <small
@@ -336,13 +342,15 @@
                         <small class="help-block form-text text-info">{{ $Lang->Common->Form->Provide300px }}
                           <br> {{ $Lang->Common->Form->Provide1180px_2 }}</small>
                         <div class="file-upload">
-                          <label for="e_photo{{ $lang }}" class="file-upload_label">
+                          <label for="testimonial-edit-photo-{{ $lang }}" class="file-upload_label">
                             <img class="file-upload_img" id="e_upload_img_{{ $lang }}"
-                              src="{{ asset('/') }}image/no-image.png">
+                              src="{{ $mediaUrls->fallback() }}"
+                              onerror="this.onerror=null;this.src='{{ $mediaUrls->fallback() }}'"
+                              alt="Testimonial photo preview">
                           </label>
                           <input type="file" onchange="changefile(event, 'e_upload_img_{{ $lang }}')"
                             name="photo[{{ $lang }}]" value="{{ old('photo.' . $lang) }}"
-                            id="e_photo{{ $lang }}" class="file-upload_input"
+                            id="testimonial-edit-photo-{{ $lang }}" class="file-upload_input"
                             data-e2e="e-photo-{{ $lang }}">
                         </div>
                         <div style="clear: both"></div>
@@ -355,10 +363,10 @@
 
                     <div class="col-md-12">
                       <div class="form-group has-success">
-                        <label for="testimonial[{{ $lang }}]"
+                        <label for="testimonial-edit-body-{{ $lang }}"
                           class="control-label mb-1">{{ $Lang->Common->Form->Testimonial }}
                           <span>*</span></label>
-                        <textarea id="e_testimonial[{{ $lang }}]" name="testimonial[{{ $lang }}]" class="form-control"
+                        <textarea id="testimonial-edit-body-{{ $lang }}" name="testimonial[{{ $lang }}]" class="form-control"
                           rows="6" required>{{ old('testimonial.' . $lang) }}</textarea>
                         @if ($errors->has('testimonial.' . $lang))
                           <small
@@ -373,10 +381,10 @@
 
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp;
-              {{ $Lang->Common->Submit }}</button>
-            <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i
-                class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+            <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i>
+              Save testimonial</button>
+            <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i
+                class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
           </div>
         </form>
       </div>
@@ -412,6 +420,19 @@
     }
 
     @if($canEditTestimonials)
+    function testimonialPhotoUrl(photo) {
+      const value = String(photo || '').trim();
+      if (!value) return @json($mediaUrls->fallback());
+      if (/^https?:\/\//i.test(value)) return value;
+
+      const normalized = '/' + value.replace(/^\/+/, '');
+      const modernMarker = normalized.toLowerCase().indexOf('/storage/media/');
+      if (modernMarker >= 0) return normalized.slice(modernMarker);
+      if (normalized.toLowerCase().startsWith('/storage/photos/')) return normalized;
+
+      return @json(url('admin/testimonial/photo')) + '/' + encodeURIComponent(value);
+    }
+
     var is_edit = "{{ old('id') }}";
     if (is_edit) {
       $('#new_testimonial .form-group .help-block').hide();
@@ -442,16 +463,15 @@
               const data = res.data?.find(item => item.language == lang);
 
               $(`.modal #e_id`).val(data.uuid);
-              $(`.modal #e_language\\[${lang}\\]`).val(lang);
-              $(`.modal #e_name\\[${lang}\\]`).val(data.name);
-              $(`.modal #e_designation\\[${lang}\\]`).val(data.designation);
-              $(`.modal #e_order_by\\[${lang}\\]`).val(data.order_by);
-              $(`.modal #e_testimonial\\[${lang}\\]`).val(data.testimonial);
+              $(`.modal #testimonial-edit-language-${lang}`).val(lang);
+              $(`.modal #testimonial-edit-name-${lang}`).val(data.name);
+              $(`.modal #testimonial-edit-designation-${lang}`).val(data.designation);
+              $(`.modal #testimonial-edit-order-${lang}`).val(data.order_by);
+              $(`.modal #testimonial-edit-body-${lang}`).val(data.testimonial);
               if (data.photo) {
-                const photoUrl = `{{ url('admin/testimonial/photo') }}/` + encodeURIComponent(data.photo);
-                $(`.modal #e_upload_img_${lang}`).attr('src', photoUrl);
+                $(`.modal #e_upload_img_${lang}`).attr('src', testimonialPhotoUrl(data.photo));
               } else {
-                $(`.modal #e_upload_img_${lang}`).attr('src', "{{ asset('/') }}image/no-image.png");
+                $(`.modal #e_upload_img_${lang}`).attr('src', @json($mediaUrls->fallback()));
               }
             }
           }

@@ -255,6 +255,8 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('title="Move to trash"', false)
             ->assertSee('A page revision will be kept so an administrator can restore it.', false)
             ->assertSee('data-link-picker', false)
+            ->assertSee('options.slide ? `data-slide-key="${key}"`', false)
+            ->assertSee("textField('heading','Main heading',slide.heading,{max:180,slide:true})", false)
             ->assertSee('dirtyBlocks: new Set()', false)
             ->assertSee('sessionStorage.setItem(draftKey', false)
             ->assertDontSee('localStorage.', false)
@@ -287,7 +289,7 @@ class PageBuilderIntegrityTest extends TestCase
             ->get(route('page.builder.edit', ['uuid' => $page->uuid, 'locale' => 'en', 'mode' => 'advanced']))
             ->assertOk()
             ->assertSee('Page builder')
-            ->assertSee('Search &amp; sharing', false)
+            ->assertSee('Search &amp; Sharing', false)
             ->assertSee(route('seo.content.edit', ['type' => 'page', 'id' => $page->id, 'locale' => 'en']), false)
             ->assertDontSee('<summary>SEO pack</summary>', false)
             ->assertDontSee('id="seo-title"', false)
@@ -653,10 +655,11 @@ class PageBuilderIntegrityTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('page.builder.edit', ['uuid' => $page->uuid, 'locale' => 'en']))
             ->assertOk()
-            ->assertSee('<a href="' . route('dashboard.index') . '">Dashboard</a>', false)
+            ->assertSee('href="' . route('dashboard.index') . '"', false)
+            ->assertSee('<span class="igf-nav-label">Dashboard</span>', false)
             ->assertDontSee('<form class="igf-admin-search"', false)
-            ->assertDontSee('<a href="' . route('media.index') . '">Media</a>', false)
-            ->assertDontSee('<a href="' . route('admin.index') . '">Users</a>', false)
+            ->assertDontSee('href="' . route('media.index') . '"', false)
+            ->assertDontSee('href="' . route('admin.index') . '"', false)
             ->assertDontSee('<a class="igf-quick-create"', false);
 
         $role = Role::findOrFail($admin->role);
@@ -675,9 +678,11 @@ class PageBuilderIntegrityTest extends TestCase
             ->get(route('page.builder.edit', ['uuid' => $page->uuid, 'locale' => 'en']))
             ->assertOk()
             ->assertSee('<form class="igf-admin-search"', false)
-            ->assertSee('<a href="' . route('media.index') . '">Media</a>', false)
-            ->assertSee('<a href="' . route('admin.index') . '">Users</a>', false)
-            ->assertSee('<a class="igf-quick-create" href="' . route('page.create') . '">', false);
+            ->assertSee('href="' . route('media.index') . '"', false)
+            ->assertSee('<span class="igf-nav-label">Media Library</span>', false)
+            ->assertSee('href="' . route('admin.index') . '"', false)
+            ->assertSee('<span class="igf-nav-label">Administrators</span>', false)
+            ->assertSee('<a class="igf-quick-create igf-btn igf-btn-primary" href="' . route('page.create') . '"', false);
     }
 
     public function test_advanced_builder_media_links_require_library_view_permission_without_disabling_uploads(): void
@@ -1712,7 +1717,7 @@ class PageBuilderIntegrityTest extends TestCase
                 'mode' => 'advanced',
             ]))
             ->assertOk()
-            ->assertSee('Open Search &amp; sharing', false)
+            ->assertSee('Open Search &amp; Sharing', false)
             ->assertSee('Only an administrator with publishing, Search &amp; Sharing, and Reusable Sections permissions can restore a full revision.', false)
             ->assertDontSee('class="igf-btn igf-btn--small restore-revision"', false);
     }

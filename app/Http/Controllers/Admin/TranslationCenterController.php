@@ -66,7 +66,7 @@ class TranslationCenterController extends Controller
             'groups' => [
                 'interface' => 'Website interface',
                 'settings' => 'Website settings',
-                'pages' => 'Pages & sections',
+                'pages' => 'Content Hub',
                 'navigation' => 'Menus',
                 'content' => 'Other content',
                 'seo' => 'SEO',

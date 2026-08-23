@@ -12,6 +12,7 @@ use App\Models\LatestNews;
 use App\Models\Category;
 
 use App\Helper\IgfFile;
+use App\Services\AdminMediaUrlResolver;
 use App\Services\ContentSanitizer;
 use App\Services\SafeMediaReplacementService;
 
@@ -38,6 +39,7 @@ class LatestNewsController extends Controller {
     public function __construct(
         private ContentSanitizer $sanitizer,
         private SafeMediaReplacementService $media,
+        private AdminMediaUrlResolver $mediaUrls,
     ) {
     }
 
@@ -49,6 +51,13 @@ class LatestNewsController extends Controller {
                 ->orderByDesc('order_by')
                 ->orderBy('name', 'ASC')
                 ->paginate(15);
+
+        $latestNews->getCollection()->each(function (LatestNews $member): void {
+            $member->setAttribute('display_image_url', $this->mediaUrls->image(
+                $member->getRawOriginal('path') ?: $member->getRawOriginal('image'),
+                'our_members',
+            ));
+        });
 
         $categories = Category::where('language', app()->getLocale())->where('status', 1)->get();
 
@@ -129,10 +138,10 @@ class LatestNewsController extends Controller {
                 'order_by',
                 'path'
             )->whereKey($id)->firstOrFail();
-            $isValidUrl = filter_var($latestnews->path, FILTER_VALIDATE_URL);
-            if (empty($isValidUrl)) {
-                $latestnews->path = route('latest.news.image', $latestnews->path);
-            }
+            $latestnews->path = $this->mediaUrls->image(
+                $latestnews->getRawOriginal('path') ?: $latestnews->getRawOriginal('image'),
+                'our_members',
+            );
             $response = [ 'data' => $latestnews];
             return response($response, 200);
         } catch (Exception $e) {

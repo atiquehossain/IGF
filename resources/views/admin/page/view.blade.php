@@ -8,11 +8,11 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-6">
-                                <h4 class="card-title">{{ $title }}</h4>
+                                <h1 class="card-title">{{ $title }}</h1>
                             </div>
                             <div class="col-md-6">
-                                <a class="btn btn-sm btn-secondary float-right" href="{{ route('page.index') }}">
-                                    <i class="fa fa-arrow-circle-left"></i> {{ $Lang->Common->GoBack }}
+                                <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('page.index') }}">
+                                    <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
                             </div>
                         </div>
@@ -35,6 +35,7 @@
 
                                         <div class="modal-footer mt-5">
                                             @if($canToggleComments)
+                                            <label class="sr-only" for="toggleCommentStatus">Allow visitors to comment on {{ $page->name }}</label>
                                             <input type="checkbox" value="1" data-toggle="toggle"
                                                 @if ($page->is_comment == 1) checked @endif data-on="Comment On"
                                                 id="toggleCommentStatus" data-off="Comment Off" data-onstyle="success"
@@ -55,11 +56,12 @@
                                 <h4 class="m-0 p-2">{{ $Lang->Common->Comment }} {{ $Lang->Common->List }}</h4>
                             </div>
 
-                            <form action="{{ route('page.view', $page->uuid) }}" method="get">
+                            <form action="{{ route('page.view', $page->uuid) }}" method="get" aria-label="Filter comments">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="">
-                                            <select name="order_by" class="form-control search-drop-form-control">
+                                            <label class="sr-only" for="page-comments-order">Comment order</label>
+                                            <select id="page-comments-order" name="order_by" class="form-control search-drop-form-control">
                                                 <option value="">{{ $Lang->Common->Form-> Select }} {{ $Lang->Common->Form->All }}</option>
                                                 <option value="1" @if ($order_by == 1) selected @endif>ASC
                                                 </option>
@@ -70,7 +72,8 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="">
-                                            <select name="status" class="form-control search-drop-form-control">
+                                            <label class="sr-only" for="page-comments-status">Publication status</label>
+                                            <select id="page-comments-status" name="status" class="form-control search-drop-form-control">
                                                 <option value="">{{ $Lang->Common->Form-> Select }} {{ $Lang->Common->Form->All }}</option>
                                                 <option value="1" @if ($status == 1) selected @endif>{{ $Lang->Common->Form->Publish }}
                                                 </option>
@@ -127,7 +130,7 @@
                                                         <span
                                                             class="badge badge-complete">{{ @$comment->total_like }}</span>
                                                     </td>
-                                                    <td class="{{ $canModerate ? 'editStatus' : '' }}" @if($canModerate) role="button" tabindex="0" @endif data-id="{{ @$comment->id }}"
+                                                    <td class="{{ $canModerate ? 'editStatus' : '' }}" @if($canModerate) role="button" tabindex="0" aria-label="Change publication status for comment {{ @$comment->text }}" @endif data-id="{{ @$comment->id }}"
                                                         data-name="{{ @$comment->text }}"
                                                         data-status="{{ @$comment->status }}">
                                                         @if ($comment->status == 1)
@@ -170,14 +173,14 @@
     @if($canModerate)
     {{-- Modal --}}
     <div class="modal fade" id="commentPublishModal" tabindex="-1" role="dialog" data-backdrop="static"
-        aria-labelledby="mediumModalLabel" aria-hidden="true">
+        aria-labelledby="comment-publish-title" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <form class="fileUploadFormEdit" action="{{ route('page.status.comment') }}" method="POST"
                     enctype="multipart/form-data">
                     <div class="modal-header">
-                        <strong class="card-title">{{ $Lang->Common->Comment }} {{ $Lang->Common->Info }}</strong>
-                        <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                        <h2 id="comment-publish-title" class="card-title">Change comment publication status</h2>
+                        <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -193,12 +196,12 @@
 
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic">
+                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-check" aria-hidden="true">
                             </i>&nbsp;
                             <span class="submit_type">{{ $Lang->Common->Submit }}</span>
                         </button>
-                        <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i
-                                class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i
+                                class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                     </div>
                 </form>
             </div>
@@ -214,9 +217,11 @@
     <script>
         @if($canToggleComments)
         $('#toggleCommentStatus').change(function(ev) {
+            const toggle = $(this);
+            const value = toggle.is(':checked');
+            const previousValue = !value;
+            const restoreToggle = () => toggle.bootstrapToggle(previousValue ? 'on' : 'off', true);
             try {
-                const value = $(this).is(':checked');
-
                 $.ajaxSetup({
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -224,9 +229,14 @@
                 });
                 var spinner = $('.spinner');
                 var isConfirm = window.confirm("Change whether visitors may comment on this page?");
-                if (isConfirm) {
-                    spinner.show();
-                    $.ajax({
+                if (!isConfirm) {
+                    restoreToggle();
+                    return;
+                }
+                let failed = false;
+                toggle.bootstrapToggle('disable');
+                spinner.show();
+                $.ajax({
                         type: 'PUT',
                         data: {
                             is_comment: value == true ? 1 : 0
@@ -234,17 +244,20 @@
                         url: `{{ route('page.is-comments', $page->id) }}`,
                         success: function(res) {
                             toastrMsg('success', res.message);
-                            spinner.hide();
                         },
                         error: function(err) {
+                            failed = true;
                             toastrMsg('error', err.responseJSON?.message || 'The page setting could not be changed.');
+                        },
+                        complete: function() {
                             spinner.hide();
+                            toggle.bootstrapToggle('enable');
+                            if (failed) restoreToggle();
                         }
                     });
-                }
-
             } catch (e) {
-                toastrMsg('error', e);
+                restoreToggle();
+                toastrMsg('error', 'The page setting could not be changed.');
             }
         });
         @endif

@@ -173,23 +173,41 @@
         return 'The request could not be completed. Check your connection and try again.';
     }
 
-    $("form").submit(function(event) {
-        setAdminBusy(true);
-        if ($(this).attr('target') == "_blank") {
-            setTimeout(function() {
-                setAdminBusy(false);
-            }, 1500);
-        }
+    // Wait until every submit listener (including inline confirmation and AJAX
+    // handlers) has run before showing the page-navigation overlay. Showing it
+    // synchronously leaves the whole admin UI blocked when a later listener
+    // cancels the submission.
+    $(document).on('submit.adminBusy', 'form', function(event) {
+        var form = this;
+        window.setTimeout(function() {
+            if (event.isDefaultPrevented()) {
+                return;
+            }
+
+            setAdminBusy(true);
+            if ($(form).attr('target') === '_blank') {
+                window.setTimeout(function() {
+                    setAdminBusy(false);
+                }, 1500);
+            }
+        }, 0);
     });
 
     $("#main-menu .sub-menu a,#main-menu .menu-item a ,.navbar-header .navbar-brand,.user-menu.dropdown-menu a, .table a .fa-eye")
         .click(function(event) {
-            setAdminBusy(true);
-            if ($(this).attr('target') == "_blank") {
-                setTimeout(function() {
-                    setAdminBusy(false);
-                }, 1500);
-            }
+            var link = this;
+            window.setTimeout(function() {
+                if (event.isDefaultPrevented()) {
+                    return;
+                }
+
+                setAdminBusy(true);
+                if ($(link).attr('target') === '_blank') {
+                    window.setTimeout(function() {
+                        setAdminBusy(false);
+                    }, 1500);
+                }
+            }, 0);
         });
 
     function itemDelete({
@@ -265,20 +283,44 @@
                 type: method,
                 url: url,
                 success: function(res) {
-                    var myStata = button.find('i.fa');
+                    var statusIcon = button.find('i.fa').first();
                     toastrMsg('success', res.message);
                     var pressedState = button.attr('aria-pressed');
                     var wasPublished = pressedState === 'true' ||
-                        (pressedState !== 'false' && myStata.hasClass('fa-check-square'));
+                        (pressedState !== 'false' && (statusIcon.hasClass('fa-check-square') || statusIcon.hasClass('fa-eye-slash')));
                     var hasResponseStatus = res.status === true || res.status === false ||
                         res.status === 1 || res.status === 0 || res.status === '1' || res.status === '0';
                     var isPublished = hasResponseStatus
                         ? (res.status === true || res.status === 1 || res.status === '1')
                         : !wasPublished;
-                    myStata.toggleClass('fa-check-square', isPublished).toggleClass('fa-square', !isPublished);
+
+                    var currentAccessibleLabel = String(button.attr('aria-label') || '');
+                    var usesActivationLanguage = /\b(?:activate|deactivate)\b/i.test(currentAccessibleLabel + ' ' + button.text());
+                    var activeAction = String(button.data('active-action') || (usesActivationLanguage ? 'Deactivate' : 'Unpublish'));
+                    var inactiveAction = String(button.data('inactive-action') || (usesActivationLanguage ? 'Activate' : 'Publish'));
+                    var actionLabel = isPublished ? activeAction : inactiveAction;
+                    var itemLabel = String(button.data('item-label') || currentAccessibleLabel.replace(/^\s*(?:unpublish|publish|deactivate|activate)\s*/i, '') || 'item');
+                    var activeIcon = String(button.data('active-icon') || (statusIcon.hasClass('fa-eye') || statusIcon.hasClass('fa-eye-slash') ? 'fa-eye-slash' : 'fa-check-square'));
+                    var inactiveIcon = String(button.data('inactive-icon') || (activeIcon === 'fa-eye-slash' ? 'fa-eye' : 'fa-square'));
+
+                    statusIcon.removeClass('fa-check-square fa-square fa-eye fa-eye-slash')
+                        .addClass(isPublished ? activeIcon : inactiveIcon);
+                    var visibleLabel = button.find('span').filter(function() {
+                        return !$(this).hasClass('sr-only');
+                    }).first();
+                    if (visibleLabel.length) {
+                        visibleLabel.text(actionLabel);
+                    } else {
+                        var directTextNodes = button.contents().filter(function() {
+                            return this.nodeType === 3 && $.trim(this.nodeValue).length > 0;
+                        });
+                        if (directTextNodes.length) {
+                            directTextNodes.last()[0].nodeValue = ' ' + actionLabel;
+                        }
+                    }
                     button.attr('aria-pressed', isPublished ? 'true' : 'false');
-                    button.attr('aria-label', isPublished ? 'Unpublish item' : 'Publish item');
-                    button.attr('title', isPublished ? 'Unpublish item' : 'Publish item');
+                    button.attr('aria-label', actionLabel + ' ' + itemLabel);
+                    button.attr('title', actionLabel + ' ' + itemLabel);
                 },
                 error: function(err) {
                     toastrMsg('error', adminErrorMessage(err));

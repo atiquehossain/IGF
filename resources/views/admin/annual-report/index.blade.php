@@ -54,7 +54,7 @@
                     <td>{{ date('M d, Y', strtotime(@$annual_report->published_at)) }}</td>
                     <td>{{ @$annual_report->order_by }}</td>
                     <td>
-                      <?= App\Link::action(@$annual_report->id, @$annual_report->status) ?>
+                      <?= App\Link::action(@$annual_report->id, @$annual_report->status, 'annual report ' . ($annual_report->title ?? '')) ?>
                     </td>
                   </tr>
                 @endforeach

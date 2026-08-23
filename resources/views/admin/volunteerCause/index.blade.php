@@ -43,7 +43,7 @@
                                 This will be saved as a <strong>draft</strong>. Publish it from the list when it is ready to appear publicly.
                             </div>
                             <div class="form-actions d-flex justify-content-end" style="gap:8px">
-                                <button type="reset" class="btn btn-outline-secondary">Clear</button>
+                                <button type="reset" class="btn igf-btn igf-btn-tertiary"><i class="fa fa-undo" aria-hidden="true"></i> Clear</button>
                                 <button type="submit" class="btn btn-info"><i class="fa fa-save" aria-hidden="true"></i> Save draft</button>
                             </div>
                         </form>
@@ -153,7 +153,7 @@
                     @method('PUT')
                     <div class="modal-header">
                         <h2 class="h5 modal-title" id="volunteerOpportunityModalLabel">Edit volunteer opportunity</h2>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <button type="button" class="close btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                     </div>
                     <div class="modal-body">
                         <input name="id" id="edit-opportunity-id" type="hidden" value="{{ old('id') }}" required>
@@ -174,7 +174,7 @@
                         <p class="small text-muted mb-0">Editing the wording does not change whether this opportunity is published.</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn igf-btn igf-btn-secondary" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
                         <button type="submit" class="btn btn-info"><i class="fa fa-save" aria-hidden="true"></i> Save changes</button>
                     </div>
                 </form>

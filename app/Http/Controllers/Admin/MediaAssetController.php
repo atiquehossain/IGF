@@ -18,6 +18,18 @@ class MediaAssetController extends Controller
 
     public function index(Request $request)
     {
+        if ($request->filled('usage')) {
+            $data = $request->validate(['usage' => ['required', 'uuid']]);
+            $asset = MediaAsset::withTrashed()->where('uuid', $data['usage'])->firstOrFail();
+            $references = $this->usage->references($asset);
+
+            return response()->json([
+                'asset' => $asset->uuid,
+                'references' => $references,
+                'total' => array_sum($references),
+            ]);
+        }
+
         $query = MediaAsset::query()->latest();
         if ($request->boolean('trash')) {
             $query->onlyTrashed();

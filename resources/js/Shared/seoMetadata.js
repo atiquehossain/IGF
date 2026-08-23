@@ -48,11 +48,25 @@ export const resolveSeoMetadata = ({
     || safeHttpUrl(merged.meta_image)
     || safeHttpUrl(merged.twitter_image)
     || fallbackImage;
+  const twitterImage = safeHttpUrl(merged.twitter_image) || ogImage;
+  const altLayer = [contentSeo, routeSeo, metaTag]
+    .find((layer) => layer && Object.prototype.hasOwnProperty.call(layer, 'social_image_alt'));
+  const authoredAlt = plainText(altLayer?.social_image_alt).slice(0, 420);
+  const fallbackAlt = plainText(seoDefaults?.social_image_alt).slice(0, 420);
+  const ogImageAlt = !ogImage
+    ? ''
+    : (fallbackImage && ogImage === fallbackImage ? fallbackAlt : authoredAlt);
+  const twitterImageAlt = !twitterImage
+    ? ''
+    : (fallbackImage && twitterImage === fallbackImage ? fallbackAlt : authoredAlt);
 
   return {
     ...merged,
     og_image: ogImage,
-    twitter_image: safeHttpUrl(merged.twitter_image) || ogImage,
+    twitter_image: twitterImage,
+    social_image_alt: authoredAlt || ogImageAlt,
+    og_image_alt: ogImageAlt,
+    twitter_image_alt: twitterImageAlt,
   };
 };
 

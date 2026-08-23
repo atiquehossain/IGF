@@ -6,8 +6,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="description" content="">
-        <meta name="author" content="">
+        <meta name="description" content="Sign in to the Ignite Global Foundation administration platform.">
+        <meta name="author" content="Ignite Global Foundation">
 
 
         <!-- Title -->
@@ -19,19 +19,16 @@
         <link rel="stylesheet" href="{{asset('admin-assets/assets/css/login.bootstrap.min.css')}}">
         <link rel="stylesheet" href="{{asset('admin-assets/assets/css/login.style.css')}}">
 
-        <style>
-            .admin-section {max-width: 600px;float: left;}
-        </style>
     </head>
     <body>
 
         <main id="form">
             <div class="container admin-section">
-                <div class="col-lg-8 col-lg-offset-2 col-md-6 col-md-offset-3 col-md-8 col-md-offset-2">
+                <div class="admin-login-shell">
                     <div class="row">
                         <div class="col-xs-12 col-sm-12">
                             <div class="logo-section text-center">
-                                <img src="{{ asset('image/logo.png') }}" alt="Ignite">
+                                <img src="{{ asset('image/logo.png') }}" alt="Ignite Global Foundation">
                             </div>
                         </div>
                     </div>
@@ -39,6 +36,7 @@
                         <div class="tab-content">
                             <div class="tab-pane fade  active  in" id="signup">
                                 <h1 class="text-uppercase text-center">Administrator sign in</h1>
+                                <p class="admin-login-intro">Manage website content, media, search visibility, and administrator access.</p>
                                 @if (session('message'))
                                     <div class="alert alert-info" role="status">{{ session('message') }}</div>
                                 @endif
@@ -47,7 +45,6 @@
                                         Sign in was not successful. Check the highlighted fields and try again.
                                     </div>
                                 @endif
-                                <br>
                                 <form method="POST" action="{{ route('admin.login') }}" @if($errors->any()) aria-describedby="admin-login-errors" @endif>
                                     {{ csrf_field() }}
                                     <div class="form-group">
@@ -69,11 +66,9 @@
                                         @endif
                                     </div>
                                     <div class="mrgn-30-top">
-                                        <button type="submit" class="btn btn-larger btn-block">Log in</button>
+                                        <button type="submit" class="btn btn-larger btn-block">Sign in</button>
                                     </div>
                                 </form>
-
-                                <br><br>
                             </div>
 
                         </div>
@@ -84,35 +79,4 @@
         </main>
     </body>
 
-    <script src="{{asset('admin-assets/assets/js/vendor/jquery.min.js')}}"></script>
-    <script type="text/javascript">
-    $('#form').find('input, textarea').on('keyup blur focus', function (e) {
-
-        var $this = $(this),
-                label = $this.prev('label');
-
-        if (e.type === 'keyup') {
-            if ($this.val() === '') {
-                label.removeClass('active highlight');
-            } else {
-                label.addClass('active highlight');
-            }
-        } else if (e.type === 'blur') {
-            if ($this.val() === '') {
-                label.removeClass('active highlight');
-            } else {
-                label.removeClass('highlight');
-            }
-        } else if (e.type === 'focus') {
-
-            if ($this.val() === '') {
-                label.removeClass('highlight');
-            }
-            else if ($this.val() !== '') {
-                label.addClass('highlight');
-            }
-        }
-
-    });
-    </script>
 </html>

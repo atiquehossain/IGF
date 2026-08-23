@@ -53,7 +53,7 @@
                                             <span class="copy-text" data-route="{{ route('frontend.category', [app()->getLocale(), @$category->slug]) }}">{{@$category->slug}}</span>
                                         </td>
                                         <td>
-                                            <?= App\Link::action(@$category->uuid, @$category->status, @$category->name) ?>
+                                            <?= App\Link::action(@$category->uuid, @$category->status, 'category ' . ($category->name ?? '')) ?>
                                         </td>
                                     </tr>
                                 @empty

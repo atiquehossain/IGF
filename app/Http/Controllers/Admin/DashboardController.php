@@ -33,6 +33,12 @@ class DashboardController extends Controller
             ? (int) round((($donationsToday - $donationsYesterday) / $donationsYesterday) * 100)
             : ($donationsToday > 0 ? 100 : 0);
 
+        $enquiryCounts = [
+            'sponsorships' => Sponsorship::query()->where('workflow_status', 'new')->count(),
+            'volunteers' => Volunteer::query()->where('workflow_status', 'new')->count(),
+            'contacts' => ContactMessage::query()->where('workflow_status', 'new')->count(),
+        ];
+
         $metrics = [
             'donations_today' => $donationsToday,
             'donation_change' => $donationChange,
@@ -42,15 +48,21 @@ class DashboardController extends Controller
                 ->count(),
             'pending_gateways' => SslCommerzTransaction::pending()->count(),
             'volunteers' => Volunteer::query()->where('status', 1)->count(),
-            'new_enquiries' => Sponsorship::query()->where('workflow_status', 'new')->count()
-                + Volunteer::query()->where('workflow_status', 'new')->count()
-                + ContactMessage::query()->where('workflow_status', 'new')->count(),
+            'new_enquiries' => array_sum($enquiryCounts),
         ];
 
         $permission = app(Permission::class);
         $admin = $request->user('admin');
         $canReviewTranslations = Route::has('translations.index') && $permission->allows($admin, 'translations.index');
         $canReviewPages = Route::has('page.index') && $permission->allows($admin, 'page.index');
+        $enquiryActions = collect([
+            ['permission' => 'sponsorships.index', 'route' => 'sponsorships.index', 'label' => 'Sponsorships', 'count' => $enquiryCounts['sponsorships']],
+            ['permission' => 'volunteer.index', 'route' => 'volunteer.index', 'label' => 'Volunteer applications', 'count' => $enquiryCounts['volunteers']],
+            ['permission' => 'contact-message.index', 'route' => 'contact-message.index', 'label' => 'Contact messages', 'count' => $enquiryCounts['contacts']],
+        ])->filter(fn (array $action): bool => $action['count'] > 0
+            && Route::has($action['route'])
+            && $permission->allows($admin, $action['permission']))
+            ->values();
         $quickActions = collect([
             ['permission' => 'page.index', 'route' => 'page.index', 'label' => 'Edit home or a page', 'help' => 'Change visitor-facing sections and text.', 'icon' => 'fa-file-text-o'],
             ['permission' => 'page.menu.index', 'route' => 'page.menu.index', 'label' => 'Update header or footer', 'help' => 'Change navigation labels and destinations.', 'icon' => 'fa-sitemap'],
@@ -178,6 +190,7 @@ class DashboardController extends Controller
             'recentActivity',
             'quickActions',
             'siteHealth',
+            'enquiryActions',
             'canReviewTranslations',
             'canReviewPages'
         ));

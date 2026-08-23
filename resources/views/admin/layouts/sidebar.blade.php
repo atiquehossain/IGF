@@ -12,7 +12,7 @@ $navGroups = [
     [
         'label' => 'Website', 'icon' => 'fa-globe',
         'items' => [
-            ['route' => 'page.index', 'label' => 'Home & Pages', 'icon' => 'fa-file-text-o'],
+            ['route' => 'page.index', 'label' => 'Content Hub', 'icon' => 'fa-file-text-o'],
             ['route' => 'page.menu.index', 'label' => 'Header & Footer', 'icon' => 'fa-sitemap'],
             ['route' => 'site.settings.index', 'label' => 'Brand & Appearance', 'icon' => 'fa-magic'],
             ['route' => 'media.index', 'label' => 'Media Library', 'icon' => 'fa-picture-o'],
@@ -58,7 +58,7 @@ $navGroups = [
     [
         'label' => 'Users & Access', 'icon' => 'fa-lock',
         'items' => [
-            ['route' => 'admin.index', 'label' => 'Admin Users', 'icon' => 'fa-user-circle-o'],
+            ['route' => 'admin.index', 'label' => 'Administrators', 'icon' => 'fa-user-circle-o'],
             ['route' => 'role.index', 'label' => 'Roles & Permissions', 'icon' => 'fa-key'],
         ],
     ],
@@ -66,14 +66,36 @@ $navGroups = [
 
 foreach ($navGroups as &$group) {
     $group['items'] = array_values(array_filter($group['items'], fn (array $item): bool => $canUse($item['route'])));
-    $group['active'] = collect($group['items'])->contains(function (array $item) use ($routeName): bool {
-        $base = str_contains($item['route'], '.') ? str($item['route'])->beforeLast('.')->toString() : $item['route'];
-        return $routeName === $item['route'] || str_starts_with($routeName, $base . '.');
-    });
 }
 unset($group);
 $navGroups = array_values(array_filter($navGroups, fn (array $group): bool => $group['items'] !== []));
-$legacyMenu = trim(MyMenu::menuUi());
+$activeNavRoute = collect($navGroups)
+    ->flatMap(fn (array $group) => $group['items'])
+    ->filter(function (array $item) use ($routeName): bool {
+        $base = str_contains($item['route'], '.') ? str($item['route'])->beforeLast('.')->toString() : $item['route'];
+
+        return $routeName === $item['route'] || str_starts_with($routeName, $base . '.');
+    })
+    ->sortByDesc(function (array $item): int {
+        $base = str_contains($item['route'], '.') ? str($item['route'])->beforeLast('.')->toString() : $item['route'];
+
+        return strlen($base);
+    })
+    ->pluck('route')
+    ->first();
+foreach ($navGroups as &$group) {
+    $group['active'] = collect($group['items'])->contains(fn (array $item): bool => $item['route'] === $activeNavRoute);
+}
+unset($group);
+$curatedRoutes = collect($navGroups)
+    ->flatMap(fn (array $group) => $group['items'])
+    ->pluck('route')
+    ->push('dashboard.index')
+    ->unique()
+    ->values()
+    ->all();
+$legacyMenu = trim(MyMenu::menuUi($curatedRoutes));
+$legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
 ?>
 
 <aside id="left-panel" class="left-panel" aria-label="Administration navigation">
@@ -93,25 +115,24 @@ $legacyMenu = trim(MyMenu::menuUi());
     <nav class="navbar navbar-expand-sm navbar-default" aria-label="Content management">
         <div id="main-menu" class="main-menu collapse navbar-collapse">
             <ul class="nav navbar-nav igf-primary-nav">
-                <li class="{{ $routeName === 'dashboard.index' ? 'active' : '' }}"><a href="{{ route('dashboard.index') }}"><i class="menu-icon fa fa-th-large" aria-hidden="true"></i>Dashboard</a></li>
+                <li class="{{ $routeName === 'dashboard.index' ? 'active' : '' }}"><a href="{{ route('dashboard.index') }}" aria-label="Dashboard" title="Dashboard" @if($routeName === 'dashboard.index') aria-current="page" @endif><i class="menu-icon fa fa-th-large" aria-hidden="true"></i><span class="igf-nav-label">Dashboard</span></a></li>
             </ul>
             @foreach($navGroups as $group)
                 <details class="igf-nav-group" @if($group['active']) open @endif>
-                    <summary><i class="fa {{ $group['icon'] }}" aria-hidden="true"></i><span>{{ $group['label'] }}</span></summary>
+                    <summary aria-label="{{ $group['label'] }} navigation" title="{{ $group['label'] }}"><i class="fa {{ $group['icon'] }}" aria-hidden="true"></i><span>{{ $group['label'] }}</span></summary>
                     <ul class="nav navbar-nav">
                         @foreach($group['items'] as $item)
                             @php
-                                $base = str_contains($item['route'], '.') ? str($item['route'])->beforeLast('.')->toString() : $item['route'];
-                                $itemActive = $routeName === $item['route'] || str_starts_with($routeName, $base . '.');
+                                $itemActive = $item['route'] === $activeNavRoute;
                             @endphp
-                            <li class="{{ $itemActive ? 'active' : '' }}"><a href="{{ route($item['route']) }}"><i class="menu-icon fa {{ $item['icon'] }}" aria-hidden="true"></i>{{ $item['label'] }}</a></li>
+                            <li class="{{ $itemActive ? 'active' : '' }}"><a href="{{ route($item['route']) }}" aria-label="{{ $item['label'] }}" @if($itemActive) aria-current="page" @endif title="{{ $item['label'] }}"><i class="menu-icon fa {{ $item['icon'] }}" aria-hidden="true"></i><span class="igf-nav-label">{{ $item['label'] }}</span></a></li>
                         @endforeach
                     </ul>
                 </details>
             @endforeach
             @if($legacyMenu !== '')
-                <details class="igf-all-tools">
-                    <summary><i class="fa fa-cogs" aria-hidden="true"></i><span>Advanced & Legacy Tools</span></summary>
+                <details class="igf-all-tools" @if($legacyMenuHasCurrent) open @endif>
+                    <summary aria-label="Advanced and legacy tools navigation" title="Advanced &amp; Legacy Tools"><i class="fa fa-cogs" aria-hidden="true"></i><span>Advanced & Legacy Tools</span></summary>
                     <ul class="nav navbar-nav">
                         {!! $legacyMenu !!}
                     </ul>
@@ -121,15 +142,15 @@ $legacyMenu = trim(MyMenu::menuUi());
     </nav>
 
     <div class="igf-sidebar-footer">
-        <a class="igf-visit-site" href="{{ route('frontend.home') }}" target="_blank" rel="noopener">
+        <a class="igf-visit-site" href="{{ route('frontend.home') }}" target="_blank" rel="noopener" aria-label="Visit public website" title="Visit Site">
             <i class="fa fa-external-link" aria-hidden="true"></i><span>Visit Site</span>
         </a>
-        @if($canSettings)<a href="{{ route('site.settings.index') }}">
+        @if($canSettings)<a href="{{ route('site.settings.index') }}" aria-label="Website Customizer" title="Website Customizer">
             <i class="fa fa-magic" aria-hidden="true"></i><span>Website Customizer</span>
         </a>@endif
         <form method="post" action="{{ route('admin.logout') }}">
             @csrf
-            <button type="submit"><i class="fa fa-sign-out" aria-hidden="true"></i><span>Log Out</span></button>
+            <button type="submit" aria-label="Log out" title="Log Out"><i class="fa fa-sign-out" aria-hidden="true"></i><span>Log Out</span></button>
         </form>
     </div>
 </aside>

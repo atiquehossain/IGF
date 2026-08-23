@@ -84,6 +84,31 @@ class LegacyAdminAccessibilityTest extends TestCase
         }
     }
 
+    public function test_every_shared_legacy_action_call_supplies_a_human_readable_item_label(): void
+    {
+        $calls = [];
+
+        foreach (glob(resource_path('views/admin/*/index.blade.php')) as $view) {
+            preg_match_all('/Link::action\(([^\r\n]+)\)/', file_get_contents($view), $matches);
+            array_push($calls, ...$matches[1]);
+        }
+
+        $this->assertCount(17, $calls);
+        foreach ($calls as $arguments) {
+            $this->assertGreaterThanOrEqual(
+                2,
+                substr_count($arguments, ','),
+                'Every Link::action call must provide an item-aware third argument.',
+            );
+        }
+
+        $gallery = file_get_contents(resource_path('views/admin/gallery/index.blade.php'));
+        $this->assertStringContainsString('igf-btn igf-btn-secondary igf-btn-compact', $gallery);
+        $this->assertStringContainsString('igf-btn igf-btn-primary igf-btn-compact', $gallery);
+        $this->assertStringContainsString('Add gallery item', $gallery);
+        $this->assertStringNotContainsString('btn btn-info btn-sm', $gallery);
+    }
+
     public function test_inline_cancel_controls_reset_only_their_own_form_and_preserve_hidden_fields(): void
     {
         foreach ([

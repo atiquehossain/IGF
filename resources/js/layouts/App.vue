@@ -126,14 +126,8 @@ const alternateLinks = computed(() => alternateCluster.value.links);
 const xDefaultUrl = computed(() => alternateCluster.value.xDefault);
 const appName = computed(() => inertiaPage.props?.siteSettings?.branding?.site_name || inertiaPage.props?.appName || 'Ignite Global Foundation');
 const seoTitle = computed(() => metaTag.value?.meta_title || title.value || appName.value);
-const defaultSocialImage = computed(() => String(inertiaPage.props?.seoDefaults?.og_image || ''));
-const defaultSocialImageAlt = computed(() => String(inertiaPage.props?.seoDefaults?.social_image_alt || '').trim());
-const ogImageAlt = computed(() => (
-  metaTag.value?.og_image === defaultSocialImage.value ? defaultSocialImageAlt.value : ''
-));
-const twitterImageAlt = computed(() => (
-  metaTag.value?.twitter_image === defaultSocialImage.value ? defaultSocialImageAlt.value : ''
-));
+const ogImageAlt = computed(() => String(metaTag.value?.og_image_alt || '').trim());
+const twitterImageAlt = computed(() => String(metaTag.value?.twitter_image_alt || '').trim());
 const shellLabels = computed(() => ({
   skipLink: inertiaPage.props?.siteSettings?.header?.skip_link_label || 'Skip to main content',
 }));

@@ -11,6 +11,7 @@
 <!-- ============================================================== -->
 
 <div class="content pb-0">
+    <h1 class="sr-only">Change password</h1>
     <div class="row">
         <div class="col-12 d-flex justify-content-center">
             <div class="card">
@@ -35,7 +36,7 @@
                                 <div class="col-md-6 ml-2">
                                     <div class="form-group {{ $errors->has('password') ? ' has-danger' : '' }}">
                                         <label for="password">{{ $Lang->Password }} :</label>
-                                        <input type="password" class="form-control" placeholder="Password" name="password"
+                                        <input id="password" type="password" class="form-control" placeholder="New password" name="password"
                                                value="" autocomplete="new-password" minlength="12" required>
                                         @if ($errors->has('password'))
                                         @foreach ($errors->get('password') as $error)
@@ -58,8 +59,8 @@
                                     </div>
                                 </div>
                                 <div class="col-md-7 text-center">
-                                    <button type="submit" class="btn btn-success btn-sm ml-2">
-                                        <i class="fa fa-exchange"> </i> {{ $Lang->Common->ChangePassword }}</button>
+                                    <button type="submit" class="btn igf-btn igf-btn-primary ml-2">
+                                        <i class="fa fa-key" aria-hidden="true"></i> Change password</button>
                                 </div>
                             </div>
                         </div>

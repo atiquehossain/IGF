@@ -7,8 +7,8 @@ return [
      | Debugbar Settings
      |--------------------------------------------------------------------------
      |
-     | Debugbar is enabled by default, when debug is set to true in app.php.
-     | You can override the value by setting enable to true or false instead of null.
+     | Debugbar is opt-in so its overlay never becomes part of an admin workflow.
+     | Local developers can explicitly set DEBUGBAR_ENABLED=true when needed.
      |
      | You can provide an array of URI's that must be ignored (eg. 'api/*')
      |
@@ -18,7 +18,7 @@ return [
     // even if DEBUGBAR_ENABLED is accidentally set by the host environment.
     'enabled' => strtolower((string) env('APP_ENV', 'production')) === 'production'
         ? false
-        : env('DEBUGBAR_ENABLED', null),
+        : env('DEBUGBAR_ENABLED', false),
     'hide_empty_tabs' => true, // Hide tabs until they have content
     'except' => [
         'telescope*',

@@ -64,8 +64,8 @@
                                     </div>
 
                                     <div class="form-actions form-group text-right">
-                                        <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                        <button type="button" class="btn btn-danger cancel mt-3"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i> Create donation cause</button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                     </div>
 
                                 </form>
@@ -90,7 +90,7 @@
                                 <div class="input-group search-input-group">
                                     <input id="donation-type-search" type="search" name="search" value="{{@$search}}" class="form-control search-form-control">
                                     <span class="input-group-prepend">
-                                        <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
+                                        <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
                                 </div>
                             </form>
@@ -126,13 +126,13 @@
                                 </td>
                                 <td>
                                     @if($canEditDonationTypes)
-                                        <a href="javascript:void(0)" class="edit btn btn-info btn-sm1" data-id="{{ $donationType->id }}" aria-label="Edit donation cause" title="Edit donation cause"><i class="fa fa-edit" aria-hidden="true"></i></a>
+                                        <a href="javascript:void(0)" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $donationType->id }}" aria-label="Edit donation cause" title="Edit donation cause"><i class="fa fa-edit" aria-hidden="true"></i> Edit</a>
                                     @endif
                                     @if($canPublishDonationTypes)
-                                        <button type="button" class="btn btn-warning btn-sm1 status" data-id="{{ $donationType->id }}" data-url="{{ route('donationType.status', $donationType->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause {{ $donationType->name }}" title="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause" aria-pressed="{{ $donationType->status ? 'true' : 'false' }}"><i class="fa text-white {{ $donationType->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" data-id="{{ $donationType->id }}" data-url="{{ route('donationType.status', $donationType->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause {{ $donationType->name }}" title="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause" aria-pressed="{{ $donationType->status ? 'true' : 'false' }}"><i class="fa {{ $donationType->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i> {{ $donationType->status ? 'Unpublish' : 'Publish' }}</button>
                                     @endif
                                     @if($canDeleteDonationTypes)
-                                        <a href="javascript:void(0)" class="btn btn-danger btn-sm1 trash" data-id="{{ $donationType->id }}" data-url="{{ route('donationType.destroy', $donationType->id) }}" data-token="{{ csrf_token() }}" aria-label="Delete donation cause" title="Delete donation cause"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
+                                        <a href="javascript:void(0)" class="btn igf-btn igf-btn-danger igf-btn-compact trash" data-id="{{ $donationType->id }}" data-url="{{ route('donationType.destroy', $donationType->id) }}" data-token="{{ csrf_token() }}" aria-label="Delete donation cause" title="Delete donation cause"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete</a>
                                     @endif
                                     @if(!$canEditDonationTypes && !$canPublishDonationTypes && !$canDeleteDonationTypes)<span class="badge badge-light">View only</span>@endif
                                 </td>
@@ -158,7 +158,7 @@
             <form action="{{route('donationType.update')}}" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h2 class="card-title h5 mb-0" id="donationTypeModalTitle">{{ $Lang->Common->Edit }} {{ $Lang->DonationTitle }}</h2>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -202,8 +202,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-save" aria-hidden="true"></i> Save donation cause</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>

@@ -43,7 +43,7 @@ class TranslationCenterIntegrityTest extends TestCase
             ->assertSee('Missing required')
             ->assertSee('Optional / unpublished')
             ->assertSee('Required public rows')
-            ->assertSee('Pages &amp; sections', false)
+            ->assertSee('Content Hub')
             ->assertSee('Enable Bangla')
             ->assertSee('disabled', false)
             ->assertSee('][precondition]', false)

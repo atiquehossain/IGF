@@ -39,6 +39,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['cors', 'json.response', 'XSS',
     Route::post('page-comment', 'CommentController@comment')->middleware('throttle:5,1')->name('api.frontend.comment');
     Route::get('members', 'Api\CmsController@members')->name('api.frontend.members');
     Route::get('events', 'Api\CmsController@events')->name('api.frontend.events');
+    Route::get('notices', 'Api\CmsController@notices')->middleware('throttle:60,1')->name('api.frontend.notice');
 
     Route::get('resources', 'Api\AllRecourcesController@index')->name('api.frontend.resources');
     Route::get('resources/alp-packages', 'Api\PackagesController@index')->name('api.frontend.resources.alp-filter');

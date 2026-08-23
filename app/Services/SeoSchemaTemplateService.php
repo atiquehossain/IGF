@@ -10,7 +10,7 @@ class SeoSchemaTemplateService
     public function options(): array
     {
         return [
-            'none' => 'No structured data',
+            'none' => 'No custom template (automatic site schema)',
             'webpage' => 'Standard web page',
             'ngo' => 'Nonprofit organization',
             'about' => 'About page',

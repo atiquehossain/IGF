@@ -6,69 +6,51 @@
 $permission = explode(",", $role->permission);
 $actionPermission = explode(",", $role->actionPermission);
 
-function subMenu($child, $pkey, $permission, $actionPermission) {
-    $html = "";
-    if (!empty($child)) {
-        foreach ($child as $key => $element) {
-            if (count($element['children']) > 0) {
-                $html .= htmlView($element, $pkey, $permission, $actionPermission);
-                if (count($element['children']) > 0) {
-                    $subchild = subMenu($element['children'], $pkey, $permission, $actionPermission);
-                    if (!empty($subchild)) {
-                        $html .= $subchild;
-                    }
-                }
-            } else {
-                $html .= htmlView($element, $pkey, $permission, $actionPermission);
-            }
-        }
-    }
-    return $html;
-}
-
-function htmlView($element, $pkey, $permission, $actionPermission) {
-    $html = "";
-    $checked = "";
-    if (in_array($element['id'], $permission)) {
-        $checked = "checked";
-    }
-    $html .= '<tr class="treegrid-' . $element['id'] . ' treegrid-parent-' . $element['parent_id'] . '">';
-    $html .= '<td><span class="title">' . $element['name'] . '';
-
-    $html .=' <label for="user-menus"><input type="checkbox" class="user_menus menus_' . $element['id'] . '"' .
-            'value="' . $element['id'] . '" ' . @$checked .
-            ' data-user_menus="' . $element['id'] . '" name="permission[]">' .
-            '</label></span>';
-    if (count($element['menuAction']) > 0) {
-        $html .= htmlViewAction($element, $element['id'], $actionPermission);
-    }
-    $html .= '</td>';
-    $html .= '</tr>';
-    return $html;
-}
-
-function htmlViewAction($element, $key, $actionPermission) {
-    $html = "";
-    $html .= '<span class="action_menu">';
-
+$renderActions = static function ($element, $key, $actionPermission): string {
+    $html = '<span class="action_menu">';
     foreach ($element['menuAction'] as $action) {
-        $actionChecked = "";
-        if (in_array($action['id'], $actionPermission)) {
-            $actionChecked = "checked";
-        }
-
-        $html .= '<label for="user-permissions">' . $action['name'] . ' <input type="checkbox" id="user-permission"' .
-                ' class="permission user_permissions_' . $key . '" data-user_permissions="' . $key . '" ' .
-                $actionChecked . ' value="' . $action['id'] . '" name="actionPermission[]">' .
-                '</label>';
+        $actionId = 'role-action-' . (int) $action['id'];
+        $checked = in_array($action['id'], $actionPermission) ? ' checked' : '';
+        $html .= '<label for="' . $actionId . '">' . e($action['name']) . ' <input type="checkbox" id="' . $actionId . '"'
+            . ' class="permission user_permissions_' . (int) $key . '" data-user_permissions="' . (int) $key . '"'
+            . $checked . ' value="' . (int) $action['id'] . '" name="actionPermission[]"></label>';
     }
 
-    $html .= '</span>';
+    return $html . '</span>';
+};
+
+$renderMenuRow = static function ($element, $permission, $actionPermission) use ($renderActions): string {
+    $id = (int) $element['id'];
+    $parentId = (int) $element['parent_id'];
+    $inputId = 'role-menu-' . $id;
+    $checked = in_array($element['id'], $permission) ? ' checked' : '';
+    $html = '<tr class="treegrid-' . $id . ' treegrid-parent-' . $parentId . '"><td>';
+    $html .= '<span class="title">' . e($element['name']) . ' <label for="' . $inputId . '">';
+    $html .= '<input type="checkbox" id="' . $inputId . '" class="user_menus menus_' . $id . '" value="' . $id . '"'
+        . ' aria-label="Allow access to ' . e($element['name']) . '"'
+        . $checked . ' data-user_menus="' . $id . '" name="permission[]"></label></span>';
+    if (count($element['menuAction']) > 0) {
+        $html .= $renderActions($element, $id, $actionPermission);
+    }
+
+    return $html . '</td></tr>';
+};
+
+$renderSubMenus = static function ($children, $permission, $actionPermission) use (&$renderSubMenus, $renderMenuRow): string {
+    $html = '';
+    foreach ($children as $element) {
+        $html .= $renderMenuRow($element, $permission, $actionPermission);
+        if (count($element['children']) > 0) {
+            $html .= $renderSubMenus($element['children'], $permission, $actionPermission);
+        }
+    }
+
     return $html;
-}
+};
 ?>
 
 <div class="content pb-0">
+    <h1 class="sr-only">Permissions for {{ $role->name }}</h1>
     @unless($canEditRolePermissions)
         <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can inspect this role's permissions, but your role cannot change them.</div>
     @endunless
@@ -77,7 +59,7 @@ function htmlViewAction($element, $key, $actionPermission) {
             <div id="new_authMenu">
                 <div class="card">
                     <div class="card-header">
-                        <strong class="card-title">{{ $Lang->RoleTitle }}Permission ... ( {{$role->name}} )</strong>
+                        <strong class="card-title">Permissions for {{ $role->name }}</strong>
                     </div>
                     <div class="card-body">
                         <div class="card-body">
@@ -116,9 +98,9 @@ function htmlViewAction($element, $key, $actionPermission) {
                                         <tr class="treegrid-{{@$authMenu->id}} treegrid-parent-{{@$authMenu->parent_id}}">
                                             <td>
                                                 <span class="title"> {{@$authMenu->name}}
-                                                    <label for="user-menus"><input type="checkbox" class="user_menus menus_{{@$authMenu->id}}"
+                                                    <label for="role-menu-{{ (int) $authMenu->id }}"><input id="role-menu-{{ (int) $authMenu->id }}" type="checkbox" class="user_menus menus_{{@$authMenu->id}}"
                                                                                    value="{{@$authMenu->id}}" {{@$checked}}
-                                                                                   data-user_menus="{{@$authMenu->id}}" name="permission[]">
+                                                                                   data-user_menus="{{@$authMenu->id}}" name="permission[]" aria-label="Allow access to {{ $authMenu->name }}">
                                                     </label>
                                                 </span>
                                                 <span class="action_menu">
@@ -131,9 +113,9 @@ function htmlViewAction($element, $key, $actionPermission) {
                                                         ?>
 
 
-                                                        <label for="user-permissions">
+                                                        <label for="role-action-{{ (int) $action->id }}">
                                                             {{@$action->name}}
-                                                            <input type="checkbox" id="user-permission"
+                                                            <input type="checkbox" id="role-action-{{ (int) $action->id }}"
                                                                    class="permission user_permissions_{{@$authMenu->id}}" {{@$actionChecked}} data-user_permissions="{{@$authMenu->id}}"
                                                                    value="{{@$action->id}}" name="actionPermission[]">
                                                         </label>
@@ -145,7 +127,7 @@ function htmlViewAction($element, $key, $actionPermission) {
 
                                         <?php
                                         if (count($authMenu->children) > 0) {
-                                            echo subMenu($authMenu->children, $key, $permission, $actionPermission);
+                                            echo $renderSubMenus($authMenu->children, $permission, $actionPermission);
                                         }
                                         ?>
 
@@ -156,8 +138,8 @@ function htmlViewAction($element, $key, $actionPermission) {
 
                                 @if($canEditRolePermissions)
                                 <div class="form-actions form-group text-right">
-                                    <button type="submit" class="btn btn-info submit_ mt-1"><i class="fa fa-lock fa-lg"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                                    <button type="button" class="btn btn-danger cancel mt-1"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                                    <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-1"><i class="fa fa-save" aria-hidden="true"></i> Save role permissions</button>
+                                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-1"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                                 </div>
                                 @endif
                                 </fieldset>

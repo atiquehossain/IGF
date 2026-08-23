@@ -451,7 +451,6 @@ p:focus {
 a,
 button {
     text-decoration: none;
-    outline: none!important;
     color: #878787;
     -webkit-transition: all .25s ease;
     transition: all .25s ease
@@ -484,8 +483,7 @@ ol {
 .btn:focus,
 button:focus {
     -webkit-box-shadow: none!important;
-    box-shadow: none!important;
-    outline: 0
+    box-shadow: none!important
 }
 
 .btn.disabled,
@@ -518,8 +516,7 @@ button,
 input,
 textarea {
     -webkit-box-shadow: none;
-    box-shadow: none;
-    outline: 0!important
+    box-shadow: none
 }
 
 .no-padding {
@@ -1303,8 +1300,7 @@ header .form-inline .search-form .btn-outline-success:hover {
     background: 0 0;
     border: none!important;
     -webkit-box-shadow: none;
-    box-shadow: none;
-    outline: 0!important
+    box-shadow: none
 }
 
 header .form-inline .search-form.close {
@@ -3468,6 +3464,272 @@ footer.site-footer .footer-inner a {
     font-size: .875rem;
     line-height: 1;
     border-radius: .2rem;
+}
+
+/* Shared admin actions -----------------------------------------------------
+ * New and modernized screens use these classes instead of Bootstrap colour
+ * names. This keeps action priority, size, and focus treatment predictable.
+ */
+:root {
+    --igf-action-primary: #9c4500;
+    --igf-action-primary-hover: #783300;
+    --igf-action-text: #272321;
+    --igf-action-border: #c9c1ba;
+    --igf-action-surface: #fff;
+    --igf-action-surface-hover: #f3efec;
+    --igf-action-danger: #b42318;
+    --igf-action-danger-hover: #8f1c13;
+    --igf-focus-ring: #9c4500;
+}
+
+body.layout-wrapper :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--igf-focus-ring) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 3px rgba(156, 69, 0, .2) !important;
+}
+
+/* Keep legacy Bootstrap controls usable on touch screens while their views
+ * progressively adopt the semantic IGF action classes below. */
+body.layout-wrapper .btn {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+body.layout-wrapper :where(.form-control, .custom-select, select) {
+    min-height: 44px;
+}
+
+body.layout-wrapper .right-panel :where(.pagination .page-link, .dataTables_paginate a, .modal .close, button.close, [data-dismiss="modal"]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Keep wide legacy cards and record tables inside the application shell.
+ * Tables retain their columns and scroll within their own region instead of
+ * making the whole 390px page horizontally scrollable. */
+body.layout-wrapper .right-panel :where(#admin-content, .content, .row, [class*="col-"], .card, .card-header, .card-body, .card-footer, .input-group, form) {
+    min-width: 0;
+}
+
+body.layout-wrapper .right-panel :where(#admin-content, .content, .card, .card-header, .card-body, .card-footer, .table-stats, .table-responsive, .dataTables_wrapper, .dataTables_scroll, .dataTables_scrollBody) {
+    max-width: 100%;
+}
+
+body.layout-wrapper .right-panel :where(.table-stats, .table-responsive, .dataTables_wrapper, .dataTables_scroll, .dataTables_scrollBody) {
+    overflow-x: auto !important;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.layout-wrapper .right-panel :where(.table-stats, .table-responsive) > table {
+    min-width: 100%;
+}
+
+@media (max-width: 760px) {
+    body.layout-wrapper .right-panel .content {
+        padding: 12px !important;
+    }
+
+    body.layout-wrapper .right-panel .card-header :where(.row, .input-group),
+    body.layout-wrapper .right-panel .card-footer :where(.row, .pagination) {
+        flex-wrap: wrap !important;
+        max-width: 100%;
+        gap: 8px;
+    }
+
+    body.layout-wrapper .right-panel .card-header .input-group > form,
+    body.layout-wrapper .right-panel .card-header .input-group > .search-input-group {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    body.layout-wrapper .right-panel .search-input-group {
+        height: auto;
+        min-height: 44px;
+        flex-wrap: nowrap !important;
+    }
+
+    body.layout-wrapper .right-panel :where(.search-form-control, .search-drop-form-control) {
+        min-width: 0;
+        height: 44px;
+    }
+
+    body.layout-wrapper .right-panel :where(.pagination, .igf-action-group) {
+        flex-wrap: wrap;
+    }
+}
+
+.igf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 9px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.igf-btn-primary,
+.igf-btn-primary:hover,
+.igf-btn-primary:focus {
+    border-color: var(--igf-action-primary);
+    background: var(--igf-action-primary);
+    color: #fff;
+}
+
+.igf-btn-primary:hover {
+    border-color: var(--igf-action-primary-hover);
+    background: var(--igf-action-primary-hover);
+}
+
+.igf-btn-secondary {
+    border-color: var(--igf-action-border);
+    background: var(--igf-action-surface);
+    color: var(--igf-action-text);
+}
+
+.igf-btn-secondary:hover,
+.igf-btn-secondary:focus {
+    border-color: #9f958d;
+    background: var(--igf-action-surface-hover);
+    color: var(--igf-action-text);
+}
+
+.igf-btn-tertiary {
+    border-color: transparent;
+    background: transparent;
+    color: var(--igf-action-primary);
+}
+
+.igf-btn-tertiary:hover,
+.igf-btn-tertiary:focus {
+    background: var(--igf-action-surface-hover);
+    color: var(--igf-action-primary-hover);
+}
+
+.igf-btn-danger,
+.igf-btn-danger:hover,
+.igf-btn-danger:focus {
+    border-color: var(--igf-action-danger);
+    background: var(--igf-action-danger);
+    color: #fff;
+}
+
+.igf-btn-danger:hover {
+    border-color: var(--igf-action-danger-hover);
+    background: var(--igf-action-danger-hover);
+}
+
+.igf-btn-compact {
+    min-height: 44px;
+    padding: 7px 12px;
+}
+
+/* Keep the remaining legacy small-button hooks usable while individual
+ * screens migrate to the shared action tokens. This is intentionally scoped
+ * to the admin content panel so third-party widgets retain their own sizing. */
+body.layout-wrapper .right-panel :where(.btn-sm, .btn-sm1) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 7px 12px;
+    line-height: 1.2;
+}
+
+.igf-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 8px;
+}
+
+.igf-action-group {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .igf-action-group {
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+}
+
+.igf-danger-action {
+    margin-left: 4px;
+    padding-left: 10px;
+    border-left: 1px solid #ded8d3;
+}
+
+.igf-btn[disabled],
+.igf-btn.disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+/* Compatibility bridge for legacy Blade screens. Their Bootstrap class names
+ * now render with the same hierarchy as the IGF action system, so an older
+ * table no longer reintroduces cyan/yellow/magenta button palettes. */
+body.layout-wrapper :where(.btn-primary, .btn-success) {
+    border-color: var(--igf-action-primary) !important;
+    background: var(--igf-action-primary) !important;
+    color: #fff !important;
+}
+
+body.layout-wrapper :where(.btn-primary, .btn-success):hover,
+body.layout-wrapper :where(.btn-primary, .btn-success):focus {
+    border-color: var(--igf-action-primary-hover) !important;
+    background: var(--igf-action-primary-hover) !important;
+}
+
+body.layout-wrapper :where(.btn-info, .btn-secondary, .btn-light, .btn-outline-info, .btn-outline-primary, .btn-outline-secondary) {
+    border-color: var(--igf-action-border) !important;
+    background: var(--igf-action-surface) !important;
+    color: var(--igf-action-text) !important;
+}
+
+body.layout-wrapper :where(.btn-info, .btn-secondary, .btn-light, .btn-outline-info, .btn-outline-primary, .btn-outline-secondary):hover,
+body.layout-wrapper :where(.btn-info, .btn-secondary, .btn-light, .btn-outline-info, .btn-outline-primary, .btn-outline-secondary):focus {
+    border-color: #9f958d !important;
+    background: var(--igf-action-surface-hover) !important;
+    color: var(--igf-action-text) !important;
+}
+
+body.layout-wrapper .btn-warning {
+    border-color: #c96b16 !important;
+    background: #fff7ed !important;
+    color: #713600 !important;
+}
+
+body.layout-wrapper .btn-danger {
+    border-color: var(--igf-action-danger) !important;
+    background: var(--igf-action-danger) !important;
+    color: #fff !important;
+}
+
+body.layout-wrapper .btn-danger:hover,
+body.layout-wrapper .btn-danger:focus {
+    border-color: var(--igf-action-danger-hover) !important;
+    background: var(--igf-action-danger-hover) !important;
 }
 
 

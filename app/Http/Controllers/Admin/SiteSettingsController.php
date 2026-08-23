@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class SiteSettingsController extends Controller
 {
@@ -120,7 +121,13 @@ class SiteSettingsController extends Controller
             }
         });
 
-        $validated = $validator->validate();
+        try {
+            $validated = $validator->validate();
+        } catch (ValidationException $exception) {
+            $parameters = $locale === app()->getLocale() ? [] : ['locale' => $locale];
+
+            throw $exception->redirectTo(route('site.settings.index', $parameters));
+        }
 
         DB::transaction(function () use ($schema, $validated, $locale) {
             foreach ($schema as $groupKey => $group) {

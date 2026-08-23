@@ -20,7 +20,7 @@
     @include('admin.seo._indexing-status')
     @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Please fix these settings:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
-    @unless($canEditMetadata)<div class="seo2-alert seo2-alert--warning" role="status"><strong>Read-only SEO access.</strong> You can inspect live health, previews and revision differences. Editing and restoring need separate permissions.</div>@endunless
+    @unless($canEditMetadata)<div class="seo2-alert seo2-alert--warning" role="status">@if($canRestoreRevisions)<strong>Revision restore access.</strong> You can inspect live health, previews and revision differences, and restore earlier versions. Saving other SEO changes requires SEO edit access.@else<strong>Read-only SEO access.</strong> You can inspect live health, previews and revision differences. SEO edit access includes both saving changes and restoring earlier versions.@endif</div>@endunless
 
     <nav class="seo2-language" aria-label="SEO language">
         @foreach($languageSummary as $language)<a class="{{ $language['id'] === $locale ? 'is-active' : '' }}" href="{{ route('seo.index', ['locale' => $language['id']]) }}" aria-label="{{ $language['name'] }}: {{ $language['ready'] }} of {{ $language['total'] }} indexable live pages ready"><span>{{ $language['name'] }}</span><small>{{ $language['ready'] }}/{{ $language['total'] }}</small></a>@endforeach

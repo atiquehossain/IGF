@@ -3,7 +3,10 @@
     $custom_inline_css  = '';
 ?>
 @section('content')
-@php($canEditSeo = app(\App\Http\Middleware\Permission::class)->allows(auth('admin')->user(), 'seo.content.edit'))
+@php
+    $canEditSeo = app(\App\Http\Middleware\Permission::class)->allows(auth('admin')->user(), 'seo.content.edit');
+    $mediaUrls = app(\App\Services\AdminMediaUrlResolver::class);
+@endphp
 <div class="content pb-0">
     <div class="row">
         <div class="col-12">
@@ -14,8 +17,8 @@
                             <h4 class="card-title">{{ $title }}</h4>
                         </div>
                         <div class="col-md-6">
-                            <a class="btn btn-sm btn-secondary float-right" href="{{ route('page.index') }}" id="go-back">
-                                <i class="fa fa-arrow-circle-left"></i> {{ $Lang->Common->GoBack }}
+                            <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('page.index') }}" id="go-back">
+                                <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                             </a>
                         </div>
                     </div>
@@ -55,10 +58,7 @@
                                 $banners = @$bannerList->where('language', $lang);
                                 $custom_inline_css .= @$page->inline_css;
 
-                                $isValidUrl = filter_var(@$page->thumbnail, FILTER_VALIDATE_URL);
-                                if (empty($isValidUrl) && $page) {
-                                    $page->thumbnail = route('page.thumbnail', $page->thumbnail);
-                                }
+                                $thumbnailUrl = $mediaUrls->image($page?->getRawOriginal('thumbnail'), 'page');
                              ?>
                             <div class="tab-pane fade {{ $isActive }}" id="{{$translation->id}}" role="tabpanel" aria-labelledby="{{$translation->id}}-tab">
 
@@ -132,7 +132,10 @@
                                                                 <br> {{ $Lang->Common->Form->Provide1180px_2 }}</small>
                                                             <div class="file-upload">
                                                                 <label for="thumbnail_{{$lang}}" class="file-upload_label">
-                                                                    <img class="file-upload_img" id="upload_img_{{$lang}}" src="{{ @$page->thumbnail }}">
+                                                                    <img class="file-upload_img" id="upload_img_{{$lang}}"
+                                                                        src="{{ $thumbnailUrl }}"
+                                                                        onerror="this.onerror=null;this.src='{{ asset('image/no-image.png') }}'"
+                                                                        alt="Current listing image for {{ $page?->name ?? 'this page' }}">
                                                                 </label>
                                                                 <input type="file" onchange="changefile(event, `upload_img_{{$lang}}`)" name="thumbnail[{{$lang}}]" value="{{old('thumbnail.'. $lang)}}" id="thumbnail_{{$lang}}" class="file-upload_input" data-e2e="thumbnail-{{ $lang }}">
                                                             </div>
@@ -234,7 +237,7 @@
                                     </div>
                                 </div>
                                 <div class="alert alert-info my-2" role="note">
-                                    <strong>Search &amp; sharing:</strong>
+                                    <strong>Search &amp; Sharing:</strong>
                                     @if($page && $canEditSeo)
                                         Use the single guided editor for Google previews, social cards, visibility, permalink and schema.
                                         <a class="btn btn-sm btn-outline-primary ml-2" href="{{ route('seo.content.edit', ['type' => 'page', 'id' => $page->id, 'locale' => $lang]) }}">Open Search &amp; Sharing</a>
@@ -251,8 +254,8 @@
                             <button type="submit" class="btn btn-success btn-sm" name="save">
                                 <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
                             </button>
-                            <button type="submit" name="save_and_update" value="1" class="btn btn-success btn-sm">
-                                <i class="fa fa-save"></i> {{ $Lang->Common->SaveAndUpdate }}
+                                <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
+                                    <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing
                             </button>
                         </div>
                     </form>

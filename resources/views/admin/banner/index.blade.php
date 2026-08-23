@@ -59,7 +59,7 @@
                                 <td> <span class="name">{{@$banner->name}}</span> </td>
                                 <td> <span class="name">{{@$banner->type}}</span> </td>
                                 <td>
-                                    <?= App\Link::action(@$banner->uuid, @$banner->status, @$banner->name) ?>
+                                    <?= App\Link::action(@$banner->uuid, @$banner->status, 'banner ' . ($banner->name ?? '')) ?>
                                 </td>
                             </tr>
                             @empty

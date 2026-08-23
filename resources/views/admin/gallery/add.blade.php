@@ -13,18 +13,18 @@
                     <div class="card-header">
                         <div class="row">
                             <div class="col-md-6">
-                                <h4 class="card-title">{{ $title }}</h4>
+                                <h1 class="card-title">{{ $title }}</h1>
                             </div>
                             <div class="col-md-6">
-                                <a class="btn btn-sm btn-secondary float-right" href="{{ route('gallery.index') }}" id="go-back">
-                                    <i class="fa fa-arrow-circle-left"></i> {{ $Lang->Common->GoBack }}
+                                <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('gallery.index') }}" id="go-back">
+                                    <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
                         @if($isLocalization)
-                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <ul class="nav nav-pills mb-3" id="gallery-language-tabs" role="tablist" aria-label="Gallery languages">
                         @foreach ($translations as $translation)
                             <?php
                                 $isActive = '';
@@ -33,13 +33,13 @@
                                 }
                              ?>
                             <li class="nav-item main" data-id="{{$translation->id}}">
-                                <a class="nav-link {{ $isActive }}" id="{{$translation->id}}-tab" data-toggle="pill" href="#{{$translation->id}}" role="tab" aria-controls="{{$translation->id}}" aria-selected="true">{{$translation->name}}</a>
+                                <a class="nav-link {{ $isActive }}" id="gallery-{{$translation->id}}-tab" data-toggle="pill" href="#gallery-{{$translation->id}}-panel" role="tab" aria-controls="gallery-{{$translation->id}}-panel" aria-selected="{{ $translation->id === 'en' ? 'true' : 'false' }}">{{$translation->name}}</a>
                             </li>
                         @endforeach
                         </ul>
                         @endif
                         <form action="{{ route('gallery.store') }}" method="post" enctype="multipart/form-data">
-                            <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-content" id="gallery-language-panels">
 
                                 @csrf
                                 @foreach ($translations as $translation)
@@ -52,13 +52,13 @@
 
                                   $albumsList =  $albums->where('language', $lang);
                                 ?>
-                                    <div class="tab-pane fade {{ $isActive }}" id="{{$translation->id}}" role="tabpanel" aria-labelledby="{{$translation->id}}-tab">
+                                    <div class="tab-pane fade {{ $isActive }}" id="gallery-{{$translation->id}}-panel" role="tabpanel" aria-labelledby="gallery-{{$translation->id}}-tab">
                                         <input name="language[{{$lang}}]" type="hidden" class="form-control" value="{{$lang}}">
 
                                         <div>
-                                        <label for="type" class="control-label mb-1">{{ $Lang->Album }} <span>*</span></label>
+                                        <label for="gallery_album_{{$lang}}" class="control-label mb-1">{{ $Lang->Album }} <span>*</span></label>
                                             <div class="input-group mb-3">
-                                                <select name="album_id[{{$lang}}]" class="form-control" required data-e2e="gallery-album-id-{{ $lang }}">
+                                                <select id="gallery_album_{{$lang}}" name="album_id[{{$lang}}]" class="form-control" required data-gallery-album-language="{{ $lang }}" data-e2e="gallery-album-id-{{ $lang }}">
                                                     <option value="">{{ $Lang->Common->Form-> Select }} album</option>
                                                     @foreach ($albumsList as $album)
                                                     <option value="{{ $album->id }}" {{ old('album_id.'. $lang) == $album->id ? 'selected' : '' }}>
@@ -79,8 +79,8 @@
                                         </div>
 
                                         <div class="form-group has-success">
-                                                <label for="name[{{$lang}}]" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
-                                                <input name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}"
+                                                <label for="gallery_name_{{$lang}}" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                                                <input id="gallery_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}"
                                                     class="form-control" required data-e2e="gallery-name-{{ $lang }}">
                                                 @if ($errors->has('name.'. $lang))
                                                     <small
@@ -90,8 +90,8 @@
 
 
                                         <div class="form-group has-success">
-                                            <label for="description[{{$lang}}]">Image alternative text ( <small class="text-info">Describe the image for visitors using a screen reader; maximum 120 characters.</small>)</label>
-                                            <textarea class="form-control form-control-danger" name="description[{{$lang}}]" rows="4" maxlength="120" data-e2e="gallery-description-{{ $lang }}">{{old('description.'. $lang)}}</textarea>
+                                            <label for="gallery_description_{{$lang}}">Image alternative text ( <small class="text-info">Describe the image for visitors using a screen reader; maximum 120 characters.</small>)</label>
+                                            <textarea id="gallery_description_{{$lang}}" class="form-control form-control-danger" name="description[{{$lang}}]" rows="4" maxlength="120" data-e2e="gallery-description-{{ $lang }}">{{old('description.'. $lang)}}</textarea>
                                             @if ($errors->has('description.'. $lang))
                                             <small class="help-block form-text text-danger">{{ $errors->first('description.'. $lang) }}</small>
                                             @endif
@@ -126,8 +126,8 @@
                                     <button type="submit" class="btn btn-success btn-sm" name="save">
                                         <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
                                     </button>
-                                    <button type="submit" name="save_and_update" value="1" class="btn btn-success btn-sm">
-                                        <i class="fa fa-save"></i> {{ $Lang->Common->SaveAndUpdate }}
+                                <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
+                                    <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing
                                     </button>
                                 </div>
 
@@ -141,20 +141,22 @@
 
 @if($canCreateAlbum)
 {{-- Modal Album --}}
-<div class="modal fade" id="albamModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="mediumModalLabel" aria-hidden="true">
+<div class="modal fade" id="albamModal" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="album-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
-            <form class="fileUploadFormEdit" action="{{route('album.store')}}" method="POST" enctype="multipart/form-data">
+            <form class="album-create-form" action="{{route('album.store')}}" method="POST">
                 <div class="modal-header">
-                    <strong class="card-title">Album</strong>
-                    <button type="button" class="close cancel" data-dismiss="modal" aria-label="Close">
+                    <strong class="card-title" id="album-modal-title">Create a new album</strong>
+                    <button type="button" class="close cancel btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-muted">The gallery information already entered on this page will be preserved.</p>
+                    <div id="album-modal-feedback" class="alert alert-danger" role="alert" hidden></div>
 
                     @if($isLocalization)
-                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <ul class="nav nav-pills mb-3" id="album-language-tabs" role="tablist" aria-label="Album languages">
                     @foreach ($translations as $translation)
                         <?php
                             $isActive = '';
@@ -163,13 +165,13 @@
                             }
                             ?>
                         <li class="nav-item">
-                        <a class="nav-link {{ $isActive }}" id="{{$translation->id}}-tab" data-toggle="pill" href="#{{$translation->id}}-albam" role="tab" aria-controls="{{$translation->id}}" aria-selected="true">{{$translation->name}}</a>
+                        <a class="nav-link {{ $isActive }}" id="album-{{$translation->id}}-tab" data-toggle="pill" href="#album-{{$translation->id}}-panel" role="tab" aria-controls="album-{{$translation->id}}-panel" aria-selected="{{ $translation->id === 'en' ? 'true' : 'false' }}">{{$translation->name}}</a>
                         </li>
                     @endforeach
                     </ul>
                     @endif
 
-                    <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-content" id="album-language-panels">
 
                     @csrf
                     @foreach ($translations as $translation)
@@ -180,12 +182,12 @@
                             $isActive  = 'show active';
                         }
                     ?>
-                        <div class="tab-pane fade {{ $isActive }}" id="{{$translation->id}}-albam" role="tabpanel" aria-labelledby="{{$translation->id}}-tab">
+                        <div class="tab-pane fade {{ $isActive }}" id="album-{{$translation->id}}-panel" role="tabpanel" aria-labelledby="album-{{$translation->id}}-tab">
                             <input name="language[{{$lang}}]" type="hidden" class="form-control" value="{{$lang}}">
 
                             <div class="form-group has-success">
-                                <label for="name" class="control-label mb-1">{{ $Lang->Common->Form->Name}}<span>*</span></label>
-                                <input name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}" class="form-control" required>
+                                <label for="album_name_{{$lang}}" class="control-label mb-1">{{ $Lang->Common->Form->Name}}<span>*</span></label>
+                                <input id="album_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="" class="form-control" required autocomplete="off">
                                 @if ($errors->has('name.'. $lang))
                                 <small class="help-block form-text text-danger">{{ $errors->first('name.'. $lang) }}</small>
                                 @endif
@@ -198,8 +200,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-info submit_ mt-3"><i class="fa fa-magic"></i>&nbsp; {{ $Lang->Common->Submit }}</button>
-                    <button type="button" class="btn btn-danger cancel mt-3" data-dismiss="modal"><i class="fa fa-trash-o"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
+                    <button type="submit" class="btn igf-btn igf-btn-primary album-create-submit mt-3"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp; Create album</button>
+                    <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
                 </div>
             </form>
         </div>
@@ -208,6 +210,8 @@
 <style>
     .open_album {
         cursor: pointer;
+        min-width: 44px;
+        min-height: 44px;
     }
 </style>
 @endif
@@ -217,8 +221,70 @@
 @section('custom-js')
 <script>
 @if($canCreateAlbum)
+var albumModal = $('#albamModal');
+var albumForm = albumModal.find('.album-create-form');
+var albumFeedback = $('#album-modal-feedback');
+
 $(".open_album").click(function() {
-    $('#albamModal').modal('show');
+    albumFeedback.prop('hidden', true).text('');
+    albumModal.modal('show');
+});
+
+albumForm.on('submit', function(event) {
+    event.preventDefault();
+    var form = $(this);
+    var submitButton = form.find('.album-create-submit');
+    if (submitButton.prop('disabled')) {
+        return;
+    }
+
+    submitButton.prop('disabled', true).attr('aria-busy', 'true');
+    albumFeedback.prop('hidden', true).text('');
+    setAdminBusy(true);
+
+    $.ajax({
+        url: form.attr('action'),
+        method: 'POST',
+        data: form.serialize(),
+        headers: {'Accept': 'application/json'},
+        success: function(response) {
+            (response.albums || []).forEach(function(album) {
+                var select = $('[data-gallery-album-language]').filter(function() {
+                    return String($(this).data('gallery-album-language')) === String(album.language);
+                });
+                if (!select.length) {
+                    return;
+                }
+                var option = select.find('option[value="' + album.id + '"]');
+                if (!option.length) {
+                    option = $('<option>', {value: album.id, text: album.name}).appendTo(select);
+                }
+                select.val(String(album.id)).trigger('change');
+            });
+            toastrMsg('success', response.message || 'Album created successfully.');
+            form[0].reset();
+            albumModal.modal('hide');
+        },
+        error: function(error) {
+            var message = adminErrorMessage(error);
+            if (error.responseJSON && error.responseJSON.errors) {
+                var fields = Object.keys(error.responseJSON.errors);
+                if (fields.length && error.responseJSON.errors[fields[0]].length) {
+                    message = error.responseJSON.errors[fields[0]][0];
+                }
+            }
+            albumFeedback.text(message).prop('hidden', false);
+            toastrMsg('error', message);
+        },
+        complete: function() {
+            submitButton.prop('disabled', false).removeAttr('aria-busy');
+            setAdminBusy(false);
+        }
+    });
+});
+
+albumModal.on('hidden.bs.modal', function() {
+    albumFeedback.prop('hidden', true).text('');
 });
 @endif
 

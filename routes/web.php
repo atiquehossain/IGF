@@ -501,14 +501,6 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     Route::get('annual-report/download/{slug?}', 'Vue\AnnualReportController@download')->name('frontend.annual_report.download');
     Route::get('annual-report/{slug}', 'Vue\AnnualReportController@show')->name('frontend.annual_report.show');
 
-    // Google login
-    Route::get('login/google', 'Auth\SociaLiteLoginController@redirectToGoogle')->name('login.google');
-    Route::get('login/google/callback', 'Auth\SociaLiteLoginController@handleGoogleCallback')->middleware('throttle:20,1');
-
-    // Facebook login
-    Route::get('login/facebook', 'Auth\SociaLiteLoginController@redirectToFacebook')->name('login.facebook');
-    Route::get('login/facebook/callback', 'Auth\SociaLiteLoginController@handleFacebookCallback')->middleware('throttle:20,1');
-
     // Github login
     Route::get('login/github', 'Auth\SociaLiteLoginController@redirectToGithub')->name('login.github');
     Route::get('login/github/callback', 'Auth\SociaLiteLoginController@handleGithubCallback')->middleware('throttle:20,1');

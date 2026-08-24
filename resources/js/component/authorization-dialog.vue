@@ -166,12 +166,6 @@ export default {
     ]
   }),
   methods: {
-    googleLogin() {
-      window.location.href = route('login.google', [this.igfLocale]);
-    },
-    facebookLogin() {
-      window.location.href = route('login.facebook', [this.igfLocale]);
-    },
     login() {
       this.$inertia.post(route('login', [this.igfLocale]), {
         phone_no: this.phone_no,

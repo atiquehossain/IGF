@@ -147,6 +147,11 @@ class PageBuilderController extends Controller
             ->latest()
             ->limit(120)
             ->get();
+        $videoAssets = MediaAsset::query()
+            ->whereIn('mime_type', ['video/mp4', 'video/webm'])
+            ->latest()
+            ->limit(120)
+            ->get();
         if ($selectedThumbnailAsset && !$mediaAssets->contains('id', $selectedThumbnailAsset->id)) {
             $mediaAssets->prepend($selectedThumbnailAsset);
         }
@@ -166,6 +171,7 @@ class PageBuilderController extends Controller
                 ->orderBy('name')
                 ->get(),
             'mediaAssets' => $mediaAssets,
+            'videoAssets' => $videoAssets,
             'selectedThumbnailAssetUuid' => $selectedThumbnailAsset?->uuid,
             'canManageFundingEligibility' => app(Permission::class)
                 ->allows(auth('admin')->user(), 'donationType.edit'),
@@ -272,6 +278,9 @@ class PageBuilderController extends Controller
                 ], $this->blockRules(false))->validate();
                 if ($block->type === 'ways_to_give') {
                     $this->validateWaysToGiveContent($blockData['content'], $data['locale'], 'blocks.' . $blockData['uuid'] . '.content');
+                }
+                if ($block->type === 'media_text') {
+                    $this->validateMediaTextContent($blockData['content']);
                 }
 
                 $attributes = [
@@ -396,13 +405,17 @@ class PageBuilderController extends Controller
 
     public function storeMedia(string $uuid, Request $request)
     {
+        $mediaKind = $request->input('media_kind', 'image');
         $data = $request->validate([
             'locale' => ['required', 'string', 'max:10'],
+            'media_kind' => ['sometimes', 'string', Rule::in(['image', 'video'])],
             'file' => [
                 'required',
                 'file',
                 'max:20480',
-                'mimetypes:image/jpeg,image/png,image/webp,image/gif',
+                $mediaKind === 'video'
+                    ? 'mimetypes:video/mp4,video/webm'
+                    : 'mimetypes:image/jpeg,image/png,image/webp,image/gif',
             ],
             'alt_text' => ['nullable', 'string', 'max:255'],
         ]);
@@ -527,6 +540,11 @@ class PageBuilderController extends Controller
                 $data['locale']
             );
         }
+        if ($data['type'] === 'media_text') {
+            $this->validateMediaTextContent(
+                $data['content'] ?? config('page-builder.default_content.media_text', [])
+            );
+        }
 
         [$block, $editorVersion] = DB::transaction(function () use ($uuid, $data) {
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
@@ -581,6 +599,9 @@ class PageBuilderController extends Controller
             }
             if ($block->type === 'ways_to_give' && array_key_exists('content', $data)) {
                 $this->validateWaysToGiveContent($data['content'], $data['locale']);
+            }
+            if ($block->type === 'media_text' && array_key_exists('content', $data)) {
+                $this->validateMediaTextContent($data['content']);
             }
             $attributes = [
                 'label' => $data['label'] ?? $block->resolvedLabel(),
@@ -952,6 +973,14 @@ class PageBuilderController extends Controller
             'content.animation_type' => ['sometimes', 'string', Rule::in(['count_up', 'fade_up', 'pop'])],
             'content.animation_duration' => ['sometimes', 'integer', 'between:300,5000'],
             'content.animation_delay' => ['sometimes', 'integer', 'between:0,1000'],
+            'content.media_type' => ['sometimes', 'string', Rule::in(['image', 'video', 'youtube'])],
+            'content.image' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.image_alt' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'content.video_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.youtube_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.poster' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.caption' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'content.image_position' => ['sometimes', 'string', Rule::in(['left', 'right'])],
             'content.content_source' => ['sometimes', 'string', Rule::in(
                 collect(config('page-builder.automatic_sources', []))->flatMap(fn (array $sources) => array_keys($sources))->unique()->values()->all()
             )],
@@ -960,6 +989,7 @@ class PageBuilderController extends Controller
             'content.sort' => ['sometimes', 'string', Rule::in(array_keys(config('page-builder.automatic_sort_options', [])))],
             'content.limit' => ['sometimes', 'integer', 'between:1,12'],
             'content.selection_mode' => ['sometimes', 'string', Rule::in(['automatic', 'manual'])],
+            'content.presentation' => ['sometimes', 'string', Rule::in(['card_grid', 'focus_areas'])],
             'content.layout' => ['sometimes', 'string', Rule::in(['single_cta', 'card_grid', 'banner'])],
             'content.project_uuid' => ['sometimes', 'nullable', 'uuid'],
             'content.link_label' => ['sometimes', 'nullable', 'string', 'max:80'],
@@ -1440,6 +1470,96 @@ class PageBuilderController extends Controller
     }
 
     /**
+     * Image-and-text sections are backwards compatible: content saved before
+     * media choices were introduced is treated as an image section. Video and
+     * YouTube choices must have the corresponding usable source before save.
+     */
+    private function validateMediaTextContent(array $content): void
+    {
+        $mediaType = (string) ($content['media_type'] ?? 'image');
+
+        Validator::make(['content' => $content], [
+            'content.media_type' => ['sometimes', 'string', Rule::in(['image', 'video', 'youtube'])],
+            'content.image' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.image_alt' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'content.video_url' => [
+                Rule::requiredIf($mediaType === 'video'),
+                'nullable',
+                'string',
+                'max:2048',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $url = $this->sanitizer->sanitizeUrl($value);
+                    $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+                    if (trim((string) $value) !== ''
+                        && ($url === '' || ($scheme !== '' && !in_array($scheme, ['http', 'https'], true)))) {
+                        $fail('Choose an uploaded video or enter a valid HTTP or HTTPS video URL.');
+                    }
+                },
+            ],
+            'content.youtube_url' => [
+                Rule::requiredIf($mediaType === 'youtube'),
+                'nullable',
+                'string',
+                'max:2048',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (trim((string) $value) !== '' && $this->youtubeVideoId((string) $value) === null) {
+                        $fail('Enter a valid YouTube link with an 11-character video ID.');
+                    }
+                },
+            ],
+            'content.poster' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.caption' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'content.image_position' => ['sometimes', 'string', Rule::in(['left', 'right'])],
+        ])->validate();
+    }
+
+    private function youtubeVideoId(string $value): ?string
+    {
+        $url = trim($value);
+        if ($url === '') {
+            return null;
+        }
+        if (!preg_match('#\Ahttps?://#i', $url)) {
+            $url = 'https://' . ltrim($url, '/');
+        }
+        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return null;
+        }
+
+        $parts = parse_url($url);
+        if (!is_array($parts)
+            || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+            || isset($parts['user'])
+            || isset($parts['pass'])
+            || (isset($parts['port']) && (int) $parts['port'] !== 443)) {
+            return null;
+        }
+
+        $host = strtolower(rtrim((string) ($parts['host'] ?? ''), '.'));
+        $path = (string) ($parts['path'] ?? '');
+        $videoId = null;
+
+        if ($host === 'youtu.be') {
+            $candidate = trim($path, '/');
+            $videoId = str_contains($candidate, '/') ? null : $candidate;
+        } elseif (in_array($host, ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'], true)) {
+            if (rtrim($path, '/') === '/watch') {
+                parse_str((string) ($parts['query'] ?? ''), $query);
+                $videoId = is_string($query['v'] ?? null) ? $query['v'] : null;
+            } elseif (preg_match('#\A/(?:embed|shorts|live)/([A-Za-z0-9_-]{11})/?\z#', $path, $match) === 1) {
+                $videoId = $match[1];
+            }
+        } elseif (in_array($host, ['youtube-nocookie.com', 'www.youtube-nocookie.com'], true)
+            && preg_match('#\A/embed/([A-Za-z0-9_-]{11})/?\z#', $path, $match) === 1) {
+            $videoId = $match[1];
+        }
+
+        return is_string($videoId) && preg_match('/\A[A-Za-z0-9_-]{11}\z/', $videoId) === 1
+            ? $videoId
+            : null;
+    }
+
+    /**
      * Ways to Give accepts only identities selected from managed records. An
      * inactive cause remains valid in saved content so editors can see the
      * warning and remove it; the public resolver always omits it.
@@ -1565,9 +1685,12 @@ class PageBuilderController extends Controller
         $pages = Page::query()
             ->where('language', $locale)
             ->publiclyAvailable()
-            ->with(['category:id,uuid,name,slug', 'pageTags.tag:id,name,slug,status'])
+            ->with(['category:id,uuid,name,slug,status', 'pageTags.tag:id,name,slug,status'])
             ->orderBy('name')
-            ->get(['id', 'uuid', 'category_id', 'name', 'slug', 'is_funding_project', 'is_zakat_eligible']);
+            ->get([
+                'id', 'uuid', 'category_id', 'name', 'slug', 'sub_title', 'description',
+                'thumbnail', 'published_at', 'order_by', 'is_funding_project', 'is_zakat_eligible',
+            ]);
         $fallbackLocale = (string) config('app.fallback_locale', 'en');
         $givingProjects = Page::query()
             ->publiclyAvailable()
@@ -1657,9 +1780,53 @@ class PageBuilderController extends Controller
             'destination' => 'Opens the managed child sponsorship page.',
         ]);
 
+        $pageOption = static function (Page $page): array {
+            $thumbnail = trim((string) $page->getRawOriginal('thumbnail'));
+            if ($thumbnail !== '' && !str_starts_with($thumbnail, '/') && !preg_match('#^https?://#i', $thumbnail)) {
+                $thumbnail = '/storage/photos/1/page/' . ltrim($thumbnail, '/');
+            }
+
+            return [
+                'value' => (string) $page->uuid,
+                'label' => $page->name,
+                'body' => $page->sub_title ?: str($page->description)->stripTags()->limit(140)->toString(),
+                'image' => $thumbnail,
+                'image_alt' => $page->name,
+                'url' => '/page/' . ltrim($page->slug, '/'),
+                'featured_order' => (int) ($page->order_by ?? 0),
+                'published_at' => $page->published_at?->getTimestamp() ?? 0,
+                'sort_id' => (int) $page->id,
+            ];
+        };
+        $testimonialOption = static function (Testimonial $testimonial): array {
+            $photo = trim((string) $testimonial->getRawOriginal('photo'));
+            if ($photo !== '' && !str_starts_with($photo, '/') && !preg_match('#^https?://#i', $photo)) {
+                $photo = '/storage/photos/1/testimonial/' . ltrim(str_replace('\\', '/', $photo), '/');
+            }
+            $quote = trim((string) preg_replace(
+                '/\s+/u',
+                ' ',
+                html_entity_decode(strip_tags((string) $testimonial->testimonial), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            ));
+
+            return [
+                'value' => (string) $testimonial->uuid,
+                'label' => $testimonial->name,
+                'designation' => trim((string) $testimonial->designation),
+                'quote' => $quote,
+                'photo' => $photo,
+                'featured_order' => (int) ($testimonial->order_by ?? 0),
+                'published_at' => $testimonial->created_at?->getTimestamp() ?? 0,
+                'sort_id' => (int) $testimonial->id,
+            ];
+        };
+
         return [
             'sources' => config('page-builder.automatic_sources', []),
             'sorts' => config('page-builder.automatic_sort_options', []),
+            'presentations' => [
+                'causes' => config('page-builder.cause_presentations', []),
+            ],
             'categories' => Category::query()
                 ->where('language', $locale)
                 ->where('status', 1)
@@ -1687,16 +1854,14 @@ class PageBuilderController extends Controller
             'items' => [
                 'projects' => $pages
                     ->filter(fn (Page $page) => $page->pageTags->contains(fn ($link) => (bool) $link->tag?->status))
-                    ->map(fn (Page $page) => [
-                        'value' => (string) $page->uuid,
-                        'label' => $page->name,
+                    ->map(fn (Page $page) => $pageOption($page) + [
                         'tags' => $page->pageTags->pluck('tag')->filter()->pluck('slug')->values()->all(),
                     ])->values(),
-                'category' => $pages->map(fn (Page $page) => [
-                    'value' => (string) $page->uuid,
-                    'label' => $page->name,
-                    'category' => $page->category?->slug,
-                ])->values(),
+                'category' => $pages
+                    ->filter(fn (Page $page) => (bool) $page->category?->status)
+                    ->map(fn (Page $page) => $pageOption($page) + [
+                        'category' => $page->category?->slug,
+                    ])->values(),
                 'events' => NoticeBoard::query()
                     ->where('language', $locale)
                     ->where('status', 1)
@@ -1709,8 +1874,8 @@ class PageBuilderController extends Controller
                     ->where('status', 1)
                     ->whereNotNull('uuid')
                     ->orderBy('name')
-                    ->get(['uuid', 'name'])
-                    ->map(fn (Testimonial $testimonial) => ['value' => (string) $testimonial->uuid, 'label' => $testimonial->name])
+                    ->get(['id', 'uuid', 'name', 'designation', 'testimonial', 'photo', 'order_by', 'created_at'])
+                    ->map($testimonialOption)
                     ->values(),
                 'team' => LatestNews::query()
                     ->where('language', $locale)

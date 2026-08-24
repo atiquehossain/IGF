@@ -34,6 +34,22 @@ class AdminSessionIntegrityTest extends TestCase
         $this->assertAuthenticatedAs($admin, 'admin');
     }
 
+    public function test_admin_login_preserves_tag_like_password_characters(): void
+    {
+        $password = 'Strong<em>Admin-Password!23';
+        $admin = $this->admin([
+            'username' => 'tag-password-admin',
+            'password' => Hash::make($password),
+        ]);
+
+        $this->post(route('admin.login'), [
+            'username' => $admin->username,
+            'password' => $password,
+        ])->assertRedirect(route('dashboard.index'));
+
+        $this->assertAuthenticatedAs($admin, 'admin');
+    }
+
     public function test_disabled_admin_is_denied_on_the_next_request(): void
     {
         $admin = $this->admin(['status' => 0]);

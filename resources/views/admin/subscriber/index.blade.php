@@ -159,7 +159,10 @@
             spinner.show(); // Show spinner before AJAX request
           },
           success: function(res) {
-            alert(res.message);
+            const successMessage = typeof res?.message === 'string' && res.message.trim()
+              ? res.message
+              : 'Email sent successfully.';
+            alert(successMessage);
             $('#sendEmailModal').modal('hide');
             $('#sendEmailForm')[0].reset();
             $('#signature-preview').hide();
@@ -167,10 +170,8 @@
           },
           error: function(xhr, status, error) {
             let errorMessage = 'Failed to send email.';
-            if (xhr.responseJSON && xhr.responseJSON.message) {
+            if (typeof xhr.responseJSON?.message === 'string' && xhr.responseJSON.message.trim()) {
               errorMessage = xhr.responseJSON.message;
-            } else if (xhr.responseText) {
-              errorMessage = xhr.responseText;
             }
             alert(errorMessage);
           },

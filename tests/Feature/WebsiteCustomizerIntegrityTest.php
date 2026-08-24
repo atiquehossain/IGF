@@ -151,6 +151,83 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertSame('', $public['faq_2_question']);
     }
 
+    public function test_footer_legal_status_fields_are_editable_sanitized_and_published(): void
+    {
+        $admin = $this->makePageEditor();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Footer legal status')
+            ->assertSee('Replace Donor Support with legal status')
+            ->assertSee('Microcredit Regulatory Authority Reg. No.')
+            ->assertSee('00176-00059-00018')
+            ->assertSee('Authority 1 logo')
+            ->assertSee('Choose image');
+
+        $settings = $this->defaultSettingsPayload();
+        $settings['legal_status'] = [
+            'enabled' => true,
+            'heading' => 'Official <strong>registrations</strong>',
+            'authority_1_label' => 'First <em>authority</em>',
+            'authority_1_registration' => '00176-00059-00018',
+            'authority_1_logo' => '/storage/media/legal/mra.png',
+            'authority_2_label' => 'Second authority',
+            'authority_2_registration' => '626',
+            'authority_2_logo' => '',
+            'authority_3_label' => 'Third authority',
+            'authority_3_registration' => 'S-5803(47)06',
+            'authority_3_logo' => '/storage/media/legal/joint-stock.png',
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'legal_status',
+            'key' => 'enabled',
+            'locale' => '*',
+            'value' => '1',
+            'type' => 'boolean',
+            'is_public' => true,
+        ]);
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'legal_status',
+            'key' => 'heading',
+            'locale' => 'en',
+            'value' => 'Official registrations',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'legal_status',
+            'key' => 'authority_1_registration',
+            'locale' => '*',
+            'value' => '00176-00059-00018',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'legal_status',
+            'key' => 'authority_1_logo',
+            'locale' => '*',
+            'value' => '/storage/media/legal/mra.png',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+
+        $public = app(SiteSettingService::class)->values('en', true)['legal_status'];
+        $this->assertTrue($public['enabled']);
+        $this->assertSame('Official registrations', $public['heading']);
+        $this->assertSame('First authority', $public['authority_1_label']);
+        $this->assertSame('00176-00059-00018', $public['authority_1_registration']);
+        $this->assertSame('/storage/media/legal/mra.png', $public['authority_1_logo']);
+        $this->assertSame('626', $public['authority_2_registration']);
+        $this->assertSame('S-5803(47)06', $public['authority_3_registration']);
+        $this->assertSame('/storage/media/legal/joint-stock.png', $public['authority_3_logo']);
+    }
+
     public function test_view_only_customizer_hides_mutations_and_unauthorized_admin_shortcuts(): void
     {
         $admin = $this->makePageEditor(['site.settings.index'], []);

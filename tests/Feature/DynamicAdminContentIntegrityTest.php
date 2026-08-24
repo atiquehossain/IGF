@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Helper\MyMenu;
 use App\Models\Category;
 use App\Models\DonationType;
 use App\Models\Donation;
@@ -224,6 +225,17 @@ class DynamicAdminContentIntegrityTest extends TestCase
         $english = PageMenu::where('type', 'footer')->where('language', 'en')->where('name', 'Explore')->firstOrFail();
         $bangla = PageMenu::where('type', 'footer')->where('language', 'bn')->where('name', 'Explore')->firstOrFail();
         $this->assertSame($english->uuid, $bangla->uuid);
+    }
+
+    public function test_public_footer_menu_contract_exposes_the_stable_legal_status_slot_uuid(): void
+    {
+        $menus = MyMenu::frontMenus('en', 'footer');
+        $legalStatusSlot = $menus->firstWhere('uuid', '7f030000-0000-4000-8000-000000000300');
+
+        $this->assertNotNull($legalStatusSlot);
+        $this->assertSame('Donor support', $legalStatusSlot->name);
+        $this->assertNotEmpty($legalStatusSlot->children);
+        $this->assertNotEmpty($legalStatusSlot->children->first()->uuid);
     }
 
     public function test_media_usage_includes_legacy_content_and_site_settings(): void

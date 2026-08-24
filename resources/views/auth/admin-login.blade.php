@@ -38,7 +38,7 @@
                                 <h1 class="text-uppercase text-center">Administrator sign in</h1>
                                 <p class="admin-login-intro">Manage website content, media, search visibility, and administrator access.</p>
                                 @if (session('message'))
-                                    <div class="alert alert-info" role="status">{{ session('message') }}</div>
+                                    <div class="alert alert-danger" role="alert">{{ session('message') }}</div>
                                 @endif
                                 @if ($errors->any())
                                     <div class="alert alert-danger" role="alert" id="admin-login-errors">

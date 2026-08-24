@@ -5,7 +5,7 @@ return [
         'hero' => 'Hero banner',
         'stats' => 'Impact statistics',
         'rich_text' => 'Rich text',
-        'media_text' => 'Image and text',
+        'media_text' => 'Media and text',
         'cards' => 'Card grid',
         'ways_to_give' => 'Ways to Give',
         'causes' => 'Programs and causes',
@@ -26,7 +26,7 @@ return [
     'simple_sections' => [
         'hero' => ['label' => 'Hero banner', 'icon' => 'fa-image', 'description' => 'A large opening image with a message and buttons.'],
         'rich_text' => ['label' => 'Text section', 'icon' => 'fa-align-left', 'description' => 'A heading and formatted body copy.'],
-        'media_text' => ['label' => 'Image and text', 'icon' => 'fa-columns', 'description' => 'Tell a story beside a photograph.'],
+        'media_text' => ['label' => 'Media and text', 'icon' => 'fa-columns', 'description' => 'Tell a story beside an image, uploaded video, or YouTube video.'],
         'stats' => ['label' => 'Impact statistics', 'icon' => 'fa-bar-chart', 'description' => 'Show important numbers and short labels.'],
         'cards' => ['label' => 'Cards or projects', 'icon' => 'fa-th-large', 'description' => 'A visual grid of programs, projects, or stories.'],
         'ways_to_give' => ['label' => 'Ways to Give', 'icon' => 'fa-gift', 'description' => 'Offer managed donation causes, Zakat, and child sponsorship without entering links.'],
@@ -79,6 +79,11 @@ return [
         'title' => 'Title A–Z',
     ],
 
+    'cause_presentations' => [
+        'card_grid' => 'Standard image cards',
+        'focus_areas' => 'Animated focus areas',
+    ],
+
     'default_content' => [
         'hero' => [
             'eyebrow' => 'Urgent initiative',
@@ -128,8 +133,13 @@ return [
             'eyebrow' => '',
             'heading' => 'Tell a meaningful story',
             'body' => '<p>Add your story here.</p>',
+            'media_type' => 'image',
             'image' => '',
             'image_alt' => '',
+            'video_url' => '',
+            'youtube_url' => '',
+            'poster' => '',
+            'caption' => '',
             'image_position' => 'left',
             'link_label' => '',
             'link_url' => '',
@@ -155,6 +165,7 @@ return [
         ],
         'causes' => [
             'eyebrow' => 'Our work', 'heading' => 'Our programs', 'body' => '',
+            'presentation' => 'card_grid',
             'content_source' => 'category', 'category_slug' => 'our-causes',
             'selection_mode' => 'automatic', 'selected_items' => [],
             'sort' => 'featured', 'limit' => 3, 'item_link_label' => 'Learn more',

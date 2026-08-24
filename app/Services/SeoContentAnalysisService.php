@@ -397,7 +397,7 @@ class SeoContentAnalysisService
             }
 
             if (($key === 'url' || $key === 'href' || str_ends_with($key, '_url'))
-                && !in_array($key, ['image_url', 'video_url', 'poster_url', 'file_url'], true)) {
+                && !in_array($key, ['image_url', 'video_url', 'youtube_url', 'poster_url', 'file_url'], true)) {
                 $links[] = trim((string) $value);
             }
         }

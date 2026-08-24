@@ -25,7 +25,6 @@
         </div>
     </header>
 
-    @if(session('message'))<div class="seo2-alert {{ session('alert-type') === 'warning' ? 'seo2-alert--warning' : '' }}" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Check this report:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 
     <div class="seo2-filter" style="margin-bottom:16px">

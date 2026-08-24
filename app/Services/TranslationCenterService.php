@@ -75,9 +75,9 @@ class TranslationCenterService
     ];
 
     private const NON_TRANSLATABLE_BLOCK_KEYS = [
-        'url', 'primary_url', 'secondary_url', 'report_url', 'link_url', 'video_url',
+        'url', 'primary_url', 'secondary_url', 'report_url', 'link_url', 'video_url', 'youtube_url',
         'image', 'photo', 'poster', 'background_image', 'icon', 'value', 'limit',
-        'animation_type', 'image_position', 'overlay_opacity', 'interval', 'size',
+        'animation_type', 'media_type', 'image_position', 'overlay_opacity', 'interval', 'size',
         'content_source', 'category_slug', 'tag_slug', 'sort', 'selection_mode',
         'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type',
         'locale', 'language', 'platform', 'variant', 'layout', 'target', 'rel',

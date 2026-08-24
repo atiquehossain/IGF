@@ -108,10 +108,50 @@
       </div>
 
       <div v-else-if="block.type === 'media_text'" class="igf-page-block__inner igf-media-shell">
-        <div class="igf-media-text" :class="{'igf-media-text--reverse': block.content?.image_position === 'right'}">
-          <div class="igf-media-text__image">
-            <img v-if="block.content?.image" :src="block.content.image" :srcset="responsiveImage(block.content.image, '(max-width: 900px) 100vw, 45vw').webpSrcset || undefined" :sizes="responsiveImage(block.content.image, '(max-width: 900px) 100vw, 45vw').sizes" :width="responsiveImage(block.content.image).width" :height="responsiveImage(block.content.image).height" :alt="block.content.image_alt || ''" loading="lazy" decoding="async">
-          </div>
+        <div
+          class="igf-media-text"
+          :class="{
+            'igf-media-text--reverse': block.content?.image_position === 'right',
+            'igf-media-text--without-media': !mediaTextHasMedia(block),
+          }"
+        >
+          <figure v-if="mediaTextHasMedia(block)" class="igf-media-text__figure">
+            <div class="igf-media-text__media" :class="`igf-media-text__media--${mediaTextType(block)}`">
+              <img
+                v-if="mediaTextType(block) === 'image'"
+                :src="mediaTextImageUrl(block)"
+                :srcset="responsiveImage(mediaTextImageUrl(block), '(max-width: 900px) 100vw, 45vw').webpSrcset || undefined"
+                :sizes="responsiveImage(mediaTextImageUrl(block), '(max-width: 900px) 100vw, 45vw').sizes"
+                :width="responsiveImage(mediaTextImageUrl(block)).width"
+                :height="responsiveImage(mediaTextImageUrl(block)).height"
+                :alt="block.content.image_alt || ''"
+                :aria-describedby="mediaTextCaptionDescription(block)"
+                loading="lazy"
+                decoding="async"
+              >
+              <video
+                v-else-if="mediaTextType(block) === 'video'"
+                :src="mediaTextVideoUrl(block)"
+                :poster="mediaTextPosterUrl(block) || null"
+                :aria-label="mediaTextVideoLabel(block)"
+                :aria-describedby="mediaTextCaptionDescription(block)"
+                controls
+                playsinline
+                preload="metadata"
+              >{{ shared.video_unsupported_message }}</video>
+              <iframe
+                v-else
+                :src="mediaTextYoutubeUrl(block)"
+                :title="mediaTextVideoLabel(block)"
+                :aria-describedby="mediaTextCaptionDescription(block)"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              />
+            </div>
+            <figcaption v-if="mediaTextCaption(block)" :id="mediaTextCaptionId(block)" class="igf-media-text__caption">{{ mediaTextCaption(block) }}</figcaption>
+          </figure>
           <div class="igf-media-text__content">
             <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
             <h2>{{ block.content?.heading }}</h2>
@@ -157,21 +197,66 @@
       </div>
 
       <div v-else-if="block.type === 'causes'" class="igf-page-block__inner">
-        <div class="igf-section-heading">
-          <div>
-            <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
-            <h2>{{ block.content?.heading }}</h2>
-            <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
+        <template v-if="block.content?.presentation === 'focus_areas'">
+          <div class="igf-focus-areas">
+            <header
+              class="igf-focus-areas__heading igf-focus-area__reveal"
+              data-focus-area-reveal
+              :style="focusAreaRevealStyle(0)"
+            >
+              <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
+              <h2>{{ block.content?.heading }}</h2>
+              <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
+              <a v-if="blockLink(block, 'causes')" class="igf-text-link" :href="blockLink(block, 'causes')">{{ blockLabel(block, 'view_all_label', 'causes_view_all_label', 'View all programs') }} →</a>
+            </header>
+            <a
+              v-for="(item, index) in block.content?.items || []"
+              :key="item.id || index"
+              class="igf-focus-area-card igf-focus-area__reveal"
+              :href="safeHref(item.url, '#')"
+              data-focus-area-reveal
+              :style="focusAreaRevealStyle(index + 1)"
+            >
+              <span class="igf-focus-area-card__media" aria-hidden="true">
+                <img
+                  v-if="item.image"
+                  :src="item.image"
+                  :srcset="responsiveImage(item.image, '(max-width: 767px) 88px, 72px').webpSrcset || undefined"
+                  :sizes="responsiveImage(item.image, '(max-width: 767px) 88px, 72px').sizes"
+                  :width="responsiveImage(item.image).width"
+                  :height="responsiveImage(item.image).height"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                >
+                <i v-else :class="iconClass(item.icon)" />
+              </span>
+              <span class="igf-focus-area-card__copy">
+                <h3>{{ item.heading }}</h3>
+                <p v-if="item.body">{{ item.body }}</p>
+                <span class="igf-focus-area-card__link">{{ item.link_label || blockLabel(block, 'item_link_label', 'causes_item_link_label', 'Learn more') }} <span aria-hidden="true">→</span></span>
+              </span>
+            </a>
           </div>
-          <a v-if="blockLink(block, 'causes')" class="igf-text-link" :href="blockLink(block, 'causes')">{{ blockLabel(block, 'view_all_label', 'causes_view_all_label', 'View all programs') }} →</a>
-        </div>
-        <div v-if="block.content?.items?.length" class="igf-card-grid">
-          <a v-for="(item, index) in block.content.items" :key="index" class="igf-card" :href="safeHref(item.url, '#')">
-            <div v-if="item.image" class="igf-card__media"><img :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || item.heading || ''" loading="lazy" decoding="async"></div>
-            <div class="igf-card__content"><h3>{{ item.heading }}</h3><p v-if="item.body">{{ item.body }}</p><span class="igf-card__link">{{ item.link_label || blockLabel(block, 'item_link_label', 'causes_item_link_label', 'Learn more') }} →</span></div>
-          </a>
-        </div>
-        <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'causes_empty_state', 'Published programs will appear here automatically.') }}</p>
+          <p v-if="!block.content?.items?.length" class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'causes_empty_state', 'Published programs will appear here automatically.') }}</p>
+        </template>
+        <template v-else>
+          <div class="igf-section-heading">
+            <div>
+              <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
+              <h2>{{ block.content?.heading }}</h2>
+              <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
+            </div>
+            <a v-if="blockLink(block, 'causes')" class="igf-text-link" :href="blockLink(block, 'causes')">{{ blockLabel(block, 'view_all_label', 'causes_view_all_label', 'View all programs') }} →</a>
+          </div>
+          <div v-if="block.content?.items?.length" class="igf-card-grid">
+            <a v-for="(item, index) in block.content.items" :key="index" class="igf-card" :href="safeHref(item.url, '#')">
+              <div v-if="item.image" class="igf-card__media"><img :src="item.image" :srcset="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').webpSrcset || undefined" :sizes="responsiveImage(item.image, '(max-width: 760px) 100vw, 400px').sizes" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || item.heading || ''" loading="lazy" decoding="async"></div>
+              <div class="igf-card__content"><h3>{{ item.heading }}</h3><p v-if="item.body">{{ item.body }}</p><span class="igf-card__link">{{ item.link_label || blockLabel(block, 'item_link_label', 'causes_item_link_label', 'Learn more') }} →</span></div>
+            </a>
+          </div>
+          <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'causes_empty_state', 'Published programs will appear here automatically.') }}</p>
+        </template>
       </div>
 
       <div v-else-if="block.type === 'events'" class="igf-page-block__inner">
@@ -641,9 +726,9 @@
         <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
         <h2>{{ block.content?.heading }}</h2>
         <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
-        <div v-if="block.content?.video_url" class="igf-video__frame">
+        <div v-if="safeMediaHref(block.content?.video_url)" class="igf-video__frame">
           <iframe v-if="videoEmbedUrl(block.content.video_url)" :src="videoEmbedUrl(block.content.video_url)" :title="block.content.heading || shared.video_embed_title" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen />
-          <video v-else :src="safeHref(block.content.video_url)" :poster="safeHref(block.content.poster) || null" :aria-label="block.content.heading || shared.video_embed_title" controls preload="metadata">{{ shared.video_unsupported_message }}</video>
+          <video v-else :src="safeMediaHref(block.content.video_url)" :poster="safeMediaHref(block.content.poster) || null" :aria-label="block.content.heading || shared.video_embed_title" controls preload="metadata">{{ shared.video_unsupported_message }}</video>
         </div>
         <p v-if="block.content?.caption" class="igf-video__caption">{{ block.content.caption }}</p>
       </div>
@@ -706,11 +791,17 @@
         <h2>{{ block.content?.heading }}</h2>
         <p>{{ block.content?.body }}</p>
         <form @submit.prevent="subscribe">
-          <label class="sr-only" for="igf-newsletter-email">{{ block.content?.email_label || shared.newsletter_email_label }}</label>
-          <input id="igf-newsletter-email" v-model="newsletterEmail" name="email" type="email" autocomplete="email" :placeholder="block.content?.email_placeholder || shared.newsletter_email_placeholder" required>
+          <label class="sr-only" :for="newsletterEmailId(block)">{{ block.content?.email_label || shared.newsletter_email_label }}</label>
+          <input :id="newsletterEmailId(block)" v-model="newsletterEmail" name="email" type="email" autocomplete="email" :placeholder="block.content?.email_placeholder || shared.newsletter_email_placeholder" required :aria-invalid="newsletterFeedbackType === 'error' ? 'true' : undefined" :aria-describedby="newsletterMessage ? newsletterMessageId(block) : undefined">
           <button type="submit" :disabled="newsletterBusy">{{ newsletterBusy ? shared.newsletter_subscribing_label : (block.content?.button_label || shared.newsletter_subscribe_label) }}</button>
           <label class="igf-consent"><input v-model="newsletterConsent" type="checkbox" required> <span>{{ block.content?.consent_text || shared.newsletter_consent_prefix }} <a :href="safeHref(block.content?.privacy_url || shared.newsletter_privacy_url, '/page/privacy-policy')">{{ block.content?.privacy_label || shared.newsletter_privacy_label }}</a>.</span></label>
-          <p v-if="newsletterMessage" class="igf-newsletter__message" role="status">{{ newsletterMessage }}</p>
+          <p
+            v-if="newsletterMessage"
+            :id="newsletterMessageId(block)"
+            class="igf-newsletter__message"
+            :class="`is-${newsletterFeedbackType}`"
+            :role="newsletterFeedbackType === 'error' ? 'alert' : 'status'"
+          >{{ newsletterMessage }}</p>
         </form>
       </div>
 
@@ -762,6 +853,7 @@ const newsletterEmail = ref('');
 const newsletterConsent = ref(false);
 const newsletterBusy = ref(false);
 const newsletterMessage = ref('');
+const newsletterFeedbackType = ref('');
 const heroIndexes = ref({});
 const heroUserPaused = ref({});
 const heroInteractionPaused = ref({});
@@ -778,6 +870,7 @@ const heroLastAdvanced = new Map();
 let heroClock = null;
 let statObserver = null;
 let teamObserver = null;
+let focusAreaObserver = null;
 const statAnimationFrames = new Set();
 
 const iconMap = {
@@ -1034,12 +1127,93 @@ function teamSocialIcon(platform) {
   };
   return icons[platform] || 'fa-solid fa-link';
 }
+function parsedExternalHttpUrl(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const candidate = raw.startsWith('//')
+    ? `https:${raw}`
+    : (/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  try {
+    const parsed = new URL(candidate);
+    return ['http:', 'https:'].includes(parsed.protocol) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function youtubeVideoId(value = '') {
+  const parsed = parsedExternalHttpUrl(value);
+  if (!parsed
+    || parsed.protocol !== 'https:'
+    || parsed.username
+    || parsed.password
+    || (parsed.port && parsed.port !== '443')) return '';
+  const host = parsed.hostname.toLowerCase().replace(/\.$/, '');
+  let id = '';
+  if (host === 'youtu.be') {
+    const match = parsed.pathname.match(/^\/([A-Za-z0-9_-]{11})\/?$/);
+    id = match?.[1] || '';
+  } else if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(host)) {
+    if (parsed.pathname.replace(/\/+$/, '') === '/watch') id = parsed.searchParams.get('v') || '';
+    else id = parsed.pathname.match(/^\/(?:embed|shorts|live)\/([A-Za-z0-9_-]{11})\/?$/)?.[1] || '';
+  } else if (['youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(host)) {
+    id = parsed.pathname.match(/^\/embed\/([A-Za-z0-9_-]{11})\/?$/)?.[1] || '';
+  }
+  return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : '';
+}
+function youtubeEmbedUrl(value = '') {
+  const id = youtubeVideoId(value);
+  return id ? `https://www.youtube-nocookie.com/embed/${id}` : '';
+}
+function vimeoEmbedUrl(value = '') {
+  const parsed = parsedExternalHttpUrl(value);
+  if (!parsed) return '';
+  const host = parsed.hostname.toLowerCase();
+  const pathParts = parsed.pathname.split('/').filter(Boolean);
+  let id = '';
+  if (['vimeo.com', 'www.vimeo.com'].includes(host)) id = pathParts[0] || '';
+  else if (host === 'player.vimeo.com' && pathParts[0] === 'video') id = pathParts[1] || '';
+  return /^[0-9]{6,}$/.test(id) ? `https://player.vimeo.com/video/${id}` : '';
+}
 function videoEmbedUrl(value = '') {
-  const url = String(value).trim();
-  const youtube = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/i);
-  if (youtube) return `https://www.youtube-nocookie.com/embed/${youtube[1]}`;
-  const vimeo = url.match(/vimeo\.com\/(?:video\/)?([0-9]{6,})/i);
-  return vimeo ? `https://player.vimeo.com/video/${vimeo[1]}` : '';
+  return youtubeEmbedUrl(value) || vimeoEmbedUrl(value);
+}
+function safeMediaHref(value) {
+  const href = safeHref(value);
+  if (!href || href.startsWith('#')) return '';
+  const scheme = href.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]?.toLowerCase();
+  return scheme && !['http', 'https'].includes(scheme) ? '' : href;
+}
+function mediaTextType(block) {
+  const type = String(block.content?.media_type || 'image').trim().toLowerCase();
+  return ['image', 'video', 'youtube'].includes(type) ? type : 'image';
+}
+function mediaTextImageUrl(block) {
+  return mediaTextType(block) === 'image' ? safeMediaHref(block.content?.image) : '';
+}
+function mediaTextVideoUrl(block) {
+  return mediaTextType(block) === 'video' ? safeMediaHref(block.content?.video_url) : '';
+}
+function mediaTextYoutubeUrl(block) {
+  return mediaTextType(block) === 'youtube' ? youtubeEmbedUrl(block.content?.youtube_url) : '';
+}
+function mediaTextPosterUrl(block) {
+  return mediaTextType(block) === 'video' ? safeMediaHref(block.content?.poster) : '';
+}
+function mediaTextHasMedia(block) {
+  return Boolean(mediaTextImageUrl(block) || mediaTextVideoUrl(block) || mediaTextYoutubeUrl(block));
+}
+function mediaTextVideoLabel(block) {
+  return String(block.content?.heading || shared.value.video_embed_title || 'Embedded video').trim();
+}
+function mediaTextCaption(block) {
+  return mediaTextType(block) === 'image' ? '' : String(block.content?.caption || '').trim();
+}
+function mediaTextCaptionId(block) {
+  const token = String(block.uuid || 'block').replace(/[^a-zA-Z0-9_-]/g, '-');
+  return `igf-media-text-caption-${token}`;
+}
+function mediaTextCaptionDescription(block) {
+  return mediaTextCaption(block) ? mediaTextCaptionId(block) : null;
 }
 function visibilityClass(block) {
   return { 'igf-page-block--desktop-hidden': !block.show_on_desktop, 'igf-page-block--mobile-hidden': !block.show_on_mobile };
@@ -1095,6 +1269,24 @@ function formattedStatValue(parsed, value) {
     maximumFractionDigits: parsed.decimals,
   });
   return `${parsed.prefix}${formatted}${parsed.suffix}`;
+}
+function focusAreaRevealStyle(index) {
+  return { '--igf-focus-delay': `${Math.min(5, Math.max(0, Number(index) || 0)) * 100}ms` };
+}
+function setupFocusAreaReveals() {
+  const elements = [...(pageBlocksRoot.value?.querySelectorAll('[data-focus-area-reveal]') || [])];
+  if (!elements.length) return;
+  elements.forEach(element => element.classList.add('is-reveal-ready'));
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion || typeof window.IntersectionObserver !== 'function') {
+    elements.forEach(element => element.classList.add('is-visible'));
+    return;
+  }
+
+  focusAreaObserver = new window.IntersectionObserver(entries => {
+    entries.forEach(entry => entry.target.classList.toggle('is-visible', entry.isIntersecting));
+  }, { threshold: 0, rootMargin: '0px 0px -120px 0px' });
+  elements.forEach(element => focusAreaObserver.observe(element));
 }
 function setStatDisplay(key, value) { statDisplayValues.value = { ...statDisplayValues.value, [key]: value }; }
 function animateStatCounter(block, item, index) {
@@ -1324,6 +1516,7 @@ function nextTestimonial(block) { goToTestimonial(block, activeTestimonialIndex(
 onMounted(() => {
   setupStatAnimations();
   setupTeamCardViewportAnimations();
+  setupFocusAreaReveals();
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   heroClock = window.setInterval(() => {
     if (reducedMotion || document.visibilityState === 'hidden') return;
@@ -1340,6 +1533,7 @@ onBeforeUnmount(() => {
   if (heroClock !== null) window.clearInterval(heroClock);
   statObserver?.disconnect();
   teamObserver?.disconnect();
+  focusAreaObserver?.disconnect();
   statAnimationFrames.forEach(frame => window.cancelAnimationFrame(frame));
   statAnimationFrames.clear();
 });
@@ -1352,13 +1546,16 @@ function eventMonth(item, fallback = '') {
   return formatDate(item?.published_at, regional.value, { month: 'short' }) || item?.month || fallback;
 }
 function money(value) { return formatMoney(value, regional.value); }
+function newsletterDomToken(block) { return String(block?.uuid || 'block').replace(/[^a-zA-Z0-9_-]/g, '-'); }
+function newsletterEmailId(block) { return `igf-newsletter-email-${newsletterDomToken(block)}`; }
+function newsletterMessageId(block) { return `igf-newsletter-message-${newsletterDomToken(block)}`; }
 function subscribe() {
   if (!newsletterConsent.value) return;
-  newsletterBusy.value = true; newsletterMessage.value = '';
+  newsletterBusy.value = true; newsletterMessage.value = ''; newsletterFeedbackType.value = '';
   router.post(route('frontend.subscribe'), { email: newsletterEmail.value }, {
     preserveScroll: true,
-    onSuccess: () => { newsletterEmail.value = ''; newsletterConsent.value = false; newsletterMessage.value = shared.value.newsletter_success_message || 'Thank you for subscribing.'; },
-    onError: errors => { newsletterMessage.value = errors.email || shared.value.newsletter_error_message || 'Please check your email and try again.'; },
+    onSuccess: () => { newsletterEmail.value = ''; newsletterConsent.value = false; newsletterMessage.value = shared.value.newsletter_success_message || 'Thank you for subscribing.'; newsletterFeedbackType.value = 'success'; },
+    onError: errors => { newsletterMessage.value = errors.email || shared.value.newsletter_error_message || 'Please check your email and try again.'; newsletterFeedbackType.value = 'error'; },
     onFinish: () => { newsletterBusy.value = false; },
   });
 }
@@ -1425,10 +1622,16 @@ function subscribe() {
 @keyframes igf-stat-pop { 0% { opacity:0; transform:scale(.82); } 68% { opacity:1; transform:scale(1.045); } 100% { opacity:1; transform:scale(1); } }
 .igf-media-text { display:grid; grid-template-columns:5fr 6fr; align-items:center; gap:clamp(40px,8vw,100px); }
 .igf-media-text--reverse { grid-template-columns:1fr 1fr; }
-.igf-media-text--reverse .igf-media-text__image { order:2; }
-.igf-media-text__image { overflow:hidden; aspect-ratio:var(--igf-image-aspect,4 / 5); border-radius:var(--igf-card-radius,22px); background:#eee; }
-.igf-media-text--reverse .igf-media-text__image { aspect-ratio:1; }
-.igf-media-text img { width:100%; height:100%; object-fit:cover; }
+.igf-media-text--without-media { grid-template-columns:minmax(0,1fr); }
+.igf-media-text__figure { min-width:0; margin:0; }
+.igf-media-text--reverse .igf-media-text__figure { order:2; }
+.igf-media-text__media { --igf-media-default-aspect:var(--igf-image-aspect,4 / 5); overflow:hidden; aspect-ratio:var(--igf-media-aspect,var(--igf-media-default-aspect)); border-radius:var(--igf-card-radius,22px); background:#eee; }
+.igf-media-text--reverse .igf-media-text__media { --igf-media-default-aspect:1; }
+.igf-media-text__media--video,.igf-media-text__media--youtube { --igf-media-aspect:16 / 9; background:#171717; }
+.igf-media-text__media :is(img,video,iframe) { display:block; width:100%; height:100%; border:0; }
+.igf-media-text__media img { object-fit:cover; }
+.igf-media-text__media video { object-fit:contain; }
+.igf-media-text__caption { margin:10px 0 0; color:var(--muted); font-size:13px; line-height:1.5; text-align:center; }
 .igf-page-block__copy { color:var(--muted); font-size:var(--igf-body-size,17px); line-height:1.75; }
 .igf-page-block__copy :deep(p) { margin:0 0 18px; color:inherit; font:inherit; }
 .igf-page-block__copy :deep(a) { color:var(--brown); font-weight:800; }
@@ -1460,6 +1663,29 @@ function subscribe() {
 .igf-card__content h3 { margin-bottom:12px; }
 .igf-card__content p { margin:0 0 22px; font-size:var(--igf-body-size,17px); line-height:1.6; }
 .igf-card__link { margin-top:auto; color:var(--brown); font-size:13px; font-weight:800; }
+.igf-focus-areas { position:relative; display:grid; isolation:isolate; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:stretch; }
+.igf-focus-areas::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(900px,100%); height:600px; background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%); content:''; pointer-events:none; transform:translate(-50%,-50%); }
+.igf-focus-area__reveal.is-reveal-ready { opacity:0; transform:translateY(100px); transition:opacity 500ms ease-out,transform 500ms ease-out; transition-delay:var(--igf-focus-delay,0ms); }
+.igf-focus-area__reveal.is-reveal-ready.is-visible { opacity:1; transform:translateY(0); }
+.igf-focus-areas__heading { display:flex; min-width:0; min-height:390px; justify-content:center; padding:clamp(30px,4vw,52px); flex-direction:column; border-radius:var(--igf-card-radius,16px); background:var(--orange); color:#fff; }
+.igf-focus-areas__heading .igf-page-block__eyebrow { color:#572500; }
+.igf-focus-areas__heading h2 { margin:0; font-size:clamp(38px,4.5vw,56px); line-height:1.08; }
+.igf-focus-areas__heading .igf-section-lead { margin:18px 0 0; color:rgba(255,255,255,.9); }
+.igf-focus-areas__heading .igf-text-link { width:fit-content; margin-top:28px; color:#fff; }
+.igf-focus-area-card { position:relative; isolation:isolate; display:flex; min-width:0; min-height:390px; overflow:hidden; padding:clamp(26px,3vw,38px); flex-direction:column; border:1px solid var(--igf-card-border,var(--line)); border-radius:var(--igf-card-radius,16px); background:#fff; box-shadow:var(--igf-card-shadow,0 8px 22px rgba(25,28,29,.08)); color:var(--ink); text-decoration:none; transition:color 300ms ease-out,border-color 300ms ease-out,box-shadow 300ms ease-out,opacity 500ms ease-out,transform 500ms ease-out; transition-delay:0ms,0ms,0ms,var(--igf-focus-delay,0ms),var(--igf-focus-delay,0ms); }
+.igf-focus-area-card::before { position:absolute; z-index:-1; inset:0; background:var(--orange); content:''; transform:scaleX(0); transform-origin:left center; transition:transform 500ms ease-out; }
+.igf-focus-area-card:hover,.igf-focus-area-card:focus-visible,.igf-focus-area-card:focus-within { border-color:var(--orange); box-shadow:0 14px 32px rgba(156,69,0,.2); color:#fff; }
+.igf-focus-area-card:hover::before,.igf-focus-area-card:focus-visible::before,.igf-focus-area-card:focus-within::before { transform:scaleX(1); }
+.igf-focus-area-card:focus-visible { outline:3px solid color-mix(in srgb,var(--orange) 42%,white); outline-offset:4px; }
+.igf-focus-area-card__media { display:grid; width:72px; height:72px; flex:0 0 auto; place-items:center; overflow:hidden; margin-bottom:28px; border-radius:16px; background:#fff2e8; color:var(--brown); transition:background-color 300ms ease-out,color 300ms ease-out; }
+.igf-focus-area-card__media img { width:100%; height:100%; object-fit:cover; }
+.igf-focus-area-card__media i { font-size:34px; }
+.igf-focus-area-card:hover .igf-focus-area-card__media,.igf-focus-area-card:focus-visible .igf-focus-area-card__media,.igf-focus-area-card:focus-within .igf-focus-area-card__media { background:rgba(255,255,255,.2); color:#fff; }
+.igf-focus-area-card__copy { display:flex; min-width:0; flex:1; flex-direction:column; }
+.igf-focus-area-card__copy h3 { margin:0 0 16px; font-size:clamp(24px,2.3vw,31px); line-height:1.22; }
+.igf-focus-area-card__copy p { margin:0 0 24px; color:var(--muted); font-size:16px; line-height:1.65; transition:color 300ms ease-out; }
+.igf-focus-area-card:hover .igf-focus-area-card__copy p,.igf-focus-area-card:focus-visible .igf-focus-area-card__copy p,.igf-focus-area-card:focus-within .igf-focus-area-card__copy p { color:rgba(255,255,255,.92); }
+.igf-focus-area-card__link { width:fit-content; margin-top:auto; padding:8px 14px; border:1px dashed currentColor; border-radius:999px; font-size:13px; font-weight:800; }
 .igf-page-block--ways_to_give { background:var(--surface); }
 .igf-giving__heading { max-width:760px; margin:0 auto 38px; text-align:center; }
 .igf-giving__heading h2 { margin-bottom:14px; }
@@ -1556,7 +1782,7 @@ function subscribe() {
 .igf-page-block--hero.igf-page-block--campus .igf-page-block__lead { max-width:760px; margin:0 auto; color:var(--campus-green-dark); font-size:20px; font-weight:600; line-height:1.5; }
 .igf-page-block--campus-intro { padding:48px 5%; background:var(--campus-green-lighter); }
 .igf-page-block--campus-intro .igf-media-text { display:block; }
-.igf-page-block--campus-intro .igf-media-text__image,.igf-page-block--campus-intro :is(.igf-page-block__eyebrow,h2,.igf-text-link) { display:none; }
+.igf-page-block--campus-intro .igf-media-text__figure,.igf-page-block--campus-intro :is(.igf-page-block__eyebrow,h2,.igf-text-link) { display:none; }
 .igf-page-block--campus-intro .igf-media-text__content { max-width:1120px; margin:0 auto; text-align:center; }
 .igf-page-block--campus-intro .igf-page-block__copy { color:#1d1d1d; font-size:20px; font-weight:600; line-height:1.65; }
 .igf-page-block--campus-intro .igf-page-block__copy :deep(p) { margin:0; }
@@ -1775,7 +2001,10 @@ function subscribe() {
 .igf-consent { display:flex; align-items:flex-start; gap:9px; color:var(--muted); font-size:12px; }
 .igf-consent input { margin-top:2px; }
 .igf-consent a { color:inherit; text-decoration:underline; }
-.igf-newsletter__message { margin:0!important; padding:9px 12px; border-radius:7px; background:#fff; font-size:13px!important; }
+.igf-newsletter__message { margin:0!important; padding:9px 12px; border:1px solid transparent; border-radius:7px; font-size:13px!important; }
+.igf-newsletter__message.is-success { border-color:#8fc89f; background:#eef9f1; color:#245c34; }
+.igf-newsletter__message.is-error { border-color:#d59b95; background:#fff1ef; color:#8d271f; }
+.igf-newsletter form>input[aria-invalid="true"] { border-color:#a52b1f; outline:3px solid rgba(165,43,31,.16); }
 .sr-only { position:absolute!important; width:1px!important; height:1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; }
 .igf-page-block--desktop-hidden { display:none; }
 @media (max-width:991px) {
@@ -1789,6 +2018,7 @@ function subscribe() {
 @media (max-width:960px) {
   .igf-stats { grid-template-columns:repeat(2,1fr); }
   .igf-card-grid { grid-template-columns:repeat(2,1fr); }
+  .igf-focus-areas { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-giving__options { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-event-cards { grid-template-columns:repeat(2,1fr); }
   .igf-gallery__grid { grid-template-columns:repeat(2,1fr); }
@@ -1820,6 +2050,8 @@ function subscribe() {
   .igf-button { width:100%; }
   .igf-page-block--stats { margin-top:-50px; padding-top:0; padding-bottom:72px; }
   .igf-stats,.igf-card-grid,.igf-media-text,.igf-media-text--reverse { grid-template-columns:1fr; }
+  .igf-focus-areas { grid-template-columns:1fr; }
+  .igf-focus-areas__heading,.igf-focus-area-card { min-height:320px; }
   .igf-giving__heading { margin-bottom:26px; text-align:left; }
   .igf-giving__options { grid-template-columns:1fr; gap:14px; }
   .igf-giving--single_cta .igf-giving-card { flex-direction:column; }
@@ -1831,8 +2063,8 @@ function subscribe() {
   .igf-page-block--contributions .igf-card-grid,.igf-page-block--campus-gallery .igf-gallery__grid { grid-template-columns:1fr; }
   .igf-team-card { justify-self:center; }
   .igf-stat { padding:24px; }
-  .igf-media-text--reverse .igf-media-text__image { order:0; }
-  .igf-media-text__image { aspect-ratio:var(--igf-image-aspect,4 / 3); }
+  .igf-media-text--reverse .igf-media-text__figure { order:0; }
+  .igf-media-text__media { --igf-media-default-aspect:var(--igf-image-aspect,4 / 3); }
   .igf-section-heading { display:block; margin-bottom:30px; }
   .igf-section-heading>.igf-text-link { margin-top:12px; }
   .igf-card-grid { gap:16px; }
@@ -1925,6 +2157,7 @@ function subscribe() {
 @media (prefers-reduced-motion:reduce) {
   .igf-page-blocks * { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
   .igf-stat--animated { opacity:1!important; transform:none!important; }
+  .igf-focus-area__reveal { opacity:1!important; transform:none!important; }
   .igf-team-card { height:auto; min-height:var(--igf-team-card-height); perspective:none; }
   .igf-team-card__stage,.igf-team-card__flipper { height:auto; }
   .igf-team-card__flipper { transform:none!important; }

@@ -25,6 +25,15 @@ class SiteSettingServiceTest extends TestCase
         $this->assertTrue($values['contact_page']['faqs'][0]['is_active']);
         $this->assertSame(1500, $values['sponsor_page']['monthly_amount']);
         $this->assertSame('Bring your time, skills, and heart.', $values['volunteer_page']['title']);
+        $this->assertTrue($values['legal_status']['enabled']);
+        $this->assertSame('Legal Status', $values['legal_status']['heading']);
+        $this->assertSame('Microcredit Regulatory Authority Reg. No.', $values['legal_status']['authority_1_label']);
+        $this->assertSame('00176-00059-00018', $values['legal_status']['authority_1_registration']);
+        $this->assertSame('', $values['legal_status']['authority_1_logo']);
+        $this->assertSame('NGO Affairs Bureau Registration No.', $values['legal_status']['authority_2_label']);
+        $this->assertSame('626', $values['legal_status']['authority_2_registration']);
+        $this->assertSame('Joint Stock & Firms Registration No.', $values['legal_status']['authority_3_label']);
+        $this->assertSame('S-5803(47)06', $values['legal_status']['authority_3_registration']);
         $this->assertSame('silver', $values['zakat_calculator']['nisab_default_basis']);
         $this->assertSame(22188.0, $values['zakat_calculator']['gold_price_per_gram']);
         $this->assertSame(475.0, $values['zakat_calculator']['silver_price_per_gram']);
@@ -139,6 +148,52 @@ class SiteSettingServiceTest extends TestCase
         $this->assertSame('', $values['header']['announcement_url']);
         $this->assertSame('', $values['social']['facebook']);
         $this->assertSame('/donate', $values['header']['donate_url']);
+    }
+
+    public function test_legal_status_labels_are_localized_while_official_identifiers_and_logos_are_global(): void
+    {
+        SiteSetting::create([
+            'group' => 'legal_status',
+            'key' => 'authority_1_label',
+            'locale' => 'bn',
+            'value' => 'মাইক্রোক্রেডিট রেগুলেটরি অথরিটি নিবন্ধন নম্বর',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        SiteSetting::create([
+            'group' => 'legal_status',
+            'key' => 'authority_1_registration',
+            'locale' => '*',
+            'value' => '00176-00059-00018',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        SiteSetting::create([
+            'group' => 'legal_status',
+            'key' => 'authority_1_logo',
+            'locale' => '*',
+            'value' => '/storage/media/legal/mra.png',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+
+        $values = app(SiteSettingService::class)->values('bn', true)['legal_status'];
+
+        $this->assertSame('মাইক্রোক্রেডিট রেগুলেটরি অথরিটি নিবন্ধন নম্বর', $values['authority_1_label']);
+        $this->assertSame('00176-00059-00018', $values['authority_1_registration']);
+        $this->assertSame('/storage/media/legal/mra.png', $values['authority_1_logo']);
+
+        $fields = config('site-settings.groups.legal_status.fields');
+        $this->assertFalse($fields['enabled']['localized']);
+        $this->assertTrue($fields['heading']['localized']);
+        foreach ([1, 2, 3] as $position) {
+            $this->assertTrue($fields["authority_{$position}_label"]['localized']);
+            $this->assertFalse($fields["authority_{$position}_registration"]['localized']);
+            $this->assertFalse($fields["authority_{$position}_logo"]['localized']);
+            $this->assertTrue($fields["authority_{$position}_label"]['public']);
+            $this->assertTrue($fields["authority_{$position}_registration"]['public']);
+            $this->assertTrue($fields["authority_{$position}_logo"]['public']);
+        }
     }
 
     public function test_legacy_property_wording_cannot_reintroduce_full_investment_property_value(): void

@@ -88,6 +88,23 @@ class SeoContentAnalysisServiceTest extends TestCase
         $this->assertSame('Review long passages', $analysis['readability']);
     }
 
+    public function test_video_sources_are_not_misreported_as_editorial_links(): void
+    {
+        $analysis = app(SeoContentAnalysisService::class)->analyzeDocument([
+            'h1' => ['Community story'],
+            'h2' => ['Watch the story'],
+            'text' => ['Children and families describe how the community learning project works.'],
+            'blocks' => [[
+                'media_type' => 'youtube',
+                'youtube_url' => 'https://www.youtube.com/watch?v=abcdefghijk',
+                'video_url' => '/storage/media/community.mp4',
+            ]],
+        ], 'en', '', 'https://ignite.test/page/story');
+
+        $this->assertSame(0, $analysis['internal_link_count']);
+        $this->assertSame(0, $analysis['external_link_count']);
+    }
+
     public function test_bangla_sentence_guidance_uses_a_language_appropriate_threshold(): void
     {
         $sentence = implode(' ', array_fill(0, 24, 'শিক্ষা'));

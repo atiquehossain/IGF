@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import PageBlocks from '@/Shared/PageBlocks.vue';
 import pageBlocksSource from '@/Shared/PageBlocks.vue?raw';
 
@@ -178,6 +178,257 @@ describe('PageBlocks hero carousel', () => {
 
 });
 
+describe('PageBlocks newsletter feedback', () => {
+  const newsletterBlock = {
+    uuid: 'newsletter-feedback-test',
+    type: 'newsletter',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      heading: 'Stay connected',
+      body: 'Receive updates from the field.',
+      email_label: 'Email address',
+      email_placeholder: 'name@example.test',
+      button_label: 'Subscribe',
+      consent_text: 'I agree to the',
+      privacy_label: 'Privacy policy',
+      privacy_url: '/page/privacy-policy',
+    },
+  };
+
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    vi.stubGlobal('route', vi.fn(name => name));
+    setPageSettings({
+      shared: {
+        newsletter_subscribing_label: 'Subscribing…',
+        newsletter_subscribe_label: 'Subscribe',
+        newsletter_success_message: 'Subscription saved.',
+        newsletter_error_message: 'Please try again.',
+      },
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  test('uses error semantics and links server feedback to its uniquely identified field', async () => {
+    vi.spyOn(router, 'post').mockImplementation((_url, _data, options) => {
+      options.onError({ email: 'That email address is already subscribed.' });
+      options.onFinish();
+    });
+    const wrapper = mount(PageBlocks, { props: { blocks: [newsletterBlock] } });
+    const input = wrapper.get('#igf-newsletter-email-newsletter-feedback-test');
+
+    await input.setValue('member@example.test');
+    await wrapper.get('.igf-consent input').setValue(true);
+    await wrapper.get('.igf-newsletter form').trigger('submit');
+
+    const message = wrapper.get('#igf-newsletter-message-newsletter-feedback-test');
+    expect(message.text()).toBe('That email address is already subscribed.');
+    expect(message.attributes('role')).toBe('alert');
+    expect(message.classes()).toContain('is-error');
+    expect(input.attributes('aria-invalid')).toBe('true');
+    expect(input.attributes('aria-describedby')).toBe(message.attributes('id'));
+
+    wrapper.unmount();
+  });
+});
+
+describe('PageBlocks media and text', () => {
+  const mediaTextBlock = (uuid, content) => ({
+    uuid,
+    type: 'media_text',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      eyebrow: 'Our work',
+      heading: 'A community story',
+      body: '<p>Story body.</p>',
+      image_position: 'left',
+      ...content,
+    },
+  });
+
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    setPageSettings();
+  });
+
+  test('keeps legacy blocks on the responsive image path when media_type is missing', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('legacy-media-image', {
+          image: '/image/banner/slider-1.png',
+          image_alt: 'Children learning together',
+          caption: 'An inactive video caption must not appear beneath the image.',
+        })],
+      },
+    });
+
+    const image = wrapper.get('.igf-media-text__media--image img');
+    expect(image.attributes('src')).toBe('/image/banner/slider-1.png');
+    expect(image.attributes('srcset')).toContain('/image/banner/slider-1-640.webp 640w');
+    expect(image.attributes('alt')).toBe('Children learning together');
+    expect(wrapper.find('video').exists()).toBe(false);
+    expect(wrapper.find('iframe').exists()).toBe(false);
+    expect(wrapper.find('figcaption').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  test('renders an accessible native video and ignores inactive image and YouTube values', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('native-media-video', {
+          media_type: 'video',
+          image: '/image/should-not-load.jpg',
+          video_url: '/storage/media/community-story.mp4',
+          youtube_url: 'https://youtu.be/AbCdEfGhI_1',
+          poster: '/storage/media/community-story-poster.webp',
+          caption: 'Students describe their community project.',
+        })],
+      },
+    });
+
+    const video = wrapper.get('.igf-media-text__media--video video');
+    expect(video.attributes('src')).toBe('/storage/media/community-story.mp4');
+    expect(video.attributes('poster')).toBe('/storage/media/community-story-poster.webp');
+    expect(video.attributes()).toHaveProperty('controls');
+    expect(video.attributes()).toHaveProperty('playsinline');
+    expect(video.attributes('preload')).toBe('metadata');
+    expect(video.attributes('aria-label')).toBe('A community story');
+    expect(video.attributes('aria-describedby')).toBe('igf-media-text-caption-native-media-video');
+    expect(wrapper.get('figcaption').text()).toBe('Students describe their community project.');
+    expect(wrapper.find('img').exists()).toBe(false);
+    expect(wrapper.find('iframe').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  test.each([
+    'https://www.youtube.com/watch?feature=share&v=AbCdEfGhI_1',
+    'https://youtu.be/AbCdEfGhI_1?t=12',
+    'youtube.com/shorts/AbCdEfGhI_1',
+    'https://m.youtube.com/live/AbCdEfGhI_1',
+    'https://www.youtube-nocookie.com/embed/AbCdEfGhI_1',
+  ])('canonicalizes an allowed YouTube URL through the privacy-enhanced host: %s', youtubeUrl => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('youtube-media-video', {
+          media_type: 'youtube',
+          youtube_url: youtubeUrl,
+        })],
+      },
+    });
+
+    expect(wrapper.get('iframe').attributes('src')).toBe('https://www.youtube-nocookie.com/embed/AbCdEfGhI_1');
+    wrapper.unmount();
+  });
+
+  test('renders an accessible YouTube iframe and ignores inactive image and native-video values', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('youtube-media-accessibility', {
+          media_type: 'youtube',
+          heading: '',
+          image: '/image/should-not-load.jpg',
+          video_url: '/storage/media/should-not-load.mp4',
+          youtube_url: 'https://www.youtube.com/watch?v=AbCdEfGhI_1&list=tracking-value',
+          caption: 'A film about the learning program.',
+        })],
+      },
+    });
+
+    const iframe = wrapper.get('.igf-media-text__media--youtube iframe');
+    expect(iframe.attributes('src')).toBe('https://www.youtube-nocookie.com/embed/AbCdEfGhI_1');
+    expect(iframe.attributes('title')).toBe('Embedded video');
+    expect(iframe.attributes('loading')).toBe('lazy');
+    expect(iframe.attributes('referrerpolicy')).toBe('strict-origin-when-cross-origin');
+    expect(iframe.attributes()).toHaveProperty('allowfullscreen');
+    expect(iframe.attributes('aria-describedby')).toBe('igf-media-text-caption-youtube-media-accessibility');
+    expect(wrapper.find('img').exists()).toBe(false);
+    expect(wrapper.find('video').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  test.each([
+    'https://youtube.com.evil.test/watch?v=AbCdEfGhI_1',
+    'https://evil.test/youtube.com/watch?v=AbCdEfGhI_1',
+    'https://www.youtube.com/watch?v=too-short',
+    'http://www.youtube.com/watch?v=AbCdEfGhI_1',
+    'https://www.youtube.com:8443/watch?v=AbCdEfGhI_1',
+    'https://youtu.be/AbCdEfGhI_1/extra',
+    'https://www.youtube.com/embed/AbCdEfGhI_1/extra',
+    'javascript:alert(1)',
+    'https://vimeo.com/123456789',
+  ])('rejects a non-YouTube or malformed media-text embed URL: %s', youtubeUrl => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('invalid-youtube-media', {
+          media_type: 'youtube',
+          youtube_url: youtubeUrl,
+        })],
+      },
+    });
+
+    expect(wrapper.find('iframe').exists()).toBe(false);
+    expect(wrapper.get('.igf-media-text').classes()).toContain('igf-media-text--without-media');
+    wrapper.unmount();
+  });
+
+  test('rejects unsafe native media schemes', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [mediaTextBlock('unsafe-native-media', {
+          media_type: 'video',
+          video_url: 'mailto:attacker@example.test',
+          poster: 'javascript:alert(1)',
+        })],
+      },
+    });
+
+    expect(wrapper.find('video').exists()).toBe(false);
+    expect(wrapper.get('.igf-media-text').classes()).toContain('igf-media-text--without-media');
+    wrapper.unmount();
+  });
+
+  test('keeps exact-host Vimeo support for standalone video blocks and rejects lookalike embeds', () => {
+    const standalone = (uuid, videoUrl) => ({
+      uuid,
+      type: 'video',
+      is_enabled: true,
+      show_on_desktop: true,
+      show_on_mobile: true,
+      content: { heading: 'Standalone film', video_url: videoUrl },
+    });
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          standalone('valid-vimeo-video', 'https://player.vimeo.com/video/123456789'),
+          standalone('lookalike-vimeo-video', 'https://vimeo.com.evil.test/video/123456789'),
+        ],
+      },
+    });
+
+    expect(wrapper.findAll('iframe')).toHaveLength(1);
+    expect(wrapper.get('iframe').attributes('src')).toBe('https://player.vimeo.com/video/123456789');
+    expect(wrapper.findAll('video')).toHaveLength(1);
+    expect(wrapper.get('video').attributes('src')).toBe('https://vimeo.com.evil.test/video/123456789');
+    wrapper.unmount();
+  });
+
+  test('keeps native and embedded media at a responsive 16:9 aspect ratio', () => {
+    expect(pageBlocksSource).toContain('.igf-media-text__media--video,.igf-media-text__media--youtube { --igf-media-aspect:16 / 9;');
+    expect(pageBlocksSource).toContain('aspect-ratio:var(--igf-media-aspect,var(--igf-media-default-aspect))');
+  });
+});
+
 describe('PageBlocks Ways to Give', () => {
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
@@ -247,6 +498,140 @@ describe('PageBlocks Ways to Give', () => {
     expect(pageBlocksSource).toContain('.igf-giving-card:focus-visible');
     expect(pageBlocksSource).toContain('min-height:44px');
     expect(pageBlocksSource).toContain('.igf-giving__options { grid-template-columns:1fr;');
+  });
+});
+
+describe('PageBlocks focus areas presentation', () => {
+  const causesBlock = presentation => ({
+    uuid: `causes-${presentation || 'legacy'}`,
+    type: 'causes',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      ...(presentation ? { presentation } : {}),
+      eyebrow: 'Our causes',
+      heading: 'Our Focus Areas',
+      body: 'Programs shaped with communities.',
+      view_all_label: 'View every program',
+      view_all_url: '/programs',
+      item_link_label: 'Learn more',
+      items: [
+        {
+          id: 1,
+          heading: 'Education and digital learning',
+          body: 'Inclusive education for children in hard-to-reach communities.',
+          image: '/storage/media/education.webp',
+          url: '/programs/education',
+        },
+        {
+          id: 2,
+          heading: 'Youth and skill development',
+          body: 'Skills and opportunities for young people.',
+          icon: 'school',
+          url: 'javascript:alert(1)',
+          link_label: 'Explore this work',
+        },
+      ],
+    },
+  });
+
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    setPageSettings();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('renders the focus heading first, supports thumbnails and fallback icons, and sanitizes links', () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    const wrapper = mount(PageBlocks, { props: { blocks: [causesBlock('focus_areas')] } });
+    const grid = wrapper.get('.igf-focus-areas');
+    const cards = grid.findAll('.igf-focus-area-card');
+
+    expect(grid.element.firstElementChild).toBe(grid.get('.igf-focus-areas__heading').element);
+    expect(grid.get('.igf-focus-areas__heading h2').text()).toBe('Our Focus Areas');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].get('img').attributes('src')).toBe('/storage/media/education.webp');
+    expect(cards[0].get('img').attributes('alt')).toBe('');
+    expect(cards[1].get('i').classes()).toContain('fa-graduation-cap');
+    expect(cards[0].attributes('href')).toBe('/programs/education');
+    expect(cards[1].attributes('href')).toBe('#');
+    expect(cards[1].text()).toContain('Explore this work');
+    expect(wrapper.html()).not.toContain('javascript:');
+    expect(grid.get('.igf-focus-areas__heading').attributes('style')).toContain('--igf-focus-delay: 0ms');
+    expect(cards[0].attributes('style')).toContain('--igf-focus-delay: 100ms');
+    expect(cards[1].attributes('style')).toContain('--igf-focus-delay: 200ms');
+    expect(grid.findAll('.is-visible')).toHaveLength(3);
+
+    wrapper.unmount();
+  });
+
+  test.each([undefined, 'card_grid'])('keeps the existing card grid for presentation %s', presentation => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    const wrapper = mount(PageBlocks, { props: { blocks: [causesBlock(presentation)] } });
+
+    expect(wrapper.find('.igf-focus-areas').exists()).toBe(false);
+    expect(wrapper.get('.igf-card-grid').findAll('.igf-card')).toHaveLength(2);
+    expect(wrapper.get('.igf-section-heading h2').text()).toBe('Our Focus Areas');
+
+    wrapper.unmount();
+  });
+
+  test('replays the staggered reveal when a tile leaves and re-enters the viewport', async () => {
+    let callback;
+    let options;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal('IntersectionObserver', vi.fn(function IntersectionObserverMock(observerCallback, observerOptions) {
+      callback = observerCallback;
+      options = observerOptions;
+      this.observe = observe;
+      this.disconnect = disconnect;
+    }));
+    const wrapper = mount(PageBlocks, { props: { blocks: [causesBlock('focus_areas')] } });
+    const tiles = wrapper.findAll('[data-focus-area-reveal]');
+
+    expect(options).toEqual({ threshold: 0, rootMargin: '0px 0px -120px 0px' });
+    expect(observe).toHaveBeenCalledTimes(3);
+    expect(tiles[1].classes()).not.toContain('is-visible');
+
+    callback([{ target: tiles[1].element, isIntersecting: true }]);
+    await wrapper.vm.$nextTick();
+    expect(tiles[1].classes()).toContain('is-visible');
+
+    callback([{ target: tiles[1].element, isIntersecting: false }]);
+    await wrapper.vm.$nextTick();
+    expect(tiles[1].classes()).not.toContain('is-visible');
+
+    callback([{ target: tiles[1].element, isIntersecting: true }]);
+    await wrapper.vm.$nextTick();
+    expect(tiles[1].classes()).toContain('is-visible');
+
+    wrapper.unmount();
+    expect(disconnect).toHaveBeenCalledOnce();
+  });
+
+  test('shows every tile immediately when reduced motion is requested', () => {
+    const observer = vi.fn();
+    window.matchMedia = vi.fn(query => ({ matches: query === '(prefers-reduced-motion: reduce)' }));
+    vi.stubGlobal('IntersectionObserver', observer);
+    const wrapper = mount(PageBlocks, { props: { blocks: [causesBlock('focus_areas')] } });
+
+    expect(wrapper.findAll('[data-focus-area-reveal].is-visible')).toHaveLength(3);
+    expect(observer).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
+  test('defines the reference motion, responsive columns, and keyboard sweep in CSS', () => {
+    expect(pageBlocksSource).toContain('grid-template-columns:repeat(3,minmax(0,1fr))');
+    expect(pageBlocksSource).toContain('.igf-focus-area__reveal.is-reveal-ready { opacity:0; transform:translateY(100px); transition:opacity 500ms ease-out,transform 500ms ease-out;');
+    expect(pageBlocksSource).toContain('background:var(--orange); content:\'\'; transform:scaleX(0); transform-origin:left center; transition:transform 500ms ease-out;');
+    expect(pageBlocksSource).toContain('.igf-focus-area-card:hover::before,.igf-focus-area-card:focus-visible::before,.igf-focus-area-card:focus-within::before { transform:scaleX(1); }');
+    expect(pageBlocksSource).toContain('.igf-focus-areas { grid-template-columns:repeat(2,minmax(0,1fr)); }');
+    expect(pageBlocksSource).toContain('.igf-focus-areas { grid-template-columns:1fr; }');
   });
 });
 

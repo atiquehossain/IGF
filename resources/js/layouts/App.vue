@@ -241,7 +241,8 @@ watch(
         $toast.error(message.text);
         break;
     }
-  }
+  },
+  { immediate: true }
 );
 
 </script>

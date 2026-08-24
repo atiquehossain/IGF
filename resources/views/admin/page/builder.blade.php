@@ -64,6 +64,7 @@
     .igf-builder__preview[data-viewport="mobile"] .igf-preview-block--stats { margin:48px 0; }
     .igf-builder__preview[data-viewport="mobile"] .igf-preview-block--stats h2 { font-size:30px; }
     .igf-builder__preview[data-viewport="mobile"] .igf-preview-block--stats .igf-stats { grid-template-columns:1fr; }
+    .igf-builder__preview[data-viewport="mobile"] .igf-preview-focus-grid { grid-template-columns:1fr; }
     .igf-builder__inspector { grid-column:2; grid-row:1; display:flex; min-width:0; min-height:0; flex-direction:column; overflow:hidden; border-left:1px solid rgba(25,28,29,.08); background:#fff; }
     .igf-builder__tabs { display:grid; grid-template-columns:repeat(3,1fr); flex:0 0 auto; border-bottom:1px solid rgba(25,28,29,.08); background:#fff; }
     .igf-builder__tab { min-height:49px; padding:10px 6px; border:0; border-bottom:2px solid transparent; background:transparent; color:var(--igf-muted); font-size:12px; font-weight:800; cursor:pointer; }
@@ -143,6 +144,7 @@
     .igf-preview-block--stats h2 { font-size:34px; }
     .igf-preview-block--stats .igf-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
     .igf-preview-giving { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:24px; }.igf-preview-giving article { padding:20px; border:1px solid #e3ded9; border-radius:12px; background:#fff8f2; }.igf-preview-giving i { color:var(--igf-orange); font-size:28px; }.igf-preview-giving h3 { margin:12px 0 7px; font:700 18px/1.25 'Literata',serif; }.igf-preview-giving p { margin:0; color:#747379; font-size:12px; }.igf-preview-giving--single { grid-template-columns:1fr; max-width:720px; }.igf-preview-giving--banner { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); padding:18px; border-radius:14px; background:#2c2723; }
+    .igf-preview-focus-grid { position:relative; display:grid; isolation:isolate; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.igf-preview-focus-grid::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(760px,100%); height:480px; background:radial-gradient(circle,rgba(255,117,0,.16),rgba(255,117,0,0) 70%); content:""; transform:translate(-50%,-50%); }.igf-preview-focus-tile { min-height:290px; animation:igf-builder-focus-rise .5s ease-out both; animation-delay:var(--focus-preview-delay,0ms); }.igf-preview-focus-heading { display:flex; padding:24px; flex-direction:column; justify-content:center; background:linear-gradient(145deg,var(--igf-orange),#ff9a42); color:#fff; }.igf-preview-focus-heading .igf-eyebrow,.igf-preview-focus-heading p { color:#fff; }.igf-preview-focus-heading h2 { font-size:clamp(25px,3vw,38px); }.igf-preview-focus-card { position:relative; z-index:0; display:flex; overflow:hidden; padding:24px; flex-direction:column; align-items:flex-start; isolation:isolate; border:1px solid #e3ded9; border-radius:14px; background:#fff; box-shadow:0 8px 22px rgba(25,28,29,.08); outline:1px dashed #d9d2cc; outline-offset:-10px; }.igf-preview-focus-card::before { position:absolute; z-index:0; inset:0 auto 0 0; width:0; background:var(--igf-orange); content:""; transition:width .5s ease; }.igf-preview-focus-card:hover::before { width:100%; }.igf-preview-focus-card>* { position:relative; z-index:1; }.igf-preview-focus-card img { width:64px; height:64px; margin-bottom:16px; border-radius:12px; object-fit:cover; }.igf-preview-focus-card>i { display:grid; width:64px; height:64px; margin-bottom:16px; place-items:center; border-radius:12px; background:#fff3e8; color:var(--igf-primary); font-size:26px; }.igf-preview-focus-card h3 { margin:0 0 10px; font:700 20px/1.25 'Literata',serif; text-transform:uppercase; }.igf-preview-focus-card p { margin:0 0 20px; font-size:13px; }.igf-preview-focus-card span { margin-top:auto; padding:8px 12px; border-radius:999px; background:var(--igf-primary); color:#fff; font-size:11px; font-weight:800; } @keyframes igf-builder-focus-rise { from { opacity:0; transform:translateY(100px); } to { opacity:1; transform:translateY(0); } }
     .igf-stat { padding:28px 18px; border:1px solid rgba(25,28,29,.06); border-radius:12px; background:#f8f9fa; text-align:center; }
     .igf-stat strong { display:block; margin-bottom:6px; color:var(--igf-primary); font:700 38px/1.1 'Literata',serif; }
     .igf-stat.is-animation-count-up,.igf-stat.is-animation-fade-up { animation:igf-builder-stat-fade-up var(--preview-animation-duration,900ms) cubic-bezier(.22,1,.36,1) both; animation-delay:var(--preview-animation-delay,0ms); }
@@ -162,7 +164,7 @@
     .igf-notice { position:fixed; right:24px; bottom:24px; z-index:1200; max-width:360px; padding:12px 16px; border-radius:8px; background:#24242b; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.2); }
     .igf-read-only { flex:0 0 auto; padding:11px 28px; border-bottom:1px solid #e7c785; background:#fff8df; color:#674d12; font-size:12px; line-height:1.5; }
     .igf-read-only strong { margin-right:5px; }
-    @media (prefers-reduced-motion:reduce) { .igf-stat { animation:none!important; opacity:1!important; transform:none!important; } }
+    @media (prefers-reduced-motion:reduce) { .igf-stat,.igf-preview-focus-tile { animation:none!important; opacity:1!important; transform:none!important; } .igf-preview-focus-card::before { transition:none!important; } }
     @media (max-width:1199px) {
         .igf-builder__topbar { padding-inline:18px; }
         .igf-builder__heading { gap:12px; }
@@ -394,6 +396,11 @@
         <option value="{{ $asset->url }}">{{ $asset->original_name }}</option>
     @endforeach
 </datalist>
+<datalist id="video-library-options">
+    @foreach(($videoAssets ?? collect()) as $asset)
+        <option value="{{ $asset->url }}">{{ $asset->original_name }}</option>
+    @endforeach
+</datalist>
 @endsection
 
 @section('custom-js')
@@ -509,6 +516,24 @@
         if (source === 'category' && block.content?.category_slug) items = items.filter(item => item.category === block.content.category_slug);
         return items;
     }
+    function managedPreviewItems(block) {
+        const content = block.content || {};
+        const candidates = managedItems(block, managedSource(block));
+        const limit = Math.min(12, Math.max(1, Number(content.limit || 3)));
+        if (content.selection_mode === 'manual') {
+            const known = new Map(candidates.map(item => [String(item.value), item]));
+            return (content.selected_items || []).map(value => known.get(String(value))).filter(Boolean).slice(0, limit);
+        }
+        const number = value => Number(value || 0);
+        const items = [...candidates];
+        items.sort((left, right) => {
+            if (content.sort === 'newest') return number(right.published_at) - number(left.published_at) || number(right.sort_id) - number(left.sort_id);
+            if (content.sort === 'oldest') return number(left.published_at) - number(right.published_at) || number(left.sort_id) - number(right.sort_id);
+            if (content.sort === 'title') return String(left.label || '').localeCompare(String(right.label || ''), locale, {sensitivity:'base'}) || number(left.sort_id) - number(right.sort_id);
+            return number(right.featured_order) - number(left.featured_order) || number(right.sort_id) - number(left.sort_id);
+        });
+        return items.slice(0, limit);
+    }
     function renderManagedInspector(block) {
         const content = {...(block.content || {})};
         const source = managedSource(block);
@@ -537,8 +562,11 @@
             : '';
         const itemLink = ['cards','causes','events','team'].includes(block.type) ? `<div class="igf-field"><label for="managed-item-link">Item link text</label><input id="managed-item-link" data-content-key="item_link_label" value="${escapeHtml(content.item_link_label || '')}"></div>` : '';
         const viewAll = ['cards','causes','events','gallery'].includes(block.type) ? `<div class="igf-field"><label for="managed-view-all-label">View-all link text</label><input id="managed-view-all-label" data-content-key="view_all_label" value="${escapeHtml(content.view_all_label || '')}"></div><div class="igf-field"><label for="managed-view-all-url">View-all destination</label><input id="managed-view-all-url" data-content-key="view_all_url" value="${escapeHtml(content.view_all_url || '')}"></div>` : '';
+        const presentation = block.type === 'causes'
+            ? `${managedSelect('presentation','Presentation',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'},true)}<p class="igf-muted">Animated focus areas uses the heading as the first tile, then reveals program cards in a short stagger. Five items fill two complete desktop rows.</p>`
+            : '';
 
-        return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${sourceField}${sourceSpecific}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
+        return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${presentation}${sourceField}${sourceSpecific}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
     }
 
     function renderWaysToGiveInspector(block) {
@@ -648,6 +676,35 @@
         </section>`).join('');
         return `<section class="igf-carousel-settings"><h4>Carousel behavior</h4><label class="igf-check"><input id="hero-autoplay" type="checkbox" ${(block.content?.autoplay ?? true) ? 'checked' : ''}> Change slides automatically</label><label class="igf-check"><input id="hero-pause-hover" type="checkbox" ${(block.content?.pause_on_hover ?? true) ? 'checked' : ''}> Pause while a visitor hovers</label><div class="igf-carousel-settings__row"><p class="igf-muted">Visitors can also use arrows, dots, keyboard keys, or swipe.</p><div class="igf-field"><label for="hero-interval">Delay (ms)</label><input id="hero-interval" type="number" min="3000" max="20000" step="500" value="${Math.min(20000, Math.max(3000, Number(block.content?.interval || 6000)))}"></div></div></section><div class="igf-slide-editor">${cards}</div><p class="igf-slide-limit">Up to 8 slides. Each slide can have its own image, message, buttons, report link, and overlay.</p>${permissions.edit ? `<button type="button" class="igf-btn" id="add-hero-slide" ${slides.length >= 8 ? 'disabled' : ''}>Add slide</button>` : ''}`;
     };
+    const renderMediaUploadField = (key, label, value, mediaKind = 'image') => {
+        const fieldId = `block-content-${key.replace(/[^a-z0-9_-]/gi, '-')}`;
+        const isVideo = mediaKind === 'video';
+        const accept = isVideo ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/gif';
+        const list = isVideo ? 'video-library-options' : 'media-library-options';
+        const format = isVideo ? 'MP4 or WebM' : 'JPG, PNG, WebP or GIF';
+        const uploader = permissions.create ? `<div class="igf-media-dropzone" tabindex="0" role="button" data-media-dropzone data-media-kind="${mediaKind}" data-media-key="${escapeHtml(key)}" aria-label="Upload ${escapeHtml(label)}"><span>Drop ${isVideo ? 'a video' : 'an image'} here<br>or click to upload</span><input class="igf-media-file" type="file" accept="${accept}" hidden></div>` : '';
+        return `<div class="igf-media-picker"><div class="igf-field"><label for="${fieldId}">${escapeHtml(label)}</label><input id="${fieldId}" data-content-key="${escapeHtml(key)}" value="${escapeHtml(value || '')}" list="${list}"></div>${uploader}<div class="igf-media-picker__links"><span>${permissions.create ? `${format}, 20 MB maximum` : 'Choose an existing asset'}</span>${mediaLibraryLink}</div></div>`;
+    };
+    const renderMediaTextInspector = block => {
+        const content = block.content || {};
+        const mediaType = ['image','video','youtube'].includes(content.media_type) ? content.media_type : 'image';
+        const field = (key, label, value, multiline = false, type = 'text', max = null) => {
+            const id = `block-content-${key.replace(/[^a-z0-9_-]/gi, '-')}`;
+            const maximum = max ? ` maxlength="${max}"` : '';
+            return `<div class="igf-field"><label for="${id}">${escapeHtml(label)}</label>${multiline ? `<textarea id="${id}" data-content-key="${key}"${maximum}>${escapeHtml(value || '')}</textarea>` : `<input id="${id}" type="${type}" data-content-key="${key}" value="${escapeHtml(value || '')}"${maximum}>`}</div>`;
+        };
+        const typeField = `<div class="igf-field"><label for="block-content-media-type">Media type</label><select id="block-content-media-type" data-content-key="media_type" data-media-type-rerender><option value="image" ${mediaType === 'image' ? 'selected' : ''}>Image</option><option value="video" ${mediaType === 'video' ? 'selected' : ''}>Uploaded video</option><option value="youtube" ${mediaType === 'youtube' ? 'selected' : ''}>YouTube video</option></select></div>`;
+        let mediaFields = '';
+        if (mediaType === 'image') {
+            mediaFields = `${renderMediaUploadField('image','Image',content.image,'image')}${field('image_alt','Describe the image',content.image_alt,false,'text',255)}`;
+        } else if (mediaType === 'video') {
+            mediaFields = `${renderMediaUploadField('video_url','Uploaded video',content.video_url,'video')}${renderMediaUploadField('poster','Poster image',content.poster,'image')}${field('caption','Video caption',content.caption,false,'text',2000)}`;
+        } else {
+            mediaFields = `${field('youtube_url','YouTube video link',content.youtube_url,false,'url',2048)}${field('caption','Video caption',content.caption,false,'text',2000)}`;
+        }
+        const position = `<div class="igf-field"><label for="block-content-image-position">Media position</label><select id="block-content-image-position" data-content-key="image_position"><option value="left" ${content.image_position !== 'right' ? 'selected' : ''}>Left</option><option value="right" ${content.image_position === 'right' ? 'selected' : ''}>Right</option></select></div>`;
+        return `${field('eyebrow','Small heading',content.eyebrow)}${field('heading','Section heading',content.heading)}${field('body','Body text',content.body,true)}${typeField}${mediaFields}${position}${field('link_label','Link text',content.link_label)}${field('link_url','Link destination',content.link_url)}`;
+    };
 
     function renderPreviewBlock(block) {
         const content = block.content || {};
@@ -680,6 +737,11 @@
             const layoutClass = content.layout === 'single_cta' ? ' igf-preview-giving--single' : content.layout === 'banner' ? ' igf-preview-giving--banner' : '';
             return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2><p>${escapeHtml(String(content.body || '').replace(/<[^>]*>/g,' '))}</p><div class="igf-preview-giving${layoutClass}">${options.map(option => `<article><i class="fa fa-gift" aria-hidden="true"></i><h3>${escapeHtml(option.label)}</h3><p>${escapeHtml(option.destination || 'Managed giving destination')}</p></article>`).join('')}</div>${options.length?'':`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No giving options selected.')}</p>`}</section>`;
         }
+        if (block.type === 'causes' && content.presentation === 'focus_areas') {
+            const options = managedPreviewItems(block);
+            const body = String(content.body || '').replace(/<[^>]*>/g, ' ');
+            return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-preview-focus-grid"><header class="igf-preview-focus-tile igf-preview-focus-heading" style="--focus-preview-delay:0ms"><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2>${body?`<p>${escapeHtml(body)}</p>`:''}</header>${options.map((option,index) => `<article class="igf-preview-focus-tile igf-preview-focus-card" style="--focus-preview-delay:${Math.min(index + 1, 5) * 100}ms">${option.image?`<img src="${escapeHtml(option.image)}" alt="${escapeHtml(option.image_alt || option.label || '')}">`:'<i class="fa fa-compass" aria-hidden="true"></i>'}<h3>${escapeHtml(option.label || 'Published item')}</h3>${option.body?`<p>${escapeHtml(option.body)}</p>`:''}<span>${escapeHtml(content.item_link_label || 'Learn more')}</span></article>`).join('')}</div>${options.length?'':`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No published items are available for this selection.')}</p>`}</section>`;
+        }
         if (block.type === 'spacer') return `<section class="igf-preview-block${selected}" style="padding:${content.size === 'large' ? 90 : content.size === 'small' ? 24 : 54}px" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"></section>`;
         if (block.type === 'custom_html') return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}>${content.html || '<p>Custom HTML block</p>'}</section>`;
         const body = content.body || content.html || '';
@@ -695,8 +757,12 @@
 
     async function uploadMedia(file, key, dropzone, blockUuid, slideIndex = null) {
         if (!permissions.create || !permissions.edit) return;
-        if (!file || !/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
-            notify('Choose a supported JPG, PNG, WebP, or GIF image.');
+        const mediaKind = dropzone.dataset.mediaKind === 'video' ? 'video' : 'image';
+        const validType = mediaKind === 'video'
+            ? /^video\/(mp4|webm)$/.test(file?.type || '')
+            : /^image\/(jpeg|png|webp|gif)$/.test(file?.type || '');
+        if (!file || !validType) {
+            notify(mediaKind === 'video' ? 'Choose a supported MP4 or WebM video.' : 'Choose a supported JPG, PNG, WebP, or GIF image.');
             return;
         }
         const label = dropzone.querySelector('span');
@@ -712,6 +778,7 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('locale', locale);
+            formData.append('media_kind', mediaKind);
             const response = await fetch(routes.storeMedia, {
                 method: 'POST',
                 headers: {'Accept':'application/json','X-CSRF-TOKEN':csrf},
@@ -737,7 +804,7 @@
                     : inspector.querySelector(`[data-content-key="${CSS.escape(key)}"]`))
                 : null;
             if (input) input.value = payload.asset.url;
-            const options = document.getElementById('media-library-options');
+            const options = document.getElementById(mediaKind === 'video' ? 'video-library-options' : 'media-library-options');
             options.insertAdjacentHTML('afterbegin', `<option value="${escapeHtml(payload.asset.url)}">${escapeHtml(payload.asset.original_name)}</option>`);
             setDirty(true, blockScope(blockUuid));
             notify(payload.message);
@@ -846,6 +913,8 @@
         } : (block.content || {});
         const fields = block.type === 'hero'
             ? renderHeroEditor(block)
+            : block.type === 'media_text'
+                ? renderMediaTextInspector(block)
             : block.type === 'ways_to_give'
                 ? renderWaysToGiveInspector(block)
                 : contentOptions.sources?.[block.type]
@@ -912,7 +981,17 @@
                 });
             });
             if (canEditContent) {
-                inspector.querySelectorAll('[data-managed-rerender]').forEach(input => input.addEventListener('change', () => { if (input.dataset.contentKey === 'content_source') block.content.selected_items = []; block.content[input.dataset.contentKey] = input.value; renderInspector(); }));
+                inspector.querySelector('[data-media-type-rerender]')?.addEventListener('change', input => {
+                    const content = {...(block.content || {})};
+                    inspector.querySelectorAll('[data-content-key]').forEach(control => {
+                        content[control.dataset.contentKey] = control.type === 'checkbox' ? control.checked : control.value;
+                    });
+                    block.content = {...content, media_type: input.target.value};
+                    setDirty(true, blockScope(block.uuid));
+                    renderPreview();
+                    renderInspector();
+                });
+                inspector.querySelectorAll('[data-managed-rerender]').forEach(input => input.addEventListener('change', () => { if (input.dataset.contentKey === 'content_source') block.content.selected_items = []; block.content[input.dataset.contentKey] = input.value; setDirty(true, blockScope(block.uuid)); renderPreview(); renderInspector(); }));
                 inspector.querySelectorAll('[data-giving-rerender]').forEach(input => input.addEventListener('change', () => {
                     block.content[input.dataset.contentKey] = input.value;
                     if (block.content.selection_mode !== 'manual' || !['single_cta','banner'].includes(block.content.layout) || block.content.selected_items?.length !== 1) block.content.project_uuid = '';

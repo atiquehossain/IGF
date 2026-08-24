@@ -27,7 +27,6 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
         $this->assertSame('Published stories', $values['content_archives']['category_listing_label']);
         $this->assertSame('Events and news', $values['content_archives']['events_listing_label']);
         $this->assertSame('Published projects', $values['content_archives']['project_listing_label']);
-        $this->assertSame('Google', $values['member_area']['google_login_label']);
         $this->assertSame('000000', $values['member_area']['verification_code_placeholder']);
         $this->assertTrue($values['member_area']['registration_enabled']);
         $this->assertSame('Apply for member access', $values['member_area']['registration_title']);
@@ -73,7 +72,8 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
         $this->assertStringContainsString(':aria-label="settings.events_listing_label"', $events);
         $this->assertStringContainsString(':aria-label="settings.category_listing_label"', $category);
         $this->assertStringContainsString(':aria-label="settings.project_listing_label"', $project);
-        $this->assertStringContainsString('content.google_login_label', $login);
+        $this->assertStringNotContainsString("route('login.google')", $login);
+        $this->assertStringNotContainsString("route('login.facebook')", $login);
         $this->assertStringContainsString(':placeholder="content.verification_code_placeholder"', $verification);
         $this->assertStringContainsString(':placeholder="copy.amount_placeholder"', $zakat);
     }

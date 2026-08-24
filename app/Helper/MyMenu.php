@@ -316,7 +316,7 @@ class MyMenu
     public static function frontMenus($locale = null, $type = 'main')
     {
         $locale = empty($locale) ? app()->getLocale() : $locale;
-        $pageMenus = PageMenu::select('id', 'name', 'description', 'link')
+        $pageMenus = PageMenu::select('id', 'uuid', 'name', 'description', 'link')
             ->selectRaw("IFNULL(parent_id, '') as parent_id")
             ->selectRaw("IFNULL(slug, '') as slug")
             ->selectRaw("IFNULL(icon, '') as icon")

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Support\Facades\Redirect;
@@ -57,7 +57,7 @@ class AuthController extends Controller {
 
         try {
 
-            $user = User::where('phone_no', @$request->phone_no)->where('provider_type', 'local')->where('is_approved',1)->first();
+            $user = User::where('phone_no', $request->phone_no)->where('provider_type', 'local')->where('is_approved',1)->first();
 
             if (empty($user)) {
                 $response = ['type' => 'error', 'text' => 'Your account is not registered or approved yet.'];
@@ -69,12 +69,12 @@ class AuthController extends Controller {
                 return back()->with('message', $response);
             }
 
-            if ($user->hasTwoFactorEnabled()) {
-                if (!Hash::check($request->password, $user->password)) {
-                    $response = ['type' => 'error', 'text' => 'password mismatch. please try again'];
-                    return back()->with('message', $response);
-                }
+            if (!Hash::check($request->password, $user->password)) {
+                $response = ['type' => 'error', 'text' => 'password mismatch. please try again'];
+                return back()->with('message', $response);
+            }
 
+            if ($user->hasTwoFactorEnabled()) {
                 return Redirect::route('login2fa')->with('message', [
                     'type' => 'warning',
                     'text' => 'Two-factor authentication is enabled. Continue with secure login.',
@@ -86,14 +86,10 @@ class AuthController extends Controller {
                 $user->avatar = $user->avatarUrl();
             }
 
-            if (Auth::attempt(['phone_no' => $request->phone_no, 'password' => $request->password], $request->remember)) {
-                $request->session()->regenerate();
-                $response = ['type' => 'success', 'text' => 'Success Login'];
-                return Redirect::route('frontend.home')->with('message', $response);
-            } else {
-                $response = ['type' => 'error', 'text' => 'password mismatch. please try again'];
-                return back()->with('message', $response);
-            }
+            Auth::guard('web')->login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+            $response = ['type' => 'success', 'text' => 'Success Login'];
+            return Redirect::route('frontend.home')->with('message', $response);
         } catch (Exception $e) {
             $response = ['type' => 'error', 'text' => 'You are not sign in. Please try again later.'];
             return back()->with('message', $response);
@@ -189,7 +185,7 @@ class AuthController extends Controller {
             }
 
             if (empty($user->status)) {
-                $response = ['type' => 'error', "text" => "You are not active for login." . $user->status];
+                $response = ['type' => 'error', "text" => "You are not active for login."];
                 return back()->with('message', $response);
             }
 
@@ -207,9 +203,9 @@ class AuthController extends Controller {
 
             if ($isEnrollment) {
                 $qrUrl = $google2fa->getQRCodeUrl(config('app.name'), $user->email, $secret);
-                $renderer = new ImageRenderer(new RendererStyle(200), new ImagickImageBackEnd());
+                $renderer = new ImageRenderer(new RendererStyle(200), new SvgImageBackEnd());
                 $writer = new Writer($renderer);
-                $qrImage = "data:image/png;base64," . base64_encode($writer->writeString($qrUrl));
+                $qrImage = "data:image/svg+xml;base64," . base64_encode($writer->writeString($qrUrl));
             }
 
             $accessToken = $challenges->create($user, $isEnrollment ? $secret : null);
@@ -300,8 +296,8 @@ class AuthController extends Controller {
         ]);
 
         if ($validator->fails()) {
-            $response = ['type' => 'error', 'text' => 'Please fill all required fields correctly'];
-            return back()->with('message', $response);
+            $response = ['type' => 'error', 'text' => 'Please correct the highlighted password fields.'];
+            return back()->withErrors($validator)->with('message', $response);
         }
 
         try {
@@ -322,7 +318,9 @@ class AuthController extends Controller {
                 return Redirect::route('frontend.home')->with('message', $response);                
             } else {
                 $response = ['type' => 'error', 'text' => 'Incorrect current password.'];
-                return back()->with('message', $response);
+                return back()
+                    ->withErrors(['current_password' => 'The current password is incorrect.'])
+                    ->with('message', $response);
             }
         } catch (Exception $e) {
             $response = ['type' => 'error', 'text' => 'Password change Failed. Please try again later.'];

@@ -10,7 +10,6 @@
         <div><h1>Bulk metadata editor</h1><p>Edit English and Bangla search titles, descriptions, social images, visibility and schema templates in one spreadsheet-style workspace.</p></div>
         <div class="seo2-actions"><a class="seo2-btn" href="{{ route('seo.index') }}"><i class="fa fa-arrow-left" aria-hidden="true"></i> Search &amp; Sharing</a><a class="seo2-btn" href="{{ route('seo.bulk.export', array_filter($filters, fn($value) => $value !== 'all' && $value !== '')) }}"><i class="fa fa-download" aria-hidden="true"></i> Export CSV</a></div>
     </header>
-    @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>No rows were saved.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @unless($canEditMetadata)<div class="seo2-alert seo2-alert--warning" role="status"><strong>Read-only SEO access.</strong> You can search and export this sheet, but editing requires the “Edit SEO metadata” permission.</div>@endunless
 

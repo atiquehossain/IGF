@@ -15,26 +15,6 @@ use Throwable;
 
 class SociaLiteLoginController extends Controller
 {
-    public function redirectToGoogle(): RedirectResponse
-    {
-        return Socialite::driver('google')->redirect();
-    }
-
-    public function handleGoogleCallback(): RedirectResponse
-    {
-        return $this->handleCallback('google');
-    }
-
-    public function redirectToFacebook(): RedirectResponse
-    {
-        return Socialite::driver('facebook')->redirect();
-    }
-
-    public function handleFacebookCallback(): RedirectResponse
-    {
-        return $this->handleCallback('facebook');
-    }
-
     public function redirectToGithub(): RedirectResponse
     {
         return Socialite::driver('github')->redirect();

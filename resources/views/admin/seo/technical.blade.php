@@ -20,7 +20,6 @@
         </div>
     </header>
 
-    @if(session('message'))<div class="seo2-alert {{ session('alert-type') === 'error' ? 'seo2-alert--error' : '' }}" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Please check this action:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 
     <section class="tseo-grid" aria-label="Technical SEO summary">
@@ -55,7 +54,7 @@
                 </div>
                 <p class="tseo-note">@if($latestComparison['has_baseline']) Comparing scan #{{ $latestRun->id }} with completed scan #{{ $latestComparison['previous_run_id'] }}. @else This is the baseline snapshot; the next completed scan will show resolved and recurring findings. @endif</p>
             @elseif($latestRun)
-                <p class="seo2-alert seo2-alert--error">The latest scan is {{ str_replace('_', ' ', $latestRun->status) }}. A failed or running scan is never compared with a completed snapshot.</p>
+                <p class="seo2-alert {{ $latestRun->status === 'failed' ? 'seo2-alert--error' : 'seo2-alert--warning' }}" role="{{ $latestRun->status === 'failed' ? 'alert' : 'status' }}">The latest scan is {{ str_replace('_', ' ', $latestRun->status) }}. A failed or running scan is never compared with a completed snapshot.</p>
             @else
                 <p class="tseo-note">Run the first safe scan to establish a comparison baseline.</p>
             @endif

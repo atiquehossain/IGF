@@ -4,7 +4,6 @@
 @include('admin.seo._styles')
 <main class="seo2">
     <header class="seo2-head"><div><h1>Redirects</h1><p>Keep old bookmarks and search results working when a public page address changes.</p></div>@if($canManageMetadata)<div class="seo2-actions"><a class="seo2-btn" href="{{ route('seo.index', ['locale' => $locale]) }}">Search &amp; Sharing</a></div>@endif</header>
-    @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Please fix these settings:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @include('admin.seo._redirects')
 </main>

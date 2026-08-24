@@ -132,6 +132,30 @@ class ApiAuthenticationIntegrityTest extends TestCase
             ->assertJsonPath('message', 'The verification challenge is invalid or expired.');
     }
 
+    public function test_api_two_factor_login_preserves_tag_like_password_characters(): void
+    {
+        $password = 'Correct<em>Api-Password!23';
+        $user = User::create([
+            'name' => 'Tag Password API User',
+            'email' => 'tag-password-api@example.test',
+            'phone_no' => '01900000009',
+            'provider_type' => 'local',
+            'status' => 1,
+            'is_approved' => 1,
+            'password' => Hash::make($password),
+            'google2fa_secret' => app('pragmarx.google2fa')->generateSecretKey(),
+        ]);
+
+        $this->postJson('/api/v1/auth/login-2fa', [
+            'phone_no' => $user->phone_no,
+            'password' => $password,
+        ])->assertOk()
+            ->assertJson([
+                'status' => true,
+                'enrollment_required' => false,
+            ]);
+    }
+
     public function test_pending_enrollment_secret_is_encrypted_at_rest_and_consumed_under_a_lock(): void
     {
         $user = User::create([

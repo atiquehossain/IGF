@@ -271,6 +271,51 @@ class TranslationCenterIntegrityTest extends TestCase
         $this->assertSame($block->content['selected_items'], $translatedBlock->content['selected_items']);
     }
 
+    public function test_media_choice_and_sources_are_machine_fields_while_the_caption_is_translatable(): void
+    {
+        [$page] = $this->makeEnglishPage();
+        $block = PageBlock::create([
+            'page_id' => $page->id,
+            'uuid' => (string) Str::uuid(),
+            'translation_key' => (string) Str::uuid(),
+            'type' => 'media_text',
+            'label' => 'Media story',
+            'content' => [
+                'heading' => 'Community story',
+                'media_type' => 'youtube',
+                'video_url' => '/storage/media/community.mp4',
+                'youtube_url' => 'youtube.com/watch?v=abcdefghijk',
+                'poster' => '/storage/media/community-poster.jpg',
+                'caption' => 'Children describe their learning project.',
+            ],
+            'sort_order' => 3,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+        ]);
+        $service = app(TranslationCenterService::class);
+        $prepared = $service->prepareBlockTranslationContent($block->content);
+
+        $this->assertSame('youtube', $prepared['media_type']);
+        $this->assertSame($block->content['video_url'], $prepared['video_url']);
+        $this->assertSame($block->content['youtube_url'], $prepared['youtube_url']);
+        $this->assertSame($block->content['poster'], $prepared['poster']);
+        $this->assertSame('', $prepared['caption']);
+
+        $paths = $service->rows('en', 'bn')
+            ->filter(fn (array $row) =>
+                ($row['identity']['type'] ?? null) === 'block'
+                && ($row['identity']['source_block_id'] ?? null) === $block->id
+            )
+            ->pluck('identity.path');
+
+        $this->assertFalse($paths->contains('media_type'));
+        $this->assertFalse($paths->contains('video_url'));
+        $this->assertFalse($paths->contains('youtube_url'));
+        $this->assertFalse($paths->contains('poster'));
+        $this->assertTrue($paths->contains('caption'));
+    }
+
     public function test_bangla_cannot_be_enabled_while_required_cells_are_missing(): void
     {
         $admin = $this->makePageEditor();

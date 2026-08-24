@@ -122,6 +122,84 @@ class MemberAuthIntegrityTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_web_login_authenticates_the_exact_eligible_local_user_and_preserves_password(): void
+    {
+        $phone = '01600000001';
+        User::create([
+            'name' => 'Social Duplicate',
+            'phone_no' => $phone,
+            'email' => 'social-duplicate@example.test',
+            'provider_type' => 'google',
+            'social_id' => 'duplicate-social-id',
+            'status' => 1,
+            'is_approved' => 1,
+            'password' => Hash::make('Different-Social-Password!'),
+        ]);
+        $password = 'Strong<em>Member-Password!23';
+        $localUser = User::create([
+            'name' => 'Eligible Local Member',
+            'phone_no' => $phone,
+            'email' => 'eligible-local@example.test',
+            'provider_type' => 'local',
+            'status' => 1,
+            'is_approved' => 1,
+            'password' => Hash::make($password),
+        ]);
+
+        $this->post(route('login'), [
+            'phone_no' => $phone,
+            'password' => $password,
+        ])->assertRedirect(route('frontend.home'));
+
+        $this->assertAuthenticatedAs($localUser);
+    }
+
+    public function test_first_web_two_factor_enrollment_generates_an_svg_qr_without_imagick(): void
+    {
+        $user = User::create([
+            'name' => 'First Enrollment Member',
+            'phone_no' => '01600000002',
+            'email' => 'first-enrollment@example.test',
+            'provider_type' => 'local',
+            'status' => 1,
+            'is_approved' => 1,
+            'password' => Hash::make('Strong-Member-Password!'),
+        ]);
+
+        $this->post(route('login2fa.perform'), [
+            'email' => $user->email,
+            'password' => 'Strong-Member-Password!',
+        ])->assertRedirect(route('login2fa.verify'))
+            ->assertSessionHas('data.enrollment_required', true)
+            ->assertSessionHas('data.qr_image', function ($value): bool {
+                $prefix = 'data:image/svg+xml;base64,';
+                if (!is_string($value) || !str_starts_with($value, $prefix)) {
+                    return false;
+                }
+
+                $svg = base64_decode(substr($value, strlen($prefix)), true);
+                return is_string($svg) && str_contains($svg, '<svg');
+            });
+    }
+
+    public function test_inactive_two_factor_login_feedback_does_not_append_the_status_value(): void
+    {
+        $user = User::create([
+            'name' => 'Inactive Two Factor Member',
+            'phone_no' => '01600000003',
+            'email' => 'inactive-two-factor@example.test',
+            'provider_type' => 'local',
+            'status' => 0,
+            'is_approved' => 1,
+            'password' => Hash::make('Strong-Member-Password!'),
+        ]);
+
+        $this->post(route('login2fa.perform'), [
+            'email' => $user->email,
+            'password' => 'Strong-Member-Password!',
+        ])->assertSessionHas('message.text', 'You are not active for login.');
+    }
+
     public function test_successful_web_otp_reencrypts_a_legacy_plaintext_secret(): void
     {
         $user = User::create([
@@ -286,7 +364,33 @@ class MemberAuthIntegrityTest extends TestCase
             'current_password' => 'Original-Member-Password!',
             'password' => 'short',
             'password_confirmation' => 'different',
-        ])->assertSessionHas('message.type', 'error');
+        ])->assertSessionHasErrors(['password'])
+            ->assertSessionHas('message.type', 'error')
+            ->assertSessionHas('message.text', 'Please correct the highlighted password fields.');
+
+        $this->assertTrue(Hash::check('Original-Member-Password!', $user->fresh()->password));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_member_password_change_identifies_an_incorrect_current_password(): void
+    {
+        $user = User::create([
+            'name' => 'Incorrect Current Password Member',
+            'phone_no' => '01400000001',
+            'email' => 'incorrect-current-password@example.test',
+            'provider_type' => 'local',
+            'status' => 1,
+            'is_approved' => 1,
+            'password' => Hash::make('Original-Member-Password!'),
+        ]);
+
+        $this->actingAs($user)->post(route('change.password'), [
+            'current_password' => 'Wrong-Member-Password!',
+            'password' => 'Replacement-Member-Password!23',
+            'password_confirmation' => 'Replacement-Member-Password!23',
+        ])->assertSessionHasErrors([
+            'current_password' => 'The current password is incorrect.',
+        ])->assertSessionHas('message.text', 'Incorrect current password.');
 
         $this->assertTrue(Hash::check('Original-Member-Password!', $user->fresh()->password));
         $this->assertAuthenticatedAs($user);
@@ -306,15 +410,16 @@ class MemberAuthIntegrityTest extends TestCase
         $user->forceFill(['remember_token' => 'known-remember-token'])->saveQuietly();
         [$accessTokenId, $refreshTokenId] = $this->issuePassportTokenPair($user);
 
+        $replacementPassword = 'Replacement<em>Member-Password!23';
         $this->actingAs($user)->post(route('change.password'), [
             'current_password' => 'Original-Member-Password!',
-            'password' => 'Replacement-Member-Password!',
-            'password_confirmation' => 'Replacement-Member-Password!',
+            'password' => $replacementPassword,
+            'password_confirmation' => $replacementPassword,
         ])->assertRedirect(route('frontend.home'))
             ->assertSessionHas('message.type', 'success');
 
         $freshUser = $user->fresh();
-        $this->assertTrue(Hash::check('Replacement-Member-Password!', $freshUser->password));
+        $this->assertTrue(Hash::check($replacementPassword, $freshUser->password));
         $this->assertNotSame('known-remember-token', $freshUser->getRememberToken());
         $this->assertDatabaseHas('oauth_access_tokens', ['id' => $accessTokenId, 'revoked' => 1]);
         $this->assertDatabaseHas('oauth_refresh_tokens', ['id' => $refreshTokenId, 'revoked' => 1]);

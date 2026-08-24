@@ -366,8 +366,6 @@
 
 
     function toastrMsg(type, msg) {
-        Command: toastr[type](msg)
-
         toastr.options = {
             "closeButton": false,
             "debug": false,
@@ -380,10 +378,14 @@
             "hideDuration": "1000",
             "timeOut": "3000",
             "extendedTimeOut": "1000",
+            "escapeHtml": true,
             "showEasing": "swing",
             "hideEasing": "linear",
             "showMethod": "fadeIn",
             "hideMethod": "fadeOut"
-        }
+        };
+
+        const toastType = ['info', 'warning', 'success', 'error'].includes(type) ? type : 'info';
+        toastr[toastType](String(msg ?? ''));
     }
 </script>

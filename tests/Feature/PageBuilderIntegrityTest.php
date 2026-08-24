@@ -257,6 +257,7 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('data-link-picker', false)
             ->assertSee('options.slide ? `data-slide-key="${key}"`', false)
             ->assertSee("textField('heading','Main heading',slide.heading,{max:180,slide:true})", false)
+            ->assertSee("state.heroSlide += button.dataset.heroNav === 'next' ? 1 : -1; renderInspector(); renderPreview();", false)
             ->assertSee('dirtyBlocks: new Set()', false)
             ->assertSee('sessionStorage.setItem(draftKey', false)
             ->assertDontSee('localStorage.', false)
@@ -301,6 +302,210 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('data-media-dropzone', false)
             ->assertSee('id="publish-menu" role="menu"', false)
             ->assertDontSee('.igf-viewport-button:not(.is-active)', false);
+    }
+
+    public function test_simple_editor_receives_safe_published_category_cards_for_live_preview(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $editorPage = $this->makePage(['name' => 'Live preview editor']);
+        $activeCategory = $this->makeCategory('Active programs', ['slug' => 'active-programs']);
+        $inactiveCategory = $this->makeCategory('Hidden programs', ['slug' => 'hidden-programs', 'status' => 0]);
+        $publishedAt = now()->subDays(2)->startOfDay();
+        $published = $this->makePage([
+            'category_id' => $activeCategory->id,
+            'name' => 'Published education program',
+            'slug' => 'published-education-program',
+            'sub_title' => '',
+            'description' => '<p>Published <strong>preview</strong> body.</p>',
+            'thumbnail' => 'education-program.jpg',
+            'order_by' => 17,
+            'published_at' => $publishedAt,
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'status' => 1,
+        ]);
+        $draft = $this->makePage([
+            'category_id' => $activeCategory->id,
+            'name' => 'Draft program',
+            'publication_status' => 'draft',
+            'visibility' => 'public',
+            'status' => 1,
+        ]);
+        $private = $this->makePage([
+            'category_id' => $activeCategory->id,
+            'name' => 'Private program',
+            'publication_status' => 'published',
+            'visibility' => 'private',
+            'status' => 1,
+        ]);
+        $wrongLocale = $this->makePage([
+            'category_id' => $activeCategory->id,
+            'name' => 'Bangla program',
+            'language' => 'bn',
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'status' => 1,
+        ]);
+        $inactiveCategoryPage = $this->makePage([
+            'category_id' => $inactiveCategory->id,
+            'name' => 'Inactive category program',
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'status' => 1,
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('page.builder.edit', ['uuid' => $editorPage->uuid, 'locale' => 'en']))
+            ->assertOk();
+
+        $items = collect(data_get($response->viewData('blockContentOptions'), 'items.category'));
+        $preview = $items->firstWhere('value', (string) $published->uuid);
+
+        $this->assertSame([
+            'value' => (string) $published->uuid,
+            'label' => 'Published education program',
+            'body' => 'Published preview body.',
+            'image' => '/storage/photos/1/page/education-program.jpg',
+            'image_alt' => 'Published education program',
+            'url' => '/page/published-education-program',
+            'featured_order' => 17,
+            'published_at' => $publishedAt->getTimestamp(),
+            'sort_id' => $published->id,
+            'category' => 'active-programs',
+        ], $preview);
+        foreach ([$draft, $private, $wrongLocale, $inactiveCategoryPage] as $excluded) {
+            $this->assertFalse($items->contains('value', (string) $excluded->uuid));
+        }
+
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+        $this->assertStringContainsString('function managedPagePreviewItems(block)', $simpleSource);
+        $this->assertStringContainsString("block.type==='causes'", $simpleSource);
+        $this->assertStringContainsString('const candidates = availableManagedItems(block, contentSource(block));', $simpleSource);
+        $this->assertStringContainsString("markDirty('block'); renderInspector(); renderPreview();", $simpleSource);
+    }
+
+    public function test_simple_editor_receives_safe_approved_testimonials_for_live_preview(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $editorPage = $this->makePage(['name' => 'Testimonial preview editor']);
+        $createdAt = now()->subDays(3)->startOfDay();
+        $approved = Testimonial::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Approved community voice',
+            'designation' => 'Parent and volunteer',
+            'testimonial' => '<p>A story of learning &amp; hope.</p>',
+            'photo' => 'community-voice.jpg',
+            'order_by' => 19,
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $approved->forceFill(['created_at' => $createdAt, 'updated_at' => $createdAt])->save();
+        $inactive = Testimonial::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Inactive community voice',
+            'language' => 'en',
+            'status' => 0,
+        ]);
+        $wrongLocale = Testimonial::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Bangla community voice',
+            'language' => 'bn',
+            'status' => 1,
+        ]);
+        $deleted = Testimonial::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Deleted community voice',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $deleted->delete();
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('page.builder.edit', ['uuid' => $editorPage->uuid, 'locale' => 'en']))
+            ->assertOk()
+            ->assertDontSee('<p>A story of learning', false);
+
+        $items = collect(data_get($response->viewData('blockContentOptions'), 'items.testimonials'));
+        $preview = $items->firstWhere('value', (string) $approved->uuid);
+
+        $this->assertSame([
+            'value' => (string) $approved->uuid,
+            'label' => 'Approved community voice',
+            'designation' => 'Parent and volunteer',
+            'quote' => 'A story of learning & hope.',
+            'photo' => '/storage/photos/1/testimonial/community-voice.jpg',
+            'featured_order' => 19,
+            'published_at' => $createdAt->getTimestamp(),
+            'sort_id' => $approved->id,
+        ], $preview);
+        foreach ([$inactive, $wrongLocale, $deleted] as $excluded) {
+            $this->assertFalse($items->contains('value', (string) $excluded->uuid));
+        }
+
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+        $this->assertStringContainsString("if(block.type==='testimonials')", $simpleSource);
+        $this->assertStringContainsString('const items = managedPagePreviewItems(block);', $simpleSource);
+        $this->assertStringContainsString('state.testimonialIndexes[block.uuid] = index;', $simpleSource);
+        $this->assertStringContainsString('data-testimonial-step="-1"', $simpleSource);
+        $this->assertStringContainsString('data-testimonial-index="${index}"', $simpleSource);
+        $this->assertStringContainsString('wireTestimonialPreview();', $simpleSource);
+        $this->assertStringContainsString('${escapeHtml(story.quote||\'\')}', $simpleSource);
+        $this->assertStringContainsString('${escapeHtml(story.designation)}', $simpleSource);
+    }
+
+    public function test_simple_editor_section_sidebar_keeps_titles_and_move_controls_clickable(): void
+    {
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+
+        $this->assertStringContainsString('Use the arrow buttons or drag handle to change the visitor order.', $simpleSource);
+        $this->assertStringContainsString('max-width:100vw!important', $simpleSource);
+        $this->assertStringContainsString("grid-template-areas:'drag select' 'actions actions'", $simpleSource);
+        $this->assertStringContainsString('.simple-select{grid-area:select;width:100%;padding:0 4px}', $simpleSource);
+        $this->assertStringContainsString('.simple-order{grid-area:actions;grid-template-columns:repeat(3,44px);justify-content:end}', $simpleSource);
+        $this->assertStringContainsString('class="simple-drag-placeholder"', $simpleSource);
+        $this->assertStringContainsString('class="simple-order" aria-hidden="true"', $simpleSource);
+        $this->assertStringContainsString('title="Select ${escapeHtml(block.label || typeLabels[block.type])}"', $simpleSource);
+        $this->assertStringContainsString('.simple-drag{touch-action:none;user-select:none}', $simpleSource);
+        $this->assertStringContainsString("handle?.addEventListener('pointerdown', event => {", $simpleSource);
+        $this->assertStringContainsString('handle.setPointerCapture?.(event.pointerId);', $simpleSource);
+        $this->assertStringContainsString('const target = document.elementFromPoint(event.clientX, event.clientY)?.closest(\'[data-section]\');', $simpleSource);
+        $this->assertStringContainsString('state.blocks = reordered;', $simpleSource);
+        $this->assertStringNotContainsString('data-section="${block.uuid}" draggable=', $simpleSource);
+    }
+
+    public function test_simple_editor_uses_an_accessible_guarded_delete_confirmation(): void
+    {
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+
+        $this->assertStringContainsString(
+            'id="simple-delete-modal" role="dialog" aria-modal="true" aria-labelledby="simple-delete-title" aria-describedby="simple-delete-description" hidden',
+            $simpleSource
+        );
+        $this->assertStringContainsString(
+            'id="simple-delete-status" role="status" aria-live="polite"',
+            $simpleSource
+        );
+        $this->assertStringContainsString('id="simple-confirm-delete"', $simpleSource);
+        $this->assertStringContainsString('[data-cancel-section-delete]', $simpleSource);
+        $this->assertStringContainsString("document.getElementById('simple-confirm-delete')?.addEventListener('click',confirmDeleteSection);", $simpleSource);
+
+        $matched = preg_match(
+            '/function openDeleteConfirmation\(.*?(?=\n\s*function wireOrdering\()/s',
+            $simpleSource,
+            $deleteFlow
+        );
+        $this->assertSame(1, $matched);
+        $this->assertStringNotContainsString('confirm(', $deleteFlow[0]);
+        $this->assertStringContainsString('state.pendingDeleteUuid = block.uuid;', $deleteFlow[0]);
+        $this->assertStringContainsString('if (!permissions.delete || state.busy || !state.pendingDeleteUuid) return;', $deleteFlow[0]);
+        $this->assertStringContainsString("modal.setAttribute('aria-busy', 'true');", $deleteFlow[0]);
+        $this->assertStringContainsString('button.disabled = true;', $deleteFlow[0]);
+        $this->assertStringContainsString("confirmButton.querySelector('span').textContent = 'Moving to trash…';", $deleteFlow[0]);
+        $this->assertStringContainsString(
+            "request(endpoint(routes.destroy, block.uuid), 'DELETE', {locale})",
+            $deleteFlow[0]
+        );
+        $this->assertStringContainsString('? {...body, expected_version: editorVersion}', $simpleSource);
     }
 
     public function test_content_editor_cannot_publish_without_the_publish_permission(): void
@@ -699,7 +904,7 @@ class PageBuilderIntegrityTest extends TestCase
         $this->assertStringContainsString('mediaLibrary: null', $restrictedHtml);
         $this->assertStringContainsString('"create":true', $restrictedHtml);
         $this->assertStringContainsString(json_encode(route('page.builder.media.store', $page->uuid)), $restrictedHtml);
-        $this->assertSame(2, substr_count($restrictedHtml, '${mediaLibraryLink}'));
+        $this->assertSame(3, substr_count($restrictedHtml, '${mediaLibraryLink}'));
 
         $role = Role::findOrFail($admin->role);
         $role->update([
@@ -713,7 +918,7 @@ class PageBuilderIntegrityTest extends TestCase
 
         $this->assertStringContainsString('mediaLibrary: ' . json_encode(route('media.index')), $permittedHtml);
         $this->assertStringContainsString(json_encode(route('page.builder.media.store', $page->uuid)), $permittedHtml);
-        $this->assertSame(2, substr_count($permittedHtml, '${mediaLibraryLink}'));
+        $this->assertSame(3, substr_count($permittedHtml, '${mediaLibraryLink}'));
     }
 
     public function test_admin_preview_renders_a_draft_with_the_real_public_component(): void
@@ -1333,6 +1538,71 @@ class PageBuilderIntegrityTest extends TestCase
         ]);
     }
 
+    public function test_page_editor_can_upload_an_explicit_supported_video_without_weakening_image_uploads(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+
+        $response = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.media.store', $page->uuid),
+            [
+                'locale' => 'en',
+                'media_kind' => 'video',
+                'file' => UploadedFile::fake()->create('community-story.mp4', 200, 'video/mp4'),
+            ]
+        )->assertCreated()
+            ->assertJsonPath('asset.mime_type', 'video/mp4')
+            ->assertJsonPath('asset.original_name', 'community-story.mp4');
+
+        Storage::disk('public')->assertExists($response->json('asset.path'));
+        $this->assertDatabaseHas('media_assets', [
+            'path' => $response->json('asset.path'),
+            'mime_type' => 'video/mp4',
+            'locale' => 'en',
+            'uploaded_by' => $admin->id,
+        ]);
+
+        $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.media.store', $page->uuid),
+            [
+                'locale' => 'en',
+                'media_kind' => 'video',
+                'file' => UploadedFile::fake()->createWithContent(
+                    'not-a-video.png',
+                    base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2WQAAAABJRU5ErkJggg==')
+                ),
+            ]
+        )->assertUnprocessable()->assertJsonValidationErrors('file');
+    }
+
+    public function test_page_builder_supplies_separate_image_and_video_asset_collections_to_both_editors(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+        $image = $this->makeMediaAsset('media/story.jpg', ['mime_type' => 'image/jpeg']);
+        $video = $this->makeMediaAsset('media/story.mp4', ['mime_type' => 'video/mp4']);
+        $this->makeMediaAsset('media/brief.pdf', ['mime_type' => 'application/pdf']);
+
+        foreach ([null, 'advanced'] as $mode) {
+            $parameters = ['uuid' => $page->uuid, 'locale' => 'en'];
+            if ($mode) {
+                $parameters['mode'] = $mode;
+            }
+
+            $this->actingAs($admin, 'admin')
+                ->get(route('page.builder.edit', $parameters))
+                ->assertOk()
+                ->assertViewHas('mediaAssets', fn ($assets): bool =>
+                    $assets->pluck('uuid')->all() === [$image->uuid]
+                )
+                ->assertViewHas('videoAssets', fn ($assets): bool =>
+                    $assets->pluck('uuid')->all() === [$video->uuid]
+                );
+        }
+    }
+
     public function test_new_hero_exposes_configurable_overlay_control(): void
     {
         $admin = $this->makeAuthorizedAdmin();
@@ -1400,6 +1670,60 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('Animate statistics')
             ->assertSee('Count up from zero')
             ->assertSee('Visitors who prefer reduced motion');
+    }
+
+    public function test_causes_focus_area_presentation_is_selectable_previewed_and_validated(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+
+        $causes = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, ['locale' => 'en', 'type' => 'causes'])
+        )->assertCreated()
+            ->assertJsonPath('block.content.presentation', 'card_grid')
+            ->json('block');
+
+        $content = $causes['content'];
+        $content['presentation'] = 'focus_areas';
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $causes['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertOk()
+            ->assertJsonPath('block.content.presentation', 'focus_areas');
+
+        $content['presentation'] = 'untrusted-layout';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $causes['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertUnprocessable()
+            ->assertJsonValidationErrors('content.presentation');
+
+        foreach ([null, 'advanced'] as $mode) {
+            $parameters = ['uuid' => $page->uuid, 'locale' => 'en'];
+            if ($mode) {
+                $parameters['mode'] = $mode;
+            }
+
+            $response = $this->actingAs($admin, 'admin')
+                ->get(route('page.builder.edit', $parameters))
+                ->assertOk()
+                ->assertSee('Animated focus areas')
+                ->assertSee('Standard image cards');
+
+            $this->assertSame(
+                ['card_grid' => 'Standard image cards', 'focus_areas' => 'Animated focus areas'],
+                data_get($response->viewData('blockContentOptions'), 'presentations.causes')
+            );
+        }
+
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+        $advancedSource = file_get_contents(resource_path('views/admin/page/builder.blade.php'));
+        $this->assertStringContainsString("block.type==='causes'&&c.presentation==='focus_areas'", $simpleSource);
+        $this->assertStringContainsString('class="simple-focus-grid"', $simpleSource);
+        $this->assertStringContainsString("block.type === 'causes' && content.presentation === 'focus_areas'", $advancedSource);
+        $this->assertStringContainsString('renderPreview(); renderInspector();', $advancedSource);
     }
 
     public function test_hero_carousel_slides_are_validated_sanitized_and_saved(): void
@@ -1559,6 +1883,133 @@ class PageBuilderIntegrityTest extends TestCase
             route('page.builder.block.update', [$page->uuid, $block->uuid]),
             $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
         )->assertUnprocessable()->assertJsonValidationErrors('content.items.0.link_label');
+    }
+
+    public function test_media_text_supports_legacy_images_uploaded_video_and_exact_youtube_links(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+        $block = $this->makeBlock($page, [
+            'type' => 'media_text',
+            'content' => [
+                'heading' => 'A legacy image story',
+                'image' => '/storage/media/story.jpg',
+                'image_alt' => 'Community learners',
+                'image_position' => 'left',
+            ],
+        ]);
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $block->content])
+        )->assertOk()
+            ->assertJsonPath('block.content.image', '/storage/media/story.jpg');
+
+        $youtubeContent = array_merge($block->fresh()->content, [
+            'media_type' => 'youtube',
+            'youtube_url' => 'youtube.com/shorts/abcdefghijk',
+            'video_url' => '',
+            'poster' => '/storage/media/story-poster.jpg',
+            'caption' => 'A caption that gives the video visible context.',
+        ]);
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $youtubeContent])
+        )->assertOk()
+            ->assertJsonPath('block.content.media_type', 'youtube')
+            ->assertJsonPath('block.content.youtube_url', 'youtube.com/shorts/abcdefghijk')
+            ->assertJsonPath('block.content.caption', 'A caption that gives the video visible context.');
+
+        foreach ([
+            'https://example.test/youtube.com/watch?v=abcdefghijk',
+            'https://youtube.com/watch?v=too-short',
+            'https://youtube.com:8443/watch?v=abcdefghijk',
+            'http://youtube.com/watch?v=abcdefghijk',
+        ] as $invalidUrl) {
+            $invalidContent = array_merge($youtubeContent, ['youtube_url' => $invalidUrl]);
+            $this->actingAs($admin, 'admin')->putJson(
+                route('page.builder.block.update', [$page->uuid, $block->uuid]),
+                $this->withEditorVersion($page, ['locale' => 'en', 'content' => $invalidContent])
+            )->assertUnprocessable()->assertJsonValidationErrors('content.youtube_url');
+        }
+
+        $videoContent = array_merge($youtubeContent, [
+            'media_type' => 'video',
+            'video_url' => '',
+        ]);
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $videoContent])
+        )->assertUnprocessable()->assertJsonValidationErrors('content.video_url');
+
+        $videoContent['video_url'] = '/storage/media/community-story.mp4';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $videoContent])
+        )->assertOk()
+            ->assertJsonPath('block.content.media_type', 'video')
+            ->assertJsonPath('block.content.video_url', '/storage/media/community-story.mp4');
+    }
+
+    public function test_media_text_rejects_unbounded_caption_and_invalid_media_choice(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+        $block = $this->makeBlock($page, ['type' => 'media_text']);
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'content' => [
+                    'media_type' => 'remote_iframe',
+                    'caption' => str_repeat('x', 2001),
+                ],
+            ])
+        )->assertUnprocessable()->assertJsonValidationErrors([
+            'content.media_type',
+            'content.caption',
+        ]);
+    }
+
+    public function test_media_text_source_rules_apply_to_create_and_simple_batch_saves(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+
+        $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'type' => 'media_text',
+                'content' => [
+                    'media_type' => 'youtube',
+                    'youtube_url' => 'https://attacker.test/youtube.com/watch?v=abcdefghijk',
+                ],
+            ])
+        )->assertUnprocessable()->assertJsonValidationErrors('content.youtube_url');
+
+        $block = $this->makeBlock($page, [
+            'type' => 'media_text',
+            'content' => config('page-builder.default_content.media_text'),
+        ]);
+        $content = array_merge($block->content, [
+            'media_type' => 'youtube',
+            'youtube_url' => 'youtube.com/watch?v=invalid',
+        ]);
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.simple.save', $page->uuid),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'blocks' => [[
+                    'uuid' => $block->uuid,
+                    'label' => $block->label,
+                    'content' => $content,
+                    'is_enabled' => true,
+                ]],
+            ])
+        )->assertUnprocessable()->assertJsonValidationErrors('content.youtube_url');
     }
 
     public function test_page_builder_media_upload_rejects_video_for_image_fields(): void

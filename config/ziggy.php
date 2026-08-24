@@ -12,8 +12,6 @@ return [
             'api.frontend.*',
             'change.password',
             'login',
-            'login.facebook',
-            'login.google',
             'login2fa',
             'login2fa.perform',
             'login2fa.verify.perform',

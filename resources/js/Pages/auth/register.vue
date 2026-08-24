@@ -12,18 +12,18 @@
           <h2 id="registration-title">{{ content.registration_title }}</h2>
           <p class="igf-register__intro">{{ content.registration_introduction }}</p>
           <form @submit.prevent="submit">
-            <label for="registration-name">{{ content.registration_name_label }}<input id="registration-name" v-model="form.name" type="text" autocomplete="name" maxlength="50" required></label>
-            <p v-if="form.errors.name" class="igf-error" role="alert">{{ form.errors.name }}</p>
-            <label for="registration-phone">{{ content.phone_label }}<input id="registration-phone" v-model="form.phone_no" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" :placeholder="content.phone_placeholder" required></label>
-            <p v-if="form.errors.phone_no" class="igf-error" role="alert">{{ form.errors.phone_no }}</p>
-            <label for="registration-email">{{ content.registration_email_label }}<input id="registration-email" v-model="form.email" type="email" autocomplete="email" maxlength="50" required></label>
-            <p v-if="form.errors.email" class="igf-error" role="alert">{{ form.errors.email }}</p>
-            <label for="registration-organization">{{ content.registration_organization_label }}<input id="registration-organization" v-model="form.org" type="text" autocomplete="organization" maxlength="150" required></label>
-            <p v-if="form.errors.org" class="igf-error" role="alert">{{ form.errors.org }}</p>
-            <label for="registration-designation">{{ content.registration_designation_label }}<input id="registration-designation" v-model="form.designation" type="text" autocomplete="organization-title" maxlength="150" required></label>
-            <p v-if="form.errors.designation" class="igf-error" role="alert">{{ form.errors.designation }}</p>
-            <label for="registration-password">{{ content.password_label }}<span class="igf-password"><input id="registration-password" v-model="form.password" :type="showPassword ? 'text' : 'password'" autocomplete="new-password" minlength="8" required><button type="button" :aria-label="showPassword ? content.hide_password_label : content.show_password_label" @click="showPassword = !showPassword"><i :class="showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'" aria-hidden="true" /></button></span></label>
-            <p v-if="form.errors.password" class="igf-error" role="alert">{{ form.errors.password }}</p>
+            <label for="registration-name">{{ content.registration_name_label }}<input id="registration-name" v-model="form.name" type="text" autocomplete="name" maxlength="50" required :aria-invalid="form.errors.name ? 'true' : undefined" :aria-describedby="form.errors.name ? 'registration-name-error' : undefined"></label>
+            <p v-if="form.errors.name" id="registration-name-error" class="igf-error" role="alert">{{ form.errors.name }}</p>
+            <label for="registration-phone">{{ content.phone_label }}<input id="registration-phone" v-model="form.phone_no" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" :placeholder="content.phone_placeholder" required :aria-invalid="form.errors.phone_no ? 'true' : undefined" :aria-describedby="form.errors.phone_no ? 'registration-phone-error' : undefined"></label>
+            <p v-if="form.errors.phone_no" id="registration-phone-error" class="igf-error" role="alert">{{ form.errors.phone_no }}</p>
+            <label for="registration-email">{{ content.registration_email_label }}<input id="registration-email" v-model="form.email" type="email" autocomplete="email" maxlength="50" required :aria-invalid="form.errors.email ? 'true' : undefined" :aria-describedby="form.errors.email ? 'registration-email-error' : undefined"></label>
+            <p v-if="form.errors.email" id="registration-email-error" class="igf-error" role="alert">{{ form.errors.email }}</p>
+            <label for="registration-organization">{{ content.registration_organization_label }}<input id="registration-organization" v-model="form.org" type="text" autocomplete="organization" maxlength="150" required :aria-invalid="form.errors.org ? 'true' : undefined" :aria-describedby="form.errors.org ? 'registration-organization-error' : undefined"></label>
+            <p v-if="form.errors.org" id="registration-organization-error" class="igf-error" role="alert">{{ form.errors.org }}</p>
+            <label for="registration-designation">{{ content.registration_designation_label }}<input id="registration-designation" v-model="form.designation" type="text" autocomplete="organization-title" maxlength="150" required :aria-invalid="form.errors.designation ? 'true' : undefined" :aria-describedby="form.errors.designation ? 'registration-designation-error' : undefined"></label>
+            <p v-if="form.errors.designation" id="registration-designation-error" class="igf-error" role="alert">{{ form.errors.designation }}</p>
+            <label for="registration-password">{{ content.password_label }}<span class="igf-password"><input id="registration-password" v-model="form.password" :type="showPassword ? 'text' : 'password'" autocomplete="new-password" minlength="8" required :aria-invalid="form.errors.password ? 'true' : undefined" :aria-describedby="form.errors.password ? 'registration-password-error' : undefined"><button type="button" :aria-label="showPassword ? content.hide_password_label : content.show_password_label" @click="showPassword = !showPassword"><i :class="showPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'" aria-hidden="true" /></button></span></label>
+            <p v-if="form.errors.password" id="registration-password-error" class="igf-error" role="alert">{{ form.errors.password }}</p>
             <p class="igf-register__approval"><i class="fa-solid fa-user-shield" aria-hidden="true" /> {{ content.registration_approval_note }}</p>
             <button class="igf-submit" type="submit" :disabled="form.processing">{{ form.processing ? content.registration_sending_label : content.registration_submit_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true" /></button>
           </form>

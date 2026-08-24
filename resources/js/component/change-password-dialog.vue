@@ -19,39 +19,63 @@
             <div class="data">
               <!-- Login -->
               <v-form @submit.prevent="changepassword">
+                <p v-if="flashError" class="form-feedback" role="alert">
+                  {{ flashError }}
+                </p>
                 <div class="form-group">
                   <div class="input">
-                    <label for="">Current Password <sup>*</sup></label>
+                    <label for="change-current-password">Current Password <sup>*</sup></label>
                     <v-text-field
+                      id="change-current-password"
                       v-model="current_password"
                       type="password"
                       class="ecw-input"
                       solo
                       label="Enter Current Password"
                       append-icon="mdi-eye"
+                      :error="Boolean(fieldError('current_password'))"
+                      :aria-invalid="fieldError('current_password') ? 'true' : undefined"
+                      :aria-describedby="fieldError('current_password') ? 'change-current-password-error' : undefined"
                     ></v-text-field>
+                    <p v-if="fieldError('current_password')" id="change-current-password-error" class="form-error">
+                      {{ fieldError('current_password') }}
+                    </p>
                   </div>
                   <div class="input">
-                    <label for="">Password <sup>*</sup></label>
+                    <label for="change-new-password">Password <sup>*</sup></label>
                     <v-text-field
+                      id="change-new-password"
                       v-model="password"
                       type="password"
                       class="ecw-input"
                       solo
                       label="Enter New Password"
                       append-icon="mdi-eye"
+                      :error="Boolean(fieldError('password'))"
+                      :aria-invalid="fieldError('password') ? 'true' : undefined"
+                      :aria-describedby="fieldError('password') ? 'change-new-password-error' : undefined"
                     ></v-text-field>
+                    <p v-if="fieldError('password')" id="change-new-password-error" class="form-error">
+                      {{ fieldError('password') }}
+                    </p>
                   </div>
                   <div class="input">
-                    <label for="">Confirm Password <sup>*</sup></label>
+                    <label for="change-password-confirmation">Confirm Password <sup>*</sup></label>
                     <v-text-field
+                      id="change-password-confirmation"
                       v-model="password_confirmation"
                       type="password"
                       class="ecw-input"
                       solo
                       label="Confirm New Password"
                       append-icon="mdi-eye"
+                      :error="Boolean(fieldError('password_confirmation'))"
+                      :aria-invalid="fieldError('password_confirmation') ? 'true' : undefined"
+                      :aria-describedby="fieldError('password_confirmation') ? 'change-password-confirmation-error' : undefined"
                     ></v-text-field>
+                    <p v-if="fieldError('password_confirmation')" id="change-password-confirmation-error" class="form-error">
+                      {{ fieldError('password_confirmation') }}
+                    </p>
                   </div>
                   <div class="buttons">
                     <button
@@ -84,6 +108,15 @@ export default {
     password: '',
     password_confirmation: ''
   }),
+  computed: {
+    fieldErrors () {
+      return this.$page?.props?.errors || {};
+    },
+    flashError () {
+      const message = this.$page?.props?.flash?.message;
+      return message?.type === 'error' ? String(message.text || '') : '';
+    }
+  },
   watch: {
     $page: {
       handler () {
@@ -99,6 +132,11 @@ export default {
   methods: {
     clickOutside() {
       this.$emit('toggle_dialog');
+    },
+    fieldError (field) {
+      const error = this.fieldErrors[field];
+      if (Array.isArray(error)) return String(error[0] || '');
+      return error ? String(error) : '';
     },
     changepassword () {
       this.$inertia.post(route('change.password', [this.igfLocale]), {
@@ -142,6 +180,17 @@ export default {
     }
 
     .content-section {
+      .form-feedback {
+        margin: 0 0 18px;
+        padding: 11px 13px;
+        border: 1px solid #d59b95;
+        border-radius: 4px;
+        background: #fff1ef;
+        color: #8d271f;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
       .data {
         display: flex;
         flex-direction: column;
@@ -156,6 +205,13 @@ export default {
             display: flex;
             flex-direction: column;
             row-gap: 5px;
+
+            .form-error {
+              margin: 0;
+              color: #9b2c25;
+              font-size: 12px;
+              line-height: 1.4;
+            }
 
             label {
               font-size: 12px;

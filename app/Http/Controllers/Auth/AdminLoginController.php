@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Auth;
 use App\Models\Admin;
-use Session;
 
 class AdminLoginController extends Controller {
 
@@ -57,11 +56,11 @@ class AdminLoginController extends Controller {
             }
 
             return redirect()->intended(route('dashboard.index'));
-        } else {
-            $msg = "<span class='text-danger'><strong>The supplied credentials are invalid.</strong></span>";
-            $request->session()->flash('message', $msg);
-            return redirect(route('admin.login'));
         }
+
+        $request->session()->flash('message', 'The supplied credentials are invalid.');
+
+        return redirect(route('admin.login'));
     }
 
     /**

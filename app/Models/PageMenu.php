@@ -34,7 +34,7 @@ class PageMenu extends Model
 
     public function child() {
         $children = $this->hasMany($this, 'parent_id', 'id')
-                ->select('id', 'name', 'description', 'link')
+                ->select('id', 'uuid', 'name', 'description', 'link')
                 ->selectRaw("IFNULL(parent_id, '') as parent_id")
                 ->selectRaw("IFNULL(slug, '') as slug")
                 ->selectRaw("IFNULL(icon, '') as icon")

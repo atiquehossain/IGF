@@ -18,7 +18,6 @@
         </details>
     </header>
     @include('admin.seo._indexing-status')
-    @if(session('message'))<div class="seo2-alert" role="status">{{ session('message') }}</div>@endif
     @if($errors->any())<div class="seo2-alert seo2-alert--error" role="alert"><strong>Please fix these settings:</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
     @unless($canEditMetadata)<div class="seo2-alert seo2-alert--warning" role="status">@if($canRestoreRevisions)<strong>Revision restore access.</strong> You can inspect live health, previews and revision differences, and restore earlier versions. Saving other SEO changes requires SEO edit access.@else<strong>Read-only SEO access.</strong> You can inspect live health, previews and revision differences. SEO edit access includes both saving changes and restoring earlier versions.@endif</div>@endunless
 

@@ -4,6 +4,8 @@
     $selectedCategory = old('destination_category_uuid', '');
     $selectedPage = old('destination_page_uuid', '');
     $selectedMedia = old('image_media_uuid', '');
+    $selectedOrder = old('display_order', $defaultDisplayOrder ?? '');
+    $selectedIcon = old('icon_key', '');
 @endphp
 
 <fieldset class="border rounded p-3 mt-3" aria-labelledby="{{ $fieldPrefix }}funding_destination_legend">
@@ -53,6 +55,29 @@
         </select>
         <small class="form-text text-muted">The full gift is attributed to this exact managed program/project. General website pages are excluded. Zakat causes also require Zakat eligibility.</small>
         @error('destination_page_uuid')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+    </div>
+</fieldset>
+
+<fieldset class="border rounded p-3 mt-3" aria-labelledby="{{ $fieldPrefix }}card_presentation_legend">
+    <legend id="{{ $fieldPrefix }}card_presentation_legend" class="h6 px-2 mb-2">Donation card presentation</legend>
+    <div class="row">
+        <div class="form-group col-md-5">
+            <label for="{{ $fieldPrefix }}display_order" class="control-label mb-1">Display order <span>*</span></label>
+            <input id="{{ $fieldPrefix }}display_order" name="display_order" type="number" min="0" max="100000" step="1" value="{{ $selectedOrder }}" class="form-control" required>
+            <small class="form-text text-muted">Lower numbers appear first on the Donate page.</small>
+            @error('display_order')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+        </div>
+        <div class="form-group col-md-7">
+            <label for="{{ $fieldPrefix }}icon_key" class="control-label mb-1">Fallback icon</label>
+            <select id="{{ $fieldPrefix }}icon_key" name="icon_key" class="form-control">
+                <option value="">Automatic from destination</option>
+                @foreach($iconOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($selectedIcon === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+            <small class="form-text text-muted">Used only when no managed card image is selected.</small>
+            @error('icon_key')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+        </div>
     </div>
 </fieldset>
 

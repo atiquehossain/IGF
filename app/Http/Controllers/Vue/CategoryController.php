@@ -13,6 +13,8 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    private const AWARDS_CATEGORY_UUID = '61000000-0000-4000-8000-000000000003';
+
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
@@ -86,6 +88,7 @@ class CategoryController extends Controller
                 'category' => $category,
                 'landing_page' => $landingPage,
                 'items' => $pages->items(),
+                'is_awards_category' => hash_equals(self::AWARDS_CATEGORY_UUID, (string) $category->uuid),
             ],
         ]);
     }

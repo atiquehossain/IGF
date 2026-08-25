@@ -93,7 +93,12 @@ class RuntimeHardeningIntegrityTest extends TestCase
         config()->set('security.hsts.max_age', 86400);
 
         $this->get('/admin/login')->assertHeaderMissing('Strict-Transport-Security');
-        $this->get('https://localhost:8000/admin/login')
+        $appUrl = parse_url((string) config('app.url'));
+        $configuredHost = (string) ($appUrl['host'] ?? 'localhost');
+        $configuredPort = isset($appUrl['port']) ? ':'.(int) $appUrl['port'] : '';
+        $secureUrl = 'https://'.$configuredHost.$configuredPort.'/admin/login';
+
+        $this->get($secureUrl)
             ->assertHeader('Strict-Transport-Security', 'max-age=86400');
     }
 

@@ -125,7 +125,8 @@ class AdminSessionIntegrityTest extends TestCase
             ->put(route('admin.password.update'), [
                 'password' => 'Replacement-Admin-Password!23',
                 'password_confirmation' => 'Replacement-Admin-Password!23',
-            ])->assertSessionHas(Admin::SESSION_AUTH_VERSION, 4);
+            ])->assertRedirect(route('dashboard.index'))
+            ->assertSessionHas(Admin::SESSION_AUTH_VERSION, 4);
 
         $admin = $admin->fresh();
         $this->assertFalse($admin->must_change_password);

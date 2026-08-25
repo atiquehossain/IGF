@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\MemberCredentialVerifier;
 use App\Services\TwoFactorChallengeService;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 class ApiAuthController extends Controller {
 
-    public function login(Request $request) {
+    public function login(Request $request, MemberCredentialVerifier $credentials) {
 
         $validator = Validator::make($request->all(), [
                     'phone_no' => 'required|string|max:30',
@@ -29,24 +30,16 @@ class ApiAuthController extends Controller {
         }
 
         try {
-            $user = User::where('phone_no', @$request->phone_no)
+            $user = User::query()
+                ->where('phone_no', $request->phone_no)
                 ->where('provider_type', 'local')
-                ->where('is_approved', 1)
                 ->first();
 
-            if (empty($user)) {
-                $response = ['status' => false, "message" => 'You are not sign in. Please try again later.'];
-                return response($response, 200);
-            }
-
-            if (empty($user->status)) {
-                $response = ['status' => false, "message" => "You are not active for login."];
-                return response($response, 200);
-            }
-
-            if (!Hash::check($request->password, $user->password)) {
-                $response = ['status' => false, "message" => "password mismatch. please try again"];
-                return response($response, 200);
+            if (!$credentials->passes($user, (string) $request->password)) {
+                return response([
+                    'status' => false,
+                    'message' => MemberCredentialVerifier::FAILURE_MESSAGE,
+                ], 200);
             }
 
             if ($user->hasTwoFactorEnabled()) {
@@ -86,12 +79,19 @@ class ApiAuthController extends Controller {
             ];
             return response($response, 200);
         } catch (Exception $e) {
-            report($e);
+            Log::warning('API member authentication failed unexpectedly.', [
+                'exception_class' => $e::class,
+            ]);
+
             return response(['status' => false, 'message' => 'Authentication is temporarily unavailable.'], 500);
         }
     }
 
-    public function login2fa(Request $request, TwoFactorChallengeService $challenges) {
+    public function login2fa(
+        Request $request,
+        TwoFactorChallengeService $challenges,
+        MemberCredentialVerifier $credentials
+    ) {
 
         $validator = Validator::make($request->all(), [
                     'phone_no' => 'required|string|max:30',
@@ -103,23 +103,16 @@ class ApiAuthController extends Controller {
         }
 
         try {
-            $user = User::where('phone_no', @$request->phone_no)
-                ->where('is_approved', 1)
+            $user = User::query()
+                ->where('phone_no', $request->phone_no)
+                ->where('provider_type', 'local')
                 ->first();
 
-            if (empty($user)) {
-                $response = ['status' => false, "message" => 'You are not sign in. Please try again later.'];
-                return response($response, 200);
-            }
-
-            if (empty($user->status)) {
-                $response = ['status' => false, "message" => "You are not active for login."];
-                return response($response, 200);
-            }
-
-            if (!Hash::check($request->password, $user->password)) {
-                $response = ['status' => false, "message" => "password mismatch. please try again"];
-                return response($response, 200);
+            if (!$credentials->passes($user, (string) $request->password)) {
+                return response([
+                    'status' => false,
+                    'message' => MemberCredentialVerifier::FAILURE_MESSAGE,
+                ], 200);
             }
 
             $google2fa = app('pragmarx.google2fa');
@@ -140,7 +133,10 @@ class ApiAuthController extends Controller {
             ];
             return response($response, 200);
         } catch (Exception $e) {
-            report($e);
+            Log::warning('API member two-factor authentication failed unexpectedly.', [
+                'exception_class' => $e::class,
+            ]);
+
             return response(['status' => false, 'message' => 'Authentication is temporarily unavailable.'], 500);
         }
     }

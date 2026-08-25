@@ -1,14 +1,49 @@
-const { closeSync, existsSync, openSync, readFileSync } = require('node:fs');
+/* eslint-disable no-undef */
+
+const { randomBytes } = require('node:crypto');
+const { closeSync, existsSync, openSync, readFileSync, writeFileSync } = require('node:fs');
 const { spawn, spawnSync } = require('node:child_process');
 const { resolve } = require('node:path');
 const { parseEnv } = require('node:util');
 
 const projectRoot = resolve(__dirname, '..');
 const environmentFile = resolve(projectRoot, '.env.cypress');
+const environmentExampleFile = resolve(projectRoot, '.env.cypress.example');
 const expectedDatabase = resolve(projectRoot, 'database', 'cypress.sqlite');
+const mode = process.argv[2];
+
+if (mode === 'init') {
+  if (existsSync(environmentFile)) {
+    throw new Error('.env.cypress already exists. Remove it explicitly before generating a replacement.');
+  }
+
+  if (!existsSync(environmentExampleFile)) {
+    throw new Error('The validated .env.cypress.example template is missing.');
+  }
+
+  const appKey = `base64:${randomBytes(32).toString('base64')}`;
+  const username = `cypress-admin-${randomBytes(6).toString('hex')}`;
+  const password = `Cy!${randomBytes(18).toString('base64url')}9aA`;
+  const paymentStoreId = `cypress-store-${randomBytes(8).toString('hex')}`;
+  const paymentStorePassword = randomBytes(24).toString('base64url');
+  const configuredEnvironment = readFileSync(environmentExampleFile, 'utf8')
+    .replace(/^APP_KEY=.*$/m, `APP_KEY=${appKey}`)
+    .replace(/^LOCAL_ADMIN_USERNAME=.*$/m, `LOCAL_ADMIN_USERNAME=${username}`)
+    .replace(/^LOCAL_ADMIN_PASSWORD=.*$/m, `LOCAL_ADMIN_PASSWORD=${password}`)
+    .replace(/^LOCAL_SEED_DEMO=.*$/m, 'LOCAL_SEED_DEMO=true')
+    .concat(`\nSSLCOMMERZ_STORE_ID=${paymentStoreId}\nSSLCOMMERZ_STORE_PASSWORD=${paymentStorePassword}\n`);
+
+  writeFileSync(environmentFile, configuredEnvironment, {
+    encoding: 'utf8',
+    flag: 'wx',
+    mode: 0o600
+  });
+  console.log('Created an isolated Cypress environment with generated local-only credentials.');
+  process.exit(0);
+}
 
 if (!existsSync(environmentFile)) {
-  throw new Error('Create .env.cypress from .env.cypress.example before running Cypress.');
+  throw new Error('Run "node scripts/cypress-environment.js init" before running Cypress.');
 }
 
 Object.assign(process.env, parseEnv(readFileSync(environmentFile, 'utf8')));
@@ -85,8 +120,6 @@ function runArtisan(args) {
   }
 }
 
-const mode = process.argv[2];
-
 if (mode === 'seed') {
   closeSync(openSync(expectedDatabase, 'a'));
   runArtisan(['migrate:fresh', '--force']);
@@ -123,7 +156,6 @@ if (mode === 'server') {
     process.exit(code || 0);
   });
 
-  return;
+} else {
+  throw new Error('Use "init", "seed", or "server" when running scripts/cypress-environment.js.');
 }
-
-throw new Error('Use "seed" or "server" when running scripts/cypress-environment.js.');

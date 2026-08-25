@@ -32,6 +32,44 @@ const buttonStub = {
   template: '<button v-bind="$attrs" :disabled="disabled"><slot /></button>',
 };
 
+const fullDonationCatalog = [
+  ['where-it-is-needed-most', 'Where it is needed most', 'hands-heart', 'unrestricted'],
+  ['education', 'Education', 'graduation-cap', 'restricted_fund'],
+  ['zakat', 'Donate Your Zakat', 'moon', 'restricted_fund'],
+  ['sadaqah', 'Donate Your Sadaqah', 'hand-heart', 'restricted_fund'],
+  ['food-support', 'Food Support', 'food', 'page'],
+  ['emergency-relief', 'Emergency Relief', 'emergency', 'restricted_fund'],
+  ['orphan-support', 'Orphan Shelter & Support', 'children', 'restricted_fund'],
+  ['school-stationery', 'School Stationery', 'stationery', 'page'],
+  ['school-uniforms', 'School Uniforms', 'uniform', 'page'],
+  ['school-meals', 'School Meals', 'meals', 'page'],
+  ['adopt-a-school', 'Adopt a School', 'school', 'restricted_fund'],
+  ['ramadan-iftar', 'Ramadan Iftar', 'moon', 'page'],
+  ['qurbani', 'Qurbani', 'qurbani', 'restricted_fund'],
+  ['pure-water-and-sanitation', 'Pure Water & Sanitation', 'water', 'page'],
+  ['women-empowerment', 'Women Empowerment', 'women', 'restricted_fund'],
+  ['youth-development', 'Youth Development', 'youth', 'page'],
+  ['street-children-education', 'Street Children Education', 'street-education', 'page'],
+].map(([slug, name, iconKey, destinationType]) => {
+  const fixedProject = destinationType === 'page'
+    ? [{ uuid: `${slug}-project`, name: `${name} Project` }]
+    : [];
+
+  return {
+    uuid: slug,
+    slug,
+    url: `/donate/${slug}`,
+    name,
+    description: `Support ${name}.`,
+    image: '',
+    icon_key: iconKey,
+    destination_type: destinationType,
+    destination_name: destinationType === 'unrestricted' ? name : `${name} Fund`,
+    project_selection: destinationType === 'page' ? 'fixed' : 'none',
+    projects: fixedProject,
+  };
+});
+
 function contrastRatio(foreground, background) {
   const luminance = (hex) => {
     const channels = hex.match(/[a-f\d]{2}/gi).map(value => parseInt(value, 16) / 255);
@@ -60,6 +98,12 @@ function settings() {
     show_custom_amount: true,
     show_gateway_note: false,
     show_legal_links: false,
+    show_cause_gallery: false,
+    cause_gallery_eyebrow: 'Choose your impact',
+    cause_gallery_title: 'Support a cause',
+    cause_gallery_introduction: 'Select the work you want your donation to support.',
+    cause_card_cta_label: 'Donate now',
+    cause_card_selected_label: 'Selected',
     form_badge: 'Secure donation',
     form_title: 'Make a donation',
     checkout_steps_accessible_label: 'Donation steps',
@@ -137,11 +181,24 @@ function settings() {
   };
 }
 
-function mountDonate({ methods, data = {}, url = '/donate?amount=500' } = {}) {
+function mountDonate({ methods, data = {}, pageSettings = {}, url = '/donate/education?amount=500', attachTo } = {}) {
   usePage().props = {
     data: {
-      donationTypes: [{ uuid: 'education', name: 'Education' }],
+      pageMode: 'detail',
+      catalogUrl: '/donate',
+      donationTypes: [{
+        uuid: 'education',
+        slug: 'education',
+        url: '/donate/education',
+        name: 'Education',
+        description: 'Support Education.',
+        destination_type: 'restricted_fund',
+        destination_name: 'Education Fund',
+        project_selection: 'none',
+        projects: [],
+      }],
       selectedUUID: 'education',
+      selectedCauseSlug: 'education',
       checkout_key: 'checkout-key-initial',
       paymentMethods: methods || [
         { key: 'bkash', label: 'bKash', description: 'Pay from bKash', logos: [{ src: '/image/payment-methods/bkash-reference.svg' }], enabled: true, available: true },
@@ -152,7 +209,7 @@ function mountDonate({ methods, data = {}, url = '/donate?amount=500' } = {}) {
       ...data,
     },
     siteSettings: {
-      donation_page: settings(),
+      donation_page: { ...settings(), ...pageSettings },
       contact: {},
       regional: {},
     },
@@ -160,6 +217,7 @@ function mountDonate({ methods, data = {}, url = '/donate?amount=500' } = {}) {
   usePage().url = url;
 
   return mount(Donate, {
+    attachTo,
     global: {
       plugins: [{
         install(app) {
@@ -182,6 +240,245 @@ describe('donation payment methods', () => {
     axios.get.mockReset();
     axios.post.mockReset();
     globalThis.route = vi.fn(name => name);
+  });
+
+  test('renders editor-managed catalog cards as accessible cause links', async () => {
+    const wrapper = mountDonate({
+      pageSettings: {
+        show_cause_gallery: true,
+        cause_gallery_eyebrow: 'Choose your impact',
+        cause_gallery_title: 'Give where it matters',
+        cause_gallery_introduction: 'Select a cause to begin your secure donation.',
+        cause_card_cta_label: 'Support this cause',
+        cause_card_selected_label: 'Cause selected',
+      },
+      data: {
+        pageMode: 'catalog',
+        donationTypes: [
+          {
+            uuid: 'education',
+            slug: 'education',
+            url: '/donate/education',
+            name: 'Education',
+            description: 'Help children stay in school.',
+            image: '/storage/donation-types/education.jpg',
+          },
+          {
+            uuid: 'relief',
+            slug: 'relief',
+            url: '/donate/relief',
+            name: 'Emergency relief',
+            description: 'Respond quickly when families face a crisis.',
+            image: '',
+          },
+        ],
+        selectedUUID: null,
+        checkout_key: null,
+        paymentMethods: [],
+        donationFrequencies: [],
+      },
+      url: '/donate',
+    });
+    await nextTick();
+
+    const gallery = wrapper.get('.igf-donate-causes');
+    const cards = gallery.findAll('[data-test="donation-cause-card"]');
+    const links = gallery.findAll('[data-test="donation-cause-link"]');
+
+    expect(gallery.text()).toContain('Choose your impact');
+    expect(gallery.text()).toContain('Give where it matters');
+    expect(gallery.text()).toContain('Select a cause to begin your secure donation.');
+    expect(cards).toHaveLength(2);
+    expect(cards[0].text()).toContain('Education');
+    expect(cards[0].text()).toContain('Help children stay in school.');
+    expect(cards[0].find('img').attributes('src')).toBe('/storage/donation-types/education.jpg');
+    expect(cards[0].find('.igf-donation-cause-card__placeholder').exists()).toBe(false);
+    expect(cards[1].find('img').exists()).toBe(false);
+    expect(cards[1].find('.igf-donation-cause-card__placeholder').exists()).toBe(true);
+    expect(links.map(link => link.element.tagName)).toEqual(['A', 'A']);
+    expect(links.map(link => link.attributes('href'))).toEqual(['/donate/education', '/donate/relief']);
+    expect(links[0].attributes('aria-describedby')).toBe('donation-cause-education');
+    expect(links[0].attributes('aria-label')).toBe('Support this cause: Education');
+    expect(links[1].text()).toContain('Support this cause');
+    expect(wrapper.find('.igf-donation-cause-card__selected').exists()).toBe(false);
+  });
+
+  test('keeps the catalog cause list usable when the legacy gallery toggle is disabled', async () => {
+    const wrapper = mountDonate({
+      pageSettings: { show_cause_gallery: false },
+      data: {
+        pageMode: 'catalog',
+        donationTypes: [fullDonationCatalog[0]],
+        selectedUUID: null,
+        checkout_key: null,
+        paymentMethods: [],
+        donationFrequencies: [],
+      },
+      url: '/donate',
+    });
+    await nextTick();
+
+    expect(wrapper.get('.igf-donate-causes').exists()).toBe(true);
+    expect(wrapper.findAll('[data-test="donation-cause-card"]')).toHaveLength(1);
+    expect(wrapper.get('[data-test="donation-cause-link"]').attributes('href'))
+      .toBe('/donate/where-it-is-needed-most');
+    expect(wrapper.find('form').exists()).toBe(false);
+  });
+
+  test('announces an accessible catalog empty state when no active cause is available', async () => {
+    const wrapper = mountDonate({
+      pageSettings: {
+        show_cause_gallery: false,
+        causes_unavailable_message: 'Donation causes are temporarily unavailable.',
+      },
+      data: {
+        pageMode: 'catalog',
+        donationTypes: [],
+        selectedUUID: null,
+        checkout_key: null,
+        paymentMethods: [],
+        donationFrequencies: [],
+      },
+      url: '/donate',
+    });
+    await nextTick();
+
+    const empty = wrapper.get('[data-test="donation-catalog-empty"]');
+    expect(empty.attributes('role')).toBe('status');
+    expect(empty.attributes('aria-live')).toBe('polite');
+    expect(empty.text()).toBe('Donation causes are temporarily unavailable.');
+    expect(wrapper.find('[data-test="donation-cause-card"]').exists()).toBe(false);
+    expect(wrapper.find('form').exists()).toBe(false);
+  });
+
+  test.each([undefined, '', 'cause', 'unexpected'])(
+    'fails safely to catalog mode for an absent or unknown page mode (%s)',
+    async (unsafeMode) => {
+      const wrapper = mountDonate({
+        data: {
+          pageMode: unsafeMode,
+          donationTypes: [fullDonationCatalog[0]],
+          selectedUUID: null,
+          checkout_key: 'must-not-expose-checkout',
+        },
+        url: '/donate',
+      });
+      await nextTick();
+
+      expect(wrapper.vm.pageMode).toBe('catalog');
+      expect(wrapper.get('.igf-donate-causes').exists()).toBe(true);
+      expect(wrapper.find('.igf-donate__section').exists()).toBe(false);
+      expect(wrapper.find('form').exists()).toBe(false);
+      wrapper.unmount();
+    },
+  );
+
+  test('uses only allowlisted cause icons and falls back safely for unknown keys', async () => {
+    const wrapper = mountDonate({
+      pageSettings: { show_cause_gallery: true },
+      data: {
+        pageMode: 'catalog',
+        donationTypes: [
+          {
+            uuid: 'managed-water', name: 'Managed water icon', image: '',
+            icon_key: 'water', destination_type: 'unrestricted',
+          },
+          {
+            uuid: 'untrusted-icon', name: 'Untrusted icon', image: '',
+            icon_key: 'fa-solid fa-user-secret', destination_type: 'page',
+          },
+          {
+            uuid: 'legacy-category', name: 'Legacy category icon', image: '',
+            icon_key: '', destination_type: 'category',
+          },
+        ],
+        selectedUUID: null,
+        checkout_key: null,
+        paymentMethods: [],
+        donationFrequencies: [],
+      },
+      url: '/donate',
+    });
+    await nextTick();
+
+    const icons = wrapper.findAll('.igf-donation-cause-card__placeholder > i');
+
+    expect(icons).toHaveLength(3);
+    expect(icons[0].classes()).toEqual(['fa-solid', 'fa-droplet']);
+    expect(icons[1].classes()).toEqual(['fa-solid', 'fa-bullseye']);
+    expect(icons[2].classes()).toEqual(['fa-solid', 'fa-layer-group']);
+    expect(wrapper.html()).not.toContain('fa-user-secret');
+  });
+
+  test('renders the complete 17-card catalog as dedicated links without checkout controls', async () => {
+    const wrapper = mountDonate({
+      pageSettings: { show_cause_gallery: true },
+      data: {
+        pageMode: 'catalog',
+        donationTypes: fullDonationCatalog,
+        selectedUUID: null,
+        checkout_key: null,
+        paymentMethods: [],
+        donationFrequencies: [],
+      },
+      url: '/donate',
+    });
+    await nextTick();
+
+    const cards = wrapper.findAll('[data-test="donation-cause-card"]');
+    const links = wrapper.findAll('[data-test="donation-cause-link"]');
+
+    expect(cards).toHaveLength(17);
+    expect(links).toHaveLength(17);
+    expect(cards.map(card => card.get('h3').text())).toEqual(fullDonationCatalog.map(cause => cause.name));
+    expect(links.map(link => link.element.tagName)).toEqual(Array(17).fill('A'));
+    expect(links.map(link => link.attributes('href'))).toEqual(fullDonationCatalog.map(cause => cause.url));
+    expect(new Set(links.map(link => link.attributes('href'))).size).toBe(17);
+    expect(wrapper.find('.igf-donate__section').exists()).toBe(false);
+    expect(wrapper.find('#donation-form-title').exists()).toBe(false);
+    expect(wrapper.find('[data-test="locked-donation-cause"]').exists()).toBe(false);
+    expect(wrapper.find('#donation-cause').exists()).toBe(false);
+    expect(wrapper.find('form').exists()).toBe(false);
+  });
+
+  test('renders a dedicated cause checkout with an immutable locked cause', async () => {
+    const wrapper = mountDonate({
+      pageSettings: { show_cause_gallery: true },
+      data: {
+        pageMode: 'detail',
+        catalogUrl: '/donate',
+        donationTypes: [{
+          uuid: 'fixed-cause', slug: 'fixed-cause', url: '/donate/fixed-cause', name: 'School rebuild',
+          description: 'Help a school recover safely.',
+          destination_type: 'page', destination_name: 'School Rebuild Project', project_selection: 'fixed',
+          projects: [{ uuid: 'fixed-project', name: 'School Rebuild Project' }],
+        }],
+        selectedUUID: 'fixed-cause',
+        selectedCauseSlug: 'fixed-cause',
+        selectedProjectUUID: 'fixed-project',
+        selectedDestination: {
+          type: 'page', uuid: 'fixed-project', name: 'School Rebuild Project',
+          project_uuid: 'fixed-project', project_name: 'School Rebuild Project',
+        },
+      },
+      url: '/donate/fixed-cause?amount=1000',
+    });
+    await nextTick();
+
+    expect(wrapper.get('.igf-donate').classes()).toContain('is-cause-page');
+    expect(wrapper.find('.igf-donate-causes').exists()).toBe(false);
+    expect(wrapper.find('[data-test="donation-cause-card"]').exists()).toBe(false);
+    expect(wrapper.get('.igf-donate__hero--cause h1').text()).toBe('School rebuild');
+    expect(wrapper.get('.igf-cause-back-link').attributes('href')).toBe('/donate');
+    expect(wrapper.get('[data-test="locked-donation-cause"]').text()).toContain('School rebuild');
+    expect(wrapper.get('[data-test="locked-donation-cause"] .fa-lock').exists()).toBe(true);
+    expect(wrapper.find('#donation-cause').exists()).toBe(false);
+    expect(wrapper.get('#donation-form-title').text()).toBe('Make a donation');
+    expect(wrapper.vm.donation.payment_cause).toBe('fixed-cause');
+    expect(wrapper.vm.donation.project_uuid).toBe('fixed-project');
+    expect(wrapper.vm.donation.amount).toBe(1000);
+    expect(wrapper.vm.donation.checkout_key).toBe('checkout-key-initial');
+    expect(wrapper.get('.igf-fixed-project strong').text()).toBe('School Rebuild Project');
   });
 
   test('uses WCAG-safe dark-orange tokens behind small white interactive text', () => {
@@ -252,7 +549,7 @@ describe('donation payment methods', () => {
   });
 
   test('preselects the editor-highlighted gift when the URL does not request an amount', async () => {
-    const wrapper = mountDonate({ url: '/donate' });
+    const wrapper = mountDonate({ url: '/donate/education' });
     await nextTick();
 
     expect(wrapper.vm.donation.amount).toBe(5000);
@@ -283,7 +580,7 @@ describe('donation payment methods', () => {
   });
 
   test('opens custom mode for a deep-linked non-suggested amount', async () => {
-    const wrapper = mountDonate({ url: '/donate?custom_amount=750' });
+    const wrapper = mountDonate({ url: '/donate/education?custom_amount=750' });
     await nextTick();
 
     expect(wrapper.vm.customAmountActive).toBe(true);
@@ -330,52 +627,34 @@ describe('donation payment methods', () => {
     expect(review.text()).toContain('Card');
   });
 
-  test('shows backend-confirmed destinations and keeps project selection compatible when the cause changes', async () => {
+  test('keeps the cause locked while an optional project updates the confirmed destination', async () => {
     const wrapper = mountDonate({
       data: {
-        donationTypes: [
-          {
-            uuid: 'program-cause', slug: 'program-cause', name: 'Education program',
-            destination_type: 'category', destination_name: 'Education', project_selection: 'optional',
-            projects: [{ uuid: 'project-one', name: 'Project One' }, { uuid: 'project-two', name: 'Project Two' }],
-          },
-          {
-            uuid: 'fixed-cause', slug: 'fixed-cause', name: 'School rebuild',
-            destination_type: 'page', destination_name: 'School Rebuild Project', project_selection: 'fixed',
-            projects: [{ uuid: 'fixed-project', name: 'School Rebuild Project' }],
-          },
-          {
-            uuid: 'general-cause', slug: 'general-cause', name: 'General support',
-            destination_type: 'unrestricted', destination_name: 'Where it is needed most', project_selection: 'none', projects: [],
-          },
-        ],
+        pageMode: 'detail',
+        donationTypes: [{
+          uuid: 'program-cause', slug: 'program-cause', name: 'Education program',
+          destination_type: 'category', destination_name: 'Education', project_selection: 'optional',
+          projects: [{ uuid: 'project-one', name: 'Project One' }, { uuid: 'project-two', name: 'Project Two' }],
+        }],
         selectedUUID: 'program-cause',
         selectedProjectUUID: 'project-two',
         selectedDestination: { type: 'category', name: 'Education', project_name: 'Project Two' },
-        selection_warning: 'A linked choice needed review.',
       },
+      url: '/donate/program-cause',
     });
     await nextTick();
 
-    expect(wrapper.get('.igf-selection-warning').text()).toBe('A linked choice needed review.');
+    expect(wrapper.get('[data-test="locked-donation-cause"]').text()).toContain('Education program');
+    expect(wrapper.find('#donation-cause').exists()).toBe(false);
     expect(wrapper.get('#donation-project').attributes('disabled')).toBeUndefined();
     expect(wrapper.vm.donation.project_uuid).toBe('project-two');
     expect(wrapper.get('.igf-destination-summary strong').text()).toBe('Project Two');
     expect(wrapper.get('.igf-destination-summary p').text()).toBe('Support the whole program or one project.');
 
-    await wrapper.get('#donation-cause').setValue('fixed-cause');
-    expect(wrapper.find('.igf-selection-warning').exists()).toBe(false);
-    expect(wrapper.vm.donation.project_uuid).toBe('fixed-project');
-    expect(wrapper.find('#donation-project').exists()).toBe(false);
-    expect(wrapper.get('.igf-fixed-project strong').text()).toBe('School Rebuild Project');
-    expect(wrapper.get('.igf-fixed-project small').text()).toBe('This cause supports the exact project shown.');
-    expect(wrapper.get('.igf-destination-summary strong').text()).toBe('School Rebuild Project');
-    expect(wrapper.get('.igf-destination-summary p').text()).toBe('This cause supports the exact project shown.');
-
-    await wrapper.get('#donation-cause').setValue('general-cause');
-    expect(wrapper.find('#donation-project').exists()).toBe(false);
-    expect(wrapper.vm.donation.project_uuid).toBe('');
-    expect(wrapper.get('.igf-destination-summary strong').text()).toBe('General support');
+    await wrapper.get('#donation-project').setValue('project-one');
+    expect(wrapper.vm.donation.payment_cause).toBe('program-cause');
+    expect(wrapper.vm.donation.project_uuid).toBe('project-one');
+    expect(wrapper.get('.igf-destination-summary strong').text()).toBe('Project One');
   });
 
   test('posts the guided project UUID and treats a project change as a new payment attempt', async () => {

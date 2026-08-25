@@ -77,6 +77,24 @@ describe('AppNav submenu behavior', () => {
     ]);
   });
 
+  test('omits Founder Letter from the fallback About Us submenu on desktop and mobile', async () => {
+    delete usePage().props.appMenus;
+    window.history.replaceState({}, '', '/');
+    const wrapper = mount(AppNav, { global: { mocks: { route: window.route } } });
+    const expected = ['Who We Are', 'Awards & Recognition', 'Photo Gallery', 'Annual Reports', 'Contact Us'];
+    const aboutDesktop = wrapper.findAll('.desktop-nav__item').find(item => item.text().includes('About Us'));
+
+    expect(aboutDesktop.findAll('.desktop-nav__dropdown strong').map(link => link.text())).toEqual(expected);
+
+    await wrapper.get('.menu-button').trigger('click');
+    const aboutMobile = wrapper.findAll('.mobile-nav__group').find(item => item.text().includes('About Us'));
+    await aboutMobile.get('.mobile-nav__parent').trigger('click');
+    expect(aboutMobile.findAll('.mobile-nav__submenu strong').map(link => link.text())).toEqual(expected);
+    expect(wrapper.html()).not.toContain("Founder's Letter");
+    expect(wrapper.html()).not.toContain("founder's-letter");
+  });
+
+
   test('uses the configured support actions in both persistent header variants without duplicating them in the drawer', async () => {
     const wrapper = mount(AppNav, { global: { mocks: { route: window.route } } });
 

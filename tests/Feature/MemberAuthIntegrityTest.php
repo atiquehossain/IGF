@@ -197,7 +197,7 @@ class MemberAuthIntegrityTest extends TestCase
         $this->post(route('login2fa.perform'), [
             'email' => $user->email,
             'password' => 'Strong-Member-Password!',
-        ])->assertSessionHas('message.text', 'You are not active for login.');
+        ])->assertSessionHas('message.text', 'The supplied credentials are invalid.');
     }
 
     public function test_successful_web_otp_reencrypts_a_legacy_plaintext_secret(): void

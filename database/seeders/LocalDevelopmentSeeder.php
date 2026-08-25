@@ -344,6 +344,15 @@ class LocalDevelopmentSeeder extends Seeder
 
         $this->call(IgniteParityContentSeeder::class);
 
+        // These forward-only migrations normally classify records that already
+        // exist in production. A fresh local/test database creates the schema
+        // before demo content is inserted, so rerun their idempotent data pass
+        // after seeding to keep the public donation catalog representative.
+        $fundingClassification = require database_path('migrations/2026_08_20_180800_add_funding_project_classification.php');
+        $fundingClassification->up();
+
+        $completeCatalog = require database_path('migrations/2026_08_25_130000_complete_donation_card_catalog.php');
+        $completeCatalog->up();
         if (app()->environment('testing')) {
             $this->seedCypressYouTubeMetadata();
         }

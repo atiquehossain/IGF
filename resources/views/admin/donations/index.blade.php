@@ -80,6 +80,64 @@
       </div>
     </div>
 
+    <section class="card mb-3" aria-labelledby="cause-attribution-title">
+      <div class="card-header"><strong id="cause-attribution-title">Successful giving by donor-selected cause</strong></div>
+      <div class="card-body">
+        <p id="cause-attribution-description" class="text-muted">
+          This summary includes successful payments only.
+          @if($projectUuidFilter)
+            For the selected project, amounts include direct gifts plus allocated portions of broader gifts.
+          @else
+            Amounts reflect successful gifts in the current filtered view.
+          @endif
+        </p>
+
+        @if($causeAttribution->isNotEmpty())
+          <div class="row align-items-start">
+            <div class="col-xl-5 mb-4 mb-xl-0">
+              <div style="position:relative;height:320px;max-width:680px;margin:0 auto;">
+                <canvas id="cause-attribution-chart" height="320" role="img"
+                  aria-label="Doughnut chart of successful giving by donor-selected cause"
+                  aria-describedby="cause-attribution-description cause-attribution-table-caption">
+                  Successful giving by donor-selected cause is listed in the adjacent table.
+                </canvas>
+              </div>
+            </div>
+            <div class="col-xl-7">
+              <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                  <caption id="cause-attribution-table-caption" class="sr-only">Every donor-selected cause represented by successful gifts in the current filtered view.</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Cause</th>
+                      <th scope="col">{{ $projectUuidFilter ? 'Attributed amount' : 'Successful amount' }}</th>
+                      <th scope="col">Gift records</th>
+                      <th scope="col">Share</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach($causeAttribution as $cause)
+                      <tr>
+                        <th scope="row">
+                          {{ $cause['name'] }}
+                          @if($cause['is_legacy'])<span class="badge badge-secondary ml-1">Legacy</span>@endif
+                        </th>
+                        <td>BDT {{ number_format((float) $cause['amount'], 2) }}</td>
+                        <td>{{ number_format((int) $cause['donation_count']) }}</td>
+                        <td>{{ number_format((float) $cause['percentage'], 2) }}%</td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        @else
+          <p class="mb-0 text-muted" role="status">No successful donations match the current filters.</p>
+        @endif
+      </div>
+    </section>
+
     @if($projectAttribution->isNotEmpty())
       <div class="card mb-3">
         <div class="card-header"><strong>Successful project attribution summary</strong></div>
@@ -106,7 +164,7 @@
       <div class="card-header"><strong>Donation Records</strong></div>
       <div class="table-responsive">
         <table class="table" id="donation_table">
-          <thead><tr><th>Transaction and donor</th><th>Gift</th><th>Donor designation</th><th>Payment / Gateway state</th><th style="min-width:300px">Project allocation</th><th style="min-width:230px">Review</th></tr></thead>
+          <thead><tr><th>Transaction and donor</th><th>Gift</th><th>Donor-selected cause / accounting destination</th><th>Payment / Gateway state</th><th style="min-width:300px">Project allocation</th><th style="min-width:230px">Review</th></tr></thead>
           <tbody>
             @forelse($donations as $donation)
               @php
@@ -225,7 +283,57 @@
 @endsection
 
 @section('custom-js')
+<script src="{{ asset('admin-assets/assets/js/lib/chart-js/Chart.bundle.js') }}"></script>
 <script>
+(function () {
+  var chartCanvas = document.getElementById('cause-attribution-chart');
+  var chartRows = {{ Illuminate\Support\Js::from($causeAttributionChart) }};
+  if (!chartCanvas || typeof window.Chart !== 'function' || !Array.isArray(chartRows) || chartRows.length === 0) {
+    return;
+  }
+
+  var formatAmount = function (value) {
+    var amount = Number(value);
+    if (!Number.isFinite(amount)) amount = 0;
+
+    return 'BDT ' + amount.toLocaleString('en-BD', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  new window.Chart(chartCanvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: chartRows.map(function (row) { return String(row.name || 'Historical cause'); }),
+      datasets: [{
+        data: chartRows.map(function (row) { return Number(row.amount) || 0; }),
+        backgroundColor: ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#d62728', '#17a2b8', '#8c564b', '#bcbd22', '#6c757d'],
+        borderColor: '#ffffff',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutoutPercentage: 58,
+      legend: {
+        position: 'bottom',
+        labels: { boxWidth: 14, usePointStyle: true }
+      },
+      tooltips: {
+        callbacks: {
+          label: function (tooltipItem, data) {
+            var label = data.labels[tooltipItem.index] || 'Historical cause';
+            var amount = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+            return label + ': ' + formatAmount(amount);
+          }
+        }
+      }
+    }
+  });
+})();
+
 document.querySelectorAll('.js-allocation-form').forEach(function (form) {
   form.addEventListener('submit', function (event) {
     var project = form.querySelector('[name="page_uuid"] option:checked');

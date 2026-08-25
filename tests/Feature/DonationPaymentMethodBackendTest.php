@@ -29,12 +29,12 @@ class DonationPaymentMethodBackendTest extends TestCase
 
     public function test_public_page_exposes_all_safe_options_without_gateway_identifiers(): void
     {
-        DonationType::create(['name' => 'Education', 'status' => 1]);
+        $cause = DonationType::create(['name' => 'Education', 'status' => 1]);
         $this->configureGateway();
         config()->set('sslcommerz.payment_methods.nagad.enabled', false);
         config()->set('sslcommerz.payment_methods.nagad.gateway_filter', null);
 
-        $response = $this->get('/donate')
+        $response = $this->get(route('frontend.donate.cause', ['cause' => $cause->slug]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('data.checkout_key', fn (string $key) => app(SSLCommerzService::class)->isValidCheckoutKey($key))

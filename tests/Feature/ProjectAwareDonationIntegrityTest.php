@@ -40,6 +40,8 @@ class ProjectAwareDonationIntegrityTest extends TestCase
 
     public function test_public_contract_resolves_deep_links_rejects_tampering_and_snapshots_intent(): void
     {
+        DonationType::query()->forceDelete();
+
         $program = $this->category('Education', 'education');
         $otherProgram = $this->category('Health', 'health');
         $project = $this->page('Project Ankur', 'project-ankur', $program);
@@ -52,9 +54,14 @@ class ProjectAwareDonationIntegrityTest extends TestCase
             'status' => 1,
         ]);
 
-        $this->get('/donate?cause=' . $cause->slug . '&project=' . $project->uuid)
+        $legacyUrl = '/donate?cause=' . $cause->slug . '&project=' . $project->uuid;
+        $canonicalUrl = '/donate/' . $cause->slug . '?project=' . $project->uuid;
+        $this->get($legacyUrl)->assertRedirect($canonicalUrl);
+
+        $this->get($canonicalUrl)
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->where('data.pageMode', 'detail')
                 ->where('data.selectedUUID', $cause->uuid)
                 ->where('data.selectedCauseSlug', $cause->slug)
                 ->where('data.selectedProjectUUID', $project->uuid)
@@ -66,7 +73,8 @@ class ProjectAwareDonationIntegrityTest extends TestCase
                 ->where('data.donationTypes.0.projects.0.is_zakat_eligible', false)
             );
 
-        $this->get('/donate?cause=' . $cause->slug . '&project=' . $outside->uuid)
+        $outsideUrl = '/donate/' . $cause->slug . '?project=' . $outside->uuid;
+        $this->get($outsideUrl)
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('data.selectedUUID', $cause->uuid)
@@ -224,6 +232,63 @@ class ProjectAwareDonationIntegrityTest extends TestCase
         ]);
     }
 
+    public function test_donation_cause_presentation_fields_are_validated_persisted_and_exposed_for_editing(): void
+    {
+        $admin = $this->adminWith([
+            'donationType.create',
+            'donationType.edit',
+        ], 'donationType.index');
+        $validPayload = [
+            'name' => 'Presentation-managed cause',
+            'description' => 'Visitor-ready copy for a managed donation card.',
+            'purpose_key' => '',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Presentation Fund',
+            'destination_category_uuid' => '',
+            'destination_page_uuid' => '',
+            'image_media_uuid' => '',
+            'display_order' => 37,
+            'icon_key' => 'water',
+        ];
+
+        $this->asAdmin($admin)
+            ->post(route('donationType.store'), $validPayload)
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $cause = DonationType::where('name', $validPayload['name'])->sole();
+        $this->assertSame(37, $cause->display_order);
+        $this->assertSame('water', $cause->icon_key);
+
+        $this->put(route('donationType.update'), array_merge($validPayload, [
+            'id' => $cause->id,
+            'display_order' => 42,
+            'icon_key' => 'children',
+        ]))->assertRedirect()->assertSessionHasNoErrors();
+
+        $cause->refresh();
+        $this->assertSame(42, $cause->display_order);
+        $this->assertSame('children', $cause->icon_key);
+
+        $this->get(route('donationType.edit', $cause->id))
+            ->assertOk()
+            ->assertJsonPath('data.display_order', 42)
+            ->assertJsonPath('data.icon_key', 'children');
+
+        $this->post(route('donationType.store'), array_merge($validPayload, [
+            'name' => 'Negative-order cause',
+            'display_order' => -1,
+        ]))->assertSessionHasErrors('display_order');
+        $this->assertDatabaseMissing('donation_types', ['name' => 'Negative-order cause']);
+
+        $this->post(route('donationType.store'), array_merge($validPayload, [
+            'name' => 'Unsafe-icon cause',
+            'display_order' => 50,
+            'icon_key' => 'fa-solid fa-skull',
+        ]))->assertSessionHasErrors('icon_key');
+        $this->assertDatabaseMissing('donation_types', ['name' => 'Unsafe-icon cause']);
+    }
+
     public function test_authorized_split_allocations_are_idempotent_report_exact_attribution_and_keep_actor_snapshot(): void
     {
         $projects = $this->category('Projects', 'projects');
@@ -328,6 +393,25 @@ class ProjectAwareDonationIntegrityTest extends TestCase
             ->assertDontSee('BDT 200.00')
             ->assertDontSee('BDT 999.00');
 
+        $causeSummary = collect($filtered->viewData('causeAttribution'));
+        $this->assertCount(1, $causeSummary);
+        $selectedCause = $causeSummary->first();
+        $this->assertSame([
+            'key' => 'cause:' . strtolower((string) $cause->uuid),
+            'name' => $cause->name,
+            'amount' => '130.00',
+            'donation_count' => 2,
+            'percentage' => '100.00',
+            'is_legacy' => false,
+        ], $selectedCause);
+
+        $this->assertSame([[
+            'name' => $cause->name,
+            'amount' => '130.00',
+            'donation_count' => 2,
+            'percentage' => '100.00',
+        ]], $filtered->viewData('causeAttributionChart'));
+
         $allocation = DonationAllocation::query()->oldest()->firstOrFail();
         $this->assertSame($allocator->name, $allocation->allocated_by_name_snapshot);
         $allocatorName = $allocator->name;
@@ -338,6 +422,141 @@ class ProjectAwareDonationIntegrityTest extends TestCase
             ->assertSee($allocatorName);
 
         $this->assertSame($direct->id, $direct->fresh()->id);
+    }
+
+    public function test_admin_cause_attribution_chart_uses_successful_snapshot_aggregates_without_donor_pii(): void
+    {
+        $privateName = 'Private Cause Report Donor';
+        $privateEmail = 'private-cause-report@example.test';
+        $privatePhone = '+8801799999999';
+        $causes = collect();
+
+        foreach (range(1, 9) as $index) {
+            $snapshotName = 'Snapshot Cause ' . $index;
+            $cause = DonationType::create([
+                'name' => $snapshotName,
+                'destination_type' => 'unrestricted',
+                'status' => 1,
+            ]);
+            $causes->push($cause);
+
+            $this->donation([
+                'donor_name' => $privateName,
+                'email' => $privateEmail,
+                'phone' => $privatePhone,
+                'payment_cause' => $cause->uuid,
+                'cause_uuid_snapshot' => $cause->uuid,
+                'cause_slug_snapshot' => $cause->slug,
+                'cause_name_snapshot' => $snapshotName,
+                'destination_type_snapshot' => 'unrestricted',
+                'destination_name_snapshot' => $snapshotName,
+                'amount' => number_format($index * 10, 2, '.', ''),
+                'payment_status' => 'Success',
+            ]);
+        }
+
+        $highestCause = $causes->last();
+        $highestSnapshotName = 'Snapshot Cause 9';
+        $this->donation([
+            'donor_name' => $privateName,
+            'email' => $privateEmail,
+            'phone' => $privatePhone,
+            'payment_cause' => $highestCause->uuid,
+            'cause_uuid_snapshot' => $highestCause->uuid,
+            'cause_slug_snapshot' => $highestCause->slug,
+            'cause_name_snapshot' => $highestSnapshotName,
+            'destination_type_snapshot' => 'unrestricted',
+            'destination_name_snapshot' => $highestSnapshotName,
+            'amount' => '999.00',
+            'payment_status' => 'Pending',
+        ]);
+        $this->donation([
+            'donor_name' => $privateName,
+            'email' => $privateEmail,
+            'phone' => $privatePhone,
+            'cause_uuid_snapshot' => null,
+            'cause_slug_snapshot' => 'unspecified-legacy-donation',
+            'cause_name_snapshot' => 'Unspecified legacy donation',
+            'destination_type_snapshot' => 'legacy_unspecified',
+            'destination_name_snapshot' => 'Unresolved legacy designation — allocation blocked',
+            'amount' => '5.00',
+            'payment_status' => 'Success',
+        ]);
+
+        $highestCause->update(['name' => 'Renamed Current Cause']);
+
+        $viewer = $this->adminWith([]);
+        $response = $this->asAdmin($viewer)
+            ->get(route('donations.index'))
+            ->assertOk();
+
+        $summary = collect($response->viewData('causeAttribution'));
+        $this->assertCount(10, $summary);
+        $this->assertSame(10, (int) $summary->sum('donation_count'));
+        $this->assertSame(
+            '455.00',
+            number_format((float) $summary->sum(fn (array $row): float => (float) $row['amount']), 2, '.', '')
+        );
+        $this->assertFalse($summary->contains(
+            fn (array $row): bool => $row['amount'] === '999.00'
+        ));
+
+        $highestRow = $summary->firstWhere('key', 'cause:' . strtolower((string) $highestCause->uuid));
+        $this->assertNotNull($highestRow);
+        $this->assertSame($highestSnapshotName, $highestRow['name']);
+        $this->assertNotSame($highestCause->fresh()->name, $highestRow['name']);
+        $this->assertSame('90.00', $highestRow['amount']);
+        $this->assertSame(1, $highestRow['donation_count']);
+
+        $legacyRow = $summary->firstWhere('key', 'legacy:unspecified-legacy-donation');
+        $this->assertNotNull($legacyRow);
+        $this->assertSame('Unresolved legacy designation', $legacyRow['name']);
+        $this->assertSame('5.00', $legacyRow['amount']);
+        $this->assertSame(1, $legacyRow['donation_count']);
+        $this->assertTrue($legacyRow['is_legacy']);
+
+        $chart = $response->viewData('causeAttributionChart');
+        $this->assertIsArray($chart);
+        $this->assertCount(9, $chart);
+        $this->assertSame([
+            'Snapshot Cause 9',
+            'Snapshot Cause 8',
+            'Snapshot Cause 7',
+            'Snapshot Cause 6',
+            'Snapshot Cause 5',
+            'Snapshot Cause 4',
+            'Snapshot Cause 3',
+            'Snapshot Cause 2',
+            'Other causes',
+        ], array_column($chart, 'name'));
+        $this->assertSame('15.00', $chart[8]['amount']);
+        $this->assertSame(2, $chart[8]['donation_count']);
+
+        foreach ($chart as $row) {
+            $this->assertSame(
+                ['name', 'amount', 'donation_count', 'percentage'],
+                array_keys($row)
+            );
+        }
+        $chartJson = json_encode($chart, JSON_THROW_ON_ERROR);
+        $this->assertStringNotContainsString($privateName, $chartJson);
+        $this->assertStringNotContainsString($privateEmail, $chartJson);
+        $this->assertStringNotContainsString($privatePhone, $chartJson);
+
+        $response
+            ->assertSee('Successful giving by donor-selected cause')
+            ->assertSee('Every donor-selected cause represented by successful gifts in the current filtered view.')
+            ->assertSee('Donor-selected cause / accounting destination')
+            ->assertSee('aria-describedby="cause-attribution-description cause-attribution-table-caption"', false)
+            ->assertSee('admin-assets/assets/js/lib/chart-js/Chart.bundle.js', false);
+
+        $pending = $this->get(route('donations.index', ['status' => 'Pending']))
+            ->assertOk();
+        $this->assertTrue(collect($pending->viewData('causeAttribution'))->isEmpty());
+        $this->assertSame([], $pending->viewData('causeAttributionChart'));
+        $pending
+            ->assertSee('No successful donations match the current filters.')
+            ->assertDontSee('id="cause-attribution-chart"', false);
     }
 
     public function test_attribution_is_immutable_and_media_and_destination_dependencies_are_protected(): void

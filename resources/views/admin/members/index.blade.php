@@ -16,6 +16,123 @@
     @if($membersAreReadOnly)
         <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review team member names, photos, and roles, but your role cannot create, edit, publish, or remove team members.</div>
     @endif
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <strong class="card-title">Team groups</strong>
+                    <small class="d-block text-muted">Create the tabs visitors use to browse the team. Higher display-order numbers appear first.</small>
+                </div>
+                <span class="badge badge-light">{{ $groups->count() }} {{ Str::plural('group', $groups->count()) }}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if($errors->teamGroup->any())
+                <div class="alert alert-danger" role="alert">
+                    <strong>Unable to save the team group.</strong>
+                    <ul class="mb-0 mt-2">@foreach($errors->teamGroup->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+
+            @if($canCreateMembers)
+                <form action="{{ route('latest.news.group.store') }}" method="POST" class="border rounded p-3 mb-4">
+                    @csrf
+                    <h2 class="h6 mb-3">Create a team group</h2>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="new-team-group-name">Group name <span>*</span></label>
+                            <input id="new-team-group-name" class="form-control" name="group_name" value="{{ old('group_name') }}" maxlength="255" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="new-team-group-slug">Slug</label>
+                            <input id="new-team-group-slug" class="form-control" name="group_slug" value="{{ old('group_slug') }}" maxlength="120" placeholder="operational-leads">
+                            <small class="form-text text-muted">Leave blank to generate it from the name.</small>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="new-team-group-order">Display order</label>
+                            <input id="new-team-group-order" class="form-control" name="group_order_by" type="number" min="0" max="999999" value="{{ old('group_order_by', 0) }}">
+                        </div>
+                        <div class="form-group col-md-3 d-flex align-items-end">
+                            <button class="btn igf-btn igf-btn-primary w-100" type="submit"><i class="fa fa-plus" aria-hidden="true"></i> Create group</button>
+                        </div>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="new-team-group-description">Description</label>
+                        <textarea id="new-team-group-description" class="form-control" name="group_description" rows="2" maxlength="2000">{{ old('group_description') }}</textarea>
+                    </div>
+                </form>
+            @endif
+
+            <div class="row">
+                @forelse($groups as $group)
+                    <div class="col-xl-6 col-12 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <strong>{{ $group->name }}</strong>
+                                    <span class="badge {{ $group->status ? 'badge-success' : 'badge-secondary' }} ml-2">{{ $group->status ? 'Visible' : 'Hidden' }}</span>
+                                </div>
+                                <span class="badge badge-light">{{ $group->members_count }} live @if($group->attached_members_count > $group->members_count) · {{ $group->attached_members_count - $group->members_count }} in trash @endif</span>
+                            </div>
+
+                            @if($canEditMembers)
+                                <form action="{{ route('latest.news.group.update', $group) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="team-group-name-{{ $group->id }}">Group name</label>
+                                            <input id="team-group-name-{{ $group->id }}" class="form-control" name="group_name" value="{{ $group->name }}" maxlength="255" required>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label for="team-group-slug-{{ $group->id }}">Slug</label>
+                                            <input id="team-group-slug-{{ $group->id }}" class="form-control" name="group_slug" value="{{ $group->slug }}" maxlength="120" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label for="team-group-order-{{ $group->id }}">Order</label>
+                                            <input id="team-group-order-{{ $group->id }}" class="form-control" name="group_order_by" type="number" min="0" max="999999" value="{{ $group->order_by }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="team-group-description-{{ $group->id }}">Description</label>
+                                        <textarea id="team-group-description-{{ $group->id }}" class="form-control" name="group_description" rows="2" maxlength="2000">{{ $group->description }}</textarea>
+                                    </div>
+                                    <button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="submit"><i class="fa fa-save" aria-hidden="true"></i> Save group</button>
+                                </form>
+                            @else
+                                <p class="mb-1">{{ $group->description ?: 'No group description.' }}</p>
+                                <small class="text-muted">Slug: {{ $group->slug }} · Display order: {{ $group->order_by }}</small>
+                            @endif
+
+                            <div class="d-flex flex-wrap mt-3" style="gap:8px">
+                                @if($canPublishMembers)
+                                    <form action="{{ route('latest.news.group.status', $group) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="submit"><i class="fa {{ $group->status ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i> {{ $group->status ? 'Hide group' : 'Show group' }}</button>
+                                    </form>
+                                @endif
+                                @if($canDeleteMembers)
+                                    @if($group->attached_members_count)
+                                        <button class="btn igf-btn igf-btn-danger igf-btn-compact" type="button" disabled title="Move attached members before deleting this group"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete group</button>
+                                    @else
+                                        <form action="{{ route('latest.news.group.destroy', $group) }}" method="POST" onsubmit="return confirm('Delete this empty team group?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn igf-btn igf-btn-danger igf-btn-compact" type="submit"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete group</button>
+                                        </form>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-12"><p class="alert alert-warning mb-0">Create a team group before adding members.</p></div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         @if($canCreateMembers)
         <div class="col-lg-5 col-md-12">
@@ -75,6 +192,17 @@
                                             <small class="help-block form-text text-danger">{{ $errors->first('designation') }}</small>
                                         @endif
                                     </div>
+                                    <div class="form-group has-success">
+                                        <label for="team_group_id">Team group <span>*</span></label>
+                                        <select id="team_group_id" class="form-control" name="team_group_id" required>
+                                            <option value="">Choose a group</option>
+                                            @foreach($groups as $group)
+                                                <option value="{{ $group->id }}" @selected((string) old('team_group_id') === (string) $group->id)>{{ $group->name }}{{ $group->status ? '' : ' (Hidden)' }}</option>
+                                            @endforeach
+                                        </select>
+                                        @if($errors->has('team_group_id'))<small class="help-block form-text text-danger">{{ $errors->first('team_group_id') }}</small>@endif
+                                    </div>
+
 
                                     <div class="form-group has-success">
                                         <label for="qualification" class="control-label mb-1">Qualification</label>
@@ -154,6 +282,11 @@
                                 <div class="input-group search-input-group">
                                     <label class="sr-only" for="team-member-search">Search team members</label>
                                     <input id="team-member-search" type="search" name="search" value="{{@$search}}" class="form-control search-form-control" aria-label="Search team members">
+                                    <label class="sr-only" for="team-member-group-filter">Filter team members by group</label>
+                                    <select id="team-member-group-filter" name="group_id" class="form-control" aria-label="Filter team members by group">
+                                        <option value="">All groups</option>
+                                        @foreach($groups as $group)<option value="{{ $group->id }}" @selected((int) $groupFilter === (int) $group->id)>{{ $group->name }}</option>@endforeach
+                                    </select>
                                     <span class="input-group-prepend">
                                         <button type="submit" class="btn igf-btn igf-btn-secondary igf-btn-compact"><i class="fa fa-search" aria-hidden="true"></i> {{ $Lang->Common->Search }}</button>
                                     </span>
@@ -169,6 +302,7 @@
                                 <th width="10%" class="serial"><strong>#{{ $Lang->Common->Form->ID }} </strong></th>
                                 <th width="20%" class="avatar"><strong>{{ $Lang->Common->Form->Avatar }} </strong></th>
                                 <th width="20%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
+                                <th width="15%"><strong>Group</strong></th>
                                 <th width="35%"><strong>{{ $Lang->Common->Form->Designation }}</strong></th>
                                 <th width="25%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                             </tr>
@@ -186,6 +320,7 @@
                                 </td>
 
                                 <td> <span class="name">{{@$news->name}}</span> </td>
+                                <td><span>{{ $news->teamGroup?->name ?: 'Unassigned' }}</span></td>
                                 <td> <span>{{@$news->description}}</span> </td>
                                 <td>
                                     @if($canEditMembers)
@@ -204,7 +339,7 @@
                         </tbody>
                     </table>
                     <div class="pagination justify-content-end">
-                        {{ $latestNews->appends(['search' => $search])->links('vendor.pagination.bootstrap-4') }}
+                        {{ $latestNews->appends(['search' => $search, 'group_id' => $groupFilter])->links('vendor.pagination.bootstrap-4') }}
                     </div>
                 </div>
             </div>
@@ -276,6 +411,17 @@
                             <small class="help-block form-text text-danger">{{ $errors->first('designation') }}</small>
                         @endif
                     </div>
+                    <div class="form-group has-success">
+                        <label for="e_team_group_id">Team group <span>*</span></label>
+                        <select id="e_team_group_id" class="form-control" name="team_group_id" required>
+                            <option value="">Choose a group</option>
+                            @foreach($groups as $group)
+                                <option value="{{ $group->id }}">{{ $group->name }}{{ $group->status ? '' : ' (Hidden)' }}</option>
+                            @endforeach
+                        </select>
+                        @if($errors->has('team_group_id'))<small class="help-block form-text text-danger">{{ $errors->first('team_group_id') }}</small>@endif
+                    </div>
+
 
                     <div class="form-group has-success">
                         <label for="e_qualification" class="control-label mb-1">Qualification</label>
@@ -455,6 +601,7 @@
                         form.find('#e_id').val(res.data.id);
                         form.find('#e_name').val(res.data.name);
                         form.find('#e_designation').val(res.data.description || '');
+                        form.find('#e_team_group_id').val(String(res.data.team_group_id || ''));
                         form.find('#e_qualification').val(res.data.qualification || '');
                         form.find('#e_biography').val(res.data.biography || '');
                         form.find('#e_order_by').val(res.data.order_by || 0);

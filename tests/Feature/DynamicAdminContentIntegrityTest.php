@@ -152,7 +152,7 @@ class DynamicAdminContentIntegrityTest extends TestCase
             'status' => 1,
         ]);
 
-        $this->get(route('frontend.donate.cause', ['type' => 'zakat']))
+        $this->get(route('frontend.donate.cause', ['cause' => 'zakat']))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('data.selectedUUID', $selected->uuid));

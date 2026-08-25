@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\SiteSetting;
 use App\Services\SiteSettingService;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,6 +19,13 @@ class SiteSettingServiceTest extends TestCase
         $this->assertSame('Ignite Global Foundation', $values['branding']['site_name']);
         $this->assertSame('/donate', $values['header']['donate_url']);
         $this->assertSame('#ff7500', $values['theme']['primary_color']);
+        $this->assertSame('info@ignite.org.bd', $values['contact']['email']);
+        $this->assertSame('+8801972016221', $values['contact']['phone_primary']);
+        $this->assertSame('', $values['contact']['phone_secondary']);
+        $this->assertSame(
+            'Madrasah Road, House-847, Level (A-1), East Kazi Para, Mirpur, Dhaka-1216',
+            $values['contact']['address']
+        );
         $this->assertSame("Let's start a conversation.", $values['contact_page']['title']);
         $this->assertSame('What is Ignite Global Foundation?', $values['contact_page']['faq_1_question']);
         $this->assertCount(5, $values['contact_page']['faqs']);
@@ -27,14 +35,15 @@ class SiteSettingServiceTest extends TestCase
         $this->assertSame('Bring your time, skills, and heart.', $values['volunteer_page']['title']);
         $this->assertTrue($values['legal_status']['enabled']);
         $this->assertSame('Legal Status', $values['legal_status']['heading']);
-        $this->assertSame('Microcredit Regulatory Authority Reg. No.', $values['legal_status']['authority_1_label']);
-        $this->assertSame('00176-00059-00018', $values['legal_status']['authority_1_registration']);
+        $this->assertSame('', $values['legal_status']['authority_1_label']);
+        $this->assertSame('', $values['legal_status']['authority_1_registration']);
         $this->assertSame('', $values['legal_status']['authority_1_logo']);
         $this->assertSame('NGO Affairs Bureau Registration No.', $values['legal_status']['authority_2_label']);
-        $this->assertSame('626', $values['legal_status']['authority_2_registration']);
+        $this->assertSame('3461', $values['legal_status']['authority_2_registration']);
         $this->assertSame('Joint Stock & Firms Registration No.', $values['legal_status']['authority_3_label']);
-        $this->assertSame('S-5803(47)06', $values['legal_status']['authority_3_registration']);
+        $this->assertSame('S-13907/2022', $values['legal_status']['authority_3_registration']);
         $this->assertSame('silver', $values['zakat_calculator']['nisab_default_basis']);
+        $this->assertSame('standard_87_48_612_36', $values['zakat_calculator']['nisab_weight_standard']);
         $this->assertSame(22188.0, $values['zakat_calculator']['gold_price_per_gram']);
         $this->assertSame(475.0, $values['zakat_calculator']['silver_price_per_gram']);
         $this->assertSame(290871, $values['zakat_calculator']['nisab_amount']);
@@ -42,8 +51,10 @@ class SiteSettingServiceTest extends TestCase
             'The calculation is paused until the administrator verifies the current metal prices and records the date checked.',
             $values['zakat_calculator']['stale_price_result_note']
         );
-        $this->assertStringContainsString('another common standard uses 85 grams of gold or 595 grams of silver', $values['zakat_calculator']['methodology']);
+        $this->assertStringContainsString('approved {gold_weight}-gram gold / {silver_weight}-gram silver', $values['zakat_calculator']['methodology']);
         $this->assertStringContainsString('jewellery, shares, property, and debts', $values['zakat_calculator']['disclaimer']);
+        $this->assertSame('View full details', $values['zakat_calculator']['impact_view_details_label']);
+        $this->assertStringContainsString('urgent food needs', $values['zakat_calculator']['food_details']);
     }
 
     public function test_locale_specific_values_override_global_values_without_leaking_private_settings(): void
@@ -154,34 +165,34 @@ class SiteSettingServiceTest extends TestCase
     {
         SiteSetting::create([
             'group' => 'legal_status',
-            'key' => 'authority_1_label',
+            'key' => 'authority_2_label',
             'locale' => 'bn',
-            'value' => 'মাইক্রোক্রেডিট রেগুলেটরি অথরিটি নিবন্ধন নম্বর',
+            'value' => 'এনজিও অ্যাফেয়ার্স ব্যুরো নিবন্ধন নম্বর',
             'type' => 'text',
             'is_public' => true,
         ]);
         SiteSetting::create([
             'group' => 'legal_status',
-            'key' => 'authority_1_registration',
+            'key' => 'authority_2_registration',
             'locale' => '*',
-            'value' => '00176-00059-00018',
+            'value' => '3461',
             'type' => 'text',
             'is_public' => true,
         ]);
         SiteSetting::create([
             'group' => 'legal_status',
-            'key' => 'authority_1_logo',
+            'key' => 'authority_2_logo',
             'locale' => '*',
-            'value' => '/storage/media/legal/mra.png',
+            'value' => '/storage/media/legal/ngo-affairs.png',
             'type' => 'text',
             'is_public' => true,
         ]);
 
         $values = app(SiteSettingService::class)->values('bn', true)['legal_status'];
 
-        $this->assertSame('মাইক্রোক্রেডিট রেগুলেটরি অথরিটি নিবন্ধন নম্বর', $values['authority_1_label']);
-        $this->assertSame('00176-00059-00018', $values['authority_1_registration']);
-        $this->assertSame('/storage/media/legal/mra.png', $values['authority_1_logo']);
+        $this->assertSame('এনজিও অ্যাফেয়ার্স ব্যুরো নিবন্ধন নম্বর', $values['authority_2_label']);
+        $this->assertSame('3461', $values['authority_2_registration']);
+        $this->assertSame('/storage/media/legal/ngo-affairs.png', $values['authority_2_logo']);
 
         $fields = config('site-settings.groups.legal_status.fields');
         $this->assertFalse($fields['enabled']['localized']);
@@ -215,12 +226,88 @@ class SiteSettingServiceTest extends TestCase
         );
     }
 
+    public function test_zakat_price_freshness_uses_the_server_calendar_and_fails_closed(): void
+    {
+        config()->set('app.timezone', 'Asia/Dhaka');
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-25 12:00:00', 'Asia/Dhaka'));
+
+        try {
+            config()->set('site-settings.groups.zakat_calculator.fields.nisab_price_updated_at.default', '2026-08-18');
+            $this->assertTrue(
+                app(SiteSettingService::class)->values('en', true)['zakat_calculator']['nisab_prices_current']
+            );
+
+            config()->set('site-settings.groups.zakat_calculator.fields.nisab_price_updated_at.default', '2026-08-17');
+            $this->assertFalse(
+                app(SiteSettingService::class)->values('en', true)['zakat_calculator']['nisab_prices_current']
+            );
+
+            config()->set('site-settings.groups.zakat_calculator.fields.nisab_price_updated_at.default', '2026-08-26');
+            $this->assertFalse(
+                app(SiteSettingService::class)->values('en', true)['zakat_calculator']['nisab_prices_current']
+            );
+
+            config()->set('site-settings.groups.zakat_calculator.fields.nisab_price_updated_at.default', '2026-02-30');
+            $this->assertFalse(
+                app(SiteSettingService::class)->values('en', true)['zakat_calculator']['nisab_prices_current']
+            );
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
+    public function test_fresh_zakat_date_cannot_mark_invalid_metal_prices_as_current(): void
+    {
+        config()->set('app.timezone', 'Asia/Dhaka');
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-25 12:00:00', 'Asia/Dhaka'));
+
+        try {
+            foreach ([
+                'gold_price_per_gram' => '999',
+                'silver_price_per_gram' => '100001',
+            ] as $priceKey => $invalidValue) {
+                SiteSetting::query()
+                    ->where('group', 'zakat_calculator')
+                    ->whereIn('key', [
+                        'gold_price_per_gram',
+                        'silver_price_per_gram',
+                        'nisab_price_updated_at',
+                    ])
+                    ->forceDelete();
+                SiteSetting::create([
+                    'group' => 'zakat_calculator',
+                    'key' => 'nisab_price_updated_at',
+                    'locale' => '*',
+                    'value' => '2026-08-25',
+                    'type' => 'date',
+                    'is_public' => true,
+                ]);
+                SiteSetting::create([
+                    'group' => 'zakat_calculator',
+                    'key' => $priceKey,
+                    'locale' => '*',
+                    'value' => $invalidValue,
+                    'type' => 'float',
+                    'is_public' => true,
+                ]);
+
+                $settings = app(SiteSettingService::class)->values('en', true)['zakat_calculator'];
+                $this->assertFalse($settings['nisab_prices_current'], $priceKey);
+                $this->assertGreaterThan(0, $settings['nisab_amount']);
+            }
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
+
     public function test_zakat_schema_separates_global_price_inputs_from_localized_public_guidance(): void
     {
         $fields = config('site-settings.groups.zakat_calculator.fields');
 
         foreach ([
-            'nisab_default_basis', 'gold_price_per_gram', 'silver_price_per_gram',
+            'nisab_default_basis', 'nisab_weight_standard',
+            'gold_price_per_gram', 'silver_price_per_gram',
             'nisab_price_updated_at', 'nisab_source_url',
         ] as $key) {
             $this->assertFalse($fields[$key]['localized'], $key.' must be the same in every language.');
@@ -235,14 +322,26 @@ class SiteSettingServiceTest extends TestCase
             'net_rental_income_label', 'retained_rental_income_help',
             'exclusions_note', 'immediate_debt_label', 'immediate_debt_help',
             'methodology', 'disclaimer',
+            'food_details', 'livelihood_details', 'education_details',
+            'impact_view_details_label', 'impact_close_label', 'impact_dialog_eyebrow',
         ] as $key) {
             $this->assertTrue($fields[$key]['localized'], $key.' must be translatable.');
             $this->assertTrue($fields[$key]['public'], $key.' must be available to the calculator.');
         }
 
         $this->assertSame('date', $fields['nisab_price_updated_at']['type']);
+        $this->assertSame('select', $fields['nisab_weight_standard']['type']);
+        $this->assertSame(
+            ['standard_87_48_612_36', 'standard_85_595'],
+            array_keys($fields['nisab_weight_standard']['options'])
+        );
         $this->assertSame('float', $fields['gold_price_per_gram']['type']);
         $this->assertSame('float', $fields['silver_price_per_gram']['type']);
+        $this->assertSame('textarea', $fields['food_details']['type']);
+        $this->assertSame('textarea', $fields['livelihood_details']['type']);
+        $this->assertSame('textarea', $fields['education_details']['type']);
+        $this->assertSame('text', $fields['impact_view_details_label']['type']);
+        $this->assertSame('text', $fields['impact_close_label']['type']);
         $this->assertSame(0.01, $fields['gold_price_per_gram']['step']);
         $this->assertSame(0.01, $fields['silver_price_per_gram']['step']);
         $this->assertSame(1000, $fields['gold_price_per_gram']['min']);

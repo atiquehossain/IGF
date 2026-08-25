@@ -447,9 +447,49 @@
             <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
           </div>
         </div>
-        <div v-if="block.content?.items?.length" class="igf-team-grid">
+        <div
+          v-if="hasTeamTabs(block)"
+          class="igf-team-tabs"
+          role="tablist"
+          aria-orientation="horizontal"
+          :aria-label="teamTabsLabel(block)"
+          @keydown="handleTeamTabKeydown(block, $event)"
+        >
+          <button
+            v-for="group in teamGroups(block)"
+            :id="teamTabId(block, group)"
+            :key="group.key"
+            type="button"
+            class="igf-team-tab"
+            :class="{'is-active': isActiveTeamGroup(block, group)}"
+            role="tab"
+            :aria-selected="isActiveTeamGroup(block, group) ? 'true' : 'false'"
+            :aria-controls="teamPanelId(block, group)"
+            :tabindex="isActiveTeamGroup(block, group) ? 0 : -1"
+            @click="selectTeamGroup(block, group, $event.currentTarget)"
+          >
+            {{ group.name }}
+          </button>
+        </div>
+        <div
+          v-if="teamHasItems(block)"
+          :id="teamPanelId(block, activeTeamGroup(block))"
+          class="igf-team-panel"
+          :role="hasTeamTabs(block) ? 'tabpanel' : null"
+          :aria-labelledby="hasTeamTabs(block) ? teamTabId(block, activeTeamGroup(block)) : null"
+          :aria-describedby="activeTeamGroup(block)?.description ? teamPanelDescriptionId(block, activeTeamGroup(block)) : null"
+          :tabindex="hasTeamTabs(block) ? 0 : null"
+        >
+          <p
+            v-if="activeTeamGroup(block)?.description"
+            :id="teamPanelDescriptionId(block, activeTeamGroup(block))"
+            class="igf-team-panel__description"
+          >
+            {{ activeTeamGroup(block).description }}
+          </p>
+          <div class="igf-team-grid">
           <article
-            v-for="(item, index) in block.content.items"
+            v-for="(item, index) in visibleTeamItems(block)"
             :key="item.id ?? index"
             class="igf-team-card"
             :class="{
@@ -538,6 +578,7 @@
               </div>
             </div>
           </article>
+        </div>
         </div>
         <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'team_empty_state', 'Published board and team members will appear here automatically.') }}</p>
       </div>
@@ -794,7 +835,7 @@
           <label class="sr-only" :for="newsletterEmailId(block)">{{ block.content?.email_label || shared.newsletter_email_label }}</label>
           <input :id="newsletterEmailId(block)" v-model="newsletterEmail" name="email" type="email" autocomplete="email" :placeholder="block.content?.email_placeholder || shared.newsletter_email_placeholder" required :aria-invalid="newsletterFeedbackType === 'error' ? 'true' : undefined" :aria-describedby="newsletterMessage ? newsletterMessageId(block) : undefined">
           <button type="submit" :disabled="newsletterBusy">{{ newsletterBusy ? shared.newsletter_subscribing_label : (block.content?.button_label || shared.newsletter_subscribe_label) }}</button>
-          <label class="igf-consent"><input v-model="newsletterConsent" type="checkbox" required> <span>{{ block.content?.consent_text || shared.newsletter_consent_prefix }} <a :href="safeHref(block.content?.privacy_url || shared.newsletter_privacy_url, '/page/privacy-policy')">{{ block.content?.privacy_label || shared.newsletter_privacy_label }}</a>.</span></label>
+          <label class="igf-consent"><input v-model="newsletterConsent" name="consent" type="checkbox" required> <span>{{ block.content?.consent_text || shared.newsletter_consent_prefix }} <a :href="safeHref(block.content?.privacy_url || shared.newsletter_privacy_url, '/page/privacy-policy')">{{ block.content?.privacy_label || shared.newsletter_privacy_label }}</a>.</span></label>
           <p
             v-if="newsletterMessage"
             :id="newsletterMessageId(block)"
@@ -864,6 +905,7 @@ const openTeamCardKey = ref('');
 const hoverTeamCardKey = ref('');
 const viewportTeamCardKey = ref('');
 const failedTeamImageKeys = ref(new Set());
+const activeTeamGroupKeys = ref({});
 const heroTouchStarts = new Map();
 const galleryTouchStarts = new Map();
 const heroLastAdvanced = new Map();
@@ -968,6 +1010,115 @@ function campusContributionPoints(item) {
   return values
     .map(value => String(value || '').replace(/^\s*[-•✓]+\s*/, '').trim())
     .filter(Boolean);
+}
+function teamDomToken(value, fallback) {
+  const token = String(value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return token || fallback;
+}
+function teamBlockStateKey(block) {
+  return String(block?.uuid ?? block?.id ?? teamDomToken(block?.content?.heading, 'team'));
+}
+function teamBlockDomToken(block) {
+  return teamDomToken(block?.uuid ?? block?.id ?? block?.content?.heading, 'team');
+}
+function teamGroups(block) {
+  const rawGroups = Array.isArray(block?.content?.groups) ? block.content.groups : [];
+  const populatedGroups = rawGroups.map((group, index) => {
+    const items = (Array.isArray(group?.items) ? group.items : [])
+      .filter(item => item && typeof item === 'object' && !Array.isArray(item));
+    const name = String(group?.name || group?.label || group?.slug || '').trim()
+      || `${teamText('team_member') || 'Team'} ${index + 1}`;
+    const baseKey = teamDomToken(group?.slug ?? group?.id ?? name, 'group');
+    return {
+      key: `${baseKey}-${index + 1}`,
+      name,
+      description: String(group?.description || '').trim(),
+      items,
+    };
+  }).filter(group => group.items.length);
+
+  if (populatedGroups.length) return populatedGroups;
+
+  const legacyItems = (Array.isArray(block?.content?.items) ? block.content.items : [])
+    .filter(item => item && typeof item === 'object' && !Array.isArray(item));
+  if (!legacyItems.length) return [];
+
+  return [{
+    key: 'all-1',
+    name: String(block?.content?.heading || teamText('team_member') || 'Team').trim(),
+    description: '',
+    items: legacyItems,
+  }];
+}
+function activeTeamGroup(block) {
+  const groups = teamGroups(block);
+  const selectedKey = activeTeamGroupKeys.value[teamBlockStateKey(block)];
+  return groups.find(group => group.key === selectedKey) || groups[0] || null;
+}
+function visibleTeamItems(block) {
+  return activeTeamGroup(block)?.items || [];
+}
+function teamHasItems(block) {
+  return teamGroups(block).some(group => group.items.length);
+}
+function hasTeamTabs(block) {
+  return teamGroups(block).length > 1;
+}
+function isActiveTeamGroup(block, group) {
+  return activeTeamGroup(block)?.key === group?.key;
+}
+function teamTabsLabel(block) {
+  return String(block?.content?.tabs_label || block?.content?.heading || teamText('team_member') || 'Team').trim();
+}
+function teamTabId(block, group) {
+  return `team-tab-${teamBlockDomToken(block)}-${teamDomToken(group?.key, 'group')}`;
+}
+function teamPanelId(block, group) {
+  return `team-panel-${teamBlockDomToken(block)}-${teamDomToken(group?.key, 'group')}`;
+}
+function teamPanelDescriptionId(block, group) {
+  return `${teamPanelId(block, group)}-description`;
+}
+function selectTeamGroup(block, group, tabElement = null) {
+  const selected = teamGroups(block).find(candidate => candidate.key === group?.key);
+  if (!selected) return;
+
+  teamObserver?.disconnect();
+  teamObserver = null;
+  openTeamCardKey.value = '';
+  hoverTeamCardKey.value = '';
+  viewportTeamCardKey.value = '';
+  activeTeamGroupKeys.value = {
+    ...activeTeamGroupKeys.value,
+    [teamBlockStateKey(block)]: selected.key,
+  };
+
+  nextTick(() => {
+    tabElement?.focus?.();
+    tabElement?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+    setupTeamCardViewportAnimations();
+  });
+}
+function handleTeamTabKeydown(block, event) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const groups = teamGroups(block);
+  if (groups.length < 2) return;
+
+  const activeIndex = Math.max(0, groups.findIndex(group => isActiveTeamGroup(block, group)));
+  let nextIndex = activeIndex;
+  if (event.key === 'Home') nextIndex = 0;
+  else if (event.key === 'End') nextIndex = groups.length - 1;
+  else if (event.key === 'ArrowRight') nextIndex = (activeIndex + 1) % groups.length;
+  else nextIndex = (activeIndex - 1 + groups.length) % groups.length;
+
+  event.preventDefault();
+  const tabs = [...(event.currentTarget?.querySelectorAll('.igf-team-tab') || [])];
+  selectTeamGroup(block, groups[nextIndex], tabs[nextIndex] || null);
 }
 function teamCardKey(block, item, index) {
   return `${String(block.uuid || 'team')}:${String(item.id ?? index)}:${index}`;
@@ -1342,7 +1493,9 @@ function setupStatAnimations() {
   });
 }
 function setupTeamCardViewportAnimations() {
-  const cards = [...(pageBlocksRoot.value?.querySelectorAll('.igf-team-card.has-details') || [])];
+  teamObserver?.disconnect();
+  teamObserver = null;
+  const cards = [...(pageBlocksRoot.value?.querySelectorAll('.igf-team-panel .igf-team-card.has-details') || [])];
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const touchPointer = window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
   if (!cards.length || reducedMotion || !touchPointer || typeof window.IntersectionObserver !== 'function') return;
@@ -1552,7 +1705,7 @@ function newsletterMessageId(block) { return `igf-newsletter-message-${newslette
 function subscribe() {
   if (!newsletterConsent.value) return;
   newsletterBusy.value = true; newsletterMessage.value = ''; newsletterFeedbackType.value = '';
-  router.post(route('frontend.subscribe'), { email: newsletterEmail.value }, {
+  router.post(route('frontend.subscribe'), { email: newsletterEmail.value, consent: newsletterConsent.value }, {
     preserveScroll: true,
     onSuccess: () => { newsletterEmail.value = ''; newsletterConsent.value = false; newsletterMessage.value = shared.value.newsletter_success_message || 'Thank you for subscribing.'; newsletterFeedbackType.value = 'success'; },
     onError: errors => { newsletterMessage.value = errors.email || shared.value.newsletter_error_message || 'Please check your email and try again.'; newsletterFeedbackType.value = 'error'; },
@@ -1717,6 +1870,14 @@ function subscribe() {
 .igf-giving--banner .igf-giving-card__body { display:none; }
 .igf-giving--banner .igf-giving-card__copy strong { font-size:18px; }
 .igf-dynamic-empty { padding:32px; border:1px dashed var(--line); border-radius:14px; background:var(--surface); text-align:center; }
+.igf-team-tabs { display:flex; width:100%; align-items:center; gap:10px; overflow-x:auto; margin:0 auto 36px; padding:4px 2px 8px; overscroll-behavior-inline:contain; scroll-padding-inline:2px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; }
+.igf-team-tab { display:inline-flex; min-height:44px; flex:0 0 auto; align-items:center; justify-content:center; border:1px solid #d7d0c8; border-radius:999px; padding:10px 20px; background:#fff; color:var(--ink); font:750 14px/1.2 'Poppins','Hanken Grotesk',Arial,sans-serif; cursor:pointer; scroll-snap-align:start; transition:background-color .2s ease,border-color .2s ease,color .2s ease; }
+.igf-team-tab:hover { border-color:var(--orange); }
+.igf-team-tab.is-active { border-color:var(--brown); background:var(--brown); color:#fff; }
+.igf-team-tab:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-panel { min-width:0; }
+.igf-team-panel:focus-visible { outline:3px solid rgba(27,111,220,.55); outline-offset:8px; }
+.igf-team-panel__description { max-width:760px; margin:-12px auto 34px!important; color:var(--muted); font-size:16px!important; line-height:1.65; text-align:center; }
 .igf-team-grid { display:grid; grid-template-columns:repeat(auto-fit,300px); align-items:start; justify-content:center; gap:20px; }
 .igf-team-card { --igf-team-card-height:440px; position:relative; width:300px; min-width:0; height:var(--igf-team-card-height); margin:0; border-radius:12px; font-family:'Poppins','Hanken Grotesk',Arial,sans-serif; perspective:1000px; }
 .igf-team-card__stage { height:var(--igf-team-card-height); }

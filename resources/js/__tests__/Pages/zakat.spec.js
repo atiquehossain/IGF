@@ -11,6 +11,7 @@ function calculatorSettings(overrides = {}) {
     title: 'Personal Zakat estimator',
     introduction: 'A transparent estimate.',
     nisab_default_basis: 'silver',
+    nisab_weight_standard: 'standard_87_48_612_36',
     gold_price_per_gram: 10000,
     silver_price_per_gram: 100,
     nisab_price_updated_at: new Date().toISOString(),
@@ -37,12 +38,30 @@ function calculatorSettings(overrides = {}) {
     net_amount_label: 'Net eligible wealth',
     result_label: 'Estimated Zakat due',
     donate_label: 'Give Zakat',
+    impact_view_details_label: 'View full details',
+    impact_close_label: 'Close details',
+    impact_dialog_eyebrow: 'Zakat impact',
     disclaimer: 'Ask a qualified scholar about personal circumstances.',
+    food_title: 'Food security',
+    food_body: 'Nutritious food and emergency assistance.',
+    food_details: 'Complete food-support information.',
+    food_image: '/food.jpg',
+    food_image_alt: 'Food support',
+    livelihood_title: 'Sustainable livelihoods',
+    livelihood_body: 'Training and productive assets.',
+    livelihood_details: 'Complete livelihood-support information.',
+    livelihood_image: '/livelihood.jpg',
+    livelihood_image_alt: 'Livelihood support',
+    education_title: 'Education access',
+    education_body: 'Learning support for children.',
+    education_details: 'Complete education-support information.',
+    education_image: '/education.jpg',
+    education_image_alt: 'Education support',
     ...overrides,
   };
 }
 
-function mountCalculator(overrides = {}) {
+function mountCalculator(overrides = {}, mountOptions = {}) {
   usePage().props = {
     data: { zakat: { visible_blocks: [{ type: 'hero' }] } },
     siteSettings: {
@@ -50,10 +69,13 @@ function mountCalculator(overrides = {}) {
       regional: { number_locale: 'en-BD', date_locale: 'en-BD', timezone: 'Asia/Dhaka' },
     },
   };
-  vi.stubGlobal('route', vi.fn((name, value) => `/${name}/${value || ''}`));
+  const routeMock = vi.fn((name, value) => `/${name}/${value || ''}`);
+  vi.stubGlobal('route', routeMock);
 
   return mount(Zakat, {
+    attachTo: mountOptions.attachTo,
     global: {
+      mocks: { route: routeMock },
       stubs: {
         Layout: layoutStub,
         App: layoutStub,
@@ -68,6 +90,146 @@ describe('public Zakat estimator', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
+
+  test('offers accessible details and Zakat checkout controls on every impact card', async () => {
+    const wrapper = mountCalculator({ donate_label: 'Support with Zakat' });
+    const cards = wrapper.findAll('.igf-zakat-impact__grid article');
+    const donateLinks = wrapper.findAll('.igf-zakat-impact__donate');
+    const detailsButtons = wrapper.findAll('.igf-zakat-impact__details');
+
+    expect(cards).toHaveLength(3);
+    expect(detailsButtons).toHaveLength(3);
+    expect(detailsButtons.map(button => button.element.tagName)).toEqual(['BUTTON', 'BUTTON', 'BUTTON']);
+    expect(detailsButtons.map(button => button.attributes('type'))).toEqual(['button', 'button', 'button']);
+    expect(detailsButtons.map(button => button.attributes('aria-haspopup'))).toEqual(['dialog', 'dialog', 'dialog']);
+    expect(detailsButtons.map(button => button.attributes('aria-controls'))).toEqual(['zakat-impact-dialog', 'zakat-impact-dialog', 'zakat-impact-dialog']);
+    expect(detailsButtons.map(button => button.attributes('aria-label'))).toEqual(['View full details: Food security', 'View full details: Sustainable livelihoods', 'View full details: Education access']);
+    expect(donateLinks).toHaveLength(3);
+    expect(donateLinks.map(link => link.element.tagName)).toEqual(['A', 'A', 'A']);
+    expect(donateLinks.map(link => link.text())).toEqual(['Support with Zakat', 'Support with Zakat', 'Support with Zakat']);
+    expect(donateLinks.map(link => link.attributes('href'))).toEqual([
+      '/frontend.donate.cause/zakat',
+      '/frontend.donate.cause/zakat',
+      '/frontend.donate.cause/zakat',
+    ]);
+    expect(donateLinks.map(link => link.attributes('aria-label'))).toEqual([
+      'Support with Zakat: Food security',
+      'Support with Zakat: Sustainable livelihoods',
+      'Support with Zakat: Education access',
+    ]);
+    donateLinks.forEach(link => expect(link.get('i').attributes('aria-hidden')).toBe('true'));
+    await donateLinks[0].trigger('click');
+    await nextTick();
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    expect(route).toHaveBeenCalledWith('frontend.donate.cause', 'zakat');
+  });
+
+  test('opens every impact card with its matching admin-managed full content', async () => {
+    const wrapper = mountCalculator({
+      food_details: 'Complete food-support information.',
+      livelihood_details: 'Complete livelihood-support information.',
+      education_details: 'Complete education-support information.',
+    });
+    const cases = [
+      { title: 'Food security', details: 'Complete food-support information.', image: '/food.jpg', alt: 'Food support' },
+      { title: 'Sustainable livelihoods', details: 'Complete livelihood-support information.', image: '/livelihood.jpg', alt: 'Livelihood support' },
+      { title: 'Education access', details: 'Complete education-support information.', image: '/education.jpg', alt: 'Education support' },
+    ];
+    const cards = wrapper.findAll('.igf-zakat-impact__grid article');
+
+    for (const [index, expected] of cases.entries()) {
+      await cards[index].get('img').trigger('click');
+      await nextTick();
+
+      const dialogs = wrapper.findAll('[role="dialog"][aria-modal="true"]');
+      expect(dialogs).toHaveLength(1);
+      const dialog = dialogs[0];
+      expect(dialog.attributes()).toMatchObject({
+        id: 'zakat-impact-dialog',
+        'aria-labelledby': 'zakat-impact-dialog-title',
+        'aria-describedby': 'zakat-impact-dialog-description',
+      });
+      expect(dialog.get('#zakat-impact-dialog-title').text()).toBe(expected.title);
+      expect(dialog.get('#zakat-impact-dialog-description').text()).toBe(expected.details);
+      expect(dialog.get('img').attributes()).toMatchObject({ src: expected.image, alt: expected.alt });
+      expect(dialog.get('.igf-donate').attributes()).toMatchObject({
+        href: '/frontend.donate.cause/zakat',
+        'aria-label': `Give Zakat: ${expected.title}`,
+      });
+
+      await wrapper.get('.igf-impact-dialog__close').trigger('click');
+      await nextTick();
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+    }
+  });
+
+  test('falls back to the card summary and renders admin detail text as escaped plain text', async () => {
+    const unsafeText = '<img src=x onerror=alert(1)><script>alert(2)</script>';
+    const wrapper = mountCalculator({
+      food_body: 'Fallback food summary.',
+      food_details: '   ',
+      livelihood_details: unsafeText,
+    });
+    const triggers = wrapper.findAll('.igf-zakat-impact__details');
+
+    await triggers[0].trigger('click');
+    await nextTick();
+    expect(wrapper.get('#zakat-impact-dialog-description').text()).toBe('Fallback food summary.');
+    await wrapper.get('.igf-impact-dialog__close').trigger('click');
+
+    await triggers[1].trigger('click');
+    await nextTick();
+    const dialog = wrapper.get('.igf-impact-dialog__panel');
+    expect(dialog.get('#zakat-impact-dialog-description').text()).toBe(unsafeText);
+    expect(dialog.find('script').exists()).toBe(false);
+    expect(dialog.find('[onerror]').exists()).toBe(false);
+  });
+
+  test('traps dialog focus and restores the originating card trigger after every close path', async () => {
+    const wrapper = mountCalculator({}, { attachTo: document.body });
+
+    try {
+      const trigger = wrapper.findAll('.igf-zakat-impact__details')[1];
+      trigger.element.focus();
+      await trigger.trigger('click');
+      await nextTick();
+
+      const close = wrapper.get('.igf-impact-dialog__close');
+      const dialogDonate = wrapper.get('.igf-impact-dialog__content .igf-donate');
+      expect(document.activeElement).toBe(close.element);
+
+      dialogDonate.element.focus();
+      await dialogDonate.trigger('keydown', { key: 'Tab' });
+      expect(document.activeElement).toBe(close.element);
+
+      close.element.focus();
+      await close.trigger('keydown', { key: 'Tab', shiftKey: true });
+      expect(document.activeElement).toBe(dialogDonate.element);
+
+      await dialogDonate.trigger('keydown', { key: 'Escape' });
+      await nextTick();
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(trigger.element);
+
+      await trigger.trigger('click');
+      await nextTick();
+      await wrapper.get('.igf-impact-dialog__description').trigger('click');
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(true);
+      await wrapper.get('.igf-impact-dialog').trigger('click');
+      await nextTick();
+      expect(wrapper.find('[role="dialog"]').exists()).toBe(false);
+      expect(document.activeElement).toBe(trigger.element);
+
+      await trigger.trigger('click');
+      await nextTick();
+      await wrapper.get('.igf-impact-dialog__close').trigger('click');
+      await nextTick();
+      expect(document.activeElement).toBe(trigger.element);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
 
   test('calculates the selected Gold or Silver threshold from protected weights', async () => {
     const wrapper = mountCalculator();
@@ -87,6 +249,28 @@ describe('public Zakat estimator', () => {
     expect(wrapper.vm.selectedBasis).toBe('gold');
     expect(wrapper.vm.nisab).toBeCloseTo(87.48 * 10000, 6);
     expect(wrapper.text()).toContain('Gold method');
+  });
+
+  test('uses an admin-selected approved weight standard and rejects an unknown payload', async () => {
+    const wrapper = mountCalculator({
+      nisab_weight_standard: 'standard_85_595',
+      methodology: 'Active method: {gold_weight}g gold / {silver_weight}g silver at {rate}%.',
+    });
+
+    expect(wrapper.vm.selectedWeightStandard).toBe('standard_85_595');
+    expect(wrapper.vm.nisab).toBeCloseTo(595 * 100, 6);
+    expect(wrapper.text()).toContain('595 grams');
+    expect(wrapper.text()).toContain('85 grams');
+    expect(wrapper.get('.igf-methodology').text()).toContain('85g gold / 595g silver at 2.5%');
+
+    await wrapper.get('#nisab-basis-gold').setValue();
+
+    expect(wrapper.vm.nisab).toBeCloseTo(85 * 10000, 6);
+    expect(wrapper.vm.nisabWeights).toEqual({ gold: 85, silver: 595 });
+
+    const fallback = mountCalculator({ nisab_weight_standard: 'unapproved_custom_formula' });
+    expect(fallback.vm.selectedWeightStandard).toBe('standard_87_48_612_36');
+    expect(fallback.vm.nisab).toBeCloseTo(612.36 * 100, 6);
   });
 
   test('requires both the exact Nisab threshold and lunar-year confirmation', async () => {
@@ -141,6 +325,46 @@ describe('public Zakat estimator', () => {
     expect(wrapper.get('#asset-retainedRentalIncome-help').text()).toContain('not enter the same retained rental income again under cash and bank balances');
     expect(wrapper.get('label[for="liability-debtsDue"]').text()).toContain('Eligible debt currently due');
     expect(wrapper.get('#liability-debtsDue-help').text()).toContain('long-term loan');
+  });
+
+  test('uses server freshness status instead of the visitor device clock', () => {
+    const serverStale = mountCalculator({
+      nisab_price_updated_at: new Date().toISOString(),
+      nisab_prices_current: false,
+      stale_price_notice: 'Server says these prices require verification.',
+    });
+    expect(serverStale.get('.igf-price-warning').text()).toContain('Server says');
+    expect(serverStale.vm.nisabUsable).toBe(false);
+
+    const serverCurrent = mountCalculator({
+      nisab_price_updated_at: '2000-01-01',
+      nisab_prices_current: true,
+    });
+    expect(serverCurrent.find('.igf-price-warning').exists()).toBe(false);
+    expect(serverCurrent.vm.nisabUsable).toBe(true);
+  });
+
+  test('keeps results suppressed when the server rejects a fresh but invalid metal price', async () => {
+    const wrapper = mountCalculator({
+      nisab_default_basis: 'gold',
+      gold_price_per_gram: 999,
+      nisab_price_updated_at: new Date().toISOString(),
+      nisab_prices_current: false,
+      stale_price_notice: 'The configured metal prices require verification.',
+      stale_price_result_note: 'No result is shown until the prices are corrected.',
+    });
+    wrapper.vm.assets.cash = 1000000;
+    wrapper.vm.haulSatisfied = true;
+    await nextTick();
+
+    expect(wrapper.vm.nisabAvailable).toBe(true);
+    expect(wrapper.vm.priceNeedsVerification).toBe(true);
+    expect(wrapper.vm.nisabUsable).toBe(false);
+    expect(wrapper.vm.meetsNisab).toBe(false);
+    expect(wrapper.vm.zakatDue).toBe(0);
+    expect(wrapper.get('.igf-price-warning').attributes('role')).toBe('alert');
+    expect(wrapper.get('.igf-price-warning').text()).toContain('require verification');
+    expect(wrapper.get('.igf-zakat-due').text()).toContain('until the prices are corrected');
   });
 
   test('shows stale thresholds for reference but suppresses results for stale, future, or missing price dates', async () => {

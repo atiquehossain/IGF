@@ -32,11 +32,41 @@ class DonateController extends Controller
     ) {}
 
     /**
-     * GET /donate | GET /donate/zakat
+     * GET /donate
      */
-    public function index(Request $request, ?string $type = null)
+    public function index(Request $request)
     {
-        abort_if($type !== null && $type !== 'zakat', 404);
+        if ($request->filled('cause')) {
+            $locale = app()->getLocale();
+            $cause = $this->destinations->resolveActiveCause((string) $request->query('cause'), $locale);
+            if ($cause) {
+                $query = $request->query();
+                unset($query['cause']);
+                $url = route('frontend.donate.cause', ['cause' => $cause->slug]);
+                if ($query !== []) {
+                    $url .= '?' . http_build_query($query);
+                }
+
+                return redirect()->to($url);
+            }
+        }
+
+        return $this->renderPage($request);
+    }
+
+    /**
+     * GET /donate/{cause}
+     */
+    public function cause(Request $request, string $cause)
+    {
+        return $this->renderPage($request, $cause);
+    }
+
+    /**
+     * Render either the public cause catalog or one private, no-store checkout.
+     */
+    private function renderPage(Request $request, ?string $causeToken = null)
+    {
         $locale = app()->getLocale();
         $donationCopy = (array) data_get(
             $this->siteSettings->values($locale, true),
@@ -44,53 +74,49 @@ class DonateController extends Controller
             []
         );
         $causes = $this->destinations->activeCauses($locale);
-        $donationTypes = $causes->map(function (DonationType $cause) use ($locale): array {
-            $localizedName = $this->translations->localizedContentValue(
-                'donation_cause',
-                (string) $cause->uuid,
-                'name',
-                (string) $cause->name,
-                $locale
-            );
-            $localizedDescription = $this->translations->localizedContentValue(
-                'donation_cause',
-                (string) $cause->uuid,
-                'description',
-                (string) $cause->description,
-                $locale
-            );
-            $localizedDestinationName = $cause->destination_type === 'restricted_fund'
-                ? $this->translations->localizedContentValue(
-                    'donation_cause',
-                    (string) $cause->uuid,
-                    'destination_name',
-                    (string) $cause->destination_name,
-                    $locale
-                )
-                : null;
+        $localizedFallbacks = $causes->mapWithKeys(function (DonationType $cause): array {
+            return [
+                (string) $cause->uuid => [
+                    'name' => (string) $cause->name,
+                    'description' => (string) $cause->description,
+                    'destination_name' => (string) $cause->destination_name,
+                ],
+            ];
+        })->all();
+        $localizedByUuid = $this->translations->localizedContentValues(
+            'donation_cause',
+            $localizedFallbacks,
+            $locale
+        );
+        $donationTypes = $this->destinations
+            ->publicOptions($causes, $locale, $localizedByUuid)
+            ->map(function (array $option): array {
+                $option['url'] = route('frontend.donate.cause', ['cause' => $option['slug']]);
 
-            return $this->destinations->publicOption(
-                $cause,
-                $locale,
-                $localizedName,
-                $localizedDescription,
-                $localizedDestinationName
-            );
-        })->values();
+                return $option;
+            })
+            ->values();
 
+        $pageMode = $causeToken === null ? 'catalog' : 'detail';
         $selectionWarning = null;
         $selectedCause = null;
-        if ($type === 'zakat') {
-            $selectedCause = $causes->firstWhere('purpose_key', 'zakat');
-            if (!$selectedCause) {
-                $selectionWarning = (string) ($donationCopy['selection_zakat_unavailable_warning']
-                    ?? 'Zakat giving is temporarily unavailable while its restricted destination is reviewed.');
+        if ($causeToken !== null) {
+            if ($causeToken === 'zakat') {
+                $selectedCause = $causes->firstWhere('purpose_key', 'zakat');
+                if (!$selectedCause) {
+                    $selectionWarning = (string) ($donationCopy['selection_zakat_unavailable_warning']
+                        ?? 'Zakat giving is temporarily unavailable while its restricted destination is reviewed.');
+                    $donationTypes = collect();
+                }
+            } else {
+                $selectedCause = $this->destinations->resolveActiveCause($causeToken, $locale);
+                abort_unless($selectedCause, 404);
             }
-        } elseif ($request->filled('cause')) {
-            $selectedCause = $this->destinations->resolveActiveCause((string) $request->query('cause'), $locale);
-            if (!$selectedCause) {
-                $selectionWarning = (string) ($donationCopy['selection_unavailable_cause_warning']
-                    ?? 'The requested donation cause is unavailable. Please choose another active cause.');
+
+            if ($selectedCause) {
+                $donationTypes = $donationTypes
+                    ->where('uuid', (string) $selectedCause->uuid)
+                    ->values();
             }
         }
 
@@ -121,52 +147,78 @@ class DonateController extends Controller
         }
 
         $selectedUUID = $selectedCause?->uuid;
+        $selectedCauseOption = $selectedUUID
+            ? $donationTypes->firstWhere('uuid', (string) $selectedUUID)
+            : null;
+        $causeName = trim((string) data_get($selectedCauseOption, 'name', ''));
+        $causeDescription = trim((string) data_get($selectedCauseOption, 'description', ''));
 
         $metaTag = [
-            'meta_keyword'     => 'donate Bangladesh, community development, Ignite Global Foundation',
-            'meta_title'       => 'Donate Securely | Ignite Global Foundation',
-            'meta_description' => 'Support community-led education, healthcare, livelihoods, clean water, and urgent relief in Bangladesh through a secure donation.',
+            'meta_keyword'     => $causeName !== ''
+                ? $causeName . ', donate Bangladesh, Ignite Global Foundation'
+                : 'donate Bangladesh, community development, Ignite Global Foundation',
+            'meta_title'       => $causeName !== ''
+                ? 'Donate to ' . $causeName . ' | Ignite Global Foundation'
+                : 'Donate Securely | Ignite Global Foundation',
+            'meta_description' => $causeDescription !== ''
+                ? mb_substr(strip_tags($causeDescription), 0, 160)
+                : 'Support community-led education, healthcare, livelihoods, clean water, and urgent relief in Bangladesh through a secure donation.',
         ];
         $routeSeo = (array) $request->attributes->get('route_seo', []);
         $contentSeo = [];
         if (empty($routeSeo['schema_markup'])) {
-            $donateUrl = (string) $this->seo->localizedUrl($request->url(), $locale);
+            $pageUrl = (string) $this->seo->localizedUrl($request->url(), $locale);
+            $breadcrumbs = [
+                ['name' => 'Home', 'url' => (string) $this->seo->localizedUrl(url('/'), $locale)],
+                ['name' => 'Donate', 'url' => (string) $this->seo->localizedUrl(url('/donate'), $locale)],
+            ];
+            if ($causeName !== '') {
+                $breadcrumbs[] = ['name' => $causeName, 'url' => $pageUrl];
+            }
+
             $contentSeo['schema_markup'] = $this->structuredData->donation(
                 (string) ($routeSeo['meta_title'] ?? $metaTag['meta_title']),
                 (string) ($routeSeo['meta_description'] ?? $metaTag['meta_description']),
-                $donateUrl,
-                [
-                    ['name' => 'Home', 'url' => (string) $this->seo->localizedUrl(url('/'), $locale)],
-                    ['name' => 'Donate', 'url' => $donateUrl],
-                ]
+                $pageUrl,
+                $breadcrumbs
             );
         }
 
-        return Inertia::render('donate', [
+        $response = Inertia::render('donate', [
             'status' => true,
-            'title'  => 'Donate securely',
+            'title'  => $causeName !== '' ? 'Donate to ' . $causeName : 'Donate securely',
             'meta_tag' => $metaTag,
             'contentSeo' => $contentSeo,
             'data' => [
+                'pageMode' => $pageMode,
+                'catalogUrl' => route('frontend.donate.index'),
                 'donationTypes' => $donationTypes,
                 'selectedUUID'  => $selectedUUID,
                 'selectedCauseSlug' => $selectedCause?->slug,
                 'selectedProjectUUID' => $selectedProject?->uuid,
                 'selectedDestination' => $selectedDestination,
                 'selection_warning' => $selectionWarning,
-                'paymentMethods' => $this->paymentMethods->publicOptions($locale),
-                'donationFrequencies' => [
+                'paymentMethods' => $pageMode === 'detail'
+                    ? $this->paymentMethods->publicOptions($locale)
+                    : [],
+                'donationFrequencies' => $pageMode === 'detail' ? [
                     ['key' => 'one_time', 'available' => true],
                     ['key' => 'daily', 'available' => false],
                     ['key' => 'weekly', 'available' => false],
                     ['key' => 'monthly', 'available' => false],
-                ],
-                'checkout_key' => $this->sslCommerz->issueCheckoutKey(),
+                ] : [],
+                'checkout_key' => $pageMode === 'detail'
+                    ? $this->sslCommerz->issueCheckoutKey()
+                    : null,
             ],
-        ])->toResponse($request)->withHeaders([
-            'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
-            'Pragma' => 'no-cache',
-        ]);
+        ])->toResponse($request);
+
+        return $pageMode === 'detail'
+            ? $response->withHeaders([
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+                'Pragma' => 'no-cache',
+            ])
+            : $response;
     }
 
     /**

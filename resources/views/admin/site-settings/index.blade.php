@@ -106,7 +106,7 @@
         <section aria-label="Website settings">
             <div id="customizer-no-results" class="customizer-no-results"><h2>No matching settings</h2><p>Try a shorter or more general search.</p></div>
             <form id="customizer-form" method="POST" action="{{ route('site.settings.update') }}">
-                @csrf @method('PUT')<input type="hidden" name="locale" value="{{ $locale }}">
+                @csrf @method('PUT')<input type="hidden" name="locale" value="{{ $locale }}"><input type="hidden" name="global_settings_version" value="{{ $globalSettingsVersion }}">
                 <div class="customizer-groups">
                     @foreach($schema as $groupKey => $group)
                         <details class="customizer-card" id="settings-{{ $groupKey }}" data-settings-group @if($loop->first || $errors->has("settings.$groupKey.*")) open @endif>
@@ -128,7 +128,7 @@
                                 @endif
                                 @if($groupKey === 'zakat_calculator')
                                     <div class="donation-builder">
-                                        <div><strong>Keep the Nisab trustworthy</strong><p>1. Open the named market source. 2. Enter the current Shariah-approved gold and silver reference prices per gram—not jewellery totals. 3. Record the source and the date you checked it. 4. Save, then preview the Zakat page. The threshold is calculated automatically; the protected 2.5% rate cannot be changed here. Any older fixed Nisab amount is retained only as legacy data and no longer controls the public result.</p></div>
+                                        <div><strong>Keep the Nisab trustworthy</strong><p>1. Choose the Nisab weight standard approved by your Shariah adviser. 2. Open the named market source and enter the current gold and silver reference prices per gram—not jewellery totals. 3. Record the source and the date you checked it. 4. Save, then preview the Zakat page. Thresholds are calculated automatically; the protected 2.5% rate cannot be changed here. The public warning clears only after current prices and a current checked date are saved.</p></div>
                                         <div class="donation-builder__actions"><a class="igf-btn igf-btn--quiet" href="{{ route('frontend.zakat') }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Open Zakat page</a></div>
                                     </div>
                                 @endif

@@ -51,4 +51,25 @@ describe('AppHeader verified language switcher', () => {
     expect(wrapper.findAll('.utility-bar__links a[hreflang]')).toHaveLength(0);
     expect(wrapper.text()).not.toContain('বাংলা');
   });
+  test('honors explicitly blank managed contact fields by hiding those links', () => {
+    usePage().props.siteSettings.contact = {
+      phone_primary: '',
+      phone_secondary: '',
+      email: '',
+    };
+
+    const wrapper = mount(AppHeader);
+
+    expect(wrapper.find('a[href^="tel:"]').exists()).toBe(false);
+    expect(wrapper.find('a[href^="mailto:"]').exists()).toBe(false);
+  });
+
+  test('uses safe contact defaults only when managed keys are absent', () => {
+    usePage().props.siteSettings.contact = {};
+
+    const wrapper = mount(AppHeader);
+
+    expect(wrapper.get('a[href="tel:+8801972016221"]').text()).toContain('+8801972016221');
+    expect(wrapper.get('a[href="mailto:info@ignite.org.bd"]').text()).toContain('info@ignite.org.bd');
+  });
 });

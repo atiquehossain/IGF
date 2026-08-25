@@ -7,9 +7,9 @@
     <div class="utility-bar">
       <div class="utility-bar__inner">
         <div class="utility-bar__contact">
-          <a :href="`tel:${phoneHref}`"><i class="fa-solid fa-phone" aria-hidden="true" /> {{ contact.phone_primary }}</a>
+          <a v-if="contact.phone_primary" :href="`tel:${phoneHref}`"><i class="fa-solid fa-phone" aria-hidden="true" /> {{ contact.phone_primary }}</a>
           <a v-if="contact.phone_secondary" :href="`tel:${phoneSecondaryHref}`"><i class="fa-solid fa-phone" aria-hidden="true" /> {{ contact.phone_secondary }}</a>
-          <a :href="`mailto:${contact.email}`"><i class="fa-regular fa-envelope" aria-hidden="true" /> {{ contact.email }}</a>
+          <a v-if="contact.email" :href="`mailto:${contact.email}`"><i class="fa-regular fa-envelope" aria-hidden="true" /> {{ contact.email }}</a>
         </div>
         <div class="utility-bar__links">
           <div class="utility-social" :aria-label="header.socialProfilesLabel">
@@ -56,9 +56,9 @@ const announcement = computed(() => ({
   url: settings.value.header?.announcement_url || '',
 }));
 const contact = computed(() => ({
-  phone_primary: settings.value.contact?.phone_primary || '+880 1972 016221',
-  phone_secondary: settings.value.contact?.phone_secondary || '',
-  email: settings.value.contact?.email || 'info@ignite.org.bd',
+  phone_primary: settings.value.contact?.phone_primary ?? '+8801972016221',
+  phone_secondary: settings.value.contact?.phone_secondary ?? '',
+  email: settings.value.contact?.email ?? 'info@ignite.org.bd',
 }));
 const social = computed(() => settings.value.social || {});
 const header = computed(() => ({
@@ -68,8 +68,8 @@ const header = computed(() => ({
   contactUrl: settings.value.header?.contact_url || '/contact-us',
   socialProfilesLabel: settings.value.header?.social_profiles_label || 'Social profiles',
 }));
-const phoneHref = computed(() => contact.value.phone_primary.replace(/[^+\d]/g, ''));
-const phoneSecondaryHref = computed(() => contact.value.phone_secondary.replace(/[^+\d]/g, ''));
+const phoneHref = computed(() => String(contact.value.phone_primary).replace(/[^+\d]/g, ''));
+const phoneSecondaryHref = computed(() => String(contact.value.phone_secondary).replace(/[^+\d]/g, ''));
 </script>
 
 <style scoped>

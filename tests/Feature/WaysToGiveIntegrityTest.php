@@ -110,7 +110,7 @@ class WaysToGiveIntegrityTest extends TestCase
         $this->assertSame('একটি শিশুর পাশে দাঁড়ান', $items[0]['heading']);
         $this->assertSame('সহায়তা শুরু করুন', $items[0]['link_label']);
         $this->assertSame('BDT 1,500 · প্রতি শিশু, প্রতি মাসে', $items[0]['destination']);
-        $this->assertSame('/donate?cause=education-fund', $items[1]['url']);
+        $this->assertSame('/donate/education-fund', $items[1]['url']);
         $this->assertSame('শিক্ষা সহায়তা তহবিল', $items[1]['destination']);
         $this->assertSame('আপনার যাকাত হিসাব করুন', $items[2]['heading']);
         $this->assertSame('যাকাত দিন', $items[2]['link_label']);

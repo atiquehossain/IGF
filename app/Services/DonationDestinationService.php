@@ -56,16 +56,101 @@ class DonationDestinationService
         };
     }
 
+    public function hasReviewedDescription(?string $description): bool
+    {
+        $description = trim((string) $description);
+
+        return $description !== ''
+            && !str_starts_with(mb_strtolower($description), 'draft giving option.');
+    }
+
+    public function isReadyForPublication(DonationType $cause, ?string $locale = null): bool
+    {
+        $candidate = clone $cause;
+        $candidate->status = true;
+
+        return $this->hasReviewedDescription($candidate->description)
+            && $this->isOperational($candidate, $locale);
+    }
+
     /** @return Collection<int, DonationType> */
     public function activeCauses(?string $locale = null): Collection
     {
-        return DonationType::query()
+        $locale ??= app()->getLocale();
+        $causes = DonationType::query()
             ->active()
             ->with('imageAsset')
+            ->orderByRaw('CASE WHEN display_order IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('display_order')
             ->orderBy('id')
-            ->get()
-            ->filter(fn (DonationType $cause): bool => $this->isOperational($cause, $locale))
+            ->get();
+
+        $this->hydrateLegacyCauseImages($causes);
+
+        $categoryUuids = $causes
+            ->where('destination_type', 'category')
+            ->pluck('destination_category_uuid')
+            ->filter()
+            ->unique()
             ->values();
+        $categories = $categoryUuids->isEmpty()
+            ? collect()
+            : Category::query()
+                ->whereIn('uuid', $categoryUuids)
+                ->where('status', 1)
+                ->get()
+                ->groupBy('uuid');
+        $pageUuids = $causes
+            ->where('destination_type', 'page')
+            ->pluck('destination_page_uuid')
+            ->filter()
+            ->unique()
+            ->values();
+        $pages = $pageUuids->isEmpty()
+            ? collect()
+            : Page::query()
+                ->publiclyAvailable()
+                ->where('visibility', 'public')
+                ->where('is_funding_project', true)
+                ->whereIn('uuid', $pageUuids)
+                ->get()
+                ->groupBy('uuid');
+
+        return $causes
+            ->filter(fn (DonationType $cause): bool => $this->isOperationalFromBatch(
+                $cause,
+                $categories,
+                $pages,
+                $locale
+            ))
+            ->values();
+    }
+
+    private function isOperationalFromBatch(
+        DonationType $cause,
+        Collection $categories,
+        Collection $pages,
+        string $locale
+    ): bool {
+        if (!$cause->status || !array_key_exists((string) $cause->destination_type, DonationType::DESTINATION_OPTIONS)) {
+            return false;
+        }
+
+        $isZakat = $cause->purpose_key === 'zakat';
+
+        return match ($cause->destination_type) {
+            'unrestricted' => !$isZakat,
+            'restricted_fund' => trim((string) $cause->destination_name) !== '',
+            'category' => $this->preferredLocalized(
+                $categories->get((string) $cause->destination_category_uuid, collect()),
+                $locale
+            ) !== null,
+            'page' => ($page = $this->preferredLocalized(
+                $pages->get((string) $cause->destination_page_uuid, collect()),
+                $locale
+            )) instanceof Page && (!$isZakat || (bool) $page->is_zakat_eligible),
+            default => false,
+        };
     }
 
     /**
@@ -122,6 +207,159 @@ class DonationDestinationService
         ];
     }
 
+    /**
+     * Build every public catalog option from a fixed number of destination and
+     * media queries. The localized values are keyed by immutable cause UUID.
+     *
+     * @param Collection<int, DonationType> $causes
+     * @param array<string, array{name?: string, description?: string, destination_name?: ?string}> $localizedByUuid
+     * @return Collection<int, array<string, mixed>>
+     */
+    public function publicOptions(
+        Collection $causes,
+        ?string $locale = null,
+        array $localizedByUuid = []
+    ): Collection {
+        $locale ??= app()->getLocale();
+        $causes = $causes->values();
+        if ($causes->isEmpty()) {
+            return collect();
+        }
+
+        $this->hydrateLegacyCauseImages($causes);
+
+        $categoryUuids = $causes
+            ->where('destination_type', 'category')
+            ->pluck('destination_category_uuid')
+            ->filter()
+            ->unique()
+            ->values();
+        $categoryRows = $categoryUuids->isEmpty()
+            ? collect()
+            : Category::query()->whereIn('uuid', $categoryUuids)->get();
+        $categoryKeysByUuid = $categoryRows
+            ->groupBy('uuid')
+            ->map(fn (Collection $rows): Collection => $rows
+                ->flatMap(fn (Category $category): array => [(string) $category->id, (string) $category->uuid])
+                ->filter()
+                ->unique()
+                ->values());
+        $allCategoryKeys = $categoryKeysByUuid->flatten()->unique()->values();
+        $pageUuids = $causes
+            ->where('destination_type', 'page')
+            ->pluck('destination_page_uuid')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $pages = collect();
+        if ($pageUuids->isNotEmpty() || $allCategoryKeys->isNotEmpty()) {
+            $pages = Page::query()
+                ->publiclyAvailable()
+                ->where('visibility', 'public')
+                ->where('is_funding_project', true)
+                ->where(function (Builder $query) use ($pageUuids, $allCategoryKeys): void {
+                    if ($pageUuids->isNotEmpty()) {
+                        $query->whereIn('uuid', $pageUuids);
+                    }
+                    if ($allCategoryKeys->isNotEmpty()) {
+                        $pageUuids->isNotEmpty()
+                            ? $query->orWhereIn('category_id', $allCategoryKeys)
+                            : $query->whereIn('category_id', $allCategoryKeys);
+                    }
+                })
+                ->orderBy('order_by')
+                ->orderBy('id')
+                ->get();
+        }
+
+        $pageCategoryIdentifiers = $pages
+            ->pluck('category_id')
+            ->map(fn ($value): string => trim((string) $value))
+            ->filter()
+            ->unique()
+            ->values();
+        $pageCategoryRows = collect();
+        if ($pageCategoryIdentifiers->isNotEmpty()) {
+            $numericIds = $pageCategoryIdentifiers->filter(fn (string $value): bool => ctype_digit($value));
+            $uuidIds = $pageCategoryIdentifiers->reject(fn (string $value): bool => ctype_digit($value));
+            $pageCategoryRows = Category::withTrashed()
+                ->where(function (Builder $query) use ($numericIds, $uuidIds): void {
+                    if ($numericIds->isNotEmpty()) {
+                        $query->whereIn('id', $numericIds);
+                    }
+                    if ($uuidIds->isNotEmpty()) {
+                        $numericIds->isNotEmpty()
+                            ? $query->orWhereIn('uuid', $uuidIds)
+                            : $query->whereIn('uuid', $uuidIds);
+                    }
+                })
+                ->get();
+        }
+
+        return $causes->map(function (DonationType $cause) use (
+            $locale,
+            $localizedByUuid,
+            $categoryRows,
+            $categoryKeysByUuid,
+            $pages,
+            $pageCategoryRows
+        ): array {
+            $localized = $localizedByUuid[(string) $cause->uuid] ?? [];
+            $name = array_key_exists('name', $localized)
+                ? (string) $localized['name']
+                : (string) $cause->name;
+            $description = array_key_exists('description', $localized)
+                ? (string) $localized['description']
+                : (string) $cause->description;
+            $eligiblePages = match ((string) $cause->destination_type) {
+                'page' => $pages->where('uuid', (string) $cause->destination_page_uuid),
+                'category' => $pages->filter(fn (Page $page): bool => $categoryKeysByUuid
+                    ->get((string) $cause->destination_category_uuid, collect())
+                    ->contains((string) $page->category_id)),
+                default => collect(),
+            };
+            if ($cause->purpose_key === 'zakat') {
+                $eligiblePages = $eligiblePages->where('is_zakat_eligible', true);
+            }
+            $preferredPages = $this->preferredLogicalPages($eligiblePages, $locale);
+            $projects = $preferredPages
+                ->map(fn (Page $page): array => $this->publicPageOption($page, $locale, $pageCategoryRows))
+                ->values()
+                ->all();
+            $destinationName = match ((string) $cause->destination_type) {
+                'unrestricted' => $name,
+                'restricted_fund' => array_key_exists('destination_name', $localized)
+                    ? (string) $localized['destination_name']
+                    : (string) $cause->destination_name,
+                'category' => (string) ($this->preferredLocalized(
+                    $categoryRows->where('uuid', (string) $cause->destination_category_uuid),
+                    $locale
+                )?->name ?? 'Unavailable program'),
+                'page' => (string) ($preferredPages->first()?->name ?? 'Unavailable project'),
+                default => 'Unavailable destination',
+            };
+
+            return [
+                'uuid' => (string) $cause->uuid,
+                'slug' => (string) $cause->slug,
+                'name' => $name,
+                'description' => $description,
+                'image' => $this->causeImageUrl($cause),
+                'icon_key' => (string) ($cause->icon_key ?? ''),
+                'destination_type' => (string) $cause->destination_type,
+                'destination_uuid' => $this->destinationUuid($cause),
+                'destination_name' => $destinationName,
+                'project_selection' => match ($cause->destination_type) {
+                    'category' => 'optional',
+                    'page' => 'fixed',
+                    default => 'none',
+                },
+                'projects' => $projects,
+            ];
+        })->values();
+    }
+
     public function publicOption(
         DonationType $cause,
         ?string $locale = null,
@@ -141,6 +379,7 @@ class DonationDestinationService
             'name' => $localizedName ?? (string) $cause->name,
             'description' => $localizedDescription ?? (string) $cause->description,
             'image' => $this->causeImageUrl($cause),
+            'icon_key' => (string) ($cause->icon_key ?? ''),
             'destination_type' => (string) $cause->destination_type,
             'destination_uuid' => $this->destinationUuid($cause),
             'destination_name' => match ((string) $cause->destination_type) {
@@ -256,17 +495,82 @@ class DonationDestinationService
             return '';
         }
         $storedPath = ltrim(str_replace('\\', '/', (string) (parse_url($stored, PHP_URL_PATH) ?: $stored)), '/');
-        $legacyAsset = MediaAsset::withTrashed()
+        if ($cause->relationLoaded('legacyImageAsset')) {
+            $legacyAsset = $cause->getRelation('legacyImageAsset');
+
+            return $legacyAsset instanceof MediaAsset ? (string) $legacyAsset->url : '';
+        }
+
+        return (string) ($this->legacyAssetForStoredImage($stored, $storedPath)?->url ?? '');
+    }
+
+    /** @param Collection<int, DonationType> $causes */
+    private function hydrateLegacyCauseImages(Collection $causes): void
+    {
+        $causes->loadMissing('imageAsset');
+
+        $pending = $causes->filter(function (DonationType $cause): bool {
+            if ($cause->relationLoaded('legacyImageAsset')) {
+                return false;
+            }
+
+            return !($cause->imageAsset
+                && hash_equals((string) $cause->image_media_uuid, (string) $cause->imageAsset->uuid))
+                && trim((string) $cause->image) !== '';
+        });
+        $candidatePaths = $pending
+            ->flatMap(fn (DonationType $cause): array => $this->legacyImagePathCandidates((string) $cause->image))
+            ->unique()
+            ->values();
+        $assets = $candidatePaths->isEmpty()
+            ? collect()
+            : MediaAsset::withTrashed()
+                ->whereIn('path', $candidatePaths)
+                ->get(['uuid', 'disk', 'path']);
+
+        $pending->each(function (DonationType $cause) use ($assets): void {
+            $stored = trim((string) $cause->image);
+            $storedPath = ltrim(str_replace('\\', '/', (string) (parse_url($stored, PHP_URL_PATH) ?: $stored)), '/');
+            $cause->setRelation(
+                'legacyImageAsset',
+                $assets->first(fn (MediaAsset $asset): bool => $this->legacyAssetMatchesStoredImage(
+                    $asset,
+                    $stored,
+                    $storedPath
+                ))
+            );
+        });
+    }
+
+    private function legacyAssetForStoredImage(string $stored, string $storedPath): ?MediaAsset
+    {
+        $candidates = $this->legacyImagePathCandidates($stored);
+        if ($candidates === []) {
+            return null;
+        }
+
+        return MediaAsset::withTrashed()
+            ->whereIn('path', $candidates)
             ->get(['uuid', 'disk', 'path'])
-            ->first(function (MediaAsset $asset) use ($stored, $storedPath): bool {
-                $assetPath = ltrim(str_replace('\\', '/', (string) $asset->path), '/');
-                $currentPath = ltrim(str_replace('\\', '/', (string) (parse_url($asset->url, PHP_URL_PATH) ?: '')), '/');
+            ->first(fn (MediaAsset $asset): bool => $this->legacyAssetMatchesStoredImage($asset, $stored, $storedPath));
+    }
 
-                return hash_equals((string) $asset->url, $stored)
-                    || in_array($storedPath, [$assetPath, 'storage/' . $assetPath, $currentPath], true);
-            });
+    /** @return list<string> */
+    private function legacyImagePathCandidates(string $stored): array
+    {
+        $path = ltrim(str_replace('\\', '/', (string) (parse_url($stored, PHP_URL_PATH) ?: $stored)), '/');
+        $withoutStoragePrefix = str_starts_with($path, 'storage/') ? substr($path, 8) : $path;
 
-        return $legacyAsset ? (string) $legacyAsset->url : '';
+        return array_values(array_unique(array_filter([$path, $withoutStoragePrefix])));
+    }
+
+    private function legacyAssetMatchesStoredImage(MediaAsset $asset, string $stored, string $storedPath): bool
+    {
+        $assetPath = ltrim(str_replace('\\', '/', (string) $asset->path), '/');
+        $currentPath = ltrim(str_replace('\\', '/', (string) (parse_url($asset->url, PHP_URL_PATH) ?: '')), '/');
+
+        return hash_equals((string) $asset->url, $stored)
+            || in_array($storedPath, [$assetPath, 'storage/' . $assetPath, $currentPath], true);
     }
 
     public function destinationName(DonationType $cause, ?string $locale = null): string
@@ -412,9 +716,11 @@ class DonationDestinationService
             ->all();
     }
 
-    private function publicPageOption(Page $page, string $locale): array
+    private function publicPageOption(Page $page, string $locale, ?Collection $categories = null): array
     {
-        $category = $this->categoryForPage($page, $locale);
+        $category = $categories === null
+            ? $this->categoryForPage($page, $locale)
+            : $this->categoryForPageFromRows($page, $locale, $categories);
 
         return [
             'uuid' => (string) $page->uuid,
@@ -440,7 +746,25 @@ class DonationDestinationService
         return $this->preferredLocalized($categories, $locale);
     }
 
+    private function categoryForPageFromRows(Page $page, string $locale, Collection $categories): ?Category
+    {
+        $value = trim((string) $page->category_id);
+        if ($value === '') {
+            return null;
+        }
+
+        return $this->preferredLocalized(
+            $categories->filter(fn (Category $category): bool => in_array(
+                $value,
+                [(string) $category->id, (string) $category->uuid],
+                true
+            )),
+            $locale
+        );
+    }
+
     /** @return Collection<int, Page> */
+
     private function preferredLogicalPages(Collection $pages, string $locale): Collection
     {
         return $pages

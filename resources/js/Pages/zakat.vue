@@ -11,14 +11,50 @@
         <div class="igf-shell">
           <header><p class="igf-eyebrow">{{ settings.impact_eyebrow }}</p><h2 id="zakat-impact-title">{{ settings.impact_title }}</h2><p>{{ settings.impact_body }}</p></header>
           <div class="igf-zakat-impact__grid">
-            <article v-for="card in impactCards" :key="card.title">
+            <article v-for="card in impactCards" :key="card.key" @click="openImpactCardFromSurface(card, $event)">
               <img :src="card.image" :alt="card.alt || card.title">
-              <div><h3>{{ card.title }}</h3><p>{{ card.body }}</p></div>
+              <div>
+                <h3>{{ card.title }}</h3>
+                <p>{{ card.body }}</p>
+                <button type="button" class="igf-zakat-impact__details" :aria-label="copy.impact_view_details_label + ': ' + card.title" aria-haspopup="dialog" aria-controls="zakat-impact-dialog" @click.stop="openImpactCard(card, $event.currentTarget)">
+                  {{ copy.impact_view_details_label }} <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true" />
+                </button>
+                <a class="igf-zakat-impact__donate" :href="route('frontend.donate.cause', 'zakat')" :aria-label="`${copy.donate_label}: ${card.title}`" @click.stop>
+                  {{ copy.donate_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true" />
+                </a>
+              </div>
             </article>
           </div>
         </div>
       </section>
 
+      <div v-if="activeImpactCard" class="igf-impact-dialog" role="presentation" @click.self="closeImpactCard">
+        <section
+          id="zakat-impact-dialog"
+          ref="impactDialog"
+          class="igf-impact-dialog__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="zakat-impact-dialog-title"
+          aria-describedby="zakat-impact-dialog-description"
+          tabindex="-1"
+          @keydown.esc.stop.prevent="closeImpactCard"
+          @keydown.tab="trapImpactDialogFocus"
+        >
+          <button ref="impactCloseButton" type="button" class="igf-impact-dialog__close" :aria-label="copy.impact_close_label" @click="closeImpactCard">
+            <i class="fa-solid fa-xmark" aria-hidden="true" />
+          </button>
+          <img :src="activeImpactCard.image" :alt="activeImpactCard.alt || activeImpactCard.title">
+          <div class="igf-impact-dialog__content">
+            <p class="igf-eyebrow">{{ copy.impact_dialog_eyebrow }}</p>
+            <h2 id="zakat-impact-dialog-title">{{ activeImpactCard.title }}</h2>
+            <p id="zakat-impact-dialog-description" class="igf-impact-dialog__description">{{ activeImpactCard.details }}</p>
+            <a class="igf-donate" :href="route('frontend.donate.cause', 'zakat')" :aria-label="copy.donate_label + ': ' + activeImpactCard.title">
+              {{ copy.donate_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+      </div>
       <section v-if="settings.enabled" class="igf-calculator" aria-labelledby="zakat-calculator-title">
         <div class="igf-shell">
           <header class="igf-calculator__header"><div><p class="igf-eyebrow">{{ copy.eyebrow }}</p><h2 id="zakat-calculator-title">{{ copy.title }}</h2></div><p>{{ copy.introduction }}</p></header>
@@ -83,7 +119,7 @@
               <p class="igf-nisab" :class="{ 'is-unavailable': !nisabUsable }"><i class="fa-solid fa-scale-balanced" aria-hidden="true" /><span><strong>{{ copy.nisab_label }}: {{ nisabAvailable ? money(nisab) : copy.not_available_label }}</strong>{{ nisabExplanation }}</span></p>
               <div class="igf-zakat-due"><span>{{ copy.result_label }}</span><strong>{{ money(zakatDue) }}</strong><small>{{ resultNote }}</small></div>
               <a class="igf-donate" :href="route('frontend.donate.cause', 'zakat')">{{ copy.donate_label }} <i class="fa-solid fa-arrow-right" aria-hidden="true" /></a>
-              <p v-if="copy.methodology" class="igf-methodology">{{ copy.methodology }}</p>
+              <p v-if="methodology" class="igf-methodology">{{ methodology }}</p>
               <p class="igf-disclaimer">{{ copy.disclaimer }}</p>
             </aside>
           </div>
@@ -97,14 +133,18 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, nextTick, reactive, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import Layout from '../layouts/App.vue';
 import AppBannerPage from '../component/banner.vue';
 import PageBlocks from '../Shared/PageBlocks.vue';
 import { formatDate, formatMoney, regionalSettings } from '../Shared/composables/siteSettings';
 
-const NISAB_WEIGHTS = Object.freeze({ gold: 87.48, silver: 612.36 });
+const DEFAULT_NISAB_WEIGHT_STANDARD = 'standard_87_48_612_36';
+const NISAB_WEIGHT_STANDARDS = Object.freeze({
+  standard_87_48_612_36: Object.freeze({ gold: 87.48, silver: 612.36 }),
+  standard_85_595: Object.freeze({ gold: 85, silver: 595 }),
+});
 const ZAKAT_RATE = 0.025;
 const ZAKAT_RATE_PERCENT = 2.5;
 const MAX_AMOUNT = 999999999999.99;
@@ -165,7 +205,10 @@ const DEFAULT_COPY = Object.freeze({
   price_unavailable_result_note: 'Zakat due cannot be estimated until a current price is available for the selected basis.',
   stale_price_result_note: 'Zakat due remains zero until the metal price and its checked date are current and verified.',
   donate_label: 'Give your Zakat',
-  methodology: 'Your estimate is calculated in this browser as (eligible assets − current liabilities) × 2.5%. No calculator amounts are submitted or saved.',
+  impact_view_details_label: 'View full details',
+  impact_close_label: 'Close details',
+  impact_dialog_eyebrow: 'Zakat impact',
+  methodology: 'This estimator uses the approved {gold_weight}-gram gold / {silver_weight}-gram silver Nisab standard. The estimate is calculated in this browser as (eligible assets − current liabilities) × {rate}%. No calculator amounts are submitted or saved.',
   disclaimer: 'This calculator provides an estimate, not a religious ruling. For personal circumstances, consult a qualified scholar.',
 });
 
@@ -198,12 +241,22 @@ const copy = computed(() => {
 const regional = computed(() => regionalSettings(page.props.siteSettings?.regional));
 const hasHeroBlock = computed(() => (zakat.value?.visible_blocks || []).some(block => block?.type === 'hero'));
 const impactCards = computed(() => [
-  { title: settings.value.food_title, body: settings.value.food_body, image: settings.value.food_image, alt: settings.value.food_image_alt },
-  { title: settings.value.livelihood_title, body: settings.value.livelihood_body, image: settings.value.livelihood_image, alt: settings.value.livelihood_image_alt },
-  { title: settings.value.education_title, body: settings.value.education_body, image: settings.value.education_image, alt: settings.value.education_image_alt },
+  { key: 'food', title: settings.value.food_title, body: settings.value.food_body, details: settings.value.food_details?.trim() || settings.value.food_body, image: settings.value.food_image, alt: settings.value.food_image_alt },
+  { key: 'livelihood', title: settings.value.livelihood_title, body: settings.value.livelihood_body, details: settings.value.livelihood_details?.trim() || settings.value.livelihood_body, image: settings.value.livelihood_image, alt: settings.value.livelihood_image_alt },
+  { key: 'education', title: settings.value.education_title, body: settings.value.education_body, details: settings.value.education_details?.trim() || settings.value.education_body, image: settings.value.education_image, alt: settings.value.education_image_alt },
 ].filter(card => card.title));
+const activeImpactCard = ref(null);
+const impactDialog = ref(null);
+const impactCloseButton = ref(null);
+const impactReturnFocus = ref(null);
 const normaliseBasis = value => value === 'gold' ? 'gold' : 'silver';
 const selectedBasis = ref(normaliseBasis(settings.value.nisab_default_basis));
+const selectedWeightStandard = computed(() => (
+  Object.prototype.hasOwnProperty.call(NISAB_WEIGHT_STANDARDS, settings.value.nisab_weight_standard)
+    ? settings.value.nisab_weight_standard
+    : DEFAULT_NISAB_WEIGHT_STANDARD
+));
+const nisabWeights = computed(() => NISAB_WEIGHT_STANDARDS[selectedWeightStandard.value]);
 const assetKeys = ['cash', 'receivables', 'investments', 'preciousMetals', 'tradeGoods', 'resaleProperty', 'retainedRentalIncome', 'other'];
 const liabilityKeys = ['debtsDue', 'billsDue', 'immediateExpenses'];
 const assetFields = computed(() => [
@@ -237,16 +290,21 @@ const prices = computed(() => ({
   gold: positivePrice(settings.value.gold_price_per_gram),
   silver: positivePrice(settings.value.silver_price_per_gram),
 }));
-const thresholdFor = basis => prices.value[basis] * NISAB_WEIGHTS[basis];
+const thresholdFor = basis => prices.value[basis] * nisabWeights.value[basis];
 const nisabOptions = computed(() => ['gold', 'silver'].map(key => ({
   key,
   label: key === 'gold' ? copy.value.gold_basis_label : copy.value.silver_basis_label,
-  weight: NISAB_WEIGHTS[key],
+  weight: nisabWeights.value[key],
   price: prices.value[key],
   priceAvailable: prices.value[key] > 0,
   threshold: thresholdFor(key),
 })));
 const priceNeedsVerification = computed(() => {
+  if (typeof settings.value.nisab_prices_current === 'boolean') {
+    return !settings.value.nisab_prices_current;
+  }
+
+  // Compatibility fallback for an older server payload.
   const updatedAt = new Date(settings.value.nisab_price_updated_at || '');
   const age = Date.now() - updatedAt.getTime();
   return Number.isNaN(updatedAt.getTime()) || age < 0 || age > 7 * 24 * 60 * 60 * 1000;
@@ -264,7 +322,7 @@ const selectedBasisLabel = computed(() => selectedBasis.value === 'gold' ? copy.
 const nisabExplanation = computed(() => {
   if (!nisabAvailable.value) return copy.value.nisab_unavailable_note;
   const formula = String(copy.value.nisab_formula_label)
-    .replace('{weight}', NISAB_WEIGHTS[selectedBasis.value])
+    .replace('{weight}', nisabWeights.value[selectedBasis.value])
     .replace('{price}', money(selectedPrice.value));
   const legacyNote = String(settings.value.nisab_note || '').trim();
   return legacyNote ? `${formula} ${legacyNote}` : formula;
@@ -289,18 +347,71 @@ const safeSourceUrl = computed(() => {
 const sourceLabel = computed(() => String(settings.value.nisab_source_label || safeSourceUrl.value || '').trim());
 const formattedPriceDate = computed(() => formatDate(settings.value.nisab_price_updated_at, regional.value));
 const hasPriceInformation = computed(() => Boolean(sourceLabel.value || formattedPriceDate.value));
+const methodology = computed(() => String(copy.value.methodology || '')
+  .replaceAll('{gold_weight}', String(nisabWeights.value.gold))
+  .replaceAll('{silver_weight}', String(nisabWeights.value.silver))
+  .replaceAll('{rate}', String(ZAKAT_RATE_PERCENT)));
 const money = value => formatMoney(value, regional.value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 function clearCalculator() {
   Object.keys(assets).forEach(key => { assets[key] = ''; });
   Object.keys(liabilities).forEach(key => { liabilities[key] = ''; });
   haulSatisfied.value = false;
 }
+async function openImpactCard(card, returnFocus = null) {
+  impactReturnFocus.value = returnFocus;
+  activeImpactCard.value = card;
+  await nextTick();
+  impactCloseButton.value?.focus();
+}
+function openImpactCardFromSurface(card, event) {
+  if (event.target?.closest?.('a, button')) return;
+  openImpactCard(card, event.currentTarget?.querySelector('.igf-zakat-impact__details'));
+}
+async function closeImpactCard() {
+  const returnFocus = impactReturnFocus.value;
+  activeImpactCard.value = null;
+  await nextTick();
+  returnFocus?.focus?.();
+  impactReturnFocus.value = null;
+}
+function trapImpactDialogFocus(event) {
+  const controls = [...(impactDialog.value?.querySelectorAll('button:not(:disabled), a[href]') || [])];
+  if (!controls.length) return;
+  const first = controls[0];
+  const last = controls[controls.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 </script>
 
 <style scoped>
 .igf-zakat{--orange:#ff7500;--brown:#9c4500;--ink:#191c1d;--muted:#5f6065;--surface:#f8f9fa;--line:#dedbd7;color:var(--ink);font-family:'Hanken Grotesk',Arial,sans-serif}.igf-shell{width:min(100% - 40px,1180px);margin:0 auto}.igf-zakat__content{padding:clamp(70px,9vw,110px) 0;background:#fff}.igf-zakat__content article{max-width:880px;margin:auto;color:var(--muted);font-size:17px;line-height:1.8}.igf-zakat__content :deep(img){max-width:100%;height:auto;border-radius:16px}.igf-zakat-impact{padding:clamp(72px,9vw,110px) 0;background:#fff}.igf-zakat-impact header{max-width:800px;margin:0 0 42px}.igf-zakat-impact h2,.igf-calculator h2{margin:0;color:var(--ink);font:650 clamp(38px,5vw,55px)/1.1 'Literata',Georgia,serif;letter-spacing:-.03em}.igf-zakat-impact h2::after,.igf-calculator h2::after{display:none!important}.igf-zakat-impact header>p:last-child{color:var(--muted);font-size:17px;line-height:1.7}.igf-zakat-impact__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.igf-zakat-impact__grid article{overflow:hidden;border:1px solid var(--line);border-radius:17px;background:#fff;box-shadow:0 6px 20px rgba(25,28,29,.06)}.igf-zakat-impact__grid img{width:100%;aspect-ratio:16/10;object-fit:cover}.igf-zakat-impact__grid article>div{padding:25px}.igf-zakat-impact h3{margin:0 0 10px;color:var(--ink);font:650 24px 'Literata',Georgia,serif}.igf-zakat-impact__grid p{margin:0;color:var(--muted);line-height:1.65}.igf-calculator{padding:clamp(75px,9vw,120px) 0;background:var(--surface)}.igf-calculator__header{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:60px;margin-bottom:45px}.igf-eyebrow{margin:0 0 14px!important;color:var(--brown)!important;font-size:11px!important;font-weight:800!important;letter-spacing:.1em;text-transform:uppercase}.igf-calculator__header>p{margin:0;color:var(--muted);font-size:17px;line-height:1.7}.igf-calculator__layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(360px,.8fr);align-items:start;gap:24px}.igf-calculator__form{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:30px;border:1px solid var(--line);border-radius:18px;background:#fff}.igf-calculator fieldset{display:grid;align-content:start;gap:16px;margin:0;padding:0;border:0}.igf-calculator legend{margin-bottom:8px;color:var(--ink);font:650 23px 'Literata',Georgia,serif}.igf-calculator label{display:grid;gap:7px;color:#44474a;font-size:12px;font-weight:800}.igf-money-input{position:relative;display:flex;align-items:center}.igf-money-input b{position:absolute;left:13px;color:var(--brown)}.igf-money-input input{width:100%;height:45px;padding:0 12px 0 34px;border:1px solid #c8c4c0;border-radius:8px;color:var(--ink);font:15px 'Hanken Grotesk',Arial,sans-serif}.igf-money-input input:focus{outline:3px solid rgba(255,117,0,.22);border-color:var(--orange)}.igf-clear{grid-column:1/-1;justify-self:start;padding:0;border:0;background:transparent;color:var(--brown);font-weight:800;text-decoration:underline}.igf-calculator__result{position:sticky;top:25px;padding:32px;border-radius:18px;background:#202223;color:#fff}.igf-calculator__result>.igf-eyebrow{color:#ffb070!important}.igf-calculator__result>div:not(.igf-zakat-due){display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.13)}.igf-calculator__result>div span{color:#ccc;font-size:13px}.igf-calculator__result>div strong{font-size:15px}.igf-nisab{display:flex;gap:12px;margin:20px 0;padding:17px;border:1px solid rgba(255,117,0,.3);border-radius:10px;background:rgba(255,117,0,.09);color:#ddd}.igf-nisab i{margin-top:3px;color:#ffb070}.igf-nisab span{display:grid;gap:4px;font-size:12px;line-height:1.5}.igf-nisab strong{color:#fff}.igf-zakat-due{display:grid;gap:4px;margin:22px 0}.igf-zakat-due>span{color:#ffb070!important;font-size:11px!important;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.igf-zakat-due>strong{font:650 40px 'Literata',Georgia,serif!important}.igf-zakat-due small{color:#ccc}.igf-donate{display:flex;min-height:52px;align-items:center;justify-content:center;gap:11px;border-radius:999px;background:var(--orange);color:#fff;font-size:13px;font-weight:800;text-decoration:none;text-transform:uppercase}.igf-disclaimer{margin:16px 0 0;color:#aaa;font-size:11px;line-height:1.5;text-align:center}
+.igf-zakat-impact__grid article{display:flex;flex-direction:column}.igf-zakat-impact__grid article>div{display:flex;flex:1;flex-direction:column}.igf-zakat-impact__donate{display:inline-flex;min-height:46px;align-items:center;align-self:flex-start;justify-content:center;gap:9px;margin-top:22px;padding:0 22px;border-radius:999px;background:var(--brown);color:#fff;font-size:12px;font-weight:800;text-decoration:none;text-transform:uppercase}.igf-zakat-impact__donate:hover{background:#713300;color:#fff}.igf-zakat-impact__donate:focus-visible{outline:3px solid rgba(255,117,0,.35);outline-offset:3px}
 .igf-calculator__form{gap:26px 18px}.igf-calculator legend{margin-bottom:2px}.igf-fieldset-help{margin:-8px 0 1px;color:var(--muted);font-size:13px;line-height:1.55}.igf-nisab-choice,.igf-haul{grid-column:1/-1}.igf-nisab-choice__options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.igf-calculator .igf-nisab-option{gap:7px;padding:16px;border:1px solid #c8c4c0;border-radius:11px;background:#fff;cursor:pointer}.igf-calculator .igf-nisab-option.is-selected{border-color:var(--brown);box-shadow:0 0 0 2px rgba(156,69,0,.13)}.igf-nisab-option__title{display:flex;align-items:center;gap:9px;font-size:15px}.igf-nisab-option input,.igf-haul__check input{width:18px;height:18px;margin:0;accent-color:var(--brown)}.igf-nisab-option small{color:var(--muted);font-size:11px;font-weight:600;line-height:1.5}.igf-nisab-option .igf-setting-warning{color:#8a3c00}.igf-price-source{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.igf-price-source a{color:var(--brown);font-weight:800}.igf-price-warning{display:flex;gap:9px;margin:0;padding:12px;border:1px solid #d49a4b;border-radius:9px;background:#fff5df;color:#693a00;font-size:12px;font-weight:700;line-height:1.5}.igf-nisab-option input:focus-visible,.igf-haul__check input:focus-visible,.igf-clear:focus-visible{outline:3px solid rgba(255,117,0,.25);outline-offset:2px}.igf-input-help{color:var(--muted);font-size:11px;font-weight:500;line-height:1.45}.igf-calculator .igf-haul__check{display:flex;align-items:flex-start;gap:11px;padding:15px;border:1px solid #c8c4c0;border-radius:10px;cursor:pointer}.igf-haul__check input{flex:0 0 auto;margin-top:2px}.igf-haul__check span{display:grid;gap:5px}.igf-haul__check strong{font-size:13px;line-height:1.45}.igf-haul__check small{color:var(--muted);font-size:11px;font-weight:500;line-height:1.5}.igf-haul__check .igf-haul__answer{color:var(--brown);font-weight:800}.igf-clear{padding:3px;cursor:pointer}.igf-calculator__result>div strong{text-align:right}.igf-nisab.is-unavailable{border-color:rgba(255,190,98,.5)}.igf-methodology,.igf-disclaimer{margin:16px 0 0;color:#aaa;font-size:11px;line-height:1.5;text-align:center}.igf-disclaimer{margin-top:9px}
 .igf-zakat-context{width:min(100% - 40px,1180px);margin:0 auto;padding:34px 0 72px}.igf-zakat-context a{display:inline-flex;min-height:44px;align-items:center;gap:8px;color:var(--brown);font-weight:800;text-decoration:none}.igf-zakat-context a:hover,.igf-zakat-context a:focus-visible{color:#592900;text-decoration:underline;text-underline-offset:4px}
+.igf-zakat-impact__grid article{cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.igf-zakat-impact__grid article:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(25,28,29,.12)}
+.igf-zakat-impact__details{display:inline-flex;align-items:center;align-self:flex-start;gap:8px;margin-top:auto;padding:18px 0 0;border:0;background:transparent;color:var(--brown);font:800 12px 'Hanken Grotesk',Arial,sans-serif;cursor:pointer;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-transform:uppercase}
+.igf-zakat-impact__details:hover{color:#592900}
+.igf-zakat-impact__details:focus-visible{outline:3px solid rgba(255,117,0,.35);outline-offset:4px;border-radius:3px}
+.igf-zakat-impact__donate{margin-top:16px}
+.igf-impact-dialog{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:24px;background:rgba(15,17,18,.78);overflow:auto}
+.igf-impact-dialog__panel{position:relative;display:grid;grid-template-columns:minmax(280px,.9fr) minmax(320px,1.1fr);width:min(900px,100%);max-height:min(720px,90dvh);overflow:auto;border-radius:20px;background:#fff;box-shadow:0 25px 80px rgba(0,0,0,.35)}
+.igf-impact-dialog__panel:focus{outline:none}
+.igf-impact-dialog__panel>img{width:100%;height:100%;min-height:430px;object-fit:cover}
+.igf-impact-dialog__content{display:flex;flex-direction:column;align-items:flex-start;padding:clamp(34px,5vw,58px)}
+.igf-impact-dialog__content h2{margin:0;color:var(--ink);font:650 clamp(31px,4vw,44px)/1.12 'Literata',Georgia,serif;letter-spacing:-.03em}
+.igf-impact-dialog__description{margin:20px 0 30px;color:var(--muted);font-size:16px;line-height:1.75;white-space:pre-line}
+.igf-impact-dialog__content .igf-donate{margin-top:auto;padding:0 28px}
+.igf-impact-dialog__close{position:absolute;top:16px;right:16px;z-index:2;display:grid;width:44px;height:44px;place-items:center;border:0;border-radius:50%;background:#fff;color:var(--ink);font-size:19px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+.igf-impact-dialog__close:hover{background:#fff4eb;color:var(--brown)}
+.igf-impact-dialog__close:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
 @media(max-width:920px){.igf-calculator__layout{grid-template-columns:1fr}.igf-calculator__result{position:static}}
 @media(max-width:700px){.igf-shell{width:min(100% - 28px,1180px)}.igf-zakat-impact__grid,.igf-calculator__header,.igf-calculator__form,.igf-nisab-choice__options{grid-template-columns:1fr}.igf-calculator__header{gap:16px}.igf-calculator__form{padding:22px 18px}.igf-nisab-choice,.igf-haul,.igf-clear{grid-column:auto}.igf-calculator__result{padding:26px 20px}}
+@media(max-width:700px){.igf-impact-dialog{padding:12px}.igf-impact-dialog__panel{grid-template-columns:1fr;max-height:92dvh}.igf-impact-dialog__panel>img{height:230px;min-height:0}.igf-impact-dialog__content{padding:28px 22px}.igf-impact-dialog__content .igf-donate{width:100%}}
 </style>

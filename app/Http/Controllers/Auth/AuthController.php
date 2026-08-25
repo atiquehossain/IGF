@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\MemberCredentialVerifier;
 use App\Services\SiteSettingService;
 use App\Services\TwoFactorChallengeService;
 use Auth;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
@@ -48,7 +50,7 @@ class AuthController extends Controller {
         ]);
     }
 
-    public function login(Request $request, $locale = 'en') {
+    public function login(Request $request, MemberCredentialVerifier $credentials, $locale = 'en') {
 
         $this->validate($request, [
             'phone_no' => 'required|numeric|digits:11',
@@ -56,22 +58,13 @@ class AuthController extends Controller {
         ]);
 
         try {
+            $user = User::query()
+                ->where('phone_no', $request->phone_no)
+                ->where('provider_type', 'local')
+                ->first();
 
-            $user = User::where('phone_no', $request->phone_no)->where('provider_type', 'local')->where('is_approved',1)->first();
-
-            if (empty($user)) {
-                $response = ['type' => 'error', 'text' => 'Your account is not registered or approved yet.'];
-                return back()->with('message', $response);
-            }
-
-            if (empty($user->status)) {
-                $response = ['type' => 'error', 'text' => 'You are not active for login.'];
-                return back()->with('message', $response);
-            }
-
-            if (!Hash::check($request->password, $user->password)) {
-                $response = ['type' => 'error', 'text' => 'password mismatch. please try again'];
-                return back()->with('message', $response);
+            if (!$credentials->passes($user, (string) $request->password)) {
+                return $this->invalidCredentialResponse();
             }
 
             if ($user->hasTwoFactorEnabled()) {
@@ -91,8 +84,11 @@ class AuthController extends Controller {
             $response = ['type' => 'success', 'text' => 'Success Login'];
             return Redirect::route('frontend.home')->with('message', $response);
         } catch (Exception $e) {
-            $response = ['type' => 'error', 'text' => 'You are not sign in. Please try again later.'];
-            return back()->with('message', $response);
+            Log::warning('Member authentication failed unexpectedly.', [
+                'exception_class' => $e::class,
+            ]);
+
+            return $this->invalidCredentialResponse();
         }
     }
 
@@ -169,29 +165,24 @@ class AuthController extends Controller {
         return Inertia::render('auth/login-2fa-verify')->with($response);
     }
 
-    public function login2fa(Request $request, TwoFactorChallengeService $challenges) {
-
+    public function login2fa(
+        Request $request,
+        TwoFactorChallengeService $challenges,
+        MemberCredentialVerifier $credentials
+    ) {
         $this->validate($request, [
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6',
         ]);
 
         try {
-            $user = User::where('email', @$request->email)->where('is_approved', 1)->first();
+            $user = User::query()
+                ->where('email', $request->email)
+                ->where('provider_type', 'local')
+                ->first();
 
-            if (empty($user)) {
-                $response = ['type' => 'error', "text" => 'You are not sign in. Please try again later.'];
-                return back()->with('message', $response);
-            }
-
-            if (empty($user->status)) {
-                $response = ['type' => 'error', "text" => "You are not active for login."];
-                return back()->with('message', $response);
-            }
-
-            if (!Hash::check($request->password, $user->password)) {
-                $response = ['type' => 'error', 'text' => 'password mismatch. please try again'];
-                return back()->with('message', $response);
+            if (!$credentials->passes($user, (string) $request->password)) {
+                return $this->invalidCredentialResponse();
             }
 
             $google2fa = app('pragmarx.google2fa');
@@ -219,9 +210,11 @@ class AuthController extends Controller {
             Session::put('data', $response);
             return Redirect::route('login2fa.verify');
         } catch (Exception $e) {
-            report($e);
-            $response = ['type' => 'error', 'text' => 'You are not sign in. Please try again later.'];
-            return back()->with('message', $response);
+            Log::warning('Member two-factor authentication failed unexpectedly.', [
+                'exception_class' => $e::class,
+            ]);
+
+            return $this->invalidCredentialResponse();
         }
     }
 
@@ -273,6 +266,14 @@ class AuthController extends Controller {
             $response = ['type' => 'error', 'text' => 'Verification code mismatch. Please try again later.'];
             return back()->with('message', $response);
         }
+    }
+
+    private function invalidCredentialResponse()
+    {
+        return back()->with('message', [
+            'type' => 'error',
+            'text' => MemberCredentialVerifier::FAILURE_MESSAGE,
+        ]);
     }
 
     public function logout(Request $request, $locale = 'en') {

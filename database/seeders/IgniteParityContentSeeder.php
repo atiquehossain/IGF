@@ -15,6 +15,7 @@ use App\Models\PageMenu;
 use App\Models\PageTagModule;
 use App\Models\SeoMetadata;
 use App\Models\Tag;
+use App\Models\TeamGroup;
 use App\Models\Testimonial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
@@ -155,7 +156,7 @@ class IgniteParityContentSeeder extends Seeder
                 'sub_title' => 'Recognition for outstanding work in youth development and education.',
                 'thumbnail' => self::MEDIA . '350-x-200-the-diana-award-7f5b12c77802.jpg',
                 'description' => '<h2>The Diana Award</h2><p>Ignite Global Foundation received The Diana Award in 2020 in recognition of its contribution to youth development and education. The recognition celebrates young people and organizations creating positive social impact.</p>',
-                'order_by' => 30,
+                'order_by' => 50,
             ],
             [
                 'uuid' => '62000000-0000-4000-8000-000000000007',
@@ -164,7 +165,7 @@ class IgniteParityContentSeeder extends Seeder
                 'sub_title' => 'Recognition for volunteer-led contributions to community development.',
                 'thumbnail' => self::MEDIA . 'un-award-350-x-200-4818229de147.jpg',
                 'description' => '<h2>UN Best Volunteer Award</h2><p>Ignite volunteers were recognized for advancing inclusive community development through education, youth leadership, livelihoods, health, hygiene, and humanitarian action.</p>',
-                'order_by' => 20,
+                'order_by' => 40,
             ],
             [
                 'uuid' => '62000000-0000-4000-8000-000000000008',
@@ -173,6 +174,24 @@ class IgniteParityContentSeeder extends Seeder
                 'sub_title' => 'International recognition for leadership in education, literacy, and community empowerment.',
                 'thumbnail' => self::MEDIA . 'ila350-x-200-a509373e4740.jpg',
                 'description' => '<h2>ILA Global 30 Under 30</h2><p>This international recognition celebrates young leaders whose work expands learning opportunities, promotes inclusive education, and inspires grassroots change.</p>',
+                'order_by' => 30,
+            ],
+            [
+                'uuid' => '62000000-0000-4000-8000-000000000017',
+                'slug' => 'vso-national-volunteer-award',
+                'name' => 'VSO National Volunteer Award',
+                'sub_title' => 'In 2023, VSO Bangladesh gave Ignite Global Foundation the National Volunteer Award for its volunteer work.',
+                'thumbnail' => self::MEDIA . '350-x-200-265bad01dc2c.jpg',
+                'description' => '<h2>VSO National Volunteer Award</h2><p>In 2023, VSO Bangladesh gave Ignite Global Foundation the National Volunteer Award in recognition of its volunteer-led community service. The award celebrates the dedication, compassion, and practical impact of IGF volunteers.</p>',
+                'order_by' => 20,
+            ],
+            [
+                'uuid' => '62000000-0000-4000-8000-000000000018',
+                'slug' => 'the-hero-award',
+                'name' => 'The Hero Award',
+                'sub_title' => 'The Arvi Foundation recognized Ignite Global Foundation for its response to the COVID-19 crisis.',
+                'thumbnail' => self::MEDIA . '350-x-200-images-509234b7769c.jpg',
+                'description' => '<h2>The Hero Award</h2><p>The Arvi Foundation honoured Ignite Global Foundation with The Hero Award in 2021 for its response during COVID-19. Ignite supported marginalized communities with nutritious food for almost 5,000 families and additional financial assistance.</p>',
                 'order_by' => 10,
             ],
         ] as $award) {
@@ -334,6 +353,18 @@ class IgniteParityContentSeeder extends Seeder
         ]);
 
         $this->syncBlocks($page, [
+            [
+                'uuid' => '69000000-0000-4000-8000-000000000007', 'type' => 'cards', 'label' => 'Mission and Vision',
+                'content' => [
+                    'variant' => 'about-pillars',
+                    'eyebrow' => 'What guides us', 'heading' => 'Purpose that turns care into action',
+                    'body' => 'Our mission and vision keep every program focused on dignity, opportunity, and accountable service.',
+                    'items' => [
+                        ['eyebrow' => 'Our mission', 'heading' => 'Turn compassion into practical opportunity', 'body' => 'Mobilize volunteers and work alongside communities to expand inclusive education, youth development, women’s empowerment, health, livelihoods, and humanitarian support.', 'icon' => 'heart'],
+                        ['eyebrow' => 'Our vision', 'heading' => 'A more equitable and compassionate society', 'body' => 'A future where every person can learn, grow, and shape a dignified life, supported by resilient communities and young people prepared to lead.', 'icon' => 'map'],
+                    ],
+                ],
+            ],
             ['uuid' => '69000000-0000-4000-8000-000000000001', 'type' => 'timeline', 'label' => 'Our Story', 'content' => [
                 'eyebrow' => 'Our story', 'heading' => 'From one shared promise to a national movement',
                 'body' => 'Ignite grew by listening first, taking practical action, and inviting more people to serve.',
@@ -700,7 +731,6 @@ class IgniteParityContentSeeder extends Seeder
             ['Home', 'frontend.home', null, []],
             ['About Us', 'custom', '#', [
                 ['Who We Are', 'frontend.about', null],
-                ["Founder's Letter", 'frontend.page', "founder's-letter"],
                 ['Awards & Recognition', 'frontend.category', 'awards-&-recognition'],
                 ['Photo Gallery', 'frontend.gallery', null],
                 ['Annual Reports', 'frontend.annual_report.index', null],
@@ -754,6 +784,20 @@ class IgniteParityContentSeeder extends Seeder
 
     private function seedTeam(): void
     {
+        $boardGroup = TeamGroup::query()->firstOrCreate(
+            [
+                'language' => 'en',
+                'slug' => 'board-of-directors',
+            ],
+            [
+                'uuid' => (string) Str::uuid(),
+                'name' => 'Board of directors',
+                'description' => 'The board provides mission stewardship, oversight, and accountability.',
+                'order_by' => 100,
+                'status' => 1,
+            ]
+        );
+
         $members = [
             ['Muhammad Jahirul Islam', 'Founder - Chairman', self::MEDIA . 'founder-ea5ae7f8a69f.png', 70],
             ['Monmoy Jahan Ali', 'Vice Chairman', '', 60],
@@ -771,6 +815,7 @@ class IgniteParityContentSeeder extends Seeder
                 'language' => 'en',
             ]);
             $member->fill([
+                'team_group_id' => $member->team_group_id ?: $boardGroup->id,
                 'description' => $designation,
                 'path' => $image,
                 'image' => $image,

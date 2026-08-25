@@ -3,10 +3,19 @@
 namespace App\Services;
 
 use App\Models\SiteSetting;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 class SiteSettingService
 {
+    private const ZAKAT_PRICE_MAX_AGE_DAYS = 7;
+    private const DEFAULT_ZAKAT_NISAB_STANDARD = 'standard_87_48_612_36';
+
+    private const ZAKAT_NISAB_WEIGHTS = [
+        'standard_87_48_612_36' => ['gold' => 87.48, 'silver' => 612.36],
+        'standard_85_595' => ['gold' => 85.0, 'silver' => 595.0],
+    ];
+
     public function __construct(private ContentSanitizer $sanitizer)
     {
     }
@@ -128,14 +137,59 @@ class SiteSettingService
         $price = (float) ($settings[$priceKey] ?? 0);
         $minimum = (float) ($priceField['min'] ?? 0.01);
         $maximum = (float) ($priceField['max'] ?? 10000000);
+        $pricesValid = collect(['gold_price_per_gram', 'silver_price_per_gram'])
+            ->every(fn (string $key): bool => $this->zakatPriceIsValid($key, $settings[$key] ?? null));
 
-        if (!is_finite($price) || $price < $minimum || $price > $maximum) {
+        if (!$this->zakatPriceIsValid($priceKey, $settings[$priceKey] ?? null)) {
             $price = (float) ($priceField['default'] ?? $minimum);
         }
 
-        $weight = $basis === 'gold' ? 87.48 : 612.36;
+        $standard = array_key_exists($settings['nisab_weight_standard'] ?? '', self::ZAKAT_NISAB_WEIGHTS)
+            ? $settings['nisab_weight_standard']
+            : self::DEFAULT_ZAKAT_NISAB_STANDARD;
+        $weight = self::ZAKAT_NISAB_WEIGHTS[$standard][$basis];
 
+        $values['zakat_calculator']['nisab_prices_current'] = $this->zakatPricesCurrent(
+            $settings['nisab_price_updated_at'] ?? null
+        ) && $pricesValid;
         $values['zakat_calculator']['nisab_amount'] = max(1, (int) round($price * $weight));
+    }
+
+    private function zakatPriceIsValid(string $key, mixed $value): bool
+    {
+        if (!is_numeric($value)) {
+            return false;
+        }
+
+        $field = config("site-settings.groups.zakat_calculator.fields.{$key}", []);
+        $price = (float) $value;
+        $minimum = (float) ($field['min'] ?? 0.01);
+        $maximum = (float) ($field['max'] ?? 10000000);
+
+        return is_finite($price) && $price >= $minimum && $price <= $maximum;
+    }
+
+    private function zakatPricesCurrent(mixed $value): bool
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return false;
+        }
+
+        try {
+            $timezone = (string) config('app.timezone', 'UTC');
+            $checkedAt = CarbonImmutable::createFromFormat('!Y-m-d', $value, $timezone);
+
+            if (!$checkedAt || $checkedAt->format('Y-m-d') !== $value) {
+                return false;
+            }
+
+            $today = CarbonImmutable::now($timezone)->startOfDay();
+
+            return $checkedAt->lte($today)
+                && $checkedAt->gte($today->subDays(self::ZAKAT_PRICE_MAX_AGE_DAYS));
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function preferredSetting(Collection $settings, string $locale): ?SiteSetting

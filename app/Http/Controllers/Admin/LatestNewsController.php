@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 
 use App\Models\LatestNews;
-use App\Models\Category;
+use App\Models\TeamGroup;
 
 use App\Helper\IgfFile;
 use App\Services\AdminMediaUrlResolver;
@@ -46,8 +47,11 @@ class LatestNewsController extends Controller {
     public function index(Request $request) {
         $title = $request->Lang->OurMembers;
         $search = $request->search;
+        $groupFilter = $request->integer('group_id') ?: null;
         $latestNews = $this->memberQuery()
+                ->with('teamGroup')
                 ->where('name', 'like', '%' . $search . '%')
+                ->when($groupFilter, fn (Builder $query, int $groupId) => $query->where('team_group_id', $groupId))
                 ->orderByDesc('order_by')
                 ->orderBy('name', 'ASC')
                 ->paginate(15);
@@ -59,9 +63,17 @@ class LatestNewsController extends Controller {
             ));
         });
 
-        $categories = Category::where('language', app()->getLocale())->where('status', 1)->get();
+        $groups = TeamGroup::query()
+            ->where('language', app()->getLocale())
+            ->withCount('members')
+            ->withCount([
+                'members as attached_members_count' => fn (Builder $query) => $query->withTrashed(),
+            ])
+            ->orderByDesc('order_by')
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.members.index')->with(compact('title', 'latestNews', 'categories', 'search'));
+        return view('admin.members.index')->with(compact('title', 'latestNews', 'groups', 'search', 'groupFilter'));
     }
 
     public function create() {
@@ -78,6 +90,7 @@ class LatestNewsController extends Controller {
                 $latestnews = LatestNews::create([
                         'name' => $validated['name'],
                         'category_id' => $validated['category_id'] ?? null,
+                        'team_group_id' => $this->memberGroupId($validated),
                         'description' => $validated['designation'],
                         'biography' => $this->nullableText($validated['biography'] ?? null),
                         'qualification' => $this->nullableText($validated['qualification'] ?? null),
@@ -127,6 +140,7 @@ class LatestNewsController extends Controller {
             $latestnews = $this->memberQuery()->select(
                 'id',
                 'category_id',
+                'team_group_id',
                 'name',
                 'url',
                 'social_links',
@@ -174,6 +188,7 @@ class LatestNewsController extends Controller {
                 $latestnews->update([
                     'name' => $validated['name'],
                     'category_id' => $validated['category_id'] ?? null,
+                    'team_group_id' => $this->memberGroupId($validated, $latestnews),
                     'description' => $validated['designation'],
                     'biography' => $this->nullableText($validated['biography'] ?? null),
                     'qualification' => $this->nullableText($validated['qualification'] ?? null),
@@ -242,6 +257,13 @@ class LatestNewsController extends Controller {
             'biography' => ['nullable', 'string', 'max:5000'],
             'qualification' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer'],
+            'team_group_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('team_groups', 'id')->where(fn ($query) => $query
+                    ->where('language', app()->getLocale())),
+            ],
+
             'url' => ['nullable', 'string', 'max:2048', function ($attribute, $value, $fail) {
                 if ($value !== null && trim((string) $value) !== '' && $this->sanitizer->sanitizeUrl($value) === '') {
                     $fail('The ' . $attribute . ' field must be a safe URL or site path.');
@@ -341,6 +363,34 @@ class LatestNewsController extends Controller {
         return LatestNews::query()
             ->where('type', 'our-members')
             ->where('language', app()->getLocale());
+    }
+
+    private function memberGroupId(array $validated, ?LatestNews $member = null): int
+    {
+        if (!empty($validated['team_group_id'])) {
+            return (int) $validated['team_group_id'];
+        }
+
+        if ($member?->team_group_id) {
+            return (int) $member->team_group_id;
+        }
+
+        $locale = app()->getLocale();
+        $group = TeamGroup::query()->firstOrCreate(
+            [
+                'language' => $locale,
+                'slug' => 'board-of-directors',
+            ],
+            [
+                'uuid' => (string) Str::uuid(),
+                'name' => 'Board of directors',
+                'description' => 'The board provides mission stewardship, oversight, and accountability.',
+                'order_by' => 100,
+                'status' => 1,
+            ]
+        );
+
+        return (int) $group->id;
     }
 
 }

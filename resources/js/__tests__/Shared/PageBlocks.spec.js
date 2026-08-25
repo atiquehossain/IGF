@@ -217,7 +217,7 @@ describe('PageBlocks newsletter feedback', () => {
 
   test('uses error semantics and links server feedback to its uniquely identified field', async () => {
     vi.spyOn(router, 'post').mockImplementation((_url, _data, options) => {
-      options.onError({ email: 'That email address is already subscribed.' });
+      options.onError({ email: 'Please enter a deliverable email address.' });
       options.onFinish();
     });
     const wrapper = mount(PageBlocks, { props: { blocks: [newsletterBlock] } });
@@ -227,8 +227,14 @@ describe('PageBlocks newsletter feedback', () => {
     await wrapper.get('.igf-consent input').setValue(true);
     await wrapper.get('.igf-newsletter form').trigger('submit');
 
+    expect(router.post).toHaveBeenCalledWith(
+      'frontend.subscribe',
+      { email: 'member@example.test', consent: true },
+      expect.objectContaining({ preserveScroll: true }),
+    );
+
     const message = wrapper.get('#igf-newsletter-message-newsletter-feedback-test');
-    expect(message.text()).toBe('That email address is already subscribed.');
+    expect(message.text()).toBe('Please enter a deliverable email address.');
     expect(message.attributes('role')).toBe('alert');
     expect(message.classes()).toContain('is-error');
     expect(input.attributes('aria-invalid')).toBe('true');
@@ -451,7 +457,7 @@ describe('PageBlocks Ways to Give', () => {
         {
           key: 'cause:education', heading: 'Education Fund', body: '<p>Help learners thrive.</p>',
           destination: 'Education program', image: '/storage/media/education.webp',
-          url: '/donate?cause=education&project=project-one', link_label: 'Give now',
+          url: '/donate/education?project=project-one', link_label: 'Give now',
         },
         {
           key: 'zakat', heading: 'Estimate your Zakat', body: 'Use the calculator.',
@@ -469,7 +475,7 @@ describe('PageBlocks Ways to Give', () => {
     expect(section.classes()).toContain('igf-page-block--ways_to_give');
     expect(section.get('.igf-giving').classes()).toContain('igf-giving--card_grid');
     expect(cards).toHaveLength(2);
-    expect(cards[0].attributes('href')).toBe('/donate?cause=education&project=project-one');
+    expect(cards[0].attributes('href')).toBe('/donate/education?project=project-one');
     expect(cards[0].attributes('aria-label')).toBe('Education Fund. Education program');
     expect(cards[0].get('img').attributes('alt')).toBe('');
     expect(cards[1].get('.fa-hand-holding-heart').attributes('aria-hidden')).toBeUndefined();
@@ -1218,6 +1224,42 @@ describe('PageBlocks team cards', () => {
     },
   };
 
+  const groupedTeamBlock = {
+    ...teamBlock,
+    content: {
+      ...teamBlock.content,
+      tabs_label: 'Team categories',
+      items: [{
+        id: 99,
+        heading: 'Legacy fallback member',
+        biography: 'This must not render while populated groups exist.',
+      }],
+      groups: [
+        {
+          id: 1,
+          slug: 'founder-board',
+          name: 'Founder & Executive Board',
+          description: 'Mission stewardship and organizational governance.',
+          items: [teamBlock.content.items[0]],
+        },
+        {
+          id: 2,
+          slug: 'operations',
+          name: 'Operational Leads',
+          description: 'Leaders responsible for programmes and partnerships.',
+          items: [teamBlock.content.items[1]],
+        },
+        {
+          id: 3,
+          slug: 'empty-group',
+          name: 'Empty group',
+          description: 'This group should not become a tab.',
+          items: [],
+        },
+      ],
+    },
+  };
+
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     setPageSettings();
@@ -1226,6 +1268,135 @@ describe('PageBlocks team cards', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  test('renders populated team groups as an accessible tab interface', () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [groupedTeamBlock] } });
+    const tablist = wrapper.get('[role="tablist"]');
+    const tabs = tablist.findAll('[role="tab"]');
+    const panel = wrapper.get('[role="tabpanel"]');
+
+    expect(tablist.attributes('aria-label')).toBe('Team categories');
+    expect(tabs.map(tab => tab.text())).toEqual(['Founder & Executive Board', 'Operational Leads']);
+    expect(tabs[0].attributes('aria-selected')).toBe('true');
+    expect(tabs[0].attributes('tabindex')).toBe('0');
+    expect(tabs[1].attributes('aria-selected')).toBe('false');
+    expect(tabs[1].attributes('tabindex')).toBe('-1');
+    expect(tabs[0].attributes('id')).toBe('team-tab-governance-team-founder-board-1');
+    expect(tabs[0].attributes('aria-controls')).toBe(panel.attributes('id'));
+    expect(panel.attributes('aria-labelledby')).toBe(tabs[0].attributes('id'));
+    expect(panel.attributes('aria-describedby')).toBe(panel.get('.igf-team-panel__description').attributes('id'));
+    expect(panel.get('.igf-team-panel__description').text()).toBe('Mission stewardship and organizational governance.');
+    expect(panel.findAll('.igf-team-card')).toHaveLength(1);
+    expect(panel.get('.igf-team-card__back-heading h3').text()).toBe('Amina Rahman');
+    expect(wrapper.text()).not.toContain('Legacy fallback member');
+    expect(wrapper.text()).not.toContain('Empty group');
+    expect(pageBlocksSource).toContain('.igf-team-tabs { display:flex; width:100%; align-items:center; gap:10px; overflow-x:auto;');
+    expect(pageBlocksSource).toContain('.igf-team-tab { display:inline-flex; min-height:44px; flex:0 0 auto;');
+
+    wrapper.unmount();
+  });
+
+  test('activates team groups by click and Arrow/Home/End with roving focus', async () => {
+    const wrapper = mount(PageBlocks, {
+      attachTo: document.body,
+      props: { blocks: [groupedTeamBlock] },
+    });
+    const tablist = wrapper.get('[role="tablist"]');
+    let tabs = tablist.findAll('[role="tab"]');
+
+    await wrapper.get('.igf-team-card__toggle').trigger('click');
+    expect(wrapper.get('.igf-team-card').classes()).toContain('is-open');
+
+    await tabs[1].trigger('click');
+    await wrapper.vm.$nextTick();
+    tabs = tablist.findAll('[role="tab"]');
+    expect(tabs[0].attributes('aria-selected')).toBe('false');
+    expect(tabs[0].attributes('tabindex')).toBe('-1');
+    expect(tabs[1].attributes('aria-selected')).toBe('true');
+    expect(tabs[1].attributes('tabindex')).toBe('0');
+    expect(document.activeElement).toBe(tabs[1].element);
+    expect(wrapper.get('.igf-team-panel__description').text()).toContain('programmes and partnerships');
+    expect(wrapper.get('.igf-team-card__back-heading h3').text()).toBe('Bashir Hossain');
+    expect(wrapper.get('.igf-team-card').classes()).not.toContain('is-open');
+
+    await tablist.trigger('keydown', { key: 'ArrowRight' });
+    await wrapper.vm.$nextTick();
+    tabs = tablist.findAll('[role="tab"]');
+    expect(tabs[0].attributes('aria-selected')).toBe('true');
+    expect(document.activeElement).toBe(tabs[0].element);
+
+    await tablist.trigger('keydown', { key: 'ArrowLeft' });
+    await wrapper.vm.$nextTick();
+    tabs = tablist.findAll('[role="tab"]');
+    expect(tabs[1].attributes('aria-selected')).toBe('true');
+
+    await tablist.trigger('keydown', { key: 'Home' });
+    await wrapper.vm.$nextTick();
+    tabs = tablist.findAll('[role="tab"]');
+    expect(tabs[0].attributes('aria-selected')).toBe('true');
+
+    await tablist.trigger('keydown', { key: 'End' });
+    await wrapper.vm.$nextTick();
+    tabs = tablist.findAll('[role="tab"]');
+    expect(tabs[1].attributes('aria-selected')).toBe('true');
+
+    wrapper.unmount();
+  });
+
+  test('omits tabs for one populated group and preserves legacy item fallback', () => {
+    const singleGroupBlock = {
+      ...groupedTeamBlock,
+      uuid: 'single-team-group',
+      content: {
+        ...groupedTeamBlock.content,
+        groups: [groupedTeamBlock.content.groups[0], groupedTeamBlock.content.groups[2]],
+      },
+    };
+    const grouped = mount(PageBlocks, { props: { blocks: [singleGroupBlock] } });
+
+    expect(grouped.find('[role="tablist"]').exists()).toBe(false);
+    expect(grouped.get('.igf-team-panel').attributes('role')).toBeUndefined();
+    expect(grouped.get('.igf-team-panel__description').text()).toContain('Mission stewardship');
+    expect(grouped.findAll('.igf-team-card')).toHaveLength(1);
+    grouped.unmount();
+
+    const legacy = mount(PageBlocks, { props: { blocks: [teamBlock] } });
+    expect(legacy.find('[role="tablist"]').exists()).toBe(false);
+    expect(legacy.findAll('.igf-team-card')).toHaveLength(2);
+    legacy.unmount();
+  });
+
+  test('disconnects and rebuilds the touch observer when the active group changes', async () => {
+    const observers = [];
+    window.matchMedia = vi.fn(query => ({
+      matches: query === '(hover: none), (pointer: coarse)',
+    }));
+    vi.stubGlobal('IntersectionObserver', vi.fn(function IntersectionObserverMock(callback, options) {
+      const record = { callback, options, observe: vi.fn(), disconnect: vi.fn() };
+      observers.push(record);
+      this.observe = record.observe;
+      this.disconnect = record.disconnect;
+    }));
+
+    const wrapper = mount(PageBlocks, { props: { blocks: [groupedTeamBlock] } });
+    expect(observers).toHaveLength(1);
+    expect(observers[0].options).toEqual({ threshold: [0, 0.55] });
+    expect(observers[0].observe).toHaveBeenCalledTimes(1);
+
+    await wrapper.get('.igf-team-card__toggle').trigger('click');
+    expect(wrapper.get('.igf-team-card').classes()).toContain('is-open');
+    await wrapper.findAll('[role="tab"]')[1].trigger('click');
+    await wrapper.vm.$nextTick();
+
+    expect(observers[0].disconnect).toHaveBeenCalledOnce();
+    expect(observers).toHaveLength(2);
+    expect(observers[1].observe).toHaveBeenCalledTimes(1);
+    expect(wrapper.get('.igf-team-card__back-heading h3').text()).toBe('Bashir Hossain');
+    expect(wrapper.get('.igf-team-card').classes()).not.toContain('is-open');
+
+    wrapper.unmount();
+    expect(observers[1].disconnect).toHaveBeenCalledOnce();
   });
 
   test('renders dynamic details, safe social links, and a photo fallback', () => {

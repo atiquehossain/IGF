@@ -14,7 +14,7 @@
 <style>
     .donation-type-table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .donation-type-table-scroll:focus{outline:3px solid rgba(255,117,0,.35);outline-offset:-3px}
-    .donation-type-table-scroll .table{min-width:920px;margin-bottom:0}
+    .donation-type-table-scroll .table{min-width:1080px;margin-bottom:0}
     .donation-type-table-scroll td:last-child{white-space:nowrap}
 </style>
 <div class="content pb-0">
@@ -55,7 +55,7 @@
                                         <textarea id="description" name="description" class="form-control" rows="3" maxlength="2000">{{ old('description') }}</textarea>
                                     </div>
 
-                                    @include('admin.donationType._destination-fields', ['prefix' => 'new_'])
+                                    @include('admin.donationType._destination-fields', ['prefix' => 'new_', 'defaultDisplayOrder' => $nextDisplayOrder])
 
                                     <div class="form-group">
                                         <input id="new_purpose_key" type="hidden" name="purpose_key" value="">
@@ -100,11 +100,12 @@
                 <div class="table-stats">
                     <div class="donation-type-table-scroll" role="region" aria-labelledby="donation-causes-table-title" tabindex="0">
                     <table class="table" id="donation_type_table">
-                        <caption class="sr-only">Donation causes, their public role, funding destination, readiness, and available actions.</caption>
+                        <caption class="sr-only">Donation causes, their public role, funding destination, readiness, and available actions. Each record also controls its card order and fallback icon.</caption>
                         <thead>
                             <tr>
                                 <th width="10%" class="serial"><strong>#{{ $Lang->Common->Form->ID }} </strong></th>
                                 <th><strong>{{ $Lang->Common->Form->Name }}</strong></th>
+                                <th><strong>Card</strong></th>
                                 <th><strong>Donation page role</strong></th>
                                 <th><strong>Funding destination</strong></th>
                                 <th><strong>Readiness</strong></th>
@@ -115,7 +116,8 @@
                             @foreach($donationTypes as $donationType)
                             <tr id="{{ @$donationType->id }}">
                                 <td> #{{@$donationType->id}} </td>
-                                <td><span class="name"><strong>{{ $donationType->name }}</strong></span><br><small class="text-muted">/donate?cause={{ $donationType->slug }}</small></td>
+                                <td><span class="name"><strong>{{ $donationType->name }}</strong></span><br><small class="text-muted">/donate/{{ $donationType->slug }}</small></td>
+                                <td><strong>Order {{ $donationType->display_order ?? '—' }}</strong><br><small>{{ $iconOptions[$donationType->icon_key] ?? 'Automatic icon' }}</small></td>
                                 <td>{{ $purposeOptions[$donationType->purpose_key ?? ''] ?? 'Regular donation cause' }}</td>
                                 <td><strong>{{ $destinationOptions[$donationType->destination_type] ?? 'Needs review' }}</strong><br><small>{{ $donationType->destination_label }}</small></td>
                                 <td>
@@ -283,12 +285,14 @@
                     $('.modal #e_name').val(res.data.name);
                     $('.modal #e_description').val(res.data.description || '');
                     $('.modal #e_purpose_key').val(res.data.purpose_key || '');
-                    $('.modal #e_slug').val('/donate?cause=' + (res.data.slug || ''));
+                    $('.modal #e_slug').val('/donate/' + (res.data.slug || ''));
                     $('.modal #e_destination_type').val(res.data.destination_type || 'restricted_fund');
                     $('.modal #e_destination_name').val(res.data.destination_name || '');
                     $('.modal #e_destination_category_uuid').val(res.data.destination_category_uuid || '');
                     $('.modal #e_destination_page_uuid').val(res.data.destination_page_uuid || '');
                     $('.modal #e_image_media_uuid').val(res.data.image_media_uuid || '');
+                    $('.modal #e_display_order').val(res.data.display_order ?? '');
+                    $('.modal #e_icon_key').val(res.data.icon_key || '');
                     syncDestination('e_');
                     syncImagePreview('e_');
                 }

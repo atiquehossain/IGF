@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\SiteSetting;
 use App\Services\SiteSettingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\SiteSettingVersionService;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -116,6 +117,55 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertArrayNotHasKey('card_networks_label', $donationFields);
     }
 
+    public function test_admin_can_publish_dynamic_office_contact_details(): void
+    {
+        $admin = $this->makePageEditor();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Office contact details')
+            ->assertSee('Cell number')
+            ->assertSee('Office address')
+            ->assertDontSee('Footer contact heading');
+
+        $settings = $this->defaultSettingsPayload();
+        $settings['contact'] = array_replace($settings['contact'], [
+            'email' => 'office-contact@example.test',
+            'phone_primary' => '+8801712345678',
+            'phone_secondary' => '',
+            'address' => 'Admin-managed office address',
+            'footer_address_label' => 'Office',
+            'footer_phone_label' => 'Mobile',
+            'footer_secondary_phone_label' => 'Alternate',
+            'footer_email_label' => 'Inbox',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        foreach ($settings['contact'] as $key => $value) {
+            $locale = config("site-settings.groups.contact.fields.{$key}.localized") ? 'en' : '*';
+
+            $this->assertDatabaseHas('site_settings', [
+                'group' => 'contact',
+                'key' => $key,
+                'locale' => $locale,
+                'value' => $value,
+                'is_public' => true,
+                'updated_by' => $admin->id,
+            ]);
+        }
+
+        $publicContact = app(SiteSettingService::class)->values('en', true)['contact'];
+
+        foreach ($settings['contact'] as $key => $value) {
+            $this->assertSame($value, $publicContact[$key]);
+        }
+    }
+
+
     public function test_contact_page_faq_editor_saves_an_ordered_dynamic_list_safely(): void
     {
         $admin = $this->makePageEditor();
@@ -130,7 +180,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         ];
 
         $this->actingAs($admin, 'admin')
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
 
         $stored = SiteSetting::query()
@@ -160,8 +210,12 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertOk()
             ->assertSee('Footer legal status')
             ->assertSee('Replace Donor Support with legal status')
-            ->assertSee('Microcredit Regulatory Authority Reg. No.')
-            ->assertSee('00176-00059-00018')
+            ->assertSee('NGO Affairs Bureau Registration No.')
+            ->assertSee('3461')
+            ->assertSee('Joint Stock &amp; Firms Registration No.', false)
+            ->assertSee('S-13907/2022')
+            ->assertDontSee('Microcredit Regulatory Authority Reg. No.')
+            ->assertDontSee('00176-00059-00018')
             ->assertSee('Authority 1 logo')
             ->assertSee('Choose image');
 
@@ -170,18 +224,18 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'enabled' => true,
             'heading' => 'Official <strong>registrations</strong>',
             'authority_1_label' => 'First <em>authority</em>',
-            'authority_1_registration' => '00176-00059-00018',
-            'authority_1_logo' => '/storage/media/legal/mra.png',
+            'authority_1_registration' => 'REG-001',
+            'authority_1_logo' => '/storage/media/legal/first-authority.png',
             'authority_2_label' => 'Second authority',
-            'authority_2_registration' => '626',
+            'authority_2_registration' => 'REG-002',
             'authority_2_logo' => '',
             'authority_3_label' => 'Third authority',
-            'authority_3_registration' => 'S-5803(47)06',
-            'authority_3_logo' => '/storage/media/legal/joint-stock.png',
+            'authority_3_registration' => 'REG-003',
+            'authority_3_logo' => '/storage/media/legal/third-authority.png',
         ];
 
         $this->actingAs($admin, 'admin')
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
 
         $this->assertDatabaseHas('site_settings', [
@@ -204,7 +258,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'group' => 'legal_status',
             'key' => 'authority_1_registration',
             'locale' => '*',
-            'value' => '00176-00059-00018',
+            'value' => 'REG-001',
             'type' => 'text',
             'is_public' => true,
         ]);
@@ -212,7 +266,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'group' => 'legal_status',
             'key' => 'authority_1_logo',
             'locale' => '*',
-            'value' => '/storage/media/legal/mra.png',
+            'value' => '/storage/media/legal/first-authority.png',
             'type' => 'text',
             'is_public' => true,
         ]);
@@ -221,11 +275,11 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertTrue($public['enabled']);
         $this->assertSame('Official registrations', $public['heading']);
         $this->assertSame('First authority', $public['authority_1_label']);
-        $this->assertSame('00176-00059-00018', $public['authority_1_registration']);
-        $this->assertSame('/storage/media/legal/mra.png', $public['authority_1_logo']);
-        $this->assertSame('626', $public['authority_2_registration']);
-        $this->assertSame('S-5803(47)06', $public['authority_3_registration']);
-        $this->assertSame('/storage/media/legal/joint-stock.png', $public['authority_3_logo']);
+        $this->assertSame('REG-001', $public['authority_1_registration']);
+        $this->assertSame('/storage/media/legal/first-authority.png', $public['authority_1_logo']);
+        $this->assertSame('REG-002', $public['authority_2_registration']);
+        $this->assertSame('REG-003', $public['authority_3_registration']);
+        $this->assertSame('/storage/media/legal/third-authority.png', $public['authority_3_logo']);
     }
 
     public function test_view_only_customizer_hides_mutations_and_unauthorized_admin_shortcuts(): void
@@ -287,7 +341,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $settings['design']['card_columns'] = '4';
 
         $this->actingAs($admin, 'admin')
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
 
         $this->assertSame('/storage/media/customizer/new-logo.png', SiteSetting::query()
@@ -325,7 +379,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors('settings.design.heading_size');
 
@@ -353,7 +407,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors('settings.donation_page.enable_bkash');
 
@@ -384,7 +438,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors('settings.donation_page.enable_bkash');
 
@@ -411,7 +465,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors('settings.donation_page.enable_bkash');
 
@@ -429,10 +483,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $response = $this->actingAs($admin, 'admin')
             ->from(route('frontend.home'))
-            ->put(route('site.settings.update'), [
-                'locale' => 'en',
-                'settings' => $this->defaultSettingsPayload(),
-            ]);
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($this->defaultSettingsPayload()));
 
         $response
             ->assertRedirect(route('site.settings.index'))
@@ -449,7 +500,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         );
     }
 
-    public function test_zakat_settings_are_guided_price_inputs_with_a_real_checked_date_and_no_editable_rate_or_fixed_threshold(): void
+    public function test_zakat_settings_offer_an_approved_methodology_with_guided_prices_and_no_editable_rate_or_fixed_threshold(): void
     {
         $admin = $this->makePageEditor();
 
@@ -458,12 +509,20 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Keep the Nisab trustworthy')
+            ->assertSee('Approved Nisab weight standard')
+            ->assertSee('87.48g gold / 612.36g silver')
+            ->assertSee('85g gold / 595g silver (alternate common standard)')
             ->assertSee('Gold reference price per gram (BDT)')
             ->assertSee('current per-gram reference price approved by your Shariah adviser')
             ->assertSee('Silver reference price per gram (BDT)')
             ->assertSee('Prices checked on')
             ->assertSee('Price source name')
             ->assertSee('Price source web address')
+            ->assertSee('Food card full details')
+            ->assertSee('Livelihood card full details')
+            ->assertSee('Education card full details')
+            ->assertSee('Impact-card details button')
+            ->assertSee('Impact-details close button')
             ->assertSee('type="date"', false)
             ->assertSee('max="'.now()->toDateString().'"', false)
             ->assertSee('min="1000" max="1000000" step="0.01"', false)
@@ -473,6 +532,12 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertDontSee('Zakat rate (%)');
 
         $zakatFields = config('site-settings.groups.zakat_calculator.fields');
+        $this->assertArrayHasKey('nisab_weight_standard', $zakatFields);
+        $this->assertSame('select', $zakatFields['nisab_weight_standard']['type']);
+        $this->assertSame(
+            ['standard_87_48_612_36', 'standard_85_595'],
+            array_keys($zakatFields['nisab_weight_standard']['options'])
+        );
         $this->assertArrayNotHasKey('nisab_amount', $zakatFields);
         $this->assertArrayNotHasKey('investment_property_label', $zakatFields);
         $this->assertArrayNotHasKey('debts_label', $zakatFields);
@@ -481,11 +546,44 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertArrayNotHasKey('rate', $zakatFields);
     }
 
+    public function test_zakat_impact_full_details_are_localized_admin_content_and_publicly_available(): void
+    {
+        $admin = $this->makePageEditor();
+        $settings = $this->defaultSettingsPayload();
+        $settings['zakat_calculator']['food_details'] = 'Admin food details for eligible families.';
+        $settings['zakat_calculator']['livelihood_details'] = 'Admin livelihood details for eligible families.';
+        $settings['zakat_calculator']['education_details'] = 'Admin education details for eligible families.';
+        $settings['zakat_calculator']['impact_view_details_label'] = 'Read full details';
+        $settings['zakat_calculator']['impact_close_label'] = 'Close impact details';
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'zakat_calculator',
+            'key' => 'food_details',
+            'locale' => 'en',
+            'value' => 'Admin food details for eligible families.',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+
+        $public = app(SiteSettingService::class)->values('en', true)['zakat_calculator'];
+        $this->assertSame('Admin food details for eligible families.', $public['food_details']);
+        $this->assertSame('Admin livelihood details for eligible families.', $public['livelihood_details']);
+        $this->assertSame('Admin education details for eligible families.', $public['education_details']);
+        $this->assertSame('Read full details', $public['impact_view_details_label']);
+        $this->assertSame('Close impact details', $public['impact_close_label']);
+    }
+
+
     public function test_zakat_prices_source_and_date_save_safely_and_publish_a_calculated_legacy_threshold(): void
     {
         $admin = $this->makePageEditor();
         $settings = $this->defaultSettingsPayload();
         $settings['zakat_calculator']['nisab_default_basis'] = 'gold';
+        $settings['zakat_calculator']['nisab_weight_standard'] = 'standard_85_595';
         $settings['zakat_calculator']['gold_price_per_gram'] = 20000;
         $settings['zakat_calculator']['silver_price_per_gram'] = 400;
         $settings['zakat_calculator']['nisab_price_updated_at'] = now()->subDay()->toDateString();
@@ -502,8 +600,16 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         ]);
 
         $this->actingAs($admin, 'admin')
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'zakat_calculator',
+            'key' => 'nisab_weight_standard',
+            'locale' => '*',
+            'value' => 'standard_85_595',
+            'type' => 'text',
+        ]);
 
         $this->assertDatabaseHas('site_settings', [
             'group' => 'zakat_calculator',
@@ -521,8 +627,10 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         ]);
 
         $public = app(SiteSettingService::class)->values('en', true)['zakat_calculator'];
-        $this->assertSame(1749600, $public['nisab_amount']);
+        $this->assertSame(1700000, $public['nisab_amount']);
         $this->assertSame('gold', $public['nisab_default_basis']);
+        $this->assertSame('standard_85_595', $public['nisab_weight_standard']);
+        $this->assertTrue($public['nisab_prices_current']);
         $this->assertSame('https://example.test/metals', $public['nisab_source_url']);
         $this->assertNotSame(74000, $public['nisab_amount']);
     }
@@ -531,6 +639,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
     {
         $admin = $this->makePageEditor();
         $settings = $this->defaultSettingsPayload();
+        $settings['zakat_calculator']['nisab_weight_standard'] = 'unapproved_custom_formula';
         $settings['zakat_calculator']['gold_price_per_gram'] = 999;
         $settings['zakat_calculator']['silver_price_per_gram'] = 100001;
         $settings['zakat_calculator']['nisab_price_updated_at'] = now()->addDay()->toDateString();
@@ -538,9 +647,10 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors([
+                'settings.zakat_calculator.nisab_weight_standard',
                 'settings.zakat_calculator.gold_price_per_gram',
                 'settings.zakat_calculator.silver_price_per_gram',
                 'settings.zakat_calculator.nisab_price_updated_at',
@@ -557,13 +667,65 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
-            ->put(route('site.settings.update'), ['locale' => 'en', 'settings' => $settings])
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
             ->assertSessionHasErrors('settings.zakat_calculator.nisab_price_updated_at');
     }
 
+    public function test_stale_editor_cannot_overwrite_newer_global_settings(): void
+    {
+        $admin = $this->makePageEditor();
+        $initialVersion = app(SiteSettingVersionService::class)->current();
+
+        $firstSettings = $this->defaultSettingsPayload();
+        $firstSettings['branding']['logo'] = '/storage/media/first-editor-logo.png';
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), [
+                'locale' => 'en',
+                'global_settings_version' => $initialVersion,
+                'settings' => $firstSettings,
+            ])
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $this->assertNotSame($initialVersion, app(SiteSettingVersionService::class)->current());
+
+        $staleSettings = $this->defaultSettingsPayload();
+        $staleSettings['branding']['logo'] = '/storage/media/stale-editor-logo.png';
+
+        $this->from(route('site.settings.index'))
+            ->put(route('site.settings.update'), [
+                'locale' => 'en',
+                'global_settings_version' => $initialVersion,
+                'settings' => $staleSettings,
+            ])
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors('global_settings_version');
+
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'branding',
+            'key' => 'logo',
+            'locale' => '*',
+            'value' => '/storage/media/first-editor-logo.png',
+        ]);
+        $this->assertDatabaseMissing('site_settings', [
+            'group' => 'branding',
+            'key' => 'logo',
+            'value' => '/storage/media/stale-editor-logo.png',
+        ]);
+    }
+
+    private function settingsUpdatePayload(array $settings, string $locale = 'en'): array
+    {
+        return [
+            'locale' => $locale,
+            'global_settings_version' => app(SiteSettingVersionService::class)->current(),
+            'settings' => $settings,
+        ];
+    }
     private function defaultSettingsPayload(): array
     {
+
         $settings = [];
         foreach (config('site-settings.groups') as $groupKey => $group) {
             foreach ($group['fields'] as $key => $field) {

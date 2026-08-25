@@ -35,6 +35,58 @@ class IgniteParityContentTest extends TestCase
         $this->assertSame(7, LatestNews::where('type', 'our-members')->where('status', 1)->count());
         $this->assertSame(5, Page::whereHas('pageTags.tag', fn ($query) => $query->where('slug', 'current-project'))->count());
         $this->assertSame(2, Page::whereHas('pageTags.tag', fn ($query) => $query->where('slug', 'completed-project'))->count());
+
+        $awards = Category::where('slug', 'awards-&-recognition')->where('language', 'en')->firstOrFail();
+        $awardNames = Page::publiclyAvailable()
+            ->whereIn('category_id', [$awards->id, $awards->uuid])
+            ->where('language', 'en')
+            ->orderByDesc('order_by')
+            ->pluck('name')
+            ->all();
+        $this->assertSame([
+            'The Diana Award',
+            'UN Best Volunteer Award',
+            'ILA Global 30 Under 30',
+            'VSO National Volunteer Award',
+            'The Hero Award',
+        ], $awardNames);
+
+        $this->get('/category/awards-&-recognition')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('properties.total_count', 5)
+            ->has('data.items', 5)
+            ->where('data.items.0.name', 'The Diana Award')
+            ->where('data.items.3.name', 'VSO National Volunteer Award')
+            ->where('data.items.4.name', 'The Hero Award')
+        );
+
+        $adminManagedAward = Page::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'category_id' => $awards->id,
+            'name' => 'Administrator Managed Award',
+            'sub_title' => 'A published recognition created through the managed content workflow.',
+            'slug' => 'administrator-managed-award',
+            'description' => '<p>Managed award details.</p>',
+            'status' => 1,
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'name_enabled' => 1,
+            'sub_title_enabled' => 1,
+            'order_by' => 60,
+            'published_at' => today(),
+            'language' => 'en',
+        ]);
+        $this->get('/category/awards-&-recognition')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('properties.total_count', 6)
+            ->has('data.items', 6)
+            ->where('data.items.0.name', 'Administrator Managed Award')
+        );
+        $adminManagedAward->delete();
+        $this->assertSoftDeleted($adminManagedAward);
+        $this->get('/category/awards-&-recognition')->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('properties.total_count', 5)
+            ->has('data.items', 5)
+        );
+
         $this->assertTrue(Page::where('slug', 'ignite-school-bawnia-campus')->where('publication_status', 'published')->exists());
         $home = Page::where('slug', 'home')->where('language', 'en')->firstOrFail();
         $this->assertSame('Ignite Global Foundation | Building Lasting Change', $home->meta_title);
@@ -59,13 +111,19 @@ class IgniteParityContentTest extends TestCase
         $this->assertTrue($homeCategorySeo->exclude_from_sitemap);
         $this->assertSame(0, MediaAsset::where('path', 'like', 'media/ignite-live/%')->whereNull('alt_text')->count());
         $this->assertSame(6, PageMenu::where('type', 'main')->where('status', 1)->whereNull('parent_id')->count());
+        $this->assertFalse(PageMenu::where('type', 'main')->where('status', 1)->where('slug', "founder's-letter")->exists());
 
         $this->get(route('frontend.home'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Home/home')
                 ->has('appMenus', 6)
-                ->has('appMenus.1.children', 6)
+                ->has('appMenus.1.children', 5)
+                ->where('appMenus.1.children.0.name', 'Who We Are')
+                ->where('appMenus.1.children.1.name', 'Awards & Recognition')
+                ->where('appMenus.1.children.2.name', 'Photo Gallery')
+                ->where('appMenus.1.children.3.name', 'Annual Reports')
+                ->where('appMenus.1.children.4.name', 'Contact Us')
                 ->has('data.homePage.visible_blocks', 13)
                 ->has('data.homePage.visible_blocks.0.content.slides', 8)
                 ->where('data.homePage.visible_blocks.1.content.items.0.value', '23,000+')
@@ -77,15 +135,21 @@ class IgniteParityContentTest extends TestCase
             );
 
         $this->get('/about-us')->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->has('data.about_us.visible_blocks', 6)
-            ->has('data.about_us.visible_blocks.3.content.items', 7)
-            ->where('data.about_us.visible_blocks.4.type', 'partners')
-            ->where('data.about_us.visible_blocks.4.content.eyebrow', '')
-            ->where('data.about_us.visible_blocks.4.content.heading', 'Partner Organizations')
-            ->where('data.about_us.visible_blocks.4.content.body', '')
-            ->has('data.about_us.visible_blocks.4.content.items', 20)
-            ->where('data.about_us.visible_blocks.4.content.items.0.heading', 'Bangladesh Brand Forum')
-            ->where('data.about_us.visible_blocks.4.content.items.19.heading', 'What’s On Guide')
+            ->has('data.about_us.visible_blocks', 7)
+            ->where('data.about_us.visible_blocks.0.type', 'cards')
+            ->where('data.about_us.visible_blocks.0.content.variant', 'about-pillars')
+            ->where('data.about_us.visible_blocks.0.content.items.0.eyebrow', 'Our mission')
+            ->where('data.about_us.visible_blocks.0.content.items.1.eyebrow', 'Our vision')
+            ->has('data.about_us.visible_blocks.0.content.items', 2)
+            ->has('data.about_us.visible_blocks.3.content.items', 4)
+            ->has('data.about_us.visible_blocks.4.content.items', 7)
+            ->where('data.about_us.visible_blocks.5.type', 'partners')
+            ->where('data.about_us.visible_blocks.5.content.eyebrow', '')
+            ->where('data.about_us.visible_blocks.5.content.heading', 'Partner Organizations')
+            ->where('data.about_us.visible_blocks.5.content.body', '')
+            ->has('data.about_us.visible_blocks.5.content.items', 20)
+            ->where('data.about_us.visible_blocks.5.content.items.0.heading', 'Bangladesh Brand Forum')
+            ->where('data.about_us.visible_blocks.5.content.items.19.heading', 'What’s On Guide')
         );
 
         $this->get('/page/education')->assertOk()->assertInertia(fn (Assert $page) => $page

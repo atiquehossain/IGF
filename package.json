@@ -13,6 +13,7 @@
     "cypress:watch": "npx cypress open",
     "cypress:build": "npx cypress run --browser chrome --headless",
     "cypress:smoke": "npx cypress run --headless --spec cypress/e2e/admin/core_smoke.cy.js",
+    "cypress:init": "node scripts/cypress-environment.js init",
     "cypress:seed": "node scripts/cypress-environment.js seed",
     "cypress:server": "npm run cypress:seed && node scripts/cypress-environment.js server",
     "security:scan": "node scripts/security-scan.js",

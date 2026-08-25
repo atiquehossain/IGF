@@ -51,7 +51,7 @@ class ApiAuthenticationIntegrityTest extends TestCase
         $response->assertOk()
             ->assertJson([
                 'status' => false,
-                'message' => 'password mismatch. please try again',
+                'message' => 'The supplied credentials are invalid.',
             ]);
     }
 
@@ -75,7 +75,7 @@ class ApiAuthenticationIntegrityTest extends TestCase
         $response->assertOk()
             ->assertJson([
                 'status' => false,
-                'message' => 'You are not active for login.',
+                'message' => 'The supplied credentials are invalid.',
             ]);
     }
 

@@ -73,6 +73,24 @@ class BuilderDashboardUxRegressionTest extends TestCase
         $this->assertStringContainsString('.simple-grid{display:flex;flex-direction:column}', $source);
     }
 
+    public function test_simple_builder_can_reorder_hero_slides_independently_from_slide_navigation(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+
+        $this->assertIsString($source);
+        $this->assertStringContainsString('aria-label="View previous slide"', $source);
+        $this->assertStringContainsString('aria-label="View next slide"', $source);
+        $this->assertStringContainsString('data-hero-move="earlier"', $source);
+        $this->assertStringContainsString('data-hero-move="later"', $source);
+        $this->assertStringContainsString("button.dataset.heroMove === 'earlier' ? state.heroSlide - 1 : state.heroSlide + 1", $source);
+        $this->assertStringContainsString('[slides[state.heroSlide],slides[target]] = [slides[target],slides[state.heroSlide]];', $source);
+        $this->assertStringContainsString('state.heroSlide = target;', $source);
+        $this->assertStringContainsString('function syncHeroFirstSlide(block)', $source);
+        $this->assertStringContainsString('heroSlideKeys.forEach', $source);
+        $this->assertStringContainsString('syncHeroFirstSlide(block);', $source);
+        $this->assertStringContainsString("markDirty('block'); renderAll();", $source);
+    }
+
     public function test_dashboard_enquiry_links_are_actionable_and_limited_to_authorized_inboxes(): void
     {
         $this->makeNewEnquiries();

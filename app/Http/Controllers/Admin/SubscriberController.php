@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use App\Mail\SubscriberNotification;
 use App\Models\Subscriber;
-use App\Services\AdminPrivateSearch;
 use App\Services\AdminAuditService;
-use Throwable;
-use Illuminate\Support\Facades\Storage;
+use App\Services\AdminPrivateSearch;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class SubscriberController extends Controller
 {
@@ -32,6 +32,7 @@ class SubscriberController extends Controller
         $search = $this->privateSearch->current($request, 'subscribers');
 
         $subscribers = Subscriber::query()
+            ->confirmed()
             ->when($search !== '', fn ($query) => $query->where('email', 'like', '%' . $search . '%'))
             ->latest('id')
             ->paginate(15);
@@ -54,6 +55,7 @@ class SubscriberController extends Controller
     {
         $search = $this->privateSearch->current($request, 'subscribers');
         $query = Subscriber::query()
+            ->confirmed()
             ->when($search !== '', fn ($builder) => $builder->where('email', 'like', '%' . $search . '%'));
         $fileName = "subscribe-data_" . date('Y-m-d') . ".xls";
         $this->audit->record(
@@ -70,6 +72,7 @@ class SubscriberController extends Controller
             echo "\xEF\xBB\xBF";
             echo "Email\tDate\n";
             Subscriber::query()
+                ->confirmed()
                 ->when($search !== '', fn ($builder) => $builder->where('email', 'like', '%' . $search . '%'))
                 ->select(['id', 'email', 'created_at'])
                 ->orderBy('id')
@@ -88,21 +91,19 @@ class SubscriberController extends Controller
         ]);
     }
 
-    public function sendEmail(Request $request)
+    public function sendEmail(Request $request, Subscriber $subscriber)
     {
-        $request->validate([
-            'email' => 'required|email|max:255',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:10000',
-            'signature_image' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
+        abort_unless($subscriber->confirmed_at !== null, 404);
+
+        $validated = $request->validate([
+            'subject' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:10000'],
+            'signature_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
-    
+
         try {
-            $email = $request->email;
-            $subject = $request->subject;
-            $message = $request->message;
             $signatureImageUrl = null;
-    
+
             if ($request->hasFile('signature_image')) {
                 $image = $request->file('signature_image');
                 $extension = match ($image->getMimeType()) {
@@ -113,23 +114,33 @@ class SubscriberController extends Controller
                 };
                 $filename = bin2hex(random_bytes(24)) . '.' . $extension;
                 $path = $image->storeAs('signatures', $filename, 'public');
-    
-                // Generate the full URL using asset()
                 $signatureImageUrl = asset('storage/' . $path);
-
             }
 
-            Mail::send('admin.emails.subscriber_notification', ['body' => $message, 'signatureImageUrl' => $signatureImageUrl], function ($mail) use ($email, $subject) {
-                $mail->to($email)
-                     ->subject($subject);
-            });
-    
-            Log::info('Subscriber email dispatched.', ['has_signature_image' => $signatureImageUrl !== null]);
+            Mail::to($subscriber->email)->send(new SubscriberNotification(
+                $validated['subject'],
+                $validated['message'],
+                $signatureImageUrl
+            ));
+
+            $this->audit->record(
+                $request->user('admin'),
+                'subscriber.email_sent',
+                $subscriber,
+                context: ['has_signature_image' => $signatureImageUrl !== null]
+            );
+            Log::info('Subscriber email dispatched.', [
+                'subscriber_id' => $subscriber->getKey(),
+                'has_signature_image' => $signatureImageUrl !== null,
+            ]);
+
             return response()->json(['message' => 'Email sent successfully.'], 200);
         } catch (Throwable $e) {
             Log::error('Subscriber email dispatch failed.', [
+                'subscriber_id' => $subscriber->getKey(),
                 'exception_class' => $e::class,
             ]);
+
             return response()->json(['message' => 'Failed to send email. Please try again later.'], 500);
         }
     }

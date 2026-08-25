@@ -55,7 +55,7 @@
                       <td>
                         @if($canEmailSubscribers)
                         <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact send-email-btn"
-                          data-email="{{ $message->email }}" title="Send email" aria-label="Send email to {{ $message->email }}">
+                          data-url="{{ route('subscriber.sendEmail', ['subscriber' => $message->uuid]) }}" title="Send email" aria-label="Send email to {{ $message->email }}">
                           <i class="fa fa-envelope" aria-hidden="true"></i> Email
                         </button>
                         @endif
@@ -86,7 +86,7 @@
     <div class="modal fade" id="sendEmailModal" tabindex="-1" role="dialog" aria-labelledby="emailModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-      <form id="sendEmailForm">
+      <form id="sendEmailForm" method="post">
         @csrf
         <div class="modal-content">
           <div class="modal-header">
@@ -94,7 +94,6 @@
             <button type="button" class="close btn igf-btn igf-btn-tertiary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           </div>
           <div class="modal-body">
-            <input type="hidden" name="email" id="emailToSend">
             <div class="form-group">
               <label for="subject">Subject</label>
               <input type="text" name="subject" class="form-control" id="subject" required>
@@ -138,7 +137,7 @@
 
       @if($canEmailSubscribers)
       $('.send-email-btn').on('click', function() {
-        $('#emailToSend').val($(this).data('email'));
+        $('#sendEmailForm').attr('action', $(this).data('url'));
         $('#sendEmailModal').modal('show');
       });
 
@@ -150,7 +149,7 @@
         const formData = new FormData(this);
 
         $.ajax({
-          url: '{{ route('subscriber.sendEmail') }}',
+          url: $('#sendEmailForm').attr('action'),
           method: 'POST',
           data: formData,
           processData: false,

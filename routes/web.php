@@ -110,6 +110,10 @@ Route::prefix('admin')->group(function () {
         Route::get('member', 'Admin\LatestNewsController@index')->name('latest.news.index');
         Route::get('member/create', 'Admin\LatestNewsController@create')->name('latest.news.create');
         Route::post('member', 'Admin\LatestNewsController@store')->name('latest.news.store');
+        Route::post('member/group', 'Admin\TeamGroupController@store')->name('latest.news.group.store');
+        Route::put('member/group/{teamGroup}', 'Admin\TeamGroupController@update')->name('latest.news.group.update');
+        Route::put('member/group/{teamGroup}/status', 'Admin\TeamGroupController@status')->name('latest.news.group.status');
+        Route::delete('member/group/{teamGroup}', 'Admin\TeamGroupController@destroy')->name('latest.news.group.destroy');
         Route::get('member/{id}', 'Admin\LatestNewsController@show')->name('latest.news.show');
         Route::get('member/{id}/edit', 'Admin\LatestNewsController@edit')->name('latest.news.edit');
         Route::put('member', 'Admin\LatestNewsController@update')->name('latest.news.update');
@@ -288,7 +292,7 @@ Route::prefix('admin')->group(function () {
         Route::post('subscriber/search/clear', 'Admin\PrivateListingSearchController@clear')->defaults('scope', 'subscribers')->name('subscriber.search.clear');
         Route::delete('/subscriber/{id}/', 'Admin\SubscriberController@destroy')->name('subscriber.destroy');
         Route::get('subscriber/download-excel', 'Admin\SubscriberController@excel_download')->name('subscriber-excel-download.index');
-        Route::post('subscriber/send-email', 'Admin\SubscriberController@sendEmail')->name('subscriber.sendEmail');
+        Route::post('subscriber/{subscriber:uuid}/send-email', 'Admin\SubscriberController@sendEmail')->name('subscriber.sendEmail');
 
 
         Route::get('comment', 'Admin\CommentController@index')->name('comment.index');
@@ -456,7 +460,13 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     Route::get('about-us', 'Vue\AboutController@about')->name('frontend.about');
     Route::get('contact-us', 'HomeController@contact')->name('frontend.contactUs');
     Route::post('send-sms', 'ContactMessagesController@sendSms')->middleware('throttle:10,1')->name('frontend.send.sms');
-    Route::post('subscribe/{lang?}', 'HomeController@subscribe')->middleware('throttle:10,1')->name('frontend.subscribe');
+    Route::get('subscribe/confirm/{subscriber}', 'HomeController@confirmSubscription')
+        ->middleware(['signed', 'throttle:newsletter-confirm'])
+        ->whereUuid('subscriber')
+        ->name('frontend.subscribe.confirm');
+    Route::post('subscribe/{lang?}', 'HomeController@subscribe')
+        ->middleware('throttle:newsletter-subscribe')
+        ->name('frontend.subscribe');
     Route::get('zakat', 'Vue\ZakatController@zakat')->name('frontend.zakat');
 
     // Sponsor a Child Section
@@ -493,7 +503,9 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     Route::get('donate/checkout-key', 'Vue\DonateController@checkoutKey')
         ->middleware('throttle:30,1')
         ->name('frontend.donate.checkout-key');
-    Route::get('donate/{type}', 'Vue\DonateController@index')->where('type', 'zakat')->name('frontend.donate.cause');
+    Route::get('donate/{cause}', 'Vue\DonateController@cause')
+        ->where('cause', '[A-Za-z0-9-]+')
+        ->name('frontend.donate.cause');
     Route::post('donate', 'Vue\DonateController@donate')->middleware('throttle:10,1')->name('frontend.donate.store');
 
     // Annual Report Section

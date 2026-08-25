@@ -26,6 +26,25 @@ class DonationType extends Model
         'page' => 'One specific project or page',
     ];
 
+    public const ICON_OPTIONS = [
+        'hands-heart' => 'Helping hands',
+        'graduation-cap' => 'Education',
+        'moon' => 'Faith-based giving',
+        'hand-heart' => 'Charitable giving',
+        'food' => 'Food support',
+        'emergency' => 'Emergency response',
+        'children' => 'Children and families',
+        'stationery' => 'Learning materials',
+        'uniform' => 'School uniforms',
+        'meals' => 'Meals and nutrition',
+        'school' => 'School support',
+        'qurbani' => 'Qurbani',
+        'water' => 'Water and sanitation',
+        'women' => 'Women empowerment',
+        'youth' => 'Youth development',
+        'street-education' => 'Street children education',
+    ];
+
     protected $fillable = [
         'uuid',
         'slug',
@@ -38,10 +57,13 @@ class DonationType extends Model
         'description',
         'image',
         'image_media_uuid',
+        'display_order',
+        'icon_key',
         'status',
     ];
 
     protected $casts = [
+        'display_order' => 'integer',
         'status' => 'boolean',
     ];
 

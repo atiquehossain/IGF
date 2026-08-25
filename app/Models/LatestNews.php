@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Mattiverse\Userstamps\Traits\Userstamps;
 
@@ -15,6 +16,7 @@ class LatestNews extends Model
     protected $fillable = [
         'name',
         'category_id',
+        'team_group_id',
         'type',
         'description',
         'biography',
@@ -38,5 +40,10 @@ class LatestNews extends Model
     protected $hidden = [
         'created_at', 'updated_at', 'created_by', 'updated_by',
     ];
+
+    public function teamGroup(): BelongsTo
+    {
+        return $this->belongsTo(TeamGroup::class, 'team_group_id');
+    }
 
 }

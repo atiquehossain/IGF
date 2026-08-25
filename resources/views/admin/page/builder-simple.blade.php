@@ -47,6 +47,7 @@
     .simple-giving-list{display:grid;gap:8px;margin:0 0 14px}.simple-giving-option{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-height:54px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#faf9f8}.simple-giving-option.is-unavailable{border-color:#d9a9a4;background:#fff4f2}.simple-giving-option input{width:18px;height:18px;accent-color:var(--orange)}.simple-giving-option strong,.simple-giving-option small{display:block}.simple-giving-option small{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}.simple-giving-move{display:flex;gap:4px}.simple-giving-move button{display:grid;min-width:44px;min-height:44px;place-content:center;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--brown);cursor:pointer}.simple-giving-move button:focus-visible{outline:3px solid rgba(255,117,0,.32);outline-offset:2px}.simple-giving-preview{margin:10px 0 14px;padding:12px;border-radius:8px;background:#f2f6fb;color:#334155;font-size:11px;line-height:1.5}
     .simple-reusable-launch{display:grid;gap:7px;margin-top:8px}.simple-reusable-launch .simple-btn{width:100%;min-height:44px}.simple-reusable-launch small{color:var(--muted);font-size:10px;line-height:1.45}.simple-modal__dialog--compact{width:min(540px,100%)}.simple-reusable-form{display:grid;gap:14px;padding:22px}.simple-reusable-warning{margin:0;padding:12px;border-left:4px solid var(--orange);border-radius:7px;background:#fff5df;color:#6d4a0d;font-size:11px;line-height:1.55}.simple-reusable-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.simple-reusable-empty{grid-column:1/-1;margin:0;padding:30px;text-align:center;color:var(--muted);font-size:12px}.simple-section-card[data-attach-reusable] span span{display:block}.simple-section-card[data-attach-reusable] small{display:block;margin-top:4px;color:var(--brown);font-size:9px;font-weight:800;text-transform:uppercase}.simple-delete-confirmation{display:grid;gap:16px;padding:22px}.simple-delete-confirmation>p{margin:0;color:#554f4a;font-size:13px;line-height:1.6}.simple-delete-confirmation__status{min-height:20px;color:#9c4500!important;font-size:12px!important;font-weight:800}.simple-delete-confirmation__status.is-error{color:#a52c24!important}.simple-delete-confirmation .simple-reusable-actions{padding-top:2px}
     .simple-draft-conflict{display:grid;gap:10px}.simple-draft-conflict .simple-btn{width:100%}
+    .simple-hero-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.simple-hero-nav__buttons{display:flex;gap:5px}.simple-hero-reorder{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;margin:0 0 16px;padding:11px;border:1px solid #ead8c8;border-radius:9px;background:#fff8f2}.simple-hero-reorder__copy strong,.simple-hero-reorder__copy small{display:block}.simple-hero-reorder__copy strong{color:var(--brown);font-size:11px}.simple-hero-reorder__copy small{margin-top:3px;color:var(--muted);font-size:9px;line-height:1.4}.simple-hero-reorder__actions{display:flex;flex-wrap:wrap;gap:6px}.simple-hero-reorder__actions .simple-btn{min-width:104px;justify-content:center}
     @media(max-width:1180px){.simple-grid{grid-template-columns:210px minmax(420px,1fr) 300px}.simple-topbar{padding-inline:14px}.simple-canvas{padding:12px}}
     @media(max-width:880px){body.layout-wrapper .right-panel{height:auto;min-height:100vh;overflow:visible}.simple-editor{height:auto;min-height:100vh}.simple-grid{display:flex;flex-direction:column}.simple-sections,.simple-inspector{overflow:visible;border:0}.simple-sections{order:1}.simple-canvas{order:2;min-height:600px}.simple-inspector{order:3}.simple-section-list{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-panel-head{position:static}.simple-topbar{position:sticky;top:0;flex-wrap:wrap}.simple-topbar__title p{display:none}.simple-save-state{order:3}.simple-more__menu{position:fixed;top:78px;right:12px}}
     @media(max-width:520px){.simple-topbar{gap:8px}.simple-topbar h1{max-width:145px;font-size:15px}.simple-actions{width:100%;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}.simple-actions .simple-btn--primary{padding-inline:10px}.simple-history{display:none}.simple-save-state{order:3;width:100%;text-align:center}.simple-viewport{order:4;width:100%;justify-content:center}.simple-section-list,.simple-section-cards,.simple-media-grid{grid-template-columns:1fr}.simple-preview-media,.simple-preview-cards,.simple-focus-grid{grid-template-columns:1fr}.simple-preview-stats{grid-template-columns:1fr}.simple-canvas{min-height:520px;padding:8px}.simple-section-cards{padding:14px}}
@@ -462,6 +463,15 @@
         }];
         return content.slides;
     }
+    const heroSlideKeys = ['eyebrow','heading','body','primary_label','primary_url','secondary_label','secondary_url','report_label','report_url','image','overlay_opacity'];
+    function syncHeroFirstSlide(block) {
+        if (block?.type !== 'hero') return;
+        const first = heroSlides(block)[0];
+        heroSlideKeys.forEach(key => {
+            block.content[key] = first[key] ?? (key === 'overlay_opacity' ? 64 : '');
+        });
+    }
+
     const textField = (key, label, value, options = {}) => {
         const binding = options.slide ? `data-slide-key="${key}"` : `data-content-key="${key}"`;
         return `<label class="simple-field"><span>${escapeHtml(label)}</span>${options.textarea ? `<textarea ${binding} ${options.max ? `maxlength="${options.max}"` : ''}>${escapeHtml(value)}</textarea>` : `<input ${binding} type="${options.type || 'text'}" value="${escapeHtml(value)}" ${options.max ? `maxlength="${options.max}"` : ''}>`}</label>`;
@@ -621,7 +631,8 @@
 
     function renderHeroEditor(block) {
         const slides = heroSlides(block); state.heroSlide = Math.min(state.heroSlide, slides.length - 1); const slide = slides[state.heroSlide];
-        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px"><strong>Slide ${state.heroSlide + 1} of ${slides.length}</strong><span style="display:flex;gap:5px"><button class="simple-btn" type="button" data-hero-nav="previous" ${state.heroSlide === 0 ? 'disabled' : ''}>←</button><button class="simple-btn" type="button" data-hero-nav="next" ${state.heroSlide === slides.length - 1 ? 'disabled' : ''}>→</button></span></div>
+        const reorder = slides.length > 1 ? `<div class="simple-hero-reorder" role="group" aria-label="Reorder hero slides"><span class="simple-hero-reorder__copy"><strong>Slide order</strong><small>Change where this slide appears to visitors.</small></span><span class="simple-hero-reorder__actions"><button class="simple-btn" type="button" data-hero-move="earlier" aria-label="Move slide ${state.heroSlide + 1} earlier" ${state.heroSlide === 0 ? 'disabled' : ''}><i class="fa fa-arrow-left" aria-hidden="true"></i> Move earlier</button><button class="simple-btn" type="button" data-hero-move="later" aria-label="Move slide ${state.heroSlide + 1} later" ${state.heroSlide === slides.length - 1 ? 'disabled' : ''}>Move later <i class="fa fa-arrow-right" aria-hidden="true"></i></button></span></div>` : '';
+        return `<div class="simple-hero-nav"><strong>Slide ${state.heroSlide + 1} of ${slides.length}</strong><span class="simple-hero-nav__buttons"><button class="simple-btn" type="button" data-hero-nav="previous" aria-label="View previous slide" title="Previous slide" ${state.heroSlide === 0 ? 'disabled' : ''}>←</button><button class="simple-btn" type="button" data-hero-nav="next" aria-label="View next slide" title="Next slide" ${state.heroSlide === slides.length - 1 ? 'disabled' : ''}>→</button></span></div>${reorder}
             ${textField('eyebrow','Small heading',slide.eyebrow,{max:120,slide:true})}${textField('heading','Main heading',slide.heading,{max:180,slide:true})}${textField('body','Description',slide.body,{textarea:true,max:1200,slide:true})}${imageField('image','Background image',slide.image,true)}
             ${textField('primary_label','Main button text',slide.primary_label,{max:80,slide:true})}${linkField('primary_url','Main button destination',slide.primary_url,{slide:true})}${textField('secondary_label','Second button text',slide.secondary_label,{max:80,slide:true})}${linkField('secondary_url','Second button destination',slide.secondary_url,{slide:true})}
             <div style="display:flex;gap:8px;margin-bottom:14px"><button class="simple-btn" type="button" data-hero-action="add"><i class="fa fa-plus"></i> Add slide</button>${slides.length > 1 ? '<button class="simple-btn simple-btn--danger" type="button" data-hero-action="remove">Remove slide</button>' : ''}</div>`;
@@ -763,6 +774,15 @@
             inspector.querySelectorAll('[data-choose-card-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'card',index:Number(button.dataset.chooseCardImage),key:'image'})));
         }
         if (canEditBlockContent(block)) {
+            inspector.querySelectorAll('[data-hero-move]').forEach(button => button.addEventListener('click', () => {
+                const slides = heroSlides(block);
+                const target = button.dataset.heroMove === 'earlier' ? state.heroSlide - 1 : state.heroSlide + 1;
+                if (target < 0 || target >= slides.length) return;
+                recordHistory();
+                [slides[state.heroSlide],slides[target]] = [slides[target],slides[state.heroSlide]];
+                state.heroSlide = target;
+                markDirty('block'); renderAll();
+            }));
             inspector.querySelector('[data-hero-action="add"]')?.addEventListener('click', () => { if(heroSlides(block).length>=8)return notify('A hero can contain up to eight slides.'); recordHistory(); heroSlides(block).push({eyebrow:'',heading:'New slide',body:'',primary_label:'Learn more',primary_url:'#',secondary_label:'',secondary_url:'',report_label:'',report_url:'',image:'',overlay_opacity:64}); state.heroSlide=heroSlides(block).length-1; markDirty('block'); renderAll(); });
             inspector.querySelector('[data-hero-action="remove"]')?.addEventListener('click', () => { if(!confirm('Remove this slide?'))return; recordHistory(); heroSlides(block).splice(state.heroSlide,1); state.heroSlide=Math.max(0,state.heroSlide-1); markDirty('block'); renderAll(); });
             inspector.querySelector('#add-stat')?.addEventListener('click',()=>{recordHistory();(block.content.items||(block.content.items=[])).push({value:'0',label:'New statistic'});markDirty('block');renderAll()});
@@ -896,7 +916,10 @@
                 if(bannerSelect&&bannerId!=='__keep_current')body.page.banner_id=bannerId?Number(bannerId):null;
                 if(thumbnailAssetUuid!=='__keep_current')body.page.thumbnail_asset_uuid=thumbnailAssetUuid||null;
             }
-            if(state.dirtyBlocks.size)body.blocks=state.blocks.filter(block=>state.dirtyBlocks.has(block.uuid)).map(block=>({uuid:block.uuid,label:block.label,content:block.content||{},is_enabled:!!block.is_enabled,expected_reusable_version:block.reusable_version}));
+            if(state.dirtyBlocks.size)body.blocks=state.blocks.filter(block=>state.dirtyBlocks.has(block.uuid)).map(block=>{
+                syncHeroFirstSlide(block);
+                return {uuid:block.uuid,label:block.label,content:block.content||{},is_enabled:!!block.is_enabled,expected_reusable_version:block.reusable_version};
+            });
             if(state.dirtyOrder)body.order=state.blocks.map(item=>item.uuid);
             const payload=await request(routes.simpleSave,'PUT',body);
             (payload.blocks||[]).forEach(saved=>{const block=state.blocks.find(item=>item.uuid===saved.uuid);if(block)Object.assign(block,saved)});

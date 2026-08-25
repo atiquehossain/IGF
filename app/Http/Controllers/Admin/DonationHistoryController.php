@@ -101,6 +101,8 @@ class DonationHistoryController extends Controller
             ));
         }
 
+        $causeAttribution = $this->causeAttributionSummary($baseQuery, $projectUuid);
+
         $donations = $query
             ->orderBy('id', 'desc')
             ->paginate(20);
@@ -144,16 +146,11 @@ class DonationHistoryController extends Controller
             'causeUuidFilter' => $causeUuid,
             'projectUuidFilter' => $projectUuid,
             'destinationOptions' => DonationType::DESTINATION_OPTIONS,
-            'causeFilters' => Donation::query()
-                ->whereNotNull('cause_uuid_snapshot')
-                ->select(['cause_uuid_snapshot', 'cause_name_snapshot'])
-                ->latest('id')
-                ->get()
-                ->unique('cause_uuid_snapshot')
-                ->sortBy('cause_name_snapshot', SORT_NATURAL | SORT_FLAG_CASE)
-                ->values(),
+            'causeFilters' => $this->causeFilterOptions(),
             'projectFilters' => $this->projectFilterOptions(),
             'projectAttribution' => $this->projectAttributionSummary($baseQuery, $projectUuid),
+            'causeAttribution' => $causeAttribution,
+            'causeAttributionChart' => $this->causeAttributionChart($causeAttribution),
             'successfulCount' => $successfulCount,
             'successfulTotal' => $successfulTotal,
             'canAllocate' => $canAllocate,
@@ -344,21 +341,59 @@ class DonationHistoryController extends Controller
                 ->first();
     }
 
+    private function causeFilterOptions(): \Illuminate\Support\Collection
+    {
+        $latestIds = Donation::query()
+            ->whereNotNull('cause_uuid_snapshot')
+            ->where('cause_uuid_snapshot', '!=', '')
+            ->selectRaw('cause_uuid_snapshot, MAX(id) AS latest_id')
+            ->groupBy('cause_uuid_snapshot');
+
+        return DB::table('donations as cause_snapshots')
+            ->joinSub($latestIds->toBase(), 'latest_causes', fn ($join) => $join
+                ->on('cause_snapshots.id', '=', 'latest_causes.latest_id'))
+            ->get([
+                'cause_snapshots.cause_uuid_snapshot',
+                'cause_snapshots.cause_name_snapshot',
+            ])
+            ->sortBy('cause_name_snapshot', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+    }
+
     private function projectFilterOptions(): \Illuminate\Support\Collection
     {
-        $direct = Donation::query()
+        $latestDirectIds = Donation::query()
             ->whereNotNull('project_uuid_snapshot')
             ->where('project_uuid_snapshot', '!=', '')
-            ->get(['project_uuid_snapshot', 'project_name_snapshot'])
-            ->map(fn (Donation $donation): array => [
-                'uuid' => (string) $donation->project_uuid_snapshot,
-                'name' => (string) ($donation->project_name_snapshot ?: 'Historical project'),
+            ->selectRaw('project_uuid_snapshot AS uuid, MAX(id) AS latest_id')
+            ->groupBy('project_uuid_snapshot');
+        $direct = DB::table('donations as project_snapshots')
+            ->joinSub($latestDirectIds->toBase(), 'latest_direct_projects', fn ($join) => $join
+                ->on('project_snapshots.id', '=', 'latest_direct_projects.latest_id'))
+            ->get([
+                'project_snapshots.project_uuid_snapshot AS uuid',
+                'project_snapshots.project_name_snapshot AS name',
+            ])
+            ->map(fn (object $project): array => [
+                'uuid' => (string) $project->uuid,
+                'name' => (string) ($project->name ?: 'Historical project'),
             ]);
-        $allocated = DonationAllocation::query()
-            ->get(['page_uuid', 'page_name_snapshot'])
-            ->map(fn (DonationAllocation $allocation): array => [
-                'uuid' => (string) $allocation->page_uuid,
-                'name' => (string) ($allocation->page_name_snapshot ?: 'Historical project'),
+
+        $latestAllocationIds = DonationAllocation::query()
+            ->whereNotNull('page_uuid')
+            ->where('page_uuid', '!=', '')
+            ->selectRaw('page_uuid AS uuid, MAX(id) AS latest_id')
+            ->groupBy('page_uuid');
+        $allocated = DB::table('donation_allocations as allocation_snapshots')
+            ->joinSub($latestAllocationIds->toBase(), 'latest_allocated_projects', fn ($join) => $join
+                ->on('allocation_snapshots.id', '=', 'latest_allocated_projects.latest_id'))
+            ->get([
+                'allocation_snapshots.page_uuid AS uuid',
+                'allocation_snapshots.page_name_snapshot AS name',
+            ])
+            ->map(fn (object $project): array => [
+                'uuid' => (string) $project->uuid,
+                'name' => (string) ($project->name ?: 'Historical project'),
             ]);
 
         return $direct->concat($allocated)
@@ -366,6 +401,154 @@ class DonationHistoryController extends Controller
             ->unique('uuid')
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
+    }
+
+    /**
+     * Successful giving grouped by the donor's immutable cause snapshot.
+     * When a project is selected, direct gifts contribute their full amount
+     * while broad gifts contribute only allocations made to that project.
+     */
+    private function causeAttributionSummary(
+        \Illuminate\Database\Eloquent\Builder $filteredDonations,
+        string $projectUuid = ''
+    ): \Illuminate\Support\Collection
+    {
+        $isLegacyExpression = "CASE WHEN cause_uuid_snapshot IS NULL OR TRIM(cause_uuid_snapshot) = '' THEN 1 ELSE 0 END";
+        $identityExpression = "CASE WHEN cause_uuid_snapshot IS NULL OR TRIM(cause_uuid_snapshot) = '' "
+            . "THEN LOWER(COALESCE(NULLIF(TRIM(cause_slug_snapshot), ''), 'unresolved')) "
+            . 'ELSE LOWER(cause_uuid_snapshot) END';
+        $rows = DB::query()
+            ->fromSub($this->attributedCauseRows($filteredDonations, $projectUuid), 'attributed')
+            ->selectRaw("{$identityExpression} AS attribution_identity")
+            ->selectRaw("{$isLegacyExpression} AS is_legacy")
+            ->selectRaw('MAX(donation_id) AS latest_donation_id')
+            ->selectRaw('ROUND(SUM(attributed_amount) * 100, 0) AS total_cents')
+            ->selectRaw('COUNT(DISTINCT donation_id) AS donation_count')
+            ->groupByRaw("{$identityExpression}, {$isLegacyExpression}")
+            ->havingRaw('SUM(attributed_amount) > 0')
+            ->orderByRaw('MIN(donation_id)')
+            ->get();
+        $names = DB::table('donations')
+            ->whereIn('id', $rows->pluck('latest_donation_id')->filter())
+            ->pluck('cause_name_snapshot', 'id');
+        $totalCents = (int) $rows->sum(fn (object $row): int => (int) round((float) $row->total_cents));
+
+        return $rows
+            ->map(function (object $row) use ($names, $totalCents): array {
+                $isLegacy = (bool) $row->is_legacy;
+                $amountCents = (int) round((float) $row->total_cents);
+
+                return [
+                    'key' => ($isLegacy ? 'legacy:' : 'cause:') . (string) $row->attribution_identity,
+                    'name' => $this->causeAttributionName(
+                        (string) $names->get($row->latest_donation_id, ''),
+                        $isLegacy
+                    ),
+                    'amount' => $this->centsToDecimal($amountCents),
+                    'donation_count' => (int) $row->donation_count,
+                    'percentage' => $this->percentageFromCents($amountCents, $totalCents),
+                    'is_legacy' => $isLegacy,
+                ];
+            })
+            ->sortByDesc(fn (array $cause): int => $this->decimalToCents($cause['amount']))
+            ->values();
+    }
+
+    private function attributedCauseRows(
+        \Illuminate\Database\Eloquent\Builder $filteredDonations,
+        string $projectUuid
+    ): \Illuminate\Database\Query\Builder {
+        $successful = (clone $filteredDonations)->where('payment_status', 'Success');
+        $columns = implode(', ', [
+            'donations.id AS donation_id',
+            'donations.cause_uuid_snapshot',
+            'donations.cause_slug_snapshot',
+            'donations.cause_name_snapshot',
+            'donations.amount AS attributed_amount',
+        ]);
+
+        if ($projectUuid === '') {
+            return (clone $successful)->selectRaw($columns)->toBase();
+        }
+
+        $direct = (clone $successful)
+            ->where('project_uuid_snapshot', $projectUuid)
+            ->selectRaw($columns)
+            ->toBase();
+        $eligible = (clone $successful)->select([
+            'donations.id',
+            'donations.cause_uuid_snapshot',
+            'donations.cause_slug_snapshot',
+            'donations.cause_name_snapshot',
+        ]);
+        $allocated = DB::table('donation_allocations as attributed_allocations')
+            ->joinSub($eligible->toBase(), 'eligible_donations', fn ($join) => $join
+                ->on('attributed_allocations.donation_id', '=', 'eligible_donations.id'))
+            ->where('attributed_allocations.page_uuid', $projectUuid)
+            ->selectRaw(implode(', ', [
+                'eligible_donations.id AS donation_id',
+                'eligible_donations.cause_uuid_snapshot',
+                'eligible_donations.cause_slug_snapshot',
+                'eligible_donations.cause_name_snapshot',
+                'attributed_allocations.amount AS attributed_amount',
+            ]));
+
+        return $direct->unionAll($allocated);
+    }
+
+    private function causeAttributionName(string $snapshotName, bool $isLegacy): string
+    {
+        $snapshotName = trim($snapshotName);
+        if (!$isLegacy) {
+            return $snapshotName !== '' ? $snapshotName : 'Historical cause';
+        }
+
+        return $snapshotName === '' || strtolower($snapshotName) === 'unspecified legacy donation'
+            ? 'Unresolved legacy designation'
+            : $snapshotName . ' (legacy)';
+    }
+
+    /**
+     * Keep the visual legible: show the eight largest causes and combine the
+     * remainder. The full, accessible cause table still contains every row.
+     */
+    private function causeAttributionChart(\Illuminate\Support\Collection $summary): array
+    {
+        $chart = $summary->take(8)->map(fn (array $cause): array => [
+            'name' => $cause['name'],
+            'amount' => $cause['amount'],
+            'donation_count' => $cause['donation_count'],
+            'percentage' => $cause['percentage'],
+        ])->values();
+        $remaining = $summary->slice(8);
+
+        if ($remaining->isNotEmpty()) {
+            $otherCents = $remaining->sum(
+                fn (array $cause): int => $this->decimalToCents($cause['amount'])
+            );
+            $totalCents = $summary->sum(
+                fn (array $cause): int => $this->decimalToCents($cause['amount'])
+            );
+            $chart->push([
+                'name' => 'Other causes',
+                'amount' => $this->centsToDecimal($otherCents),
+                'donation_count' => $remaining->sum('donation_count'),
+                'percentage' => $this->percentageFromCents($otherCents, $totalCents),
+            ]);
+        }
+
+        return $chart->all();
+    }
+
+    private function percentageFromCents(int $partCents, int $totalCents): string
+    {
+        if ($partCents <= 0 || $totalCents <= 0) {
+            return '0.00';
+        }
+
+        $basisPoints = intdiv(($partCents * 10000) + intdiv($totalCents, 2), $totalCents);
+
+        return $this->centsToDecimal($basisPoints);
     }
 
     /**
@@ -378,59 +561,65 @@ class DonationHistoryController extends Controller
         string $projectUuid = ''
     ): \Illuminate\Support\Collection
     {
-        $projects = [];
-        $successfulIds = (clone $filteredDonations)
-            ->where('payment_status', 'Success')
-            ->select('donations.id');
-
-        Donation::query()
-            ->whereIn('id', clone $successfulIds)
+        $successful = (clone $filteredDonations)->where('payment_status', 'Success');
+        $direct = (clone $successful)
             ->whereNotNull('project_uuid_snapshot')
             ->where('project_uuid_snapshot', '!=', '')
             ->when($projectUuid !== '', fn ($query) => $query->where('project_uuid_snapshot', $projectUuid))
-            ->get(['id', 'project_uuid_snapshot', 'project_name_snapshot', 'amount'])
-            ->each(function (Donation $donation) use (&$projects): void {
-                $uuid = (string) $donation->project_uuid_snapshot;
-                $projects[$uuid] ??= [
-                    'uuid' => $uuid,
-                    'name' => (string) ($donation->project_name_snapshot ?: 'Historical project'),
-                    'direct_cents' => 0,
-                    'allocated_cents' => 0,
-                    'donation_ids' => [],
-                ];
-                $projects[$uuid]['direct_cents'] += $this->decimalToCents((string) $donation->amount);
-                $projects[$uuid]['donation_ids'][(int) $donation->id] = true;
-            });
+            ->selectRaw(implode(', ', [
+                'donations.project_uuid_snapshot AS project_uuid',
+                'donations.id AS donation_id',
+                'donations.amount AS direct_amount',
+                '0 AS allocated_amount',
+                'donations.id AS direct_reference_id',
+                'NULL AS allocation_reference_id',
+            ]))
+            ->toBase();
+        $eligible = (clone $successful)->select('donations.id');
+        $allocated = DB::table('donation_allocations as project_allocations')
+            ->joinSub($eligible->toBase(), 'eligible_donations', fn ($join) => $join
+                ->on('project_allocations.donation_id', '=', 'eligible_donations.id'))
+            ->when($projectUuid !== '', fn ($query) => $query->where('project_allocations.page_uuid', $projectUuid))
+            ->selectRaw(implode(', ', [
+                'project_allocations.page_uuid AS project_uuid',
+                'project_allocations.donation_id',
+                '0 AS direct_amount',
+                'project_allocations.amount AS allocated_amount',
+                'NULL AS direct_reference_id',
+                'project_allocations.id AS allocation_reference_id',
+            ]));
+        $rows = DB::query()
+            ->fromSub($direct->unionAll($allocated), 'project_attribution')
+            ->select('project_uuid')
+            ->selectRaw('ROUND(SUM(direct_amount) * 100, 0) AS direct_cents')
+            ->selectRaw('ROUND(SUM(allocated_amount) * 100, 0) AS allocated_cents')
+            ->selectRaw('COUNT(DISTINCT donation_id) AS donation_count')
+            ->selectRaw('MIN(direct_reference_id) AS direct_reference_id')
+            ->selectRaw('MIN(allocation_reference_id) AS allocation_reference_id')
+            ->groupBy('project_uuid')
+            ->get();
+        $directNames = DB::table('donations')
+            ->whereIn('id', $rows->pluck('direct_reference_id')->filter())
+            ->pluck('project_name_snapshot', 'id');
+        $allocationNames = DB::table('donation_allocations')
+            ->whereIn('id', $rows->pluck('allocation_reference_id')->filter())
+            ->pluck('page_name_snapshot', 'id');
 
-        DonationAllocation::query()
-            ->whereIn('donation_id', clone $successfulIds)
-            ->when($projectUuid !== '', fn ($query) => $query->where('page_uuid', $projectUuid))
-            ->with('donation:id,payment_status')
-            ->get(['donation_id', 'page_uuid', 'page_name_snapshot', 'amount'])
-            ->each(function (DonationAllocation $allocation) use (&$projects): void {
-                $uuid = (string) $allocation->page_uuid;
-                $projects[$uuid] ??= [
-                    'uuid' => $uuid,
-                    'name' => (string) ($allocation->page_name_snapshot ?: 'Historical project'),
-                    'direct_cents' => 0,
-                    'allocated_cents' => 0,
-                    'donation_ids' => [],
-                ];
-                $projects[$uuid]['allocated_cents'] += $this->decimalToCents((string) $allocation->amount);
-                $projects[$uuid]['donation_ids'][(int) $allocation->donation_id] = true;
-            });
-
-        return collect($projects)
-            ->map(function (array $project): array {
-                $totalCents = $project['direct_cents'] + $project['allocated_cents'];
+        return $rows
+            ->map(function (object $project) use ($directNames, $allocationNames): array {
+                $directCents = (int) round((float) $project->direct_cents);
+                $allocatedCents = (int) round((float) $project->allocated_cents);
+                $name = (string) ($directNames->get($project->direct_reference_id)
+                    ?: $allocationNames->get($project->allocation_reference_id)
+                    ?: 'Historical project');
 
                 return [
-                    'uuid' => $project['uuid'],
-                    'name' => $project['name'],
-                    'direct_amount' => $this->centsToDecimal($project['direct_cents']),
-                    'allocated_amount' => $this->centsToDecimal($project['allocated_cents']),
-                    'total_amount' => $this->centsToDecimal($totalCents),
-                    'donation_count' => count($project['donation_ids']),
+                    'uuid' => (string) $project->project_uuid,
+                    'name' => $name,
+                    'direct_amount' => $this->centsToDecimal($directCents),
+                    'allocated_amount' => $this->centsToDecimal($allocatedCents),
+                    'total_amount' => $this->centsToDecimal($directCents + $allocatedCents),
+                    'donation_count' => (int) $project->donation_count,
                 ];
             })
             ->sortByDesc(fn (array $project): int => $this->decimalToCents($project['total_amount']))

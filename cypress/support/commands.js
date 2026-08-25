@@ -40,6 +40,16 @@ Cypress.Commands.add('loginWithUsername', () => {
             cy.get('input[name="password"]').type(password, { log: false });
             cy.get('button[type="submit"]:visible').first().click();
             cy.location('pathname').should('eq', '/admin');
+        }, {
+            cacheAcrossSpecs: true,
+            validate () {
+                cy.request({
+                    url: '/admin',
+                    followRedirect: false,
+                    failOnStatusCode: false,
+                    log: false
+                }).its('status').should('eq', 200);
+            }
         });
     });
 });

@@ -12,6 +12,7 @@ use App\Models\LatestNews;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\PageBlock;
+use App\Models\TeamGroup;
 use App\Models\PageMenu;
 use App\Models\SiteSetting;
 use App\Models\SplashScreen;
@@ -69,6 +70,7 @@ class TranslationCenterService
      * translation dictionary and are overlaid at read time.
      */
     private const OVERLAY_CONTENT = [
+        'team_group' => ['class' => TeamGroup::class, 'label' => 'Team group', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'team_member' => ['class' => LatestNews::class, 'label' => 'Team member', 'key' => 'id', 'fields' => ['name', 'description', 'biography', 'qualification']],
         'donation_cause' => ['class' => DonationType::class, 'label' => 'Donation cause', 'key' => 'uuid', 'fields' => ['name', 'description', 'destination_name']],
         'volunteer_opportunity' => ['class' => VolunteerCause::class, 'label' => 'Volunteer opportunity', 'key' => 'id', 'fields' => ['name', 'description']],
@@ -485,6 +487,62 @@ class TranslationCenterService
             : $fallback;
     }
 
+    /**
+     * Resolve translation overlays for many records in one query.
+     *
+     * @param array<string|int, array<string, string>> $fallbacks
+     * @return array<string|int, array<string, string>>
+     */
+    public function localizedContentValues(
+        string $model,
+        array $fallbacks,
+        ?string $locale = null
+    ): array {
+        $locale = $locale ?: app()->getLocale();
+        if ($locale === 'en' || !isset(self::OVERLAY_CONTENT[$model]) || $fallbacks === []) {
+            return $fallbacks;
+        }
+
+        $allowedFields = self::OVERLAY_CONTENT[$model]['fields'];
+        $storageKeys = [];
+
+        foreach ($fallbacks as $identity => $fields) {
+            if (!is_array($fields)) {
+                continue;
+            }
+
+            foreach ($fields as $field => $fallback) {
+                if (!in_array($field, $allowedFields, true)) {
+                    continue;
+                }
+
+                $storageKeys[$this->overlayStorageKey($model, (string) $identity, $field)] = [
+                    (string) $identity,
+                    $field,
+                ];
+            }
+        }
+
+        if ($storageKeys === []) {
+            return $fallbacks;
+        }
+
+        $translations = TranslationString::query()
+            ->whereIn('key', array_keys($storageKeys))
+            ->where('locale', $locale)
+            ->where('status', 'translated')
+            ->pluck('value', 'key');
+
+        foreach ($storageKeys as $key => [$identity, $field]) {
+            $translation = $translations->get($key);
+            if (is_string($translation) && trim(strip_tags($translation)) !== '') {
+                $fallbacks[$identity][$field] = $translation;
+            }
+        }
+
+        return $fallbacks;
+    }
+
     private function interfaceRows(string $sourceLocale, string $targetLocale): Collection
     {
         $source = json_decode((string) file_get_contents(resource_path('lang/en.json')), true) ?: [];
@@ -718,8 +776,11 @@ class TranslationCenterService
             /** @var class-string<Model> $class */
             $class = $definition['class'];
             $query = $class::query();
-            if ($alias === 'team_member') {
-                $query->where('language', $sourceLocale)->where('type', 'our-members');
+            if (in_array($alias, ['team_member', 'team_group'], true)) {
+                $query->where('language', $sourceLocale);
+                if ($alias === 'team_member') {
+                    $query->where('type', 'our-members');
+                }
             } elseif ($sourceLocale !== 'en') {
                 continue;
             }
@@ -749,7 +810,7 @@ class TranslationCenterService
                         Str::headline($field),
                         $sourceValue,
                         (string) ($targets[$storageKey] ?? ''),
-                        $field === 'description' ? 'html' : 'text',
+                        $field === 'description' && $alias !== 'team_group' ? 'html' : 'text',
                         $sourceLocale,
                         $targetLocale,
                         $this->isActiveSource($source)
@@ -1249,12 +1310,13 @@ class TranslationCenterService
 
         $class = $definition['class'];
         $source = $class::query()->whereKey($identity['source_id'])->firstOrFail();
-        if ($identity['model'] === 'team_member' && $source->language !== $sourceLocale) {
-            throw ValidationException::withMessages(['translations' => 'The team member source language changed. Refresh and try again.']);
+        if (in_array($identity['model'], ['team_member', 'team_group'], true)
+            && $source->language !== $sourceLocale) {
+            throw ValidationException::withMessages(['translations' => 'The team source language changed. Refresh and try again.']);
         }
 
         $field = $identity['field'];
-        $cleanValue = $field === 'description'
+        $cleanValue = $field === 'description' && $identity['model'] !== 'team_group'
             ? $this->sanitizer->sanitizeHtml($value)
             : trim(strip_tags($value));
         $sourceValue = (string) ($source->{$field} ?? '');

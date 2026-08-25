@@ -8,14 +8,14 @@ function legalStatusSettings(overrides = {}) {
   return {
     enabled: true,
     heading: 'Legal Status',
-    authority_1_label: 'Microcredit Regulatory Authority',
-    authority_1_registration: 'Registration no. 00176-00059-00018',
-    authority_1_logo: '/storage/legal/mra.png',
+    authority_1_label: '',
+    authority_1_registration: '',
+    authority_1_logo: '',
     authority_2_label: 'NGO Affairs Bureau',
-    authority_2_registration: 'Registration no. 626',
+    authority_2_registration: 'Registration no. 3461',
     authority_2_logo: '/storage/legal/ngo-affairs.png',
     authority_3_label: 'Joint Stock & Firms',
-    authority_3_registration: 'Registration no. S-5803(47)06',
+    authority_3_registration: 'Registration no. S-13907/2022',
     authority_3_logo: '/storage/legal/joint-stock.png',
     ...overrides,
   };
@@ -85,7 +85,7 @@ describe('AppFooter managed branding and newsletter', () => {
 
     expect(router.post).toHaveBeenCalledWith(
       'frontend.subscribe',
-      { email: 'visitor@example.test' },
+      { email: 'visitor@example.test', consent: true },
       expect.objectContaining({ preserveScroll: true }),
     );
     expect(wrapper.get('.footer-newsletter__message').text()).toBe('Subscription saved.');
@@ -138,14 +138,13 @@ describe('AppFooter managed branding and newsletter', () => {
     expect(legalStatus.element.parentElement).toBe(responsiveContent.element);
     expect(legalStatus.get('h2').text()).toBe('Legal Status');
     expect(legalStatus.get('.footer-legal-status__list').exists()).toBe(true);
-    expect(items).toHaveLength(3);
-    expect(items[0].text()).toContain('Microcredit Regulatory Authority');
-    expect(items[0].text()).toContain('00176-00059-00018');
-    expect(items[1].text()).toContain('NGO Affairs Bureau');
-    expect(items[1].text()).toContain('626');
-    expect(items[2].text()).toContain('Joint Stock & Firms');
-    expect(items[2].text()).toContain('S-5803(47)06');
-    expect(legalStatus.findAll('.footer-legal-status__logo')).toHaveLength(3);
+    expect(items).toHaveLength(2);
+    expect(items[0].text()).toContain('NGO Affairs Bureau');
+    expect(items[0].text()).toContain('3461');
+    expect(items[1].text()).toContain('Joint Stock & Firms');
+    expect(items[1].text()).toContain('S-13907/2022');
+    expect(legalStatus.text()).not.toContain('Microcredit Regulatory Authority');
+    expect(legalStatus.findAll('.footer-legal-status__logo')).toHaveLength(2);
     expect(legalStatus.findAll('a')).toHaveLength(0);
     expect(legalStatus.text()).not.toContain('Ways to give');
     expect(wrapper.get('.footer-links').text()).toContain('Explore');
@@ -198,17 +197,22 @@ describe('AppFooter managed branding and newsletter', () => {
     const legalStatus = wrapper.get('.footer-legal-status');
 
     expect(legalStatus.findAll('.footer-legal-status__logo')).toHaveLength(0);
-    expect(legalStatus.findAll('.footer-legal-status__badge')).toHaveLength(3);
-    expect(legalStatus.text()).toContain('Microcredit Regulatory Authority');
-    expect(legalStatus.text()).toContain('00176-00059-00018');
+    expect(legalStatus.findAll('.footer-legal-status__badge')).toHaveLength(2);
+    expect(legalStatus.text()).not.toContain('Microcredit Regulatory Authority');
     expect(legalStatus.text()).toContain('NGO Affairs Bureau');
-    expect(legalStatus.text()).toContain('626');
+    expect(legalStatus.text()).toContain('3461');
     expect(legalStatus.text()).toContain('Joint Stock & Firms');
-    expect(legalStatus.text()).toContain('S-5803(47)06');
+    expect(legalStatus.text()).toContain('S-13907/2022');
   });
 
   test('renders managed contact, social, footer copy, and any number of menu columns', () => {
     usePage().props.siteSettings.contact.phone_secondary = '+880 2000';
+    Object.assign(usePage().props.siteSettings.contact, {
+      footer_address_label: 'Office',
+      footer_phone_label: 'Mobile',
+      footer_secondary_phone_label: 'Backup',
+      footer_email_label: 'Inbox',
+    });
     usePage().props.siteSettings.social = {
       facebook: 'https://facebook.com/ignite',
       instagram: 'https://instagram.com/ignite',
@@ -224,12 +228,14 @@ describe('AppFooter managed branding and newsletter', () => {
 
     const wrapper = mount(AppFooter);
     const groups = wrapper.findAll('.footer-link-group');
+    const contactRows = wrapper.findAll('.footer-contact > *');
+    const contactLinks = wrapper.findAll('.footer-contact a');
 
     expect(wrapper.get('.footer-brand').text()).not.toContain('Managed footer summary');
-    expect(wrapper.get('.footer-contact').text()).toContain('hello@example.test');
-    expect(wrapper.get('.footer-contact').text()).toContain('+880 1000');
-    expect(wrapper.get('.footer-contact').text()).toContain('+880 2000');
-    expect(wrapper.get('.footer-contact').text()).toContain('Dhaka');
+    expect(wrapper.find('#footer-office-contact-heading').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Office contact details');
+    expect(contactRows.map(row => row.text())).toEqual(['Office: Dhaka', 'Mobile: +880 1000', 'Backup: +880 2000', 'Inbox: hello@example.test']);
+    expect(contactLinks.map(link => link.attributes('href'))).toEqual(['tel:+8801000', 'tel:+8802000', 'mailto:hello@example.test']);
     expect(wrapper.findAll('.footer-social a')).toHaveLength(5);
     expect(groups).toHaveLength(5);
     expect(wrapper.get('.footer-navigation').attributes('style')).toContain('--footer-nav-columns: 3');
@@ -331,18 +337,18 @@ describe('AppFooter managed branding and newsletter', () => {
 
   test('keeps explicitly blank Legal Status records blank instead of restoring defaults', () => {
     usePage().props.siteSettings.legal_status = legalStatusSettings({
-      authority_1_label: '',
-      authority_1_registration: '',
-      authority_1_logo: '',
+      authority_2_label: '',
+      authority_2_registration: '',
+      authority_2_logo: '',
     });
     usePage().props.appFooterMenus = [footerMenu(LEGAL_STATUS_SLOT_UUID, 'Donor support')];
 
     const wrapper = mount(AppFooter);
     const legalStatus = wrapper.get('.footer-legal-status');
 
-    expect(legalStatus.findAll('.footer-legal-status__item')).toHaveLength(2);
+    expect(legalStatus.findAll('.footer-legal-status__item')).toHaveLength(1);
     expect(legalStatus.text()).not.toContain('Microcredit Regulatory Authority');
-    expect(legalStatus.text()).toContain('NGO Affairs Bureau');
+    expect(legalStatus.text()).not.toContain('NGO Affairs Bureau');
     expect(legalStatus.text()).toContain('Joint Stock & Firms');
   });
 });

@@ -378,7 +378,7 @@ class AdminInlineCrudPermissionUxTest extends TestCase
 
         $source = file_get_contents(resource_path('views/admin/donationType/index.blade.php'));
         $this->assertStringContainsString('overflow-x:auto', $source);
-        $this->assertStringContainsString('min-width:920px', $source);
+        $this->assertStringContainsString('min-width:1080px', $source);
         $this->assertStringNotContainsString('table-stats ov-h', $source);
         $this->assertStringContainsString("target.trigger('reset');", $source);
         $this->assertStringContainsString('synchronizeDonationTypeForms();', $source);

@@ -16,7 +16,7 @@
             <input id="footer-newsletter-email" v-model="newsletterEmail" name="email" type="email" autocomplete="email" :placeholder="shared.newsletter_email_placeholder" required :aria-invalid="newsletterFeedbackType === 'error' ? 'true' : undefined" :aria-describedby="newsletterMessage ? 'footer-newsletter-message' : undefined">
             <button type="submit" :disabled="newsletterBusy">{{ newsletterBusy ? shared.newsletter_subscribing_label : shared.newsletter_subscribe_label }}</button>
           </div>
-          <label class="footer-newsletter__consent"><input v-model="newsletterConsent" type="checkbox" required> <span>{{ shared.newsletter_consent_prefix }} <a :href="shared.newsletter_privacy_url">{{ shared.newsletter_privacy_label }}</a>.</span></label>
+          <label class="footer-newsletter__consent"><input v-model="newsletterConsent" name="consent" type="checkbox" required> <span>{{ shared.newsletter_consent_prefix }} <a :href="shared.newsletter_privacy_url">{{ shared.newsletter_privacy_label }}</a>.</span></label>
           <p
             v-if="newsletterMessage"
             id="footer-newsletter-message"
@@ -33,12 +33,26 @@
           <small v-if="branding.taglineLines.length" class="footer-brand__tagline">
             <span v-for="(line, index) in branding.taglineLines" :key="`${index}-${line}`">{{ line }}</span>
           </small>
-          <address class="footer-contact">
-            <a v-if="contact.email" :href="`mailto:${contact.email}`"><i class="fa-regular fa-envelope" aria-hidden="true" /> {{ contact.email }}</a>
-            <a v-if="contact.phone_primary" :href="`tel:${phoneHref}`"><i class="fa-solid fa-phone" aria-hidden="true" /> {{ contact.phone_primary }}</a>
-            <a v-if="contact.phone_secondary" :href="`tel:${phoneSecondaryHref}`"><i class="fa-solid fa-phone" aria-hidden="true" /> {{ contact.phone_secondary }}</a>
-            <span v-if="contact.address" class="footer-contact__address"><i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ contact.address }}</span>
-          </address>
+          <div class="footer-contact-block">
+            <address class="footer-contact">
+              <span v-if="contact.address" class="footer-contact__address">
+                <i class="fa-solid fa-location-dot" aria-hidden="true" />
+                <span class="footer-contact__copy"><strong v-if="contact.footer_address_label">{{ contact.footer_address_label }}:</strong> {{ contact.address }}</span>
+              </span>
+              <a v-if="contact.phone_primary" :href="`tel:${phoneHref}`">
+                <i class="fa-solid fa-phone" aria-hidden="true" />
+                <span class="footer-contact__copy"><strong v-if="contact.footer_phone_label">{{ contact.footer_phone_label }}:</strong> {{ contact.phone_primary }}</span>
+              </a>
+              <a v-if="contact.phone_secondary" :href="`tel:${phoneSecondaryHref}`">
+                <i class="fa-solid fa-phone" aria-hidden="true" />
+                <span class="footer-contact__copy"><strong v-if="contact.footer_secondary_phone_label">{{ contact.footer_secondary_phone_label }}:</strong> {{ contact.phone_secondary }}</span>
+              </a>
+              <a v-if="contact.email" :href="`mailto:${contact.email}`">
+                <i class="fa-regular fa-envelope" aria-hidden="true" />
+                <span class="footer-contact__copy"><strong v-if="contact.footer_email_label">{{ contact.footer_email_label }}:</strong> {{ contact.email }}</span>
+              </a>
+            </address>
+          </div>
           <div v-if="hasSocialProfiles" class="footer-social" :aria-label="footer.socialProfilesLabel">
             <a v-if="social.facebook" :href="social.facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true" /></a>
             <a v-if="social.instagram" :href="social.instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true" /></a>
@@ -158,9 +172,13 @@ const newsletterMessage = ref('');
 const newsletterFeedbackType = ref('');
 const contact = computed(() => ({
   email: settings.value.contact?.email ?? 'info@ignite.org.bd',
-  phone_primary: settings.value.contact?.phone_primary ?? '+880 1972 016221',
+  phone_primary: settings.value.contact?.phone_primary ?? '+8801972016221',
   phone_secondary: settings.value.contact?.phone_secondary ?? '',
-  address: settings.value.contact?.address ?? 'Mirpur, Dhaka, Bangladesh',
+  address: settings.value.contact?.address ?? 'Madrasah Road, House-847, Level (A-1), East Kazi Para, Mirpur, Dhaka-1216',
+  footer_address_label: settings.value.contact?.footer_address_label ?? 'Address',
+  footer_phone_label: settings.value.contact?.footer_phone_label ?? 'Cell',
+  footer_secondary_phone_label: settings.value.contact?.footer_secondary_phone_label ?? 'Alternate cell',
+  footer_email_label: settings.value.contact?.footer_email_label ?? 'Email',
 }));
 const phoneHref = computed(() => contact.value.phone_primary.replace(/[^+\d]/g, ''));
 const phoneSecondaryHref = computed(() => contact.value.phone_secondary.replace(/[^+\d]/g, ''));
@@ -170,9 +188,9 @@ const LEGAL_STATUS_MENU_UUID = '7f030000-0000-4000-8000-000000000300';
 const legalStatus = computed(() => {
   const values = settings.value.legal_status || {};
   const defaults = [
-    ['Microcredit Regulatory Authority Reg. No.', '00176-00059-00018', 'MRA'],
-    ['NGO Affairs Bureau Registration No.', '626', 'NGOAB'],
-    ['Joint Stock & Firms Registration No.', 'S-5803(47)06', 'RJSC'],
+    ['', '', 'MRA'],
+    ['NGO Affairs Bureau Registration No.', '3461', 'NGOAB'],
+    ['Joint Stock & Firms Registration No.', 'S-13907/2022', 'RJSC'],
   ];
   const items = defaults.map(([defaultLabel, defaultRegistration, badge], index) => {
     const number = index + 1;
@@ -252,7 +270,7 @@ function subscribe() {
   newsletterBusy.value = true;
   newsletterMessage.value = '';
   newsletterFeedbackType.value = '';
-  router.post(route('frontend.subscribe'), { email: newsletterEmail.value }, {
+  router.post(route('frontend.subscribe'), { email: newsletterEmail.value, consent: newsletterConsent.value }, {
     preserveScroll: true,
     onSuccess: () => {
       newsletterEmail.value = '';
@@ -296,10 +314,13 @@ function subscribe() {
 .footer-brand__name img { display:block; width:auto; max-width:min(170px,100%); max-height:58px; object-fit:contain; object-position:left center; }
 .footer-brand__tagline { display:block; max-width:360px; margin-top:10px; color:#ffb174; font-size:12px; font-weight:800; line-height:1.4; }
 .footer-brand__tagline span { display:block; }
-.footer-contact { display:grid; max-width:390px; gap:8px; margin:16px 0; font-style:normal; }
+.footer-contact-block { max-width:390px; margin:16px 0; }
+.footer-contact { display:grid; gap:8px; margin:0; font-style:normal; }
 .footer-contact a,.footer-contact span { display:flex; min-width:0; align-items:flex-start; gap:8px; color:#c9cbcc; font-size:12px; line-height:1.45; text-decoration:none; overflow-wrap:anywhere; }
 .footer-contact__address { width:100%; }
 .footer-contact i { width:14px; flex:0 0 14px; padding-top:3px; color:var(--footer-primary); text-align:center; }
+.footer-contact .footer-contact__copy { display:block; color:inherit; }
+.footer-contact__copy strong { color:#fff; font-weight:700; }
 .footer-social { display:flex; flex-wrap:wrap; gap:8px; }
 .footer-social a { display:grid; width:36px; height:36px; place-content:center; border-radius:50%; background:rgba(255,255,255,.08); color:#e0e1e2; text-decoration:none; }
 .footer-social a:hover { background:var(--footer-primary); color:#fff; }

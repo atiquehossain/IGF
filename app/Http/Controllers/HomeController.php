@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
+use App\Mail\ConfirmNewsletterSubscription;
 use App\Models\Category;
 use App\Models\LatestNews;
 use App\Models\NoticeBoard;
@@ -12,10 +13,16 @@ use App\Models\Page;
 use App\Models\Subscriber;
 use App\Services\ContentSanitizer;
 use Exception;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
+use Throwable;
 
 class HomeController extends Controller
 {
+    private const GENERIC_SUBSCRIPTION_MESSAGE = 'If this address can receive updates, a confirmation link has been sent.';
     public function __construct(private ContentSanitizer $sanitizer)
     {
     }
@@ -245,25 +252,83 @@ class HomeController extends Controller
 
     public function subscribe(Request $request)
     {
-        $this->validate($request, [
-            'email' => 'required|email:rfc|max:255',
+        $validated = $request->validate([
+            'email' => ['required', 'email:rfc', 'max:255'],
+            'consent' => ['required', 'accepted'],
         ]);
 
-        try {
-            $email = Subscriber::where('email', $request->email)->first();
-            if (!$email) {
-                Subscriber::create([
-                    'email' => $request->email
-                ]);
-            }
+        $email = Str::lower(trim($validated['email']));
 
-            $response = ['type' => 'success', 'text' => 'Thank you for subscribing.'];
-            return back()->with('message', $response);
-        } catch (Exception $e) {
-            report($e);
-            return back()->withErrors([
-                'email' => 'We could not save your subscription. Please try again.',
+        try {
+            [$subscriber, $shouldSend] = DB::transaction(function () use ($email): array {
+                $subscriber = Subscriber::query()->firstOrCreate(
+                    ['email' => $email],
+                    ['uuid' => (string) Str::uuid()]
+                );
+                $subscriber = Subscriber::query()->lockForUpdate()->findOrFail($subscriber->getKey());
+
+                if (blank($subscriber->uuid)) {
+                    $subscriber->forceFill(['uuid' => (string) Str::uuid()])->save();
+                }
+
+                if ($subscriber->confirmed_at !== null) {
+                    return [$subscriber, false];
+                }
+
+                $cooldown = max(1, (int) config('privacy.newsletter.resend_cooldown_minutes', 15));
+                if ($subscriber->confirmation_sent_at?->isAfter(now()->subMinutes($cooldown))) {
+                    return [$subscriber, false];
+                }
+
+                $subscriber->forceFill(['confirmation_sent_at' => now()])->save();
+
+                return [$subscriber, true];
+            });
+
+            if ($shouldSend) {
+                $confirmationUrl = URL::temporarySignedRoute(
+                    'frontend.subscribe.confirm',
+                    now()->addMinutes(max(1, (int) config('privacy.newsletter.confirmation_ttl_minutes', 1440))),
+                    ['subscriber' => $subscriber->uuid]
+                );
+
+                try {
+                    Mail::to($subscriber->email)->send(new ConfirmNewsletterSubscription($confirmationUrl));
+                } catch (Throwable $exception) {
+                    Log::warning('Newsletter confirmation dispatch failed.', [
+                        'subscriber_id' => $subscriber->getKey(),
+                        'exception_class' => $exception::class,
+                    ]);
+                }
+            }
+        } catch (Throwable $exception) {
+            Log::warning('Newsletter subscription request failed.', [
+                'exception_class' => $exception::class,
             ]);
         }
+
+        return back()->with('message', [
+            'type' => 'success',
+            'text' => self::GENERIC_SUBSCRIPTION_MESSAGE,
+        ]);
+    }
+
+    public function confirmSubscription(string $subscriber)
+    {
+        DB::transaction(function () use ($subscriber): void {
+            $record = Subscriber::query()
+                ->where('uuid', $subscriber)
+                ->lockForUpdate()
+                ->first();
+
+            if ($record !== null && $record->confirmed_at === null) {
+                $record->forceFill(['confirmed_at' => now()])->save();
+            }
+        });
+
+        return redirect()->route('frontend.home')->with('message', [
+            'type' => 'success',
+            'text' => 'Your email subscription is confirmed.',
+        ]);
     }
 }

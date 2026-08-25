@@ -3,6 +3,13 @@
 return [
     'automation_enabled' => filter_var(env('PRIVACY_RETENTION_AUTOMATION_ENABLED', false), FILTER_VALIDATE_BOOL),
 
+    'newsletter' => [
+        // Signed confirmation links expire, and repeated submissions for the
+        // same unconfirmed address do not generate an email storm.
+        'confirmation_ttl_minutes' => 1440,
+        'resend_cooldown_minutes' => 15,
+    ],
+
     /*
     | Retention is deliberately fail-safe: a policy with no positive number
     | of days is disabled. The command also requires --execute, so deploying

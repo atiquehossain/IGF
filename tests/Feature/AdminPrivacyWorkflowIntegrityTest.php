@@ -105,10 +105,12 @@ class AdminPrivacyWorkflowIntegrityTest extends TestCase
         Subscriber::create([
             'uuid' => (string) Str::uuid(),
             'email' => '+formula@example.test',
+            'confirmed_at' => now(),
         ]);
         Subscriber::create([
             'uuid' => (string) Str::uuid(),
             'email' => 'excluded@example.test',
+            'confirmed_at' => now(),
         ]);
 
         $this->actingAs($admin, 'admin')

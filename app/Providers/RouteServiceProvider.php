@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -93,6 +94,31 @@ class RouteServiceProvider extends ServiceProvider
             return [
                 Limit::perMinute(20)->by($key . ':minute'),
                 Limit::perHour(200)->by($key . ':hour'),
+            ];
+        });
+
+        RateLimiter::for('newsletter-subscribe', function (Request $request) {
+            $keyMaterial = (string) config('app.key', '');
+            $email = Str::lower(trim((string) $request->input('email')));
+            $emailKey = hash_hmac('sha256', $email, $keyMaterial);
+            $ipKey = hash_hmac('sha256', (string) $request->ip(), $keyMaterial);
+
+            return [
+                Limit::perHour(5)->by('newsletter-email:' . $emailKey),
+                Limit::perMinute(10)->by('newsletter-ip-minute:' . $ipKey),
+                Limit::perHour(50)->by('newsletter-ip-hour:' . $ipKey),
+            ];
+        });
+
+        RateLimiter::for('newsletter-confirm', function (Request $request) {
+            $keyMaterial = (string) config('app.key', '');
+            $subscriber = (string) $request->route('subscriber');
+            $subscriberKey = hash_hmac('sha256', $subscriber, $keyMaterial);
+            $ipKey = hash_hmac('sha256', (string) $request->ip(), $keyMaterial);
+
+            return [
+                Limit::perMinute(10)->by('newsletter-confirm-link:' . $subscriberKey),
+                Limit::perMinute(20)->by('newsletter-confirm-ip:' . $ipKey),
             ];
         });
     }

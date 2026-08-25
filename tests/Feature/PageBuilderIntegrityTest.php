@@ -1782,8 +1782,10 @@ class PageBuilderIntegrityTest extends TestCase
             ])
         )->assertOk()
             ->assertJsonCount(2, 'block.content.slides')
+            ->assertJsonPath('block.content.slides.0.heading', 'First carousel heading')
             ->assertJsonPath('block.content.slides.0.primary_url', '')
             ->assertJsonPath('block.content.slides.0.image', '')
+            ->assertJsonPath('block.content.slides.1.heading', 'Second carousel heading')
             ->assertJsonPath('block.content.slides.1.image', '/image/banner/slider-2.png')
             ->assertJsonPath('block.content.interval', 5500);
 

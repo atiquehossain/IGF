@@ -150,4 +150,23 @@ class CategoryLandingPageIntegrityTest extends TestCase
         $this->assertSame('অনুবাদক-নির্ধারিত', $translated->content['items'][1]['accent']);
     }
 
+    public function test_awards_layout_uses_stable_category_identity_after_slug_translation(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        $this->seed(IgniteParityContentSeeder::class);
+
+        $awards = Category::query()
+            ->where('uuid', '61000000-0000-4000-8000-000000000003')
+            ->where('language', 'en')
+            ->firstOrFail();
+        $awards->update(['slug' => 'recognitions-and-awards']);
+
+        $this->get('/category/recognitions-and-awards')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('data.is_awards_category', true)
+            );
+    }
+
 }

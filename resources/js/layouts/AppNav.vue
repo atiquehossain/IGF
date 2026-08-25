@@ -139,7 +139,6 @@ const fallbackNavigation = [
   { name:'Home', href:'/' },
   { name:'About Us', href:'#', children:[
     { name:'Who We Are', href:'/about-us' },
-    { name:"Founder's Letter", href:"/page/founder's-letter" },
     { name:'Awards & Recognition', href:'/category/awards-&-recognition' },
     { name:'Photo Gallery', href:'/gallery' },
     { name:'Annual Reports', href:'/annual-report' },

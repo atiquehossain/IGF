@@ -21,6 +21,14 @@ class PublicPresentationIntegrityTest extends TestCase
                 ->where('siteSettings.contact_page.title', "Let's start a conversation.")
                 ->where('siteSettings.contact_page.faq_1_question', 'What is Ignite Global Foundation?')
                 ->where('siteSettings.contact.email', 'info@ignite.org.bd')
+                ->where('siteSettings.contact.phone_primary', '+8801972016221')
+                ->where('siteSettings.contact.phone_secondary', '')
+                ->where('siteSettings.contact.address', 'Madrasah Road, House-847, Level (A-1), East Kazi Para, Mirpur, Dhaka-1216')
+                ->missing('siteSettings.contact.footer_heading')
+                ->where('siteSettings.contact.footer_address_label', 'Address')
+                ->where('siteSettings.contact.footer_phone_label', 'Cell')
+                ->where('siteSettings.contact.footer_secondary_phone_label', 'Alternate cell')
+                ->where('siteSettings.contact.footer_email_label', 'Email')
             );
     }
 
@@ -35,10 +43,16 @@ class PublicPresentationIntegrityTest extends TestCase
 
     public function test_public_submission_routes_are_throttled_and_contact_message_is_bounded(): void
     {
-        foreach (['frontend.send.sms', 'frontend.subscribe', 'frontend.sponsorship.store', 'frontend.volunteer_registration.store', 'frontend.donate.store'] as $name) {
+        foreach ([
+            'frontend.send.sms' => 'throttle:10,1',
+            'frontend.subscribe' => 'throttle:newsletter-subscribe',
+            'frontend.sponsorship.store' => 'throttle:10,1',
+            'frontend.volunteer_registration.store' => 'throttle:10,1',
+            'frontend.donate.store' => 'throttle:10,1',
+        ] as $name => $throttle) {
             $route = app('router')->getRoutes()->getByName($name);
             $this->assertNotNull($route);
-            $this->assertContains('throttle:10,1', $route->gatherMiddleware());
+            $this->assertContains($throttle, $route->gatherMiddleware());
         }
 
         $this->post(route('frontend.send.sms'), [
@@ -88,10 +102,12 @@ class PublicPresentationIntegrityTest extends TestCase
 
     public function test_primary_public_selects_have_explicit_accessible_names(): void
     {
-        $this->assertStringContainsString(':aria-label="settings.cause_field_label"', file_get_contents(resource_path('js/Pages/donate.vue')));
+        $donateTemplate = file_get_contents(resource_path('js/Pages/donate.vue'));
+        $this->assertStringContainsString('data-test="locked-donation-cause"', $donateTemplate);
+        $this->assertStringContainsString('role="status"', $donateTemplate);
+        $this->assertStringNotContainsString('id="donation-cause"', $donateTemplate);
         $this->assertStringContainsString(':aria-label="settings.interval_field_label"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
         $this->assertStringContainsString(':aria-label="settings.cause_field_label"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
-        $this->assertStringContainsString('for="donation-cause"', file_get_contents(resource_path('js/Pages/donate.vue')));
         $this->assertStringContainsString('for="sponsorship-interval"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
         $this->assertStringContainsString('for="volunteer-cause"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
     }

@@ -328,7 +328,7 @@ class AdminController extends Controller
         $request->session()->put(Admin::SESSION_AUTH_VERSION, $nextAuthVersion);
         $request->session()->regenerate();
 
-        return back()->with([
+        return redirect()->route('dashboard.index')->with([
             'message' => data_get($request->Lang, 'Common.Form.PasswordChangedSuccessfully', 'Password changed successfully.'),
             'alert-type' => 'success',
         ]);

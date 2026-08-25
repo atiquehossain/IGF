@@ -136,6 +136,7 @@ class AdminViewOnlyPermissionUxTest extends TestCase
         $subscriber = Subscriber::create([
             'uuid' => (string) Str::uuid(),
             'email' => 'permission-subscriber@example.test',
+            'confirmed_at' => now(),
         ]);
 
         $viewer = $this->makeAdmin('Subscriber viewer', $this->makeRole(
@@ -151,7 +152,7 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertDontSee('send-email-btn', false)
             ->assertDontSee('class="btn btn-sm btn-danger trash"', false)
             ->assertDontSee('Send Email to Subscriber')
-            ->assertDontSee(route('subscriber.sendEmail'), false);
+            ->assertDontSee(route('subscriber.sendEmail', ['subscriber' => $subscriber->uuid]), false);
 
         $sender = $this->makeAdmin('Subscriber sender', $this->makeRole(
             'Subscriber sender role',
@@ -164,7 +165,7 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertOk()
             ->assertSee('send-email-btn', false)
             ->assertSee('Send Email to Subscriber')
-            ->assertSee(route('subscriber.sendEmail'), false)
+            ->assertSee(route('subscriber.sendEmail', ['subscriber' => $subscriber->uuid]), false)
             ->assertDontSee(route('subscriber.destroy', $subscriber->id), false)
             ->assertDontSee('Read-only email list.');
 

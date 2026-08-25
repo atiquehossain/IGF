@@ -1,9 +1,11 @@
 <template>
   <Layout>
-    <div class="igf-donate" :class="[`is-layout-${checkoutLayout}`, `is-card-${cardStyle}`, { 'has-hero': settings.show_hero }]">
-      <header v-if="settings.show_hero" class="igf-donate__hero">
+    <div class="igf-donate" :class="[`is-layout-${checkoutLayout}`, `is-card-${cardStyle}`, { 'has-hero': settings.show_hero, 'has-cause-gallery': showCauseGallery, 'is-cause-page': isCausePage }]">
+      <header v-if="isCatalogPage && settings.show_hero" class="igf-donate__hero">
+        <img v-if="settings.hero_image" class="igf-donate__hero-image" :src="settings.hero_image" alt="" aria-hidden="true" fetchpriority="high">
+        <span class="igf-donate__hero-overlay" aria-hidden="true" />
         <div class="igf-shell igf-donate__hero-grid">
-          <div>
+          <div class="igf-donate__hero-copy">
             <p class="igf-eyebrow">{{ settings.eyebrow }}</p>
             <h1>{{ settings.title }}</h1>
             <p class="igf-donate__lead">{{ settings.introduction }}</p>
@@ -16,15 +18,79 @@
         </div>
       </header>
 
-      <section class="igf-donate__section" aria-labelledby="donation-form-title">
+      <header v-if="isCausePage" class="igf-donate__hero igf-donate__hero--cause">
+        <img v-if="selectedCause?.image" class="igf-donate__hero-image" :src="selectedCause.image" alt="" aria-hidden="true" fetchpriority="high">
+        <span class="igf-donate__hero-overlay" aria-hidden="true" />
+        <div class="igf-shell igf-donate__hero-grid">
+          <div class="igf-donate__hero-copy">
+            <a class="igf-cause-back-link" :href="catalogUrl"><span aria-hidden="true">&larr;</span> All donation causes</a>
+            <p class="igf-eyebrow">{{ settings.form_badge || 'Secure donation' }}</p>
+            <h1>{{ selectedCause?.name || settings.title }}</h1>
+            <p class="igf-donate__lead">{{ selectedCause?.description || selectionWarning || settings.introduction }}</p>
+          </div>
+          <ul v-if="settings.show_assurances" class="igf-trust-list" :aria-label="settings.assurances_accessible_label">
+            <li><i class="fa-solid fa-lock" aria-hidden="true" /><span><strong>{{ settings.secure_title }}</strong>{{ settings.secure_body }}</span></li>
+            <li><i class="fa-solid fa-receipt" aria-hidden="true" /><span><strong>{{ settings.confirmation_title }}</strong>{{ settings.confirmation_body }}</span></li>
+            <li><i class="fa-solid fa-chart-line" aria-hidden="true" /><span><strong>{{ settings.impact_title }}</strong>{{ settings.impact_body }}</span></li>
+          </ul>
+        </div>
+      </header>
+
+      <section v-if="showCauseGallery" class="igf-donate-causes" aria-labelledby="donation-causes-title">
+        <div class="igf-shell">
+          <header class="igf-donate-causes__header">
+            <p class="igf-eyebrow">{{ settings.cause_gallery_eyebrow }}</p>
+            <h2 id="donation-causes-title">{{ settings.cause_gallery_title }}</h2>
+            <p v-if="settings.cause_gallery_introduction">{{ settings.cause_gallery_introduction }}</p>
+          </header>
+          <div v-if="donationTypes.length" class="igf-donate-causes__grid">
+            <article v-for="(cause, index) in donationTypes" :key="cause.uuid" class="igf-donation-cause-card"
+              data-test="donation-cause-card">
+              <div class="igf-donation-cause-card__media">
+                <img v-if="cause.image" :src="cause.image" alt="" width="720" height="450" loading="lazy">
+                <div v-else class="igf-donation-cause-card__placeholder" :data-variant="(index % 6) + 1" aria-hidden="true">
+                  <i :class="causeCardIcon(cause)" />
+                </div>
+              </div>
+              <div class="igf-donation-cause-card__body">
+                <h3 :id="causeCardId(cause)">{{ cause.name }}</h3>
+                <p v-if="cause.description">{{ cause.description }}</p>
+                <a data-test="donation-cause-link" :href="causePageUrl(cause)"
+                  :aria-label="`${settings.cause_card_cta_label || 'Donate to this cause'}: ${cause.name}`"
+                  :aria-describedby="causeCardId(cause)">
+                  {{ settings.cause_card_cta_label || 'Donate to this cause' }}
+                  <span aria-hidden="true">&rarr;</span>
+                </a>
+              </div>
+            </article>
+          </div>
+          <p v-else class="igf-donate-causes__empty" data-test="donation-catalog-empty" role="status" aria-live="polite">
+            {{ settings.causes_unavailable_message || 'Donation causes are being updated. Please contact us before attempting a payment.' }}
+          </p>
+        </div>
+      </section>
+
+      <section v-if="isCausePage" class="igf-donate__section" aria-labelledby="donation-form-title">
         <div class="igf-shell igf-donate__layout">
-          <aside v-if="settings.show_intro_panel || settings.show_help_card" class="igf-donate__aside">
-            <div v-if="settings.show_intro_panel" class="igf-donate__aside-copy">
-              <p class="igf-eyebrow">{{ settings.aside_eyebrow }}</p>
-              <h2>{{ settings.aside_title }}</h2>
-              <p>{{ settings.aside_body }}</p>
-              <a v-if="settings.show_reports_link" :href="settings.reports_url" class="igf-text-link">{{ settings.reports_label }} <span aria-hidden="true">&rarr;</span></a>
-            </div>
+          <aside v-if="selectedCause || settings.show_help_card" class="igf-donate__aside">
+            <article v-if="selectedCause" class="igf-cause-story" aria-labelledby="selected-cause-story-title">
+              <div class="igf-cause-story__media">
+                <img v-if="selectedCause.image" :src="selectedCause.image" alt="" width="720" height="450">
+                <div v-else class="igf-donation-cause-card__placeholder" aria-hidden="true">
+                  <i :class="causeCardIcon(selectedCause)" />
+                </div>
+              </div>
+              <div class="igf-cause-story__body">
+                <p class="igf-eyebrow">Your selected cause</p>
+                <h2 id="selected-cause-story-title">{{ selectedCause.name }}</h2>
+                <p v-if="selectedCause.description">{{ selectedCause.description }}</p>
+                <div class="igf-cause-story__destination">
+                  <i class="fa-solid fa-hand-holding-heart" aria-hidden="true" />
+                  <span><small>{{ settings.destination_label || 'Donation destination' }}</small><strong>{{ confirmedDestinationName }}</strong></span>
+                </div>
+                <a v-if="settings.show_reports_link" :href="settings.reports_url" class="igf-text-link">{{ settings.reports_label }} <span aria-hidden="true">&rarr;</span></a>
+              </div>
+            </article>
             <div v-if="settings.show_help_card" class="igf-help-card">
               <i class="fa-regular fa-circle-question" aria-hidden="true" />
               <div><strong>{{ settings.help_title }}</strong><a :href="`mailto:${contact.email}`">{{ contact.email }}</a><a :href="`tel:${contact.phone_primary}`">{{ contact.phone_primary }}</a></div>
@@ -100,9 +166,14 @@
 
                     <fieldset class="igf-fieldset">
                       <legend>{{ settings.cause_legend }}</legend>
-                      <label class="igf-native-field" for="donation-cause"><span>{{ settings.cause_field_label }}</span><select id="donation-cause" v-model="donation.payment_cause" :aria-label="settings.cause_field_label" :disabled="donationTypes.length === 0" required><option disabled value="">{{ settings.cause_placeholder }}</option><option v-for="cause in donationTypes" :key="cause.uuid" :value="cause.uuid">{{ cause.name }}</option></select></label>
-                      <p v-if="settings.cause_help && donationTypes.length > 0" class="igf-field-help">{{ settings.cause_help }}</p>
-                      <p v-if="donationTypes.length === 0" class="igf-cause-alert" role="status">{{ settings.causes_unavailable_message }}</p>
+                      <div v-if="selectedCause" class="igf-locked-cause" data-test="locked-donation-cause" role="status"
+                        :aria-label="`${settings.cause_field_label || 'Supporting'}: ${selectedCause.name}`">
+                        <i :class="causeCardIcon(selectedCause)" aria-hidden="true" />
+                        <span><small>{{ settings.cause_field_label || 'Supporting' }}</small><strong>{{ selectedCause.name }}</strong></span>
+                        <i class="fa-solid fa-lock" aria-hidden="true" />
+                      </div>
+                      <p v-if="settings.cause_help && selectedCause" class="igf-field-help">{{ settings.cause_help }}</p>
+                      <p v-if="!selectedCause" class="igf-cause-alert" role="status">{{ settings.causes_unavailable_message }}</p>
                       <p v-if="selectionWarning" class="igf-selection-warning" role="alert">{{ selectionWarning }}</p>
                       <label v-if="selectedCause?.project_selection === 'optional'" class="igf-native-field igf-project-field" for="donation-project">
                         <span>{{ settings.project_field_label }}</span>
@@ -239,12 +310,36 @@ const currencyPrefix = computed(() => regional.value.currency_position === 'befo
 const currencySuffix = computed(() => regional.value.currency_position === 'after' ? regional.value.currency_symbol : '');
 const checkoutLayout = computed(() => ['centered', 'split'].includes(settings.value.checkout_layout) ? settings.value.checkout_layout : 'centered');
 const cardStyle = computed(() => ['soft', 'outlined', 'elevated'].includes(settings.value.card_style) ? settings.value.card_style : 'soft');
+// Checkout is opt-in: an absent or unfamiliar server mode must never expose a
+// partially configured payment form.
+const pageMode = computed(() => inertiaPage.props.data?.pageMode === 'detail' ? 'detail' : 'catalog');
+const isCatalogPage = computed(() => pageMode.value === 'catalog');
+const isCausePage = computed(() => pageMode.value === 'detail');
+const catalogUrl = computed(() => String(inertiaPage.props.data?.catalogUrl || '/donate'));
 const MIN_DONATION_AMOUNT = 10;
 const MAX_DONATION_AMOUNT = 500000;
 const SAFE_PAYMENT_METHOD_LOGOS = Object.freeze({
   bkash: ['/image/payment-methods/bkash-reference.svg'],
   nagad: ['/image/payment-methods/nagad.png'],
   card: ['/image/payment-methods/visa-reference.svg', '/image/payment-methods/amex.png'],
+});
+const CAUSE_CARD_ICONS = Object.freeze({
+  'hands-heart': 'fa-solid fa-hands-holding-heart',
+  'graduation-cap': 'fa-solid fa-graduation-cap',
+  moon: 'fa-solid fa-moon',
+  'hand-heart': 'fa-solid fa-hand-holding-heart',
+  food: 'fa-solid fa-bowl-food',
+  emergency: 'fa-solid fa-truck-medical',
+  children: 'fa-solid fa-children',
+  stationery: 'fa-solid fa-book-open',
+  uniform: 'fa-solid fa-shirt',
+  meals: 'fa-solid fa-utensils',
+  school: 'fa-solid fa-school',
+  qurbani: 'fa-solid fa-cow',
+  water: 'fa-solid fa-droplet',
+  women: 'fa-solid fa-person-dress',
+  youth: 'fa-solid fa-people-group',
+  'street-education': 'fa-solid fa-book-open-reader',
 });
 const amountButtonCount = computed(() => Math.min(5, Math.max(2, Number(settings.value.amount_button_count) || 5)));
 const suggestedAmountOptions = computed(() => [1, 2, 3, 4, 5]
@@ -314,6 +409,9 @@ const donation = ref({ amount: '', donor_name: '', email: '', phone: '', address
 const submittedPayloadFingerprint = ref(null);
 const checkoutKeyNeedsRefresh = ref(false);
 const selectedCause = computed(() => donationTypes.value.find(cause => [cause.uuid, cause.slug].includes(donation.value.payment_cause)) || null);
+// show_cause_gallery is retained as a legacy setting for stored editor data,
+// but the catalog itself is now the only route into a checkout and is mandatory.
+const showCauseGallery = computed(() => isCatalogPage.value);
 const projectOptions = computed(() => Array.isArray(selectedCause.value?.projects) ? selectedCause.value.projects : []);
 const selectedProject = computed(() => projectOptions.value.find(project => project.uuid === donation.value.project_uuid) || null);
 const projectSelectionSatisfied = computed(() => selectedCause.value?.project_selection !== 'fixed' || !!selectedProject.value);
@@ -427,6 +525,42 @@ async function activateCustomAmount() {
   donation.value.amount = customAmountDraft.value;
   await nextTick();
   document.getElementById('donation-custom-amount')?.focus();
+}
+
+function causeCardId(cause) {
+  return `donation-cause-${String(cause?.uuid || cause?.slug || 'option').replace(/[^a-z0-9_-]/gi, '-')}`;
+}
+
+function causeCardIcon(cause) {
+  const managedIcon = CAUSE_CARD_ICONS[String(cause?.icon_key || '')];
+  if (managedIcon) return managedIcon;
+
+  return {
+    unrestricted: 'fa-solid fa-hands-holding-heart',
+    category: 'fa-solid fa-layer-group',
+    page: 'fa-solid fa-bullseye',
+  }[String(cause?.destination_type || '')] || 'fa-solid fa-heart';
+}
+
+function causePageUrl(cause) {
+  const href = String(cause?.url || `/donate/${encodeURIComponent(String(cause?.slug || cause?.uuid || ''))}`);
+  if (typeof window === 'undefined') return href;
+
+  try {
+    const current = new URL(window.location.href);
+    const target = new URL(href, current.origin);
+    ['amount', 'custom_amount'].forEach(key => {
+      if (current.searchParams.has(key) && !target.searchParams.has(key)) {
+        target.searchParams.set(key, current.searchParams.get(key));
+      }
+    });
+
+    return target.origin === current.origin
+      ? `${target.pathname}${target.search}${target.hash}`
+      : target.toString();
+  } catch {
+    return href;
+  }
 }
 
 async function revealCheckout() {
@@ -597,22 +731,58 @@ function acceptReplacementCheckoutKey(value) {
 <style scoped lang="scss">
 .igf-donate { --orange:#ff7500; --action-orange:#9c4500; --action-orange-hover:#783300; --brown:#9c4500; --ink:#191c1d; --muted:#5e5d66; --surface:#f8f9fa; --line:#e4ded9; overflow:hidden; background:#fff; color:var(--ink); font-family:'Hanken Grotesk',Arial,sans-serif; }
 .igf-shell { width:min(calc(100% - 40px),1200px); margin-inline:auto; }
-.igf-donate__hero { padding:clamp(52px,7vw,82px) 0 clamp(88px,8vw,112px); background:#211f1e; color:#fff; }
-.igf-donate__hero-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(300px,.75fr); align-items:end; gap:clamp(40px,8vw,100px); }
+.igf-donate__hero { position:relative; isolation:isolate; display:grid; min-height:clamp(410px,49vw,550px); place-items:center; overflow:hidden; padding:clamp(62px,8vw,96px) 0; background:#211f1e; color:#fff; }
+.igf-donate__hero-image,.igf-donate__hero-overlay { position:absolute; inset:0; width:100%; height:100%; }
+.igf-donate__hero-image { z-index:-2; object-fit:cover; object-position:center; }
+.igf-donate__hero-overlay { z-index:-1; background:linear-gradient(180deg,rgba(17,22,22,.78),rgba(26,23,21,.72)),linear-gradient(90deg,rgba(92,38,0,.26),transparent 58%); }
+.igf-donate__hero-grid { display:grid; gap:clamp(32px,5vw,52px); }
+.igf-donate__hero-copy { max-width:900px; margin-inline:auto; text-align:center; }
 .igf-eyebrow { margin:0 0 15px; color:#ffad72; font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
 .igf-donate h1,.igf-donate h2 { font-family:'Literata',Georgia,serif; letter-spacing:-.03em; }
-.igf-donate h1 { max-width:780px; margin:0; font-size:clamp(40px,5vw,62px); font-weight:650; line-height:1.05; }
-.igf-donate__lead { max-width:700px; margin:20px 0 0; color:#ddd9d6; font-size:clamp(17px,1.8vw,20px); line-height:1.6; }
-.igf-trust-list { display:grid; gap:18px; margin:0; padding:0; list-style:none; }
-.igf-trust-list li { display:grid; grid-template-columns:38px 1fr; gap:13px; align-items:start; }
+.igf-donate h1 { max-width:900px; margin:0 auto; font-size:clamp(42px,5.5vw,68px); font-weight:650; line-height:1.04; text-wrap:balance; }
+.igf-donate__lead { max-width:720px; margin:20px auto 0; color:#f1edeb; font-size:clamp(17px,1.8vw,20px); line-height:1.6; }
+.igf-donate__hero--cause { min-height:clamp(390px,45vw,520px); }
+.igf-donate__hero--cause .igf-donate__hero-overlay { background:linear-gradient(180deg,rgba(14,31,31,.72),rgba(23,30,29,.82)),linear-gradient(90deg,rgba(110,48,7,.3),transparent 62%); }
+.igf-cause-back-link { display:inline-flex; min-height:44px; align-items:center; gap:9px; margin-bottom:24px; border:1px solid rgba(255,255,255,.34); border-radius:999px; padding:9px 15px; color:#fff; font-size:13px; font-weight:800; text-decoration:none; }
+.igf-cause-back-link:hover { background:rgba(255,255,255,.12); }
+.igf-cause-back-link:focus-visible { outline:3px solid rgba(255,173,114,.7); outline-offset:4px; }
+.igf-trust-list { display:grid; max-width:1000px; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0 auto; padding:0; list-style:none; }
+.igf-trust-list li { display:grid; grid-template-columns:38px 1fr; gap:13px; align-items:start; border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:15px; background:rgba(18,18,18,.38); text-align:left; }
 .igf-trust-list i { display:grid; width:38px; height:38px; place-items:center; border:1px solid rgba(255,173,114,.36); border-radius:50%; color:#ffad72; }
 .igf-trust-list strong,.igf-trust-list span { display:block; }
 .igf-trust-list strong { margin-bottom:3px; color:#fff; font-size:14px; }
-.igf-trust-list span { color:#bdb9b6; font-size:12px; line-height:1.5; }
+.igf-trust-list span { color:#e0dcda; font-size:12px; line-height:1.5; }
+.igf-donate-causes { padding:clamp(66px,8vw,100px) 0; background:#f3f5f6; }
+.igf-donate-causes__empty { margin:0; border:1px solid #dedad6; border-radius:16px; background:#fff; padding:24px; color:var(--muted); text-align:center; }
+.igf-donate-causes__header { max-width:760px; margin:0 auto clamp(32px,5vw,50px); text-align:center; }
+.igf-donate-causes__header .igf-eyebrow { color:var(--brown); }
+.igf-donate-causes__header h2 { margin:0; font-size:clamp(34px,4vw,48px); font-weight:650; line-height:1.12; text-wrap:balance; }
+.igf-donate-causes__header>p:last-child:not(.igf-eyebrow) { margin:15px auto 0; color:var(--muted); font-size:17px; line-height:1.65; }
+.igf-donate-causes__grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+.igf-donation-cause-card { display:flex; min-width:0; flex-direction:column; overflow:hidden; border:1px solid #dedad6; border-radius:20px; background:#fff; box-shadow:0 14px 34px rgba(37,31,26,.08); transition:border-color .2s,box-shadow .2s,transform .2s; }
+.igf-donation-cause-card:hover { border-color:#c9895d; box-shadow:0 19px 42px rgba(62,39,23,.13); transform:translateY(-4px); }
+.igf-donation-cause-card.is-selected { border-color:var(--orange); box-shadow:0 0 0 2px var(--orange),0 18px 40px rgba(90,43,10,.13); }
+.igf-donation-cause-card__media { position:relative; overflow:hidden; aspect-ratio:16/10; background:#24211f; }
+.igf-donation-cause-card__media>img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .35s ease; }
+.igf-donation-cause-card:hover .igf-donation-cause-card__media>img { transform:scale(1.035); }
+.igf-donation-cause-card__placeholder { position:relative; display:grid; width:100%; height:100%; place-items:center; overflow:hidden; background:linear-gradient(135deg,#292421,#6b3210); color:#ffb078; font-size:52px; }
+.igf-donation-cause-card__placeholder::before { position:absolute; right:-14%; bottom:-48%; width:78%; aspect-ratio:1; border:1px solid rgba(255,255,255,.15); border-radius:50%; content:''; box-shadow:0 0 0 32px rgba(255,255,255,.04),0 0 0 64px rgba(255,255,255,.025); }
+.igf-donation-cause-card__placeholder[data-variant="2"] { background:linear-gradient(135deg,#1e2e31,#315f5d); color:#ffb078; }
+.igf-donation-cause-card__placeholder[data-variant="3"] { background:linear-gradient(135deg,#3a251f,#914409); color:#ffd0aa; }
+.igf-donation-cause-card__placeholder[data-variant="4"] { background:linear-gradient(135deg,#263128,#527553); color:#ffe0b8; }
+.igf-donation-cause-card__placeholder[data-variant="5"] { background:linear-gradient(135deg,#26233b,#665b96); color:#ffd3ad; }
+.igf-donation-cause-card__placeholder[data-variant="6"] { background:linear-gradient(135deg,#382516,#a35b22); color:#fff0cc; }
+.igf-donation-cause-card__placeholder>i { position:relative; z-index:1; }
+.igf-donation-cause-card__selected { position:absolute; top:13px; right:13px; display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:7px 10px; background:#fff; color:var(--brown); font-size:10px; font-weight:850; letter-spacing:.04em; text-transform:uppercase; box-shadow:0 5px 15px rgba(0,0,0,.16); }
+.igf-donation-cause-card__body { display:flex; flex:1; flex-direction:column; padding:24px; }
+.igf-donation-cause-card__body h3 { margin:0; font-family:'Literata',Georgia,serif; font-size:clamp(23px,2.2vw,28px); font-weight:650; letter-spacing:-.025em; line-height:1.18; }
+.igf-donation-cause-card__body>p { margin:12px 0 22px; color:var(--muted); font-size:15px; line-height:1.6; }
+.igf-donation-cause-card__body>a { display:flex; min-height:50px; align-items:center; justify-content:center; gap:9px; margin-top:auto; border:0; border-radius:11px; padding:12px 18px; background:var(--action-orange); color:#fff; font:800 14px/1.2 'Hanken Grotesk',Arial,sans-serif; text-decoration:none; transition:background-color .16s,transform .16s; }
+.igf-donation-cause-card__body>a:hover { background:var(--action-orange-hover); }
+.igf-donation-cause-card__body>a:focus-visible { outline:3px solid rgba(156,69,0,.34); outline-offset:4px; }
 .igf-donate__section { padding:clamp(54px,7vw,88px) 0; background:var(--surface); }
-.has-hero .igf-donate__section { padding-top:0; }
+.has-cause-gallery .igf-donate__section { border-top:1px solid #e4e1de; }
 .igf-donate__layout { display:grid; grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr); align-items:start; gap:clamp(45px,8vw,105px); }
-.has-hero .igf-donate__layout { position:relative; z-index:2; margin-top:-68px; }
 .igf-donate__aside { position:sticky; top:120px; padding-top:30px; }
 .igf-donate__aside .igf-eyebrow { color:var(--brown); }
 .igf-donate__aside h2 { margin:0 0 20px; font-size:clamp(32px,4vw,46px); font-weight:620; line-height:1.12; }
@@ -622,6 +792,16 @@ function acceptReplacementCheckoutKey(value) {
 .igf-help-card>i { color:var(--orange); font-size:21px; }
 .igf-help-card strong,.igf-help-card a { display:block; }
 .igf-help-card a { margin-top:4px; color:var(--muted); font-size:13px; text-decoration:none; }
+.igf-cause-story { overflow:hidden; border:1px solid #ded7d1; border-radius:22px; background:#fff; box-shadow:0 18px 42px rgba(44,34,27,.1); }
+.igf-cause-story__media { overflow:hidden; aspect-ratio:16/10; background:#2b2927; }
+.igf-cause-story__media>img,.igf-cause-story__media>.igf-donation-cause-card__placeholder { display:block; width:100%; height:100%; object-fit:cover; }
+.igf-cause-story__body { padding:clamp(22px,3vw,32px); }
+.igf-cause-story__body>p:not(.igf-eyebrow) { margin:0; color:var(--muted); font-size:16px; line-height:1.72; }
+.igf-cause-story__destination { display:grid; grid-template-columns:42px minmax(0,1fr); align-items:center; gap:12px; margin-top:24px; border-radius:13px; padding:15px; background:#eef5f2; color:#18372f; }
+.igf-cause-story__destination>i { display:grid; width:42px; height:42px; place-items:center; border-radius:50%; background:#fff; color:var(--brown); }
+.igf-cause-story__destination small,.igf-cause-story__destination strong { display:block; }
+.igf-cause-story__destination small { margin-bottom:2px; font-size:10px; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }
+.igf-cause-story__destination strong { font-size:14px; line-height:1.35; overflow-wrap:anywhere; }
 .igf-donation-card { border:1px solid #e6d9cf; border-top:5px solid var(--orange); border-radius:24px; padding:clamp(25px,5vw,52px); background:#fff; box-shadow:0 24px 60px rgba(41,31,23,.12); }
 .is-card-outlined .igf-donation-card { border-width:2px; border-top-width:5px; box-shadow:none; }
 .is-card-elevated .igf-donation-card { border-color:transparent; box-shadow:0 22px 55px rgba(25,28,29,.16); }
@@ -631,6 +811,12 @@ function acceptReplacementCheckoutKey(value) {
 .is-layout-centered .igf-help-card { margin-top:0; border:1px solid var(--line); border-radius:12px; padding:20px; background:#fff; }
 .is-layout-centered .igf-donation-card { order:1; }
 .is-layout-centered .igf-donate__aside { order:2; }
+.is-cause-page .igf-donate__layout { width:min(calc(100% - 40px),1200px); grid-template-columns:minmax(290px,.72fr) minmax(0,1.28fr); gap:clamp(30px,5vw,64px); }
+.is-cause-page .igf-donate__aside { position:sticky; top:112px; display:block; order:0; padding-top:0; }
+.is-cause-page .igf-donation-card { order:0; padding:clamp(25px,3.5vw,42px); }
+.is-cause-page .igf-checkout-grid { grid-template-columns:1fr; }
+.is-cause-page .igf-donation-review { position:static; margin-top:8px; }
+.is-cause-page .igf-help-card { margin-top:24px; border:1px solid var(--line); border-radius:12px; padding:18px; background:#fff; }
 .igf-donation-card__toolbar { display:flex; min-height:31px; align-items:center; justify-content:space-between; gap:18px; margin-bottom:8px; }
 .igf-donation-card__header { display:flex; align-items:center; gap:8px; color:var(--brown); font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
 .igf-donation-languages { display:inline-flex; gap:4px; border:1px solid #e3d5ca; border-radius:999px; padding:3px; background:#f7f1ec; }
@@ -691,6 +877,12 @@ function acceptReplacementCheckoutKey(value) {
 .igf-donation-card :deep(.v-field) { border-radius:9px; background:#fff; }
 .igf-donation-card :deep(.v-field--focused) { color:var(--brown); }
 .igf-native-field{display:grid;gap:7px;color:var(--ink);font-size:12px;font-weight:700}.igf-native-field select{width:100%;min-height:56px;border:1px solid #79747e;border-radius:9px;padding:0 15px;background:#fff;color:var(--ink);font:500 16px 'Hanken Grotesk',Arial,sans-serif}.igf-native-field select:focus{border:2px solid var(--brown);outline:2px solid transparent}
+.igf-locked-cause { display:grid; grid-template-columns:44px minmax(0,1fr) 28px; align-items:center; gap:12px; min-height:72px; border:1px solid #d9c8ba; border-radius:13px; padding:13px 15px; background:#fff7f0; color:var(--ink); }
+.igf-locked-cause>i:first-child { display:grid; width:44px; height:44px; place-items:center; border-radius:50%; background:#fff; color:var(--brown); font-size:18px; }
+.igf-locked-cause>i:last-child { color:var(--brown); text-align:center; }
+.igf-locked-cause small,.igf-locked-cause strong { display:block; }
+.igf-locked-cause small { margin-bottom:2px; color:var(--brown); font-size:10px; font-weight:850; letter-spacing:.05em; text-transform:uppercase; }
+.igf-locked-cause strong { font-size:15px; line-height:1.35; overflow-wrap:anywhere; }
 .igf-field-help { margin:9px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
 .igf-cause-alert { margin:12px 0 0!important; padding:12px 13px; border-radius:8px; background:#fff3e9; color:var(--brown)!important; font-size:12px!important; line-height:1.5; }
 .igf-selection-warning { margin:12px 0 0; padding:12px 13px; border-left:4px solid #a52b1a; border-radius:8px; background:#fff1ef; color:#842516; font-size:12px; font-weight:700; line-height:1.5; }
@@ -744,10 +936,11 @@ function acceptReplacementCheckoutKey(value) {
 .igf-terms { margin:15px 0 0; color:#777277; font-size:11px; line-height:1.5; text-align:center; }
 .igf-terms a { color:var(--brown); }
 .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
-@media (max-width:1000px) { .is-layout-centered .igf-checkout-grid { grid-template-columns:1fr; } .igf-donation-review { position:static; } }
-@media (max-width:900px) { .igf-donate__hero-grid,.igf-donate__layout { grid-template-columns:1fr; } .igf-trust-list { grid-template-columns:repeat(3,1fr); } .igf-donate__aside,.is-layout-centered .igf-donate__aside { position:static; grid-template-columns:1fr; padding-top:0; } .is-layout-centered .igf-help-card { margin-top:0; } }
-@media (max-width:700px) { .igf-amount-options { grid-template-columns:1fr 1fr; } .igf-frequency-tabs { grid-template-columns:1fr 1fr; } }
+@media (max-width:1000px) { .igf-donate-causes__grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .is-layout-centered .igf-checkout-grid { grid-template-columns:1fr; } .igf-donation-review { position:static; } }
+@media (max-width:900px) { .igf-donate__layout,.is-cause-page .igf-donate__layout { grid-template-columns:1fr; } .igf-trust-list { grid-template-columns:repeat(3,1fr); } .igf-donate__aside,.is-layout-centered .igf-donate__aside,.is-cause-page .igf-donate__aside { position:static; grid-template-columns:1fr; padding-top:0; } .is-layout-centered .igf-help-card { margin-top:0; } }
+@media (max-width:700px) { .igf-donate-causes__grid,.igf-trust-list { grid-template-columns:1fr; } .igf-amount-options { grid-template-columns:1fr 1fr; } .igf-frequency-tabs { grid-template-columns:1fr 1fr; } }
 @media (max-width:620px) { .igf-payment-method { grid-template-columns:132px minmax(0,1fr) 22px; gap:11px; padding-inline:14px; } .igf-payment-method.is-unavailable { grid-template-columns:132px minmax(0,1fr); } }
-@media (max-width:640px) { .igf-shell,.is-layout-centered .igf-donate__layout { width:min(calc(100% - 28px),1200px); } .igf-trust-list,.igf-details-grid { grid-template-columns:1fr; } .igf-donate__hero { padding:48px 0 92px; } .has-hero .igf-donate__layout { margin-top:-56px; } .igf-donation-card { border-radius:17px; padding:24px 20px; } .igf-checkout-steps a { min-height:44px; padding-inline:8px; } }
+@media (max-width:640px) { .igf-shell,.is-layout-centered .igf-donate__layout,.is-cause-page .igf-donate__layout { width:min(calc(100% - 28px),1200px); } .igf-details-grid { grid-template-columns:1fr; } .igf-donate__hero { min-height:auto; padding:58px 0; } .igf-donate-causes { padding:54px 0; } .igf-donation-cause-card__body { padding:21px; } .igf-donation-card { border-radius:17px; padding:24px 20px; } .igf-checkout-steps a { min-height:44px; padding-inline:8px; } .igf-cause-story { border-radius:17px; } }
 @media (max-width:480px) { .igf-payment-method { grid-template-columns:96px minmax(0,1fr) 22px; gap:9px; padding:13px 11px; } .igf-payment-method.is-unavailable { grid-template-columns:96px minmax(0,1fr); } .igf-payment-method__logos { width:96px; padding-inline:2px; } .igf-payment-method__logos img { max-width:92px; } .igf-payment-method__logos.has-multiple { gap:4px; } .igf-payment-method__logos.has-multiple img { max-width:41px; } .igf-payment-method__copy strong { font-size:14px; } .igf-payment-method__copy small { font-size:11px; } .igf-amount-options { gap:8px; } .igf-amount-options button { min-height:84px; padding:12px 34px 12px 12px; } .igf-amount-options button>span { font-size:20px; } .igf-amount-options button>small { font-size:10px; } .igf-checkout-grid { gap:20px; } .igf-donation-review { padding:17px; } }
+@media (prefers-reduced-motion:reduce) { .igf-donation-cause-card,.igf-donation-cause-card__media>img,.igf-donation-cause-card__body>a { transition:none; } .igf-donation-cause-card:hover { transform:none; } .igf-donation-cause-card:hover .igf-donation-cause-card__media>img { transform:none; } }
 </style>

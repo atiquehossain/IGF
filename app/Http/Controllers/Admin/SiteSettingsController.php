@@ -8,6 +8,7 @@ use App\Models\MediaAsset;
 use App\Models\SiteSetting;
 use App\Services\ContentSanitizer;
 use App\Services\DonationPaymentMethodService;
+use App\Services\SiteSettingVersionService;
 use App\Services\SiteSettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,7 +22,8 @@ class SiteSettingsController extends Controller
     public function __construct(
         private SiteSettingService $settings,
         private ContentSanitizer $sanitizer,
-        private DonationPaymentMethodService $paymentMethods
+        private DonationPaymentMethodService $paymentMethods,
+        private SiteSettingVersionService $versions
     ) {
     }
 
@@ -38,6 +40,7 @@ class SiteSettingsController extends Controller
             'values' => $this->settings->values($locale),
             'locales' => $locales,
             'locale' => $locale,
+            'globalSettingsVersion' => $this->versions->current(),
             'paymentProviderStatuses' => $this->paymentMethods->operationalStatuses(),
             'mediaAssets' => MediaAsset::query()
                 ->where('mime_type', 'like', 'image/%')
@@ -55,7 +58,10 @@ class SiteSettingsController extends Controller
 
         abort_unless(in_array($locale, $allowedLocales, true), 422);
 
-        $rules = ['locale' => ['required', 'string', 'max:10']];
+        $rules = [
+            'locale' => ['required', 'string', 'max:10'],
+            'global_settings_version' => ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],
+        ];
         foreach ($schema as $groupKey => $group) {
             foreach ($group['fields'] as $key => $field) {
                 if (($field['type'] ?? null) === 'faq_list') {
@@ -129,7 +135,15 @@ class SiteSettingsController extends Controller
             throw $exception->redirectTo(route('site.settings.index', $parameters));
         }
 
-        DB::transaction(function () use ($schema, $validated, $locale) {
+        try {
+            DB::transaction(function () use ($schema, $validated, $locale) {
+                $currentVersion = $this->versions->current(true);
+                if (!hash_equals($currentVersion, $validated['global_settings_version'])) {
+                    throw ValidationException::withMessages([
+                        'global_settings_version' => 'Website-wide settings changed after this form was opened. Reload the customizer, review the latest values, and save again.',
+                    ]);
+                }
+
             foreach ($schema as $groupKey => $group) {
                 foreach ($group['fields'] as $key => $field) {
                     $value = data_get($validated, "settings.{$groupKey}.{$key}");
@@ -157,7 +171,12 @@ class SiteSettingsController extends Controller
                     ])->save();
                 }
             }
-        });
+            });
+        } catch (ValidationException $exception) {
+            $parameters = $locale === app()->getLocale() ? [] : ['locale' => $locale];
+
+            throw $exception->redirectTo(route('site.settings.index', $parameters));
+        }
 
         return redirect()->route('site.settings.index', ['locale' => $locale])
             ->with(['message' => 'Website changes saved. Refresh the preview to see them.', 'alert-type' => 'success']);

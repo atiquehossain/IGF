@@ -35,17 +35,21 @@ class DonationTypeController extends Controller
                     ->orWhere('slug', 'like', '%' . $search . '%')
                     ->orWhere('destination_name', 'like', '%' . $search . '%');
             }))
+            ->orderByRaw('CASE WHEN display_order IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('display_order')
             ->orderBy('id')
             ->paginate(15);
         $donationTypes->getCollection()->each(function (DonationType $cause): void {
             $candidate = clone $cause;
             $candidate->status = true;
             $cause->setAttribute('destination_label', $this->destinations->destinationName($cause));
-            $cause->setAttribute('description_ready', $this->hasReviewedDescription((string) $cause->description));
-            $cause->setAttribute('destination_ready', $this->isReadyForPublication($candidate));
+            $cause->setAttribute('description_ready', $this->destinations->hasReviewedDescription($cause->description));
+            $cause->setAttribute('destination_ready', $this->destinations->isOperational($candidate));
         });
         $purposeOptions = DonationType::PURPOSE_OPTIONS;
         $destinationOptions = DonationType::DESTINATION_OPTIONS;
+        $iconOptions = DonationType::ICON_OPTIONS;
+        $nextDisplayOrder = ((int) DonationType::query()->max('display_order')) + 10;
         $categories = $this->categoryOptions(app()->getLocale());
         $pages = $this->pageOptions(app()->getLocale());
         $mediaAssets = MediaAsset::query()
@@ -74,6 +78,8 @@ class DonationTypeController extends Controller
             'search',
             'purposeOptions',
             'destinationOptions',
+            'iconOptions',
+            'nextDisplayOrder',
             'categories',
             'pages',
             'mediaAssets'
@@ -88,6 +94,7 @@ class DonationTypeController extends Controller
             'name' => ['required', 'string', 'max:255', Rule::unique('donation_types', 'name')],
             'description' => ['nullable', 'string', 'max:2000'],
             'purpose_key' => ['nullable', 'string', Rule::in(array_keys(DonationType::PURPOSE_OPTIONS)), Rule::unique('donation_types', 'purpose_key')],
+            ...$this->presentationRules(),
             ...$this->destinationRules(),
         ]);
         if (($validated['purpose_key'] ?? null) === 'zakat') {
@@ -96,6 +103,7 @@ class DonationTypeController extends Controller
             ]);
         }
         $attributes = $this->normalizedDestinationAttributes($validated);
+        $presentation = $this->normalizedPresentationAttributes($validated, true);
 
         try {
             DonationType::create([
@@ -105,6 +113,7 @@ class DonationTypeController extends Controller
                 'purpose_key' => $validated['purpose_key'] ?: null,
                 'status' => 0,
                 ...$attributes,
+                ...$presentation,
             ]);
 
             $notification = array(
@@ -137,6 +146,8 @@ class DonationTypeController extends Controller
                 'destination_category_uuid',
                 'destination_page_uuid',
                 'image_media_uuid',
+                'display_order',
+                'icon_key',
             ])->where('id', $id)->firstOrFail();
             $response = ['data' => $donation];
             return response($response, 200);
@@ -152,9 +163,11 @@ class DonationTypeController extends Controller
             'description' => ['nullable', 'string', 'max:2000'],
             'purpose_key' => ['nullable', 'string', Rule::in(array_keys(DonationType::PURPOSE_OPTIONS))],
             'id' => ['required', 'integer'],
+            ...$this->presentationRules(),
             ...$this->destinationRules(),
         ]);
         $attributes = $this->normalizedDestinationAttributes($validated);
+        $presentation = $this->normalizedPresentationAttributes($validated);
         try {
             $donationType = DonationType::find($validated['id']);
             if (empty($donationType)) {
@@ -178,14 +191,15 @@ class DonationTypeController extends Controller
                 'description' => trim((string) ($validated['description'] ?? '')) ?: null,
                 'purpose_key' => $purpose,
                 ...$attributes,
+                ...$presentation,
             ]);
-            if ($purpose === 'zakat' && (!$candidate->status || !$this->isReadyForPublication($candidate))) {
+            if ($purpose === 'zakat' && (!$candidate->status || !$this->destinations->isReadyForPublication($candidate))) {
                 return back()->withErrors([
                     'purpose_key' => 'Publish this fully reviewed cause first. Then assign it to the Zakat page; editing alone cannot publish a draft.',
                 ]);
             }
 
-            DB::transaction(function () use ($donationType, $validated, $attributes, $purpose): void {
+            DB::transaction(function () use ($donationType, $validated, $attributes, $presentation, $purpose): void {
                 // Page/Category mutations use target -> cause as their lock order.
                 // Lock the requested destination first so cause editing cannot form
                 // the opposite half of a database deadlock.
@@ -219,8 +233,9 @@ class DonationTypeController extends Controller
                     'description' => trim((string) ($validated['description'] ?? '')) ?: null,
                     'purpose_key' => $purpose,
                     ...$attributes,
+                    ...$presentation,
                 ]);
-                if ($lockedCandidate->status && !$this->isReadyForPublication($lockedCandidate)) {
+                if ($lockedCandidate->status && !$this->destinations->isReadyForPublication($lockedCandidate)) {
                     throw ValidationException::withMessages([
                         'destination_type' => 'This cause cannot remain published until its description is reviewed and its destination is active and public.',
                     ]);
@@ -238,6 +253,7 @@ class DonationTypeController extends Controller
                     'description' => trim((string) ($validated['description'] ?? '')) ?: null,
                     'purpose_key' => $purpose,
                     ...$attributes,
+                    ...$presentation,
                 ]);
             });
 
@@ -292,9 +308,9 @@ class DonationTypeController extends Controller
                             if (!$data->status) {
                                 $candidate = clone $data;
                                 $candidate->status = true;
-                                if (!$this->isReadyForPublication($candidate)) {
+                                if (!$this->destinations->isReadyForPublication($candidate)) {
                                     return response([
-                                        'message' => !$this->hasReviewedDescription((string) $data->description)
+                                        'message' => !$this->destinations->hasReviewedDescription($data->description)
                                             ? 'This cause cannot be published yet. Replace the blank or internal draft description with visitor-ready wording first.'
                                             : 'This cause cannot be published yet. Choose an active public destination and review its settings first.',
                                     ], 422);
@@ -341,6 +357,29 @@ class DonationTypeController extends Controller
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->NotDelete], 403);
         }
+    }
+
+    private function presentationRules(): array
+    {
+        return [
+            'display_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'icon_key' => ['nullable', 'string', Rule::in(array_keys(DonationType::ICON_OPTIONS))],
+        ];
+    }
+
+    private function normalizedPresentationAttributes(array $validated, bool $withDefaultOrder = false): array
+    {
+        $attributes = [];
+        if (array_key_exists('display_order', $validated) && $validated['display_order'] !== null) {
+            $attributes['display_order'] = (int) $validated['display_order'];
+        } elseif ($withDefaultOrder) {
+            $attributes['display_order'] = ((int) DonationType::query()->max('display_order')) + 10;
+        }
+        if (array_key_exists('icon_key', $validated)) {
+            $attributes['icon_key'] = filled($validated['icon_key']) ? (string) $validated['icon_key'] : null;
+        }
+
+        return $attributes;
     }
 
     private function destinationRules(): array
@@ -493,20 +532,6 @@ class DonationTypeController extends Controller
         }
 
         return $options;
-    }
-
-    private function isReadyForPublication(DonationType $cause): bool
-    {
-        return $this->hasReviewedDescription((string) $cause->description)
-            && $this->destinations->isOperational($cause);
-    }
-
-    private function hasReviewedDescription(string $description): bool
-    {
-        $description = trim($description);
-
-        return $description !== ''
-            && !str_starts_with(mb_strtolower($description), 'draft giving option.');
     }
 
     /** @return array{type: string, category: string, page: string} */

@@ -4,8 +4,8 @@
     <title>Notification</title>
 </head>
 <body>
-    <div>
-        {!! $body !!}
+    <div style="white-space: pre-line;">
+        {{ $body }}
     </div>
     @if($signatureImageUrl)
     <div style="margin-top: 20px;">

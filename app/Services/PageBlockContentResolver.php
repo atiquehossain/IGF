@@ -8,6 +8,7 @@ use App\Models\LatestNews;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\PageBlock;
+use App\Models\TeamGroup;
 use App\Models\Testimonial;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -68,7 +69,9 @@ class PageBlockContentResolver
         } elseif ($block->type === 'testimonials' && $source === 'testimonials') {
             $content['items'] = $this->testimonialItems($content, $limit);
         } elseif ($block->type === 'team' && $source === 'team') {
-            $content['items'] = $this->teamItems($content, $limit);
+            $directory = $this->teamDirectory($content, $limit);
+            $content['items'] = $directory['items'];
+            $content['groups'] = $directory['groups'];
         } elseif ($block->type === 'gallery' && $source === 'gallery') {
             $content['items'] = $this->galleryItems($content, $limit);
         }
@@ -177,9 +180,9 @@ class PageBlockContentResolver
                 ),
                 default => $this->destinations->destinationName($cause, app()->getLocale()),
             };
-            $url = '/donate?cause=' . rawurlencode((string) ($cause->slug ?: $cause->uuid));
+            $url = '/donate/' . rawurlencode((string) ($cause->slug ?: $cause->uuid));
             if ($project && $this->causeAcceptsProject($cause, $project)) {
-                $url .= '&project=' . rawurlencode((string) $project->uuid);
+                $url .= '?project=' . rawurlencode((string) $project->uuid);
             }
 
             return [
@@ -381,48 +384,157 @@ class PageBlockContentResolver
         ])->values()->all();
     }
 
-    private function teamItems(array $content, int $limit): array
+    private function teamDirectory(array $content, int $limit): array
     {
         $locale = app()->getLocale();
-        $query = LatestNews::query()
-            ->where('type', 'our-members')
-            ->where('status', 1)
-            ->where('language', $locale);
+        $sourceLocale = $this->teamSourceLocale($locale);
+        $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
+        $members = $this->records(
+            $this->teamMemberQuery($sourceLocale)->with('teamGroup'),
+            $content,
+            $limit,
+            'id',
+            'name'
+        );
+        $memberFallbacks = $members->mapWithKeys(fn (LatestNews $member): array => [
+            (string) $member->id => [
+                'name' => (string) $member->name,
+                'description' => (string) $member->description,
+                'biography' => (string) $member->biography,
+                'qualification' => (string) $member->qualification,
+            ],
+        ])->all();
+        $localizedMembers = $this->translations->localizedContentValues(
+            'team_member',
+            $memberFallbacks,
+            $locale
+        );
+        $profiles = $members->mapWithKeys(fn (LatestNews $member): array => [
+            (string) $member->id => $this->teamMemberProfile(
+                $member,
+                $itemLinkLabel,
+                $localizedMembers[(string) $member->id] ?? []
+            ),
+        ]);
+        $items = $members
+            ->map(fn (LatestNews $member): array => $profiles[(string) $member->id])
+            ->values();
+        $groupedMembers = $members->groupBy(
+            fn (LatestNews $member): int|string => $member->team_group_id === null
+                ? 'ungrouped'
+                : (int) $member->team_group_id
+        );
+        $groups = $members
+            ->pluck('teamGroup')
+            ->filter()
+            ->unique('id')
+            ->sort(function (TeamGroup $left, TeamGroup $right): int {
+                $orderComparison = (int) $right->order_by <=> (int) $left->order_by;
+
+                return $orderComparison !== 0 ? $orderComparison : (int) $left->id <=> (int) $right->id;
+            });
+        $groupFallbacks = $groups->mapWithKeys(fn (TeamGroup $group): array => [
+            (string) $group->uuid => [
+                'name' => (string) $group->name,
+                'description' => (string) ($group->description ?: ''),
+            ],
+        ])->all();
+        $localizedGroups = $this->translations->localizedContentValues(
+            'team_group',
+            $groupFallbacks,
+            $locale
+        );
+
+        $resolved = $groups->map(function (TeamGroup $group) use (
+            $groupedMembers,
+            $localizedGroups,
+            $profiles
+        ): array {
+            $localized = $localizedGroups[(string) $group->uuid] ?? [];
+            $groupMembers = $groupedMembers->get((int) $group->id, collect());
+
+            return [
+                'id' => $group->id,
+                'slug' => $group->slug,
+                'name' => $localized['name'] ?? (string) $group->name,
+                'description' => $localized['description'] ?? (string) ($group->description ?: ''),
+                'items' => $groupMembers
+                    ->map(fn (LatestNews $member): array => $profiles[(string) $member->id])
+                    ->values()
+                    ->all(),
+            ];
+        })->values();
+
+        $ungrouped = $groupedMembers->get('ungrouped', collect());
+        if ($ungrouped->isNotEmpty()) {
+            $resolved->push([
+                'id' => 'ungrouped',
+                'slug' => 'team',
+                'name' => trim((string) ($content['ungrouped_group_label'] ?? '')) ?: 'Team',
+                'description' => '',
+                'items' => $ungrouped
+                    ->map(fn (LatestNews $member): array => $profiles[(string) $member->id])
+                    ->values()
+                    ->all(),
+            ]);
+        }
+
+        return [
+            'items' => $items->all(),
+            'groups' => $resolved->all(),
+        ];
+    }
+
+    private function teamSourceLocale(string $locale): string
+    {
+        if ($locale === 'en' || $this->teamMemberQuery($locale)->exists()) {
+            return $locale;
+        }
 
         // Older installations may not yet have separate Bangla team rows. In
         // that case the translation overlay keeps the managed English record as
         // the source instead of making the whole section disappear.
-        if ($locale !== 'en' && !(clone $query)->exists()) {
-            $query = LatestNews::query()
-                ->where('type', 'our-members')
-                ->where('status', 1)
-                ->where('language', 'en');
-        }
+        return 'en';
+    }
 
-        $members = $this->records($query, $content, $limit, 'id', 'name');
-        $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
+    private function teamMemberQuery(string $locale): Builder
+    {
+        return LatestNews::query()
+            ->where('type', 'our-members')
+            ->where('status', 1)
+            ->where('language', $locale)
+            ->where(function (Builder $query) use ($locale): void {
+                $query->whereNull('team_group_id')
+                    ->orWhereHas('teamGroup', fn (Builder $group) => $group
+                        ->where('status', 1)
+                        ->where('language', $locale));
+            });
+    }
 
-        return $members->map(function (LatestNews $member) use ($locale, $itemLinkLabel): array {
-            $name = $this->translations->localizedContentValue('team_member', (string) $member->id, 'name', (string) $member->name, $locale);
-            $description = $this->translations->localizedContentValue('team_member', (string) $member->id, 'description', (string) $member->description, $locale);
-            $biography = $this->translations->localizedContentValue('team_member', (string) $member->id, 'biography', (string) $member->biography, $locale);
-            $qualification = $this->translations->localizedContentValue('team_member', (string) $member->id, 'qualification', (string) $member->qualification, $locale);
-            $legacyUrl = $this->sanitizer->sanitizeUrl($member->url ?: '');
+    private function teamMemberProfile(
+        LatestNews $member,
+        string $itemLinkLabel,
+        array $localized = []
+    ): array {
+        $name = $localized['name'] ?? (string) $member->name;
+        $description = $localized['description'] ?? (string) $member->description;
+        $biography = $localized['biography'] ?? (string) $member->biography;
+        $qualification = $localized['qualification'] ?? (string) $member->qualification;
+        $legacyUrl = $this->sanitizer->sanitizeUrl($member->url ?: '');
 
-            return [
-                'id' => $member->id,
-                'heading' => $name,
-                'designation' => $description,
-                'body' => $description,
-                'biography' => $biography,
-                'qualification' => $qualification,
-                'image' => $this->publicImage($member->path ?: $member->image, 'our_members'),
-                'image_alt' => $name,
-                'url' => $legacyUrl,
-                'social_links' => $this->normalizedSocialLinks($member->social_links, $legacyUrl),
-                'link_label' => $itemLinkLabel,
-            ];
-        })->values()->all();
+        return [
+            'id' => $member->id,
+            'heading' => $name,
+            'designation' => $description,
+            'body' => $description,
+            'biography' => $biography,
+            'qualification' => $qualification,
+            'image' => $this->publicImage($member->path ?: $member->image, 'our_members'),
+            'image_alt' => $name,
+            'url' => $legacyUrl,
+            'social_links' => $this->normalizedSocialLinks($member->social_links, $legacyUrl),
+            'link_label' => $itemLinkLabel,
+        ];
     }
 
     private function galleryItems(array $content, int $limit): array

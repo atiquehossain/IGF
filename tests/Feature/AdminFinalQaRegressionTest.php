@@ -11,6 +11,19 @@ class AdminFinalQaRegressionTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_tinymce_keeps_required_textareas_synchronized_before_native_validation(): void
+    {
+        $source = file_get_contents(resource_path('views/admin/layouts/tinymce.blade.php'));
+
+        $this->assertIsString($source);
+        $this->assertStringContainsString('var synchronizeTextarea = function()', $source);
+        $this->assertStringContainsString('editor.save();', $source);
+        $this->assertStringContainsString(
+            "editor.on('init input change SetContent Undo Redo', synchronizeTextarea);",
+            $source
+        );
+    }
+
     public function test_public_ziggy_payload_is_limited_to_routes_the_visitor_app_uses(): void
     {
         $appView = file_get_contents(resource_path('views/app.blade.php'));

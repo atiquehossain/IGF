@@ -42,6 +42,24 @@ return [
             'visibility' => 'public',
         ],
 
+        // Applicant documents are deliberately isolated from the public
+        // storage symlink. They are served only by record-aware, authorized
+        // controller actions and must never be converted into public URLs.
+        'applicant_documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/applicant-documents'),
+            'throw' => false,
+        ],
+
+        // Reviewed historical CSVs can contain the same private information as
+        // an application. Keep originals outside the public symlink and expose
+        // them only through the permission-gated import workflow.
+        'applicant_imports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/applicant-imports'),
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

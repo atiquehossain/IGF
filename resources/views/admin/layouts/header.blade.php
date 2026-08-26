@@ -26,6 +26,8 @@
 
         <link rel="stylesheet" type="text/css" href="{{ asset('admin-assets/assets/css/toastr.min.css')}}"/>
 
+        @yield('custom-css')
+
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Literata:opsz,wght@7..72,500;600;700&display=swap');
             :root {

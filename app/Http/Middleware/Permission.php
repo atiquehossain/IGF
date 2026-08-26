@@ -86,6 +86,16 @@ class Permission
             return true;
         }
 
+        // Destructive privacy operations remain deployment-owner only even if
+        // a stale or manually altered role row contains their action IDs.
+        $permissionRoutes = array_values(array_filter(
+            $permissionRoutes,
+            fn (string $capability): bool => !AdminPermissionRegistry::isOwnerOnlyCapability($capability)
+        ));
+        if ($permissionRoutes === []) {
+            return false;
+        }
+
         $menus = AuthMenu::whereIn('link', $permissionRoutes)->where('status', 1)->get();
         $actions = MenuAction::whereIn('link', $permissionRoutes)
             ->where('status', 1)

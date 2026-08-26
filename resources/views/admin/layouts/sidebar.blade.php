@@ -45,6 +45,24 @@ $navGroups = [
         ],
     ],
     [
+        'label' => 'Recruitment', 'icon' => 'fa-briefcase',
+        'items' => [
+            ['route' => 'recruitment.jobs.index', 'label' => 'Jobs', 'icon' => 'fa-briefcase'],
+            ['route' => 'recruitment.applications.index', 'label' => 'Applications', 'icon' => 'fa-id-card-o'],
+            ['route' => 'recruitment.forms.index', 'label' => 'Form Templates', 'icon' => 'fa-list-alt'],
+            ['route' => 'recruitment.imports.index', 'label' => 'CSV Imports', 'icon' => 'fa-upload'],
+        ],
+    ],
+    [
+        'label' => 'Workshops', 'icon' => 'fa-calendar',
+        'items' => [
+            ['route' => 'workshops.index', 'label' => 'Workshops', 'icon' => 'fa-calendar'],
+            ['route' => 'workshop.registrations.index', 'label' => 'Registrations', 'icon' => 'fa-users'],
+            ['route' => 'workshop.forms.index', 'label' => 'Form Templates', 'icon' => 'fa-list-alt'],
+            ['route' => 'workshop.imports.index', 'label' => 'CSV Imports', 'icon' => 'fa-upload'],
+        ],
+    ],
+    [
         'label' => 'Search & Languages', 'icon' => 'fa-search',
         'items' => [
             ['route' => 'seo.index', 'label' => 'Search & Sharing', 'icon' => 'fa-line-chart'],

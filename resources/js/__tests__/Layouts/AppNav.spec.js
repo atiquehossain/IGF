@@ -44,7 +44,8 @@ describe('AppNav submenu behavior', () => {
 
     expect(trigger.text()).toContain('Projects');
     expect(trigger.attributes('aria-expanded')).toBe('false');
-    expect(wrapper.findAll('.desktop-nav__dropdown a strong').map(link => link.text())).toEqual([
+    const projectsItem = wrapper.findAll('.desktop-nav__item').find(item => item.text().includes('Projects'));
+    expect(projectsItem.findAll('.desktop-nav__dropdown a strong').map(link => link.text())).toEqual([
       'Current Projects',
       'Completed Projects',
     ]);
@@ -92,6 +93,36 @@ describe('AppNav submenu behavior', () => {
     expect(aboutMobile.findAll('.mobile-nav__submenu strong').map(link => link.text())).toEqual(expected);
     expect(wrapper.html()).not.toContain("Founder's Letter");
     expect(wrapper.html()).not.toContain("founder's-letter");
+  });
+
+  test('places public careers and free workshops in managed desktop and mobile navigation', async () => {
+    usePage().props.appMenus.push({
+      name: 'Get Involved',
+      link: 'custom',
+      slug: '#',
+      children: [
+        { name: 'Volunteer', href: '/volunteer/register' },
+        { name: 'Old careers', link: 'frontend.category', slug: 'career' },
+      ],
+    });
+    const wrapper = mount(AppNav, { global: { mocks: { route: window.route } } });
+    const group = wrapper.findAll('.desktop-nav__item').find(item => item.text().includes('Get Involved'));
+    const links = group.findAll('.desktop-nav__dropdown a');
+
+    expect(links.map(link => [link.text(), link.attributes('href')])).toEqual([
+      ['Volunteer', '/volunteer/register'],
+      ['Old careers', '/careers'],
+      ['Free Workshops', '/workshops'],
+    ]);
+
+    await wrapper.get('.menu-button').trigger('click');
+    const mobileGroup = wrapper.findAll('.mobile-nav__group').find(item => item.text().includes('Get Involved'));
+    await mobileGroup.get('.mobile-nav__parent').trigger('click');
+    expect(mobileGroup.findAll('.mobile-nav__submenu a').map(link => link.attributes('href'))).toEqual([
+      '/volunteer/register',
+      '/careers',
+      '/workshops',
+    ]);
   });
 
 
@@ -153,6 +184,7 @@ describe('AppNav submenu behavior', () => {
   });
 
   test('keeps a gap-free responsive action contract in the component CSS', () => {
+    expect(appNavSource).toContain('@media(max-width:1460px)');
     expect(appNavSource).toContain('@media(max-width:1180px)');
     expect(appNavSource).toContain('@media(max-width:720px)');
     expect(appNavSource).toContain('.site-nav__actions>.site-nav__inline-action { display:none; }');

@@ -155,7 +155,8 @@ const fallbackNavigation = [
   ] },
   { name:'Get Involved', href:'#', children:[
     { name:'Volunteer', href:'/volunteer/register' },
-    { name:'Careers', href:'/category/career' },
+    { name:'Careers', href:'/careers' },
+    { name:'Free Workshops', href:'/workshops' },
     { name:'Sponsor a Child', href:'/sponsor-child' },
   ] },
   { name:'News & Stories', href:'#', children:[
@@ -167,7 +168,11 @@ const fallbackNavigation = [
     { name:'Give Zakat', href:'/zakat' },
   ] },
 ];
-const navigation = computed(() => Array.isArray(inertiaPage.props.appMenus) ? inertiaPage.props.appMenus : fallbackNavigation);
+const navigation = computed(() => withOpportunityLinks(
+  Array.isArray(inertiaPage.props.appMenus) && inertiaPage.props.appMenus.length
+    ? inertiaPage.props.appMenus
+    : fallbackNavigation
+));
 const branding = computed(() => {
   const values = inertiaPage.props.siteSettings?.branding || {};
   const siteName = values.site_name || inertiaPage.props.appName || 'Ignite Global Foundation';
@@ -203,6 +208,75 @@ function menuHref(item) {
     if (item.link && window.route().has(item.link)) return window.route(item.link, item.slug ? [item.slug] : []);
   } catch { /* fall through to a safe local URL */ }
   return item.slug ? `/page/${item.slug}` : '#';
+}
+function withOpportunityLinks(source) {
+  let hasCareers = false;
+  let hasWorkshops = false;
+  const items = source.map(item => ({
+    ...normalizeOpportunityItem(item),
+    children: Array.isArray(item.children) ? item.children.map(child => {
+      if (isCareerDestination(child)) {
+        hasCareers = true;
+        return normalizeOpportunityItem(child);
+      }
+      if (isWorkshopDestination(child)) hasWorkshops = true;
+      return { ...child };
+    }) : [],
+  }));
+
+  items.forEach(item => {
+    if (isCareerDestination(item)) hasCareers = true;
+    if (isWorkshopDestination(item)) hasWorkshops = true;
+  });
+  if (hasCareers && hasWorkshops) return items;
+
+  const locale = inertiaPage.props.locale === 'bn' ? 'bn' : 'en';
+  const additions = [];
+  if (!hasCareers) additions.push({ name: locale === 'bn' ? 'চাকরি' : 'Careers', href: '/careers' });
+  if (!hasWorkshops) additions.push({ name: locale === 'bn' ? 'বিনামূল্যের কর্মশালা' : 'Free Workshops', href: '/workshops' });
+  const parentIndex = items.findIndex(item => item.children.some(child => {
+    const href = rawDestination(child);
+    return href === '/volunteer/register' || href === '/sponsor-child';
+  }));
+
+  if (parentIndex >= 0) {
+    items[parentIndex] = { ...items[parentIndex], children: [...items[parentIndex].children, ...additions] };
+  } else {
+    items.push({
+      name: locale === 'bn' ? 'সুযোগ' : 'Opportunities',
+      href: '#',
+      children: additions,
+    });
+  }
+
+  return items;
+}
+function normalizeOpportunityItem(item) {
+  return isLegacyCareerDestination(item)
+    ? { ...item, href: '/careers', link: 'custom', slug: '/careers' }
+    : { ...item };
+}
+function rawDestination(item) {
+  if (item?.href) return String(item.href).replace(/\/$/, '') || '/';
+  if (item?.link === 'custom') return String(item.slug || '').replace(/\/$/, '') || '#';
+  if (item?.link === 'frontend.jobs.index') return '/careers';
+  if (item?.link === 'frontend.workshops.index') return '/workshops';
+  if (isLegacyCareerDestination(item)) return '/category/career';
+  return '';
+}
+function isLegacyCareerDestination(item) {
+  return (item?.link === 'frontend.category' && String(item?.slug || '').replace(/^\//, '') === 'career')
+    || (item?.link === 'custom' && String(item?.slug || '').replace(/\/$/, '') === '/category/career')
+    || rawHref(item) === '/category/career';
+}
+function isCareerDestination(item) {
+  return rawDestination(item) === '/careers' || isLegacyCareerDestination(item);
+}
+function isWorkshopDestination(item) {
+  return rawDestination(item) === '/workshops';
+}
+function rawHref(item) {
+  return String(item?.href || '').replace(/\/$/, '') || '/';
 }
 function safeCustomHref(value) {
   const href = String(value || '').trim();
@@ -311,6 +385,7 @@ onBeforeUnmount(() => document.removeEventListener('click', closeFromOutside));
 .mobile-nav__child:hover,.mobile-nav__child.active { border-left-color:#ff7500; background:#fff3e8; color:#8b3e08; }
 .mobile-nav>.mobile-nav__sign-in { display:block; padding:13px 8px; border-bottom:1px solid #eee; color:#292a2d; font-weight:700; text-decoration:none; }
 .site-nav :is(a,button):focus-visible { outline:3px solid #ff7500; outline-offset:3px; }
+@media(max-width:1460px) { .site-nav__actions>.sponsor-button.site-nav__inline-action { display:none; } }
 @media(max-width:1180px) { .desktop-nav,.sign-in { display:none; } .menu-button { display:grid; } .mobile-nav { max-height:min(75vh,calc(100vh - 118px)); max-height:min(75dvh,calc(100dvh - 118px)); } }
 @media(max-width:767px) { .mobile-nav { max-height:min(75vh,calc(100vh - 80px)); max-height:min(75dvh,calc(100dvh - 80px)); } }
 @media(max-width:720px) { .site-nav__actions>.site-nav__inline-action { display:none; } .mobile-action-bar { display:block; } .mobile-nav { max-height:min(75vh,calc(100vh - 134px)); max-height:min(75dvh,calc(100dvh - 134px)); } }

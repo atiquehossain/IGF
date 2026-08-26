@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Contracts\PrivateFileDeletion;
 use App\Contracts\SeoSearchPerformanceGateway;
 use App\Contracts\SeoTrafficAnalyticsGateway;
 use App\Services\GoogleAnalyticsSeoGateway;
 use App\Services\GoogleSearchConsoleGateway;
+use App\Services\PrivateApplicationDocumentService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\AuthMenu;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(SeoSearchPerformanceGateway::class, GoogleSearchConsoleGateway::class);
         $this->app->bind(SeoTrafficAnalyticsGateway::class, GoogleAnalyticsSeoGateway::class);
+        $this->app->bind(PrivateFileDeletion::class, PrivateApplicationDocumentService::class);
     }
 
     /**

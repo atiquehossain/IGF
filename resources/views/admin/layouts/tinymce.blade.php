@@ -4,6 +4,9 @@ $content_style = ' ';
 if (!empty(@$contentStyle)) {
     $content_style = trim(preg_replace('/\s\s+/', ' ', @$contentStyle));
 }
+$editor_height = isset($editorHeight) ? max(240, min(900, (int) $editorHeight)) : 550;
+$editor_toolbar = $editorToolbar ?? 'bootstrap restoreraft insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent image media link | vuetify2grid custombutton customvue emoticons fontawesome';
+$editor_menubar = isset($editorMenubar) ? (bool) $editorMenubar : true;
 ?>
 <script>
   var assetUrl = "{{ asset('/') }}";
@@ -11,7 +14,8 @@ if (!empty(@$contentStyle)) {
   var editor_config = {
     path_absolute: "/",
     selector: 'textarea.my-editor',
-    height: 550,
+    height: {{ $editor_height }},
+    menubar: @json($editor_menubar),
     relative_urls: false,
     image_dimensions: false,
     body_class: 'v-application v-application--wrap',
@@ -107,7 +111,7 @@ if (!empty(@$contentStyle)) {
       "insertdatetime media nonbreaking save table directionality vuetify2grid custombutton customvue",
       "emoticons template paste textpattern"
     ],
-    toolbar: "bootstrap restoreraft insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent image media link | vuetify2grid custombutton customvue  emoticons fontawesome",
+    toolbar: @json($editor_toolbar),
     file_picker_callback: function(callback, value, meta) {
       var x = window.innerWidth || document.documentElement.clientWidth || document.getElementsByTagName(
         'body')[0].clientWidth;
@@ -132,6 +136,16 @@ if (!empty(@$contentStyle)) {
           callback(message.content);
         }
       });
+    },
+    setup: function(editor) {
+      // Keep the original textarea current while TinyMCE owns the visible
+      // editor. This lets native `required` validation run before the form's
+      // submit event without rejecting content that is already on screen.
+      var synchronizeTextarea = function() {
+        editor.save();
+      };
+
+      editor.on('init input change SetContent Undo Redo', synchronizeTextarea);
     }
   };
 

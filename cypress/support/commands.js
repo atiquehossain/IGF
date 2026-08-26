@@ -53,3 +53,18 @@ Cypress.Commands.add('loginWithUsername', () => {
         });
     });
 });
+
+Cypress.Commands.add('loginAsAdmin', (username, password, expectedPath = '/admin') => {
+    if (typeof username !== 'string' || username.trim() === '') {
+        throw new Error('A Cypress administrator username is required.');
+    }
+    if (typeof password !== 'string' || password.length < 12) {
+        throw new Error('A Cypress administrator password of at least 12 characters is required.');
+    }
+
+    cy.visit('/admin/login');
+    cy.get('input[name="username"]').type(username);
+    cy.get('input[name="password"]').type(password, { log: false });
+    cy.get('button[type="submit"]:visible').first().click();
+    cy.location('pathname').should('eq', expectedPath);
+});

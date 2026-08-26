@@ -121,5 +121,24 @@ class RouteServiceProvider extends ServiceProvider
                 Limit::perMinute(20)->by('newsletter-confirm-ip:' . $ipKey),
             ];
         });
+
+        RateLimiter::for('public-opportunity-submission', function (Request $request) {
+            $keyMaterial = (string) config('app.key', 'ignite-public-submission');
+            $email = Str::lower(trim((string) ($request->input('email')
+                ?: data_get($request->input('responses', []), 'email', ''))));
+            $listing = $request->route('job') ?: $request->route('workshop') ?: 'unknown-listing';
+            $listingKey = is_object($listing)
+                ? (string) ($listing->uuid ?? $listing->getRouteKey())
+                : (string) $listing;
+            $identityKey = hash_hmac('sha256', $listingKey . '|' . $email, $keyMaterial);
+            $ipKey = hash_hmac('sha256', (string) $request->ip(), $keyMaterial);
+
+            return [
+                Limit::perMinute(3)->by('opportunity-identity-minute:' . $identityKey),
+                Limit::perHour(8)->by('opportunity-identity-hour:' . $identityKey),
+                Limit::perMinute(15)->by('opportunity-ip-minute:' . $ipKey),
+                Limit::perHour(100)->by('opportunity-ip-hour:' . $ipKey),
+            ];
+        });
     }
 }

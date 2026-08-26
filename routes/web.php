@@ -31,6 +31,95 @@ Route::prefix('admin')->group(function () {
         Route::get('/', 'Admin\DashboardController@index')->name('dashboard.index');
         Route::get('language/{language?}', 'Admin\LocaleController@language')->name('admin.language');
 
+        // Recruitment listing, form-builder, private applicant and reviewed-import workflows.
+        Route::prefix('recruitment')->group(function () {
+            Route::get('jobs', 'Admin\JobPostingController@index')->name('recruitment.jobs.index');
+            Route::get('jobs/create', 'Admin\JobPostingController@create')->name('recruitment.jobs.create');
+            Route::post('jobs', 'Admin\JobPostingController@store')->name('recruitment.jobs.store');
+            Route::get('jobs/{job}', 'Admin\JobPostingController@show')->name('recruitment.jobs.show');
+            Route::get('jobs/{job}/edit', 'Admin\JobPostingController@edit')->name('recruitment.jobs.edit');
+            Route::put('jobs/{job}', 'Admin\JobPostingController@update')->name('recruitment.jobs.update');
+            Route::patch('jobs/{job}/status', 'Admin\JobPostingController@status')->name('recruitment.jobs.status');
+            Route::post('jobs/{job}/duplicate', 'Admin\JobPostingController@duplicate')->name('recruitment.jobs.duplicate');
+            Route::delete('jobs/{job}', 'Admin\JobPostingController@destroy')->name('recruitment.jobs.destroy');
+
+            Route::get('forms', 'Admin\ApplicationFormController@index')->defaults('purpose', 'job')->name('recruitment.forms.index');
+            Route::get('forms/create', 'Admin\ApplicationFormController@create')->defaults('purpose', 'job')->name('recruitment.forms.create');
+            Route::post('forms', 'Admin\ApplicationFormController@store')->defaults('purpose', 'job')->name('recruitment.forms.store');
+            Route::get('forms/{form}/edit', 'Admin\ApplicationFormController@edit')->defaults('purpose', 'job')->name('recruitment.forms.edit');
+            Route::put('forms/{form}', 'Admin\ApplicationFormController@update')->defaults('purpose', 'job')->name('recruitment.forms.update');
+            Route::post('forms/{form}/publish', 'Admin\ApplicationFormController@publish')->defaults('purpose', 'job')->name('recruitment.forms.publish');
+            Route::post('forms/{form}/duplicate', 'Admin\ApplicationFormController@duplicate')->defaults('purpose', 'job')->name('recruitment.forms.duplicate');
+            Route::get('forms/{form}/preview', 'Admin\ApplicationFormController@preview')->defaults('purpose', 'job')->name('recruitment.forms.preview');
+
+            Route::get('applications', 'Admin\JobApplicationController@index')->name('recruitment.applications.index');
+            Route::post('applications/search', 'Admin\JobApplicationController@search')->name('recruitment.applications.search');
+            Route::post('applications/search/clear', 'Admin\JobApplicationController@clearSearch')->name('recruitment.applications.search.clear');
+            Route::post('applications/bulk', 'Admin\JobApplicationController@bulk')->name('recruitment.applications.bulk');
+            Route::get('applications/export', 'Admin\JobApplicationController@export')->name('recruitment.applications.export');
+            Route::get('applications/{application}', 'Admin\JobApplicationController@show')->name('recruitment.applications.show');
+            Route::patch('applications/{application}/workflow', 'Admin\JobApplicationController@workflow')->name('recruitment.applications.workflow');
+            Route::patch('applications/{application}/assignment', 'Admin\JobApplicationController@assign')->name('recruitment.applications.assign');
+            Route::put('applications/{application}/score', 'Admin\JobApplicationController@score')->name('recruitment.applications.score');
+            Route::post('applications/{application}/notes', 'Admin\JobApplicationController@addNote')->name('recruitment.applications.notes.store');
+            Route::get('applications/{application}/documents/{document}', 'Admin\JobApplicationController@download')->name('recruitment.applications.download');
+            Route::post('applications/{application}/anonymize', 'Admin\JobApplicationController@anonymize')->name('recruitment.applications.anonymize');
+            Route::delete('applications/{application}/delete', 'Admin\JobApplicationController@delete')->name('recruitment.applications.delete');
+            Route::delete('applications/{application}', 'Admin\JobApplicationController@destroy')->name('recruitment.applications.destroy');
+
+            Route::get('imports', 'Admin\ApplicationImportController@index')->name('recruitment.imports.index');
+            Route::get('imports/create', 'Admin\ApplicationImportController@create')->name('recruitment.imports.create');
+            Route::post('imports', 'Admin\ApplicationImportController@store')->name('recruitment.imports.store');
+            Route::match(['get', 'post'], 'imports/{batch}/preview', 'Admin\ApplicationImportController@preview')->name('recruitment.imports.preview');
+            Route::post('imports/{batch}/confirm', 'Admin\ApplicationImportController@confirm')->name('recruitment.imports.confirm');
+            Route::get('imports/{batch}/result', 'Admin\ApplicationImportController@result')->name('recruitment.imports.result');
+            Route::get('imports/{batch}/errors', 'Admin\ApplicationImportController@downloadErrors')->name('recruitment.imports.errors.download');
+        });
+
+        // Workshops are always free. Management and registration permissions remain separate.
+        Route::get('workshops', 'Admin\WorkshopController@index')->name('workshops.index');
+        Route::get('workshops/create', 'Admin\WorkshopController@create')->name('workshops.create');
+        Route::post('workshops', 'Admin\WorkshopController@store')->name('workshops.store');
+        Route::get('workshops/{workshop}', 'Admin\WorkshopController@show')->name('workshops.show');
+        Route::get('workshops/{workshop}/edit', 'Admin\WorkshopController@edit')->name('workshops.edit');
+        Route::put('workshops/{workshop}', 'Admin\WorkshopController@update')->name('workshops.update');
+        Route::patch('workshops/{workshop}/status', 'Admin\WorkshopController@status')->name('workshops.status');
+        Route::post('workshops/{workshop}/duplicate', 'Admin\WorkshopController@duplicate')->name('workshops.duplicate');
+        Route::delete('workshops/{workshop}', 'Admin\WorkshopController@destroy')->name('workshops.destroy');
+
+        Route::prefix('workshop')->group(function () {
+            Route::get('forms', 'Admin\ApplicationFormController@index')->defaults('purpose', 'workshop')->name('workshop.forms.index');
+            Route::get('forms/create', 'Admin\ApplicationFormController@create')->defaults('purpose', 'workshop')->name('workshop.forms.create');
+            Route::post('forms', 'Admin\ApplicationFormController@store')->defaults('purpose', 'workshop')->name('workshop.forms.store');
+            Route::get('forms/{form}/edit', 'Admin\ApplicationFormController@edit')->defaults('purpose', 'workshop')->name('workshop.forms.edit');
+            Route::put('forms/{form}', 'Admin\ApplicationFormController@update')->defaults('purpose', 'workshop')->name('workshop.forms.update');
+            Route::post('forms/{form}/publish', 'Admin\ApplicationFormController@publish')->defaults('purpose', 'workshop')->name('workshop.forms.publish');
+            Route::post('forms/{form}/duplicate', 'Admin\ApplicationFormController@duplicate')->defaults('purpose', 'workshop')->name('workshop.forms.duplicate');
+            Route::get('forms/{form}/preview', 'Admin\ApplicationFormController@preview')->defaults('purpose', 'workshop')->name('workshop.forms.preview');
+
+            Route::get('registrations', 'Admin\WorkshopRegistrationController@index')->name('workshop.registrations.index');
+            Route::post('registrations/search', 'Admin\WorkshopRegistrationController@search')->name('workshop.registrations.search');
+            Route::post('registrations/search/clear', 'Admin\WorkshopRegistrationController@clearSearch')->name('workshop.registrations.search.clear');
+            Route::post('registrations/bulk', 'Admin\WorkshopRegistrationController@bulk')->name('workshop.registrations.bulk');
+            Route::get('registrations/export', 'Admin\WorkshopRegistrationController@export')->name('workshop.registrations.export');
+            Route::get('registrations/{registration}', 'Admin\WorkshopRegistrationController@show')->name('workshop.registrations.show');
+            Route::patch('registrations/{registration}/workflow', 'Admin\WorkshopRegistrationController@workflow')->name('workshop.registrations.workflow');
+            Route::patch('registrations/{registration}/assignment', 'Admin\WorkshopRegistrationController@assign')->name('workshop.registrations.assign');
+            Route::post('registrations/{registration}/notes', 'Admin\WorkshopRegistrationController@addNote')->name('workshop.registrations.notes.store');
+            Route::get('registrations/{registration}/documents/{document}', 'Admin\WorkshopRegistrationController@download')->name('workshop.registrations.download');
+            Route::post('registrations/{registration}/anonymize', 'Admin\WorkshopRegistrationController@anonymize')->name('workshop.registrations.anonymize');
+            Route::delete('registrations/{registration}/delete', 'Admin\WorkshopRegistrationController@delete')->name('workshop.registrations.delete');
+            Route::delete('registrations/{registration}', 'Admin\WorkshopRegistrationController@destroy')->name('workshop.registrations.destroy');
+
+            Route::get('imports', 'Admin\ApplicationImportController@index')->name('workshop.imports.index');
+            Route::get('imports/create', 'Admin\ApplicationImportController@create')->name('workshop.imports.create');
+            Route::post('imports', 'Admin\ApplicationImportController@store')->name('workshop.imports.store');
+            Route::match(['get', 'post'], 'imports/{batch}/preview', 'Admin\ApplicationImportController@preview')->name('workshop.imports.preview');
+            Route::post('imports/{batch}/confirm', 'Admin\ApplicationImportController@confirm')->name('workshop.imports.confirm');
+            Route::get('imports/{batch}/result', 'Admin\ApplicationImportController@result')->name('workshop.imports.result');
+            Route::get('imports/{batch}/errors', 'Admin\ApplicationImportController@downloadErrors')->name('workshop.imports.errors.download');
+        });
+
         Route::get('album', 'Admin\AlbumController@index')->name('album.index');
         Route::get('album/create', 'Admin\AlbumController@create')->name('album.create');
         Route::post('album', 'Admin\AlbumController@store')->name('album.store');
@@ -490,6 +579,26 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     // Route::get('publication', 'HomeController@notice')->name('frontend.notice');
     Route::get('events', 'Vue\NoticeBoardController@events')->name('frontend.events');
     Route::get('event/{slug?}', 'Vue\NoticeBoardController@event')->name('frontend.event');
+
+    // Public job and free-workshop opportunities. Applicants remain anonymous
+    // visitors; only the POST boundary is independently abuse-limited.
+    Route::get('careers', 'Vue\OpportunityController@jobs')->name('frontend.jobs.index');
+    Route::get('careers/{job}', 'Vue\OpportunityController@job')
+        ->where('job', '[\pL\pN_-]+')
+        ->name('frontend.jobs.show');
+    Route::post('careers/{job}/apply', 'Vue\OpportunityController@apply')
+        ->where('job', '[\pL\pN_-]+')
+        ->middleware('throttle:public-opportunity-submission')
+        ->name('frontend.jobs.apply');
+
+    Route::get('workshops', 'Vue\OpportunityController@workshops')->name('frontend.workshops.index');
+    Route::get('workshops/{workshop}', 'Vue\OpportunityController@workshop')
+        ->where('workshop', '[\pL\pN_-]+')
+        ->name('frontend.workshops.show');
+    Route::post('workshops/{workshop}/register', 'Vue\OpportunityController@register')
+        ->where('workshop', '[\pL\pN_-]+')
+        ->middleware('throttle:public-opportunity-submission')
+        ->name('frontend.workshops.register');
 
     // Project Section
     Route::get('projects/{slug?}', 'Vue\ProjectController@projects')->name('frontend.project');

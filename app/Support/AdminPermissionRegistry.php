@@ -58,6 +58,10 @@ final class AdminPermissionRegistry
         ['id' => 26, 'link' => 'contact-message.index', 'name' => 'Contact Messages', 'parent_id' => null, 'grant_from' => ['contact-message.show']],
         ['id' => 49, 'link' => 'chat.index', 'name' => 'Website Chat', 'parent_id' => null],
         ['id' => 65, 'link' => 'content.trash.index', 'name' => 'Content Trash', 'parent_id' => 8, 'grant_from' => ['page.destroy']],
+        ['id' => 67, 'link' => 'recruitment.jobs.index', 'name' => 'Jobs', 'parent_id' => null],
+        ['id' => 68, 'link' => 'recruitment.applications.index', 'name' => 'Job Applications', 'parent_id' => null],
+        ['id' => 69, 'link' => 'workshops.index', 'name' => 'Workshops', 'parent_id' => null],
+        ['id' => 70, 'link' => 'workshop.registrations.index', 'name' => 'Workshop Registrations', 'parent_id' => null],
     ];
 
     /**
@@ -106,6 +110,20 @@ final class AdminPermissionRegistry
         'sponsorships' => ['menu' => 'sponsorships.index', 'label' => 'sponsorship requests', 'actions' => ['edit' => 220], 'grant_from' => ['sponsorships.index']],
         'volunteer' => ['menu' => 'volunteer.index', 'label' => 'volunteer applications', 'actions' => ['edit' => 221], 'grant_from' => ['volunteer.index']],
         'contact-message' => ['menu' => 'contact-message.index', 'label' => 'contact messages', 'actions' => ['edit' => 222], 'grant_from' => ['contact-message.index']],
+        'recruitment.jobs' => ['menu' => 'recruitment.jobs.index', 'label' => 'jobs', 'actions' => ['create' => 236, 'edit' => 237, 'publish' => 238, 'delete' => 239]],
+        'recruitment.applications' => [
+            'menu' => 'recruitment.applications.index',
+            'label' => 'job applications',
+            'actions' => ['create' => 240, 'edit' => 241, 'publish' => 242, 'delete' => 243],
+            'owner_only_by_action' => ['delete' => true],
+        ],
+        'workshops' => ['menu' => 'workshops.index', 'label' => 'workshops', 'actions' => ['create' => 244, 'edit' => 245, 'publish' => 246, 'delete' => 247]],
+        'workshop.registrations' => [
+            'menu' => 'workshop.registrations.index',
+            'label' => 'workshop registrations',
+            'actions' => ['create' => 248, 'edit' => 249, 'publish' => 250, 'delete' => 251],
+            'owner_only_by_action' => ['delete' => true],
+        ],
     ];
 
     private const CUSTOM_ACTION_DEFINITIONS = [
@@ -142,6 +160,16 @@ final class AdminPermissionRegistry
         ['id' => 233, 'link' => 'comment.publish', 'menu' => 'comment.index', 'name' => 'Publish or unpublish comments', 'type' => 3, 'grant_from' => ['comment.destroy', 'page.status']],
         ['id' => 234, 'link' => 'volunteer.export', 'menu' => 'volunteer.index', 'name' => 'Export volunteer applications', 'type' => 8],
         ['id' => 235, 'link' => 'subscriber.export', 'menu' => 'subscriber.index', 'name' => 'Export subscribers', 'type' => 8],
+        ['id' => 252, 'link' => 'recruitment.applications.export', 'menu' => 'recruitment.applications.index', 'name' => 'Export job applications', 'type' => 8],
+        ['id' => 253, 'link' => 'workshop.registrations.export', 'menu' => 'workshop.registrations.index', 'name' => 'Export workshop registrations', 'type' => 8],
+        ['id' => 254, 'link' => 'recruitment.applications.download', 'menu' => 'recruitment.applications.index', 'name' => 'Download private job-application files', 'type' => 8],
+        ['id' => 255, 'link' => 'workshop.registrations.download', 'menu' => 'workshop.registrations.index', 'name' => 'Download private workshop-registration files', 'type' => 8],
+        ['id' => 256, 'link' => 'recruitment.applications.import', 'menu' => 'recruitment.applications.index', 'name' => 'Import job applications from CSV', 'type' => 1],
+        ['id' => 257, 'link' => 'workshop.registrations.import', 'menu' => 'workshop.registrations.index', 'name' => 'Import workshop registrations from CSV', 'type' => 1],
+        ['id' => 258, 'link' => 'recruitment.jobs.templates.manage', 'menu' => 'recruitment.jobs.index', 'name' => 'Manage recruitment form templates', 'type' => 2],
+        ['id' => 259, 'link' => 'workshops.templates.manage', 'menu' => 'workshops.index', 'name' => 'Manage workshop form templates', 'type' => 2],
+        ['id' => 260, 'link' => 'recruitment.applications.anonymize', 'menu' => 'recruitment.applications.index', 'name' => 'Anonymize job applications', 'type' => 4, 'owner_only' => true],
+        ['id' => 261, 'link' => 'workshop.registrations.anonymize', 'menu' => 'workshop.registrations.index', 'name' => 'Anonymize workshop registrations', 'type' => 4, 'owner_only' => true],
     ];
 
     private const ACTION_SUFFIXES = [
@@ -201,12 +229,13 @@ final class AdminPermissionRegistry
                     'order_by' => array_search($operation, array_keys(self::ACTION_SUFFIXES), true) + 1,
                     'status' => 1,
                     'grant_from' => $grantFrom,
+                    'owner_only' => (bool) ($resource['owner_only_by_action'][$operation] ?? false),
                 ];
             }
         }
 
         foreach (self::CUSTOM_ACTION_DEFINITIONS as $definition) {
-            $definition += ['order_by' => 10, 'status' => 1, 'grant_from' => []];
+            $definition += ['order_by' => 10, 'status' => 1, 'grant_from' => [], 'owner_only' => false];
             $actions[$definition['link']] = $definition;
         }
 
@@ -247,6 +276,11 @@ final class AdminPermissionRegistry
         return in_array($capability, self::registeredCapabilities(), true);
     }
 
+    public static function isOwnerOnlyCapability(string $capability): bool
+    {
+        return (bool) (self::actions()[$capability]['owner_only'] ?? false);
+    }
+
     /** @return array<string, string|list<string>> */
     public static function routeMap(): array
     {
@@ -275,6 +309,100 @@ final class AdminPermissionRegistry
         }
 
         return array_replace($map, [
+            'recruitment.jobs.index' => 'recruitment.jobs.index',
+            'recruitment.jobs.show' => 'recruitment.jobs.index',
+            'recruitment.jobs.create' => 'recruitment.jobs.create',
+            'recruitment.jobs.store' => 'recruitment.jobs.create',
+            'recruitment.jobs.duplicate' => 'recruitment.jobs.create',
+            'recruitment.jobs.edit' => 'recruitment.jobs.edit',
+            'recruitment.jobs.update' => 'recruitment.jobs.edit',
+            'recruitment.jobs.form.edit' => 'recruitment.jobs.edit',
+            'recruitment.jobs.form.update' => 'recruitment.jobs.edit',
+            'recruitment.jobs.form.preview' => 'recruitment.jobs.index',
+            'recruitment.jobs.status' => 'recruitment.jobs.status',
+            'recruitment.jobs.destroy' => 'recruitment.jobs.destroy',
+            'recruitment.applications.index' => 'recruitment.applications.index',
+            'recruitment.applications.show' => 'recruitment.applications.index',
+            'recruitment.applications.search' => 'recruitment.applications.index',
+            'recruitment.applications.search.clear' => 'recruitment.applications.index',
+            'recruitment.applications.create' => 'recruitment.applications.create',
+            'recruitment.applications.store' => 'recruitment.applications.create',
+            'recruitment.applications.edit' => 'recruitment.applications.edit',
+            'recruitment.applications.update' => 'recruitment.applications.edit',
+            'recruitment.applications.bulk' => 'recruitment.applications.edit',
+            'recruitment.applications.workflow' => 'recruitment.applications.edit',
+            'recruitment.applications.assign' => 'recruitment.applications.edit',
+            'recruitment.applications.score' => 'recruitment.applications.edit',
+            'recruitment.applications.notes.store' => 'recruitment.applications.edit',
+            'recruitment.applications.status' => 'recruitment.applications.status',
+            'recruitment.applications.destroy' => 'recruitment.applications.destroy',
+            'recruitment.applications.delete' => 'recruitment.applications.destroy',
+            'recruitment.applications.export' => 'recruitment.applications.export',
+            'recruitment.applications.download' => 'recruitment.applications.download',
+            'recruitment.applications.anonymize' => 'recruitment.applications.anonymize',
+            'recruitment.imports.index' => 'recruitment.applications.import',
+            'recruitment.imports.create' => 'recruitment.applications.import',
+            'recruitment.imports.store' => 'recruitment.applications.import',
+            'recruitment.imports.preview' => 'recruitment.applications.import',
+            'recruitment.imports.confirm' => 'recruitment.applications.import',
+            'recruitment.imports.result' => 'recruitment.applications.import',
+            'recruitment.imports.errors.download' => 'recruitment.applications.import',
+            'recruitment.forms.index' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.create' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.store' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.edit' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.update' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.publish' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.destroy' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.duplicate' => 'recruitment.jobs.templates.manage',
+            'recruitment.forms.preview' => 'recruitment.jobs.templates.manage',
+            'workshops.index' => 'workshops.index',
+            'workshops.show' => 'workshops.index',
+            'workshops.create' => 'workshops.create',
+            'workshops.store' => 'workshops.create',
+            'workshops.duplicate' => 'workshops.create',
+            'workshops.edit' => 'workshops.edit',
+            'workshops.update' => 'workshops.edit',
+            'workshops.form.edit' => 'workshops.edit',
+            'workshops.form.update' => 'workshops.edit',
+            'workshops.form.preview' => 'workshops.index',
+            'workshops.status' => 'workshops.status',
+            'workshops.destroy' => 'workshops.destroy',
+            'workshop.registrations.index' => 'workshop.registrations.index',
+            'workshop.registrations.show' => 'workshop.registrations.index',
+            'workshop.registrations.search' => 'workshop.registrations.index',
+            'workshop.registrations.search.clear' => 'workshop.registrations.index',
+            'workshop.registrations.create' => 'workshop.registrations.create',
+            'workshop.registrations.store' => 'workshop.registrations.create',
+            'workshop.registrations.edit' => 'workshop.registrations.edit',
+            'workshop.registrations.update' => 'workshop.registrations.edit',
+            'workshop.registrations.bulk' => 'workshop.registrations.edit',
+            'workshop.registrations.workflow' => 'workshop.registrations.edit',
+            'workshop.registrations.assign' => 'workshop.registrations.edit',
+            'workshop.registrations.score' => 'workshop.registrations.edit',
+            'workshop.registrations.notes.store' => 'workshop.registrations.edit',
+            'workshop.registrations.status' => 'workshop.registrations.status',
+            'workshop.registrations.destroy' => 'workshop.registrations.destroy',
+            'workshop.registrations.delete' => 'workshop.registrations.destroy',
+            'workshop.registrations.export' => 'workshop.registrations.export',
+            'workshop.registrations.download' => 'workshop.registrations.download',
+            'workshop.registrations.anonymize' => 'workshop.registrations.anonymize',
+            'workshop.imports.index' => 'workshop.registrations.import',
+            'workshop.imports.create' => 'workshop.registrations.import',
+            'workshop.imports.store' => 'workshop.registrations.import',
+            'workshop.imports.preview' => 'workshop.registrations.import',
+            'workshop.imports.confirm' => 'workshop.registrations.import',
+            'workshop.imports.result' => 'workshop.registrations.import',
+            'workshop.imports.errors.download' => 'workshop.registrations.import',
+            'workshop.forms.index' => 'workshops.templates.manage',
+            'workshop.forms.create' => 'workshops.templates.manage',
+            'workshop.forms.store' => 'workshops.templates.manage',
+            'workshop.forms.edit' => 'workshops.templates.manage',
+            'workshop.forms.update' => 'workshops.templates.manage',
+            'workshop.forms.publish' => 'workshops.templates.manage',
+            'workshop.forms.destroy' => 'workshops.templates.manage',
+            'workshop.forms.duplicate' => 'workshops.templates.manage',
+            'workshop.forms.preview' => 'workshops.templates.manage',
             'donations.index' => 'donations.index',
             'donations.search' => 'donations.index',
             'donations.search.clear' => 'donations.index',

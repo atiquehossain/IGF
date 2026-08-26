@@ -21,6 +21,8 @@ final class PrivateListingSearchController extends Controller
         'subscribers' => 'subscriber.index',
         'comments' => 'comment.index',
         'admins' => 'admin.index',
+        'recruitment-applications' => 'recruitment.applications.index',
+        'workshop-registrations' => 'workshop.registrations.index',
     ];
 
     public function __construct(

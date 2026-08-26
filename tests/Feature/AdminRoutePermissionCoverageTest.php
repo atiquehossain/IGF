@@ -72,13 +72,7 @@ class AdminRoutePermissionCoverageTest extends TestCase
 
     public function test_registry_owner_can_authorize_every_named_permission_route(): void
     {
-        $role = Role::create([
-            'name' => 'Route coverage owner',
-            'permission' => AuthMenu::where('status', 1)->pluck('id')->implode(','),
-            'actionPermission' => MenuAction::where('status', 1)->pluck('id')->implode(','),
-            'serial' => '[]',
-            'status' => 1,
-        ]);
+        $role = Role::query()->where('is_owner', true)->firstOrFail();
         $admin = Admin::create([
             'name' => 'Route Coverage',
             'username' => 'route-coverage',

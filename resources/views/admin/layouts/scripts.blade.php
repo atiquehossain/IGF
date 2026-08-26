@@ -180,7 +180,7 @@
     $(document).on('submit.adminBusy', 'form', function(event) {
         var form = this;
         window.setTimeout(function() {
-            if (event.isDefaultPrevented()) {
+            if (event.isDefaultPrevented() || $(form).is('[data-no-busy]')) {
                 return;
             }
 

@@ -323,6 +323,7 @@ class RoleController extends Controller
         $capability = trim((string) $action->link);
 
         return $capability !== ''
+            && !AdminPermissionRegistry::isOwnerOnlyCapability($capability)
             && (Route::has($capability) || AdminPermissionRegistry::isRegisteredCapability($capability));
     }
 

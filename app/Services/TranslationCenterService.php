@@ -82,7 +82,7 @@ class TranslationCenterService
         'animation_type', 'media_type', 'image_position', 'overlay_opacity', 'interval', 'size',
         'content_source', 'category_slug', 'tag_slug', 'sort', 'selection_mode',
         'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type',
-        'locale', 'language', 'platform', 'variant', 'layout', 'target', 'rel',
+        'locale', 'language', 'platform', 'variant', 'layout', 'presentation', 'section_presentation', 'target', 'rel',
     ];
 
     public function __construct(

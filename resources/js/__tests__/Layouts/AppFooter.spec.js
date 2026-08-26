@@ -217,7 +217,7 @@ describe('AppFooter managed branding and newsletter', () => {
       facebook: 'https://facebook.com/ignite',
       instagram: 'https://instagram.com/ignite',
       linkedin: 'https://linkedin.com/company/ignite',
-      tiktok: 'https://tiktok.com/@ignite',
+      tiktok: 'https://social.example.test/stale-tiktok',
       youtube: 'https://youtube.com/@ignite',
     };
     usePage().props.appFooterMenus = Array.from({ length: 5 }, (_, index) => footerMenu(
@@ -230,13 +230,19 @@ describe('AppFooter managed branding and newsletter', () => {
     const groups = wrapper.findAll('.footer-link-group');
     const contactRows = wrapper.findAll('.footer-contact > *');
     const contactLinks = wrapper.findAll('.footer-contact a');
+    const socialLinks = wrapper.findAll('.footer-social a');
 
     expect(wrapper.get('.footer-brand').text()).not.toContain('Managed footer summary');
     expect(wrapper.find('#footer-office-contact-heading').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('Office contact details');
     expect(contactRows.map(row => row.text())).toEqual(['Office: Dhaka', 'Mobile: +880 1000', 'Backup: +880 2000', 'Inbox: hello@example.test']);
     expect(contactLinks.map(link => link.attributes('href'))).toEqual(['tel:+8801000', 'tel:+8802000', 'mailto:hello@example.test']);
-    expect(wrapper.findAll('.footer-social a')).toHaveLength(5);
+    expect(socialLinks.map(link => link.attributes('href'))).toEqual([
+      'https://facebook.com/ignite',
+      'https://instagram.com/ignite',
+      'https://linkedin.com/company/ignite',
+      'https://youtube.com/@ignite',
+    ]);
     expect(groups).toHaveLength(5);
     expect(wrapper.get('.footer-navigation').attributes('style')).toContain('--footer-nav-columns: 3');
     expect(groups.map(group => group.get('.footer-link-group__heading').text())).toEqual([

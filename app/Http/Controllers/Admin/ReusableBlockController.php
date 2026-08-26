@@ -55,6 +55,11 @@ class ReusableBlockController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'locale' => ['required', 'string', 'max:10'],
             'content' => ['nullable', 'array'],
+            'content.section_presentation' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.section_presentations', []))),
+            ],
             'settings' => ['nullable', 'array'],
             'is_enabled' => ['required', 'boolean'],
         ]);

@@ -197,6 +197,14 @@
         .igf-builder__title { display:none; }
         .igf-builder__topbar { align-items:center; }
     }
+    .igf-section-presentation-help{margin:-8px 0 16px}
+    .igf-preview-block--presentation-standard{box-shadow:inset 0 0 0 1px rgba(25,28,29,.04)}
+    .igf-preview-block--presentation-soft{background-color:#fbf5ef;box-shadow:inset 0 0 0 4px rgba(156,69,0,.08)}
+    .igf-preview-block--presentation-framed{margin-inline:clamp(12px,2.5vw,28px);border-color:#d7cbc0;border-radius:20px;background-color:#fff;box-shadow:0 16px 38px rgba(55,42,32,.11)}
+    .igf-preview-block--presentation-framed.is-selected{border-color:var(--igf-orange)}
+    .igf-preview-block--presentation-contrast{background-color:#282421;color:#fff;box-shadow:inset 0 5px 0 var(--igf-orange)}
+    .igf-preview-block--presentation-contrast :is(h1,h2,h3,p,blockquote){color:inherit}
+    .igf-preview-block--presentation-contrast :is(.igf-preview-giving article,.igf-preview-focus-card,.igf-stat){background-color:#fff;color:var(--igf-ink)}
 </style>
 
 <div class="igf-builder" id="igf-builder">
@@ -429,6 +437,19 @@
     };
     const blockTypeLabels = @json($blockTypes);
     const contentOptions = @json($blockContentOptions);
+    const fallbackSectionPresentations = Object.freeze({
+        standard: 'Standard',
+        soft: 'Soft background',
+        framed: 'Framed panel',
+        contrast: 'Dark contrast',
+    });
+    const configuredSectionPresentations = contentOptions.presentations?.sections;
+    const sectionPresentationChoices = Object.fromEntries(Object.entries(fallbackSectionPresentations).map(([token, fallbackLabel]) => [
+        token,
+        typeof configuredSectionPresentations?.[token] === 'string' && configuredSectionPresentations[token].trim() ? configuredSectionPresentations[token] : fallbackLabel,
+    ]));
+    const normalizedSectionPresentation = value => Object.prototype.hasOwnProperty.call(sectionPresentationChoices, String(value || 'standard').trim().toLowerCase())
+        ? String(value || 'standard').trim().toLowerCase() : 'standard';
     const state = { blocks: @json($page->blocks), selected: @json(optional($page->blocks->first())->uuid), dirtyScopes: new Set(), uploadingScopes: new Set() };
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
     const list = document.getElementById('block-list');
@@ -510,6 +531,9 @@
         return Object.keys(contentOptions.sources?.[block.type] || {})[0] || 'manual';
     };
     const managedSelect = (key, label, value, choices, rerender = false) => `<div class="igf-field"><label for="managed-${key}">${escapeHtml(label)}</label><select id="managed-${key}" data-content-key="${escapeHtml(key)}" ${rerender ? 'data-managed-rerender' : ''}>${Object.entries(choices).map(([optionValue,optionLabel])=>`<option value="${escapeHtml(optionValue)}" ${String(value)===String(optionValue)?'selected':''}>${escapeHtml(optionLabel)}</option>`).join('')}</select></div>`;
+    function renderSectionPresentationField(block) {
+        return `${managedSelect('section_presentation', 'Section presentation', normalizedSectionPresentation(block.content?.section_presentation), sectionPresentationChoices, true)}<p class="igf-muted igf-section-presentation-help">Changes the section’s surrounding surface while keeping its content layout.</p>`;
+    }
     function managedItems(block, source) {
         let items = [...(contentOptions.items?.[source] || [])];
         if (source === 'projects' && block.content?.tag_slug) items = items.filter(item => (item.tags || []).includes(block.content.tag_slug));
@@ -563,7 +587,7 @@
         const itemLink = ['cards','causes','events','team'].includes(block.type) ? `<div class="igf-field"><label for="managed-item-link">Item link text</label><input id="managed-item-link" data-content-key="item_link_label" value="${escapeHtml(content.item_link_label || '')}"></div>` : '';
         const viewAll = ['cards','causes','events','gallery'].includes(block.type) ? `<div class="igf-field"><label for="managed-view-all-label">View-all link text</label><input id="managed-view-all-label" data-content-key="view_all_label" value="${escapeHtml(content.view_all_label || '')}"></div><div class="igf-field"><label for="managed-view-all-url">View-all destination</label><input id="managed-view-all-url" data-content-key="view_all_url" value="${escapeHtml(content.view_all_url || '')}"></div>` : '';
         const presentation = block.type === 'causes'
-            ? `${managedSelect('presentation','Presentation',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'},true)}<p class="igf-muted">Animated focus areas uses the heading as the first tile, then reveals program cards in a short stagger. Five items fill two complete desktop rows.</p>`
+            ? `${managedSelect('presentation','Content layout',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'},true)}<p class="igf-muted">Animated focus areas uses the heading as the first tile, then reveals program cards in a short stagger. Five items fill two complete desktop rows.</p>`
             : '';
 
         return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${presentation}${sourceField}${sourceSpecific}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
@@ -602,7 +626,7 @@
             : (content.project_uuid ? '<p class="igf-banner-guidance"><strong>Project must be cleared.</strong> Use one managed cause in a Single CTA or Banner. <button class="igf-btn igf-btn--small" type="button" data-giving-clear-project>Clear project</button></p>' : '<p class="igf-muted">Project preselection is available for one compatible managed cause in a Single CTA or Banner.</p>');
         const previewOption = content.selection_mode === 'manual' ? chosenOption : active[0];
         const behavior = previewOption ? `${previewOption.label} → ${selectedProject || fixedProject ? `donate to ${(selectedProject || fixedProject).label}` : previewOption.destination}` : 'No public giving destination is selected.';
-        const layoutSelect = managedSelect('layout','Presentation',content.layout,{single_cta:'Single CTA',card_grid:'Card grid',banner:'Banner'},true).replace('data-managed-rerender','data-giving-rerender');
+        const layoutSelect = managedSelect('layout','Giving layout',content.layout,{single_cta:'Single CTA',card_grid:'Card grid',banner:'Banner'},true).replace('data-managed-rerender','data-giving-rerender');
         const modeSelect = managedSelect('selection_mode','Giving options',content.selection_mode,{automatic:'All active giving options',manual:'Choose specific options and order'},true).replace('data-managed-rerender','data-giving-rerender');
 
         return `<div class="igf-field"><label for="ways-eyebrow">Small heading</label><input id="ways-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="ways-heading">Section heading</label><input id="ways-heading" data-content-key="heading" maxlength="180" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="ways-body">Introduction</label><textarea id="ways-body" data-content-key="body" maxlength="1200">${escapeHtml(content.body || '')}</textarea></div>${layoutSelect}${modeSelect}${chooser}${projectField}<div class="igf-field"><label for="ways-link-label">Button text for managed causes</label><input id="ways-link-label" data-content-key="link_label" maxlength="80" value="${escapeHtml(content.link_label || 'Give now')}"></div><div class="igf-field"><label for="ways-empty">Empty-section message</label><textarea id="ways-empty" data-content-key="empty_state" maxlength="300">${escapeHtml(content.empty_state || '')}</textarea></div><div class="igf-giving-preview"><strong>Destination preview:</strong> ${escapeHtml(behavior)}</div><p class="igf-muted">Names, descriptions, images, and destinations come from managed Donation Causes, Zakat, and Sponsor-a-Child content. No URLs or JSON are entered here.</p>`;
@@ -708,7 +732,7 @@
 
     function renderPreviewBlock(block) {
         const content = block.content || {};
-        const selected = block.uuid === state.selected ? ' is-selected' : '';
+        const selected = ` igf-preview-block--presentation-${normalizedSectionPresentation(content.section_presentation)}${block.uuid === state.selected ? ' is-selected' : ''}`;
         const visibility = `${block.show_on_desktop ? '' : ' data-hide-desktop="true"'}${block.show_on_mobile ? '' : ' data-hide-mobile="true"'}`;
         if (block.type === 'hero') {
             const slides = heroSlidesForEditor(block);
@@ -919,7 +943,7 @@
                 ? renderWaysToGiveInspector(block)
                 : contentOptions.sources?.[block.type]
                     ? renderManagedInspector(block)
-                    : Object.entries(inspectorContent).map(([key, value]) => {
+                    : Object.entries(inspectorContent).filter(([key]) => key !== 'section_presentation').map(([key, value]) => {
             const labels = {animation_enabled:'Animate statistics',animation_type:'Animation style',animation_duration:'Animation duration (milliseconds)',animation_delay:'Delay between statistics (milliseconds)'};
             const label = labels[key] || key.replaceAll('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase());
             const fieldId = `block-content-${String(key).replace(/[^a-z0-9_-]/gi, '-')}`;
@@ -949,6 +973,7 @@
             ${libraryControl}
             <div data-block-content-controls>
                 <div class="igf-field"><label for="block-label">Admin label</label><input id="block-label" value="${escapeHtml(block.label || '')}"></div>
+                ${renderSectionPresentationField(block)}
                 ${fields}
                 ${block.type === 'stats' ? '<p class="igf-muted">Count up animates numeric values such as 23,000+. Visitors who prefer reduced motion always see the final values without animation.</p>' : ''}
             </div>

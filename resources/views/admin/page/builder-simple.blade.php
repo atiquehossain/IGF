@@ -52,6 +52,14 @@
     @media(max-width:880px){body.layout-wrapper .right-panel{height:auto;min-height:100vh;overflow:visible}.simple-editor{height:auto;min-height:100vh}.simple-grid{display:flex;flex-direction:column}.simple-sections,.simple-inspector{overflow:visible;border:0}.simple-sections{order:1}.simple-canvas{order:2;min-height:600px}.simple-inspector{order:3}.simple-section-list{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-panel-head{position:static}.simple-topbar{position:sticky;top:0;flex-wrap:wrap}.simple-topbar__title p{display:none}.simple-save-state{order:3}.simple-more__menu{position:fixed;top:78px;right:12px}}
     @media(max-width:520px){.simple-topbar{gap:8px}.simple-topbar h1{max-width:145px;font-size:15px}.simple-actions{width:100%;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}.simple-actions .simple-btn--primary{padding-inline:10px}.simple-history{display:none}.simple-save-state{order:3;width:100%;text-align:center}.simple-viewport{order:4;width:100%;justify-content:center}.simple-section-list,.simple-section-cards,.simple-media-grid{grid-template-columns:1fr}.simple-preview-media,.simple-preview-cards,.simple-focus-grid{grid-template-columns:1fr}.simple-preview-stats{grid-template-columns:1fr}.simple-canvas{min-height:520px;padding:8px}.simple-section-cards{padding:14px}}
     .simple-page-settings summary,.simple-options summary{display:flex;min-height:44px;align-items:center}
+    .simple-section-presentation-help{margin:-7px 0 16px;color:var(--muted);font-size:11px;line-height:1.45}
+    .simple-preview-block--presentation-standard{box-shadow:inset 0 0 0 1px rgba(25,28,29,.04)}
+    .simple-preview-block--presentation-soft{background-color:#fbf5ef;box-shadow:inset 0 0 0 4px rgba(156,69,0,.08)}
+    .simple-preview-block--presentation-framed{margin-inline:clamp(12px,2.5vw,28px);border-color:#d7cbc0;border-radius:20px;background-color:#fff;box-shadow:0 16px 38px rgba(55,42,32,.11)}
+    .simple-preview-block--presentation-framed.is-selected{border-color:var(--orange)}
+    .simple-preview-block--presentation-contrast{background-color:#282421;color:#fff;box-shadow:inset 0 5px 0 var(--orange)}
+    .simple-preview-block--presentation-contrast :is(h1,h2,h3,p,blockquote){color:inherit}
+    .simple-preview-block--presentation-contrast :is(.simple-preview-card,.simple-preview-stat,.simple-focus-card){background-color:#fff;color:var(--ink)}
 </style>
 
 <main class="simple-editor" id="simple-editor">
@@ -251,6 +259,19 @@
     const canManageFundingEligibility = @json($canManageFundingEligibility);
     const linkTargets = @json($linkTargets);
     const contentOptions = @json($blockContentOptions);
+    const fallbackSectionPresentations = Object.freeze({
+        standard: 'Standard',
+        soft: 'Soft background',
+        framed: 'Framed panel',
+        contrast: 'Dark contrast',
+    });
+    const configuredSectionPresentations = contentOptions.presentations?.sections;
+    const sectionPresentationChoices = Object.fromEntries(Object.entries(fallbackSectionPresentations).map(([token, fallbackLabel]) => [
+        token,
+        typeof configuredSectionPresentations?.[token] === 'string' && configuredSectionPresentations[token].trim() ? configuredSectionPresentations[token] : fallbackLabel,
+    ]));
+    const normalizedSectionPresentation = value => Object.prototype.hasOwnProperty.call(sectionPresentationChoices, String(value || 'standard').trim().toLowerCase())
+        ? String(value || 'standard').trim().toLowerCase() : 'standard';
     const reusableSections = @json($simpleReusableSections);
     const routes = {
         simpleSave: @json(route('page.builder.simple.save', $page->uuid)),
@@ -477,6 +498,11 @@
         return `<label class="simple-field"><span>${escapeHtml(label)}</span>${options.textarea ? `<textarea ${binding} ${options.max ? `maxlength="${options.max}"` : ''}>${escapeHtml(value)}</textarea>` : `<input ${binding} type="${options.type || 'text'}" value="${escapeHtml(value)}" ${options.max ? `maxlength="${options.max}"` : ''}>`}</label>`;
     };
     const selectField = (key, label, value, choices) => `<label class="simple-field"><span>${escapeHtml(label)}</span><select data-content-key="${key}">${Object.entries(choices).map(([optionValue, optionLabel]) => `<option value="${escapeHtml(optionValue)}" ${String(value) === optionValue ? 'selected' : ''}>${escapeHtml(optionLabel)}</option>`).join('')}</select></label>`;
+    function renderSectionPresentationField(block) {
+        const value = normalizedSectionPresentation(block.content?.section_presentation);
+        const select = selectField('section_presentation', 'Section presentation', value, sectionPresentationChoices).replace('<select ', '<select data-auto-rerender ');
+        return `${select}<p class="simple-section-presentation-help">Changes the section’s surrounding surface while keeping its content layout.</p>`;
+    }
     const cardSelectField = (index, key, label, value, choices) => `<label class="simple-field"><span>${escapeHtml(label)}</span><select data-card-index="${index}" data-card-key="${key}">${Object.entries(choices).map(([optionValue, optionLabel]) => `<option value="${escapeHtml(optionValue)}" ${String(value || '') === optionValue ? 'selected' : ''}>${escapeHtml(optionLabel)}</option>`).join('')}</select></label>`;
     const imageField = (key, label, value, slide = false) => {
         const id = `simple-image-${slide ? 'slide-' : ''}${key}`;
@@ -575,7 +601,7 @@
             ? `${textField('view_all_label','“View all” link text',content.view_all_label || '')}${linkField('view_all_url','“View all” destination',content.view_all_url || '')}`
             : '';
         const presentationField = block.type === 'causes'
-            ? `${selectField('presentation','Presentation',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'}).replace('<select ','<select data-auto-rerender ')}<p style="color:var(--muted);font-size:11px">Animated focus areas places this heading in the first tile, reveals each tile with a short stagger, and adds a left-to-right hover effect. Five items fill two complete desktop rows.</p>`
+            ? `${selectField('presentation','Content layout',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'}).replace('<select ','<select data-auto-rerender ')}<p style="color:var(--muted);font-size:11px">Animated focus areas places this heading in the first tile, reveals each tile with a short stagger, and adds a left-to-right hover effect. Five items fill two complete desktop rows.</p>`
             : '';
 
         return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true})}${presentationField}${sourceChoiceField(block)}${sourceSpecific}${selectField('sort','Item order',content.sort,contentOptions.sorts || {})}<label class="simple-field"><span>Maximum number of items</span><input data-content-key="limit" type="number" min="1" max="12" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></label>${selectField('selection_mode','How should items be chosen?',content.selection_mode,{automatic:'Keep this section updated automatically',manual:'Choose specific managed items'}).replace('<select ','<select data-auto-rerender ')}${selection}${linkFields}${viewAllFields}${textField('empty_state','Message when there are no published items',content.empty_state || '',{textarea:true,max:300})}<p style="color:var(--muted);font-size:11px">Only published content appears to visitors. Update the individual records in the relevant Content manager.</p>`;
@@ -621,7 +647,7 @@
             ? `${previewOption.label} → ${selectedProject ? `donate to ${selectedProject.label}` : previewOption.destination}`
             : 'No public giving destination is selected.';
 
-        return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true,max:1200})}${selectField('layout','Presentation',content.layout,{single_cta:'Single CTA',card_grid:'Card grid',banner:'Banner'}).replace('<select ','<select data-giving-rerender ')}${selectField('selection_mode','Giving options',content.selection_mode,{automatic:'All active giving options',manual:'Choose specific options and order'}).replace('<select ','<select data-giving-rerender ')}${chooser}${projectField}${textField('link_label','Button text for managed causes',content.link_label || 'Give now',{max:80})}${textField('empty_state','Message when no option is available',content.empty_state || '',{textarea:true,max:300})}<div class="simple-giving-preview"><strong>Destination preview:</strong> ${escapeHtml(behavior)}</div><p style="color:var(--muted);font-size:11px">Names, descriptions, images, and destinations come from Donation Causes, the Zakat page, and the Sponsor-a-Child page. No web addresses are entered here.</p>`;
+        return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true,max:1200})}${selectField('layout','Giving layout',content.layout,{single_cta:'Single CTA',card_grid:'Card grid',banner:'Banner'}).replace('<select ','<select data-giving-rerender ')}${selectField('selection_mode','Giving options',content.selection_mode,{automatic:'All active giving options',manual:'Choose specific options and order'}).replace('<select ','<select data-giving-rerender ')}${chooser}${projectField}${textField('link_label','Button text for managed causes',content.link_label || 'Give now',{max:80})}${textField('empty_state','Message when no option is available',content.empty_state || '',{textarea:true,max:300})}<div class="simple-giving-preview"><strong>Destination preview:</strong> ${escapeHtml(behavior)}</div><p style="color:var(--muted);font-size:11px">Names, descriptions, images, and destinations come from Donation Causes, the Zakat page, and the Sponsor-a-Child page. No web addresses are entered here.</p>`;
     }
     const canEditBlockContent = block => permissions.edit && (!block?.is_reusable || permissions.editReusable);
     const blockForEditorRender = block => block?.is_reusable && !permissions.editReusable
@@ -712,7 +738,7 @@
         const reusableAction = !block.is_reusable && permissions.create
             ? '<div class="simple-shared"><strong>Reuse this section on other pages.</strong> Save it to the shared library with a clear name. <button class="simple-btn" type="button" id="simple-promote-reusable"><i class="fa fa-share-alt" aria-hidden="true"></i> Save as reusable</button></div>'
             : '';
-        inspector.innerHTML = `${sharedNotice}${reusableAction}${renderEssentialFields(editorBlock)}<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label>${actionGroup}${editNote}</div></details>`;
+        inspector.innerHTML = `${sharedNotice}${reusableAction}${renderSectionPresentationField(editorBlock)}${renderEssentialFields(editorBlock)}<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label>${actionGroup}${editNote}</div></details>`;
         if (!permissions.edit || sharedContentReadOnly) {
             inspector.querySelectorAll('input,textarea,select,button,[contenteditable="true"]').forEach(control => {
                 const pageOnlyControl = sharedContentReadOnly && control.matches('#simple-block-enabled,#simple-duplicate,#simple-delete,#simple-detach-reusable,[data-hero-nav]');
@@ -809,7 +835,7 @@
         wireOrdering();
     }
     function previewBlock(block) {
-        const c=block.content||{};const selected=block.uuid===state.selected?' is-selected':'';const hidden=block.is_enabled?'':' is-hidden';const label=escapeHtml(block.label||typeLabels[block.type]);
+        const c=block.content||{};const selected=` simple-preview-block--presentation-${normalizedSectionPresentation(c.section_presentation)}${block.uuid===state.selected?' is-selected':''}`;const hidden=block.is_enabled?'':' is-hidden';const label=escapeHtml(block.label||typeLabels[block.type]);
         if(block.type==='hero'){const slide=heroSlides(block)[state.heroSlide]||heroSlides(block)[0];const image=safeImage(slide.image);return `<section class="simple-preview-block simple-preview-block--hero${selected}${hidden}" data-preview-block="${block.uuid}" data-label="${label}" ${image?`style="background-image:url(&quot;${escapeHtml(image)}&quot;)"`:''}>${inlineElement('div',slide.eyebrow,'slide.eyebrow','small heading',{className:'simple-preview-eyebrow',single:true})}${inlineElement('h2',slide.heading,'slide.heading','main heading',{single:true})}${inlineElement('p',slide.body,'slide.body','description')}${slide.primary_label?inlineElement('span',slide.primary_label,'slide.primary_label','main button text',{className:'simple-preview-button',single:true}):''}</section>`}
         if(block.type==='stats'){const animated=c.animation_enabled!==false;const animationType=['count_up','fade_up','pop'].includes(c.animation_type)?c.animation_type:'count_up';const duration=Math.min(5000,Math.max(300,Number(c.animation_duration||1600)));const delay=Math.min(1000,Math.max(0,Number(c.animation_delay??120)));return `<section class="simple-preview-block${selected}${hidden}" data-preview-block="${block.uuid}" data-label="${label}">${inlineElement('div',c.eyebrow||'','eyebrow','small heading',{className:'simple-preview-eyebrow',single:true})}${inlineElement('h2',c.heading||block.label,'heading','section heading',{single:true})}<div class="simple-preview-stats">${(c.items||[]).map((item,index)=>`<div class="simple-preview-stat${animated?` is-animation-${animationType.replace('_','-')}`:''}" style="--preview-animation-duration:${duration}ms;--preview-animation-delay:${delay*index}ms">${inlineElement('strong',item.value,`items.${index}.value`,'statistic value',{single:true})}${inlineElement('span',item.label,`items.${index}.label`,'statistic label',{single:true})}</div>`).join('')}</div></section>`}
         if(block.type==='media_text'){const mediaType=['image','video','youtube'].includes(c.media_type)?c.media_type:'image';let media='';if(mediaType==='video'&&safeImage(c.video_url))media=`<video src="${escapeHtml(safeImage(c.video_url))}" ${safeImage(c.poster)?`poster="${escapeHtml(safeImage(c.poster))}"`:''} controls preload="metadata"></video>`;else if(mediaType==='youtube'&&youtubeEmbedUrl(c.youtube_url))media=`<iframe src="${escapeHtml(youtubeEmbedUrl(c.youtube_url))}" title="${escapeHtml(c.heading||'YouTube video')}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;else if(mediaType==='image'&&safeImage(c.image))media=`<img src="${escapeHtml(safeImage(c.image))}" alt="${escapeHtml(c.image_alt||'')}">`;else media='<div style="min-height:220px;border-radius:10px;background:#f2efec"></div>';return `<section class="simple-preview-block${selected}${hidden}" data-preview-block="${block.uuid}" data-label="${label}"><div class="simple-preview-media">${media}<div>${inlineElement('div',c.eyebrow||'','eyebrow','small heading',{className:'simple-preview-eyebrow',single:true})}${inlineElement('h2',c.heading||block.label,'heading','section heading',{single:true})}${inlineElement('p',plainText(c.body),'body','body text',{rich:true})}</div></div></section>`}

@@ -814,10 +814,9 @@ return [
             'label' => 'Social profiles',
             'description' => 'Leave a profile blank to remove it from the public site.',
             'fields' => [
-                'facebook' => ['label' => 'Facebook URL', 'type' => 'url', 'default' => 'https://www.facebook.com/Igniteglobalfoundation/', 'localized' => false, 'public' => true],
+                'facebook' => ['label' => 'Facebook URL', 'type' => 'url', 'default' => 'https://www.facebook.com/Igniteglobalfoundation', 'localized' => false, 'public' => true],
                 'instagram' => ['label' => 'Instagram URL', 'type' => 'url', 'default' => 'https://www.instagram.com/igniteglobalfoundation/', 'localized' => false, 'public' => true],
                 'linkedin' => ['label' => 'LinkedIn URL', 'type' => 'url', 'default' => 'https://www.linkedin.com/company/ignite-global-foundation-2016/', 'localized' => false, 'public' => true],
-                'tiktok' => ['label' => 'TikTok URL', 'type' => 'url', 'default' => 'https://www.tiktok.com/@ignite.global.foundation', 'localized' => false, 'public' => true],
                 'youtube' => ['label' => 'YouTube URL', 'type' => 'url', 'default' => 'https://www.youtube.com/@igniteglobalfoundation', 'localized' => false, 'public' => true],
             ],
         ],

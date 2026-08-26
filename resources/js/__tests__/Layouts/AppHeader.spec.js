@@ -51,6 +51,28 @@ describe('AppHeader verified language switcher', () => {
     expect(wrapper.findAll('.utility-bar__links a[hreflang]')).toHaveLength(0);
     expect(wrapper.text()).not.toContain('বাংলা');
   });
+
+  test('renders every managed social profile URL from website settings', () => {
+    usePage().props.siteSettings.social = {
+      facebook: 'https://social.example.test/facebook',
+      instagram: 'https://social.example.test/instagram',
+      linkedin: 'https://social.example.test/linkedin',
+      tiktok: 'https://social.example.test/stale-tiktok',
+      youtube: 'https://social.example.test/youtube',
+    };
+
+    const wrapper = mount(AppHeader);
+    const links = wrapper.findAll('.utility-social a');
+
+    expect(links.map(link => link.attributes('href'))).toEqual([
+      'https://social.example.test/facebook',
+      'https://social.example.test/instagram',
+      'https://social.example.test/linkedin',
+      'https://social.example.test/youtube',
+    ]);
+    expect(links.every(link => link.attributes('rel') === 'noopener noreferrer')).toBe(true);
+  });
+
   test('honors explicitly blank managed contact fields by hiding those links', () => {
     usePage().props.siteSettings.contact = {
       phone_primary: '',

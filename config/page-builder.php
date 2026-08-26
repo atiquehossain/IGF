@@ -79,6 +79,15 @@ return [
         'title' => 'Title A–Z',
     ],
 
+    'section_presentations' => [
+        'standard' => 'Standard',
+        'soft' => 'Soft background',
+        'framed' => 'Framed panel',
+        'contrast' => 'Dark contrast',
+    ],
+
+    'section_presentation_default' => 'standard',
+
     'cause_presentations' => [
         'card_grid' => 'Standard image cards',
         'focus_areas' => 'Animated focus areas',

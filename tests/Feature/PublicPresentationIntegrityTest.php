@@ -29,6 +29,11 @@ class PublicPresentationIntegrityTest extends TestCase
                 ->where('siteSettings.contact.footer_phone_label', 'Cell')
                 ->where('siteSettings.contact.footer_secondary_phone_label', 'Alternate cell')
                 ->where('siteSettings.contact.footer_email_label', 'Email')
+                ->where('siteSettings.social.facebook', 'https://www.facebook.com/Igniteglobalfoundation')
+                ->where('siteSettings.social.instagram', 'https://www.instagram.com/igniteglobalfoundation/')
+                ->where('siteSettings.social.linkedin', 'https://www.linkedin.com/company/ignite-global-foundation-2016/')
+                ->where('siteSettings.social.youtube', 'https://www.youtube.com/@igniteglobalfoundation')
+                ->missing('siteSettings.social.tiktok')
             );
     }
 

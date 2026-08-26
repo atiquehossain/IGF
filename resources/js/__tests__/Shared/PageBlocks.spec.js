@@ -110,6 +110,86 @@ function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional =
   };
 }
 
+const sectionTypes = [
+  'hero', 'stats', 'rich_text', 'media_text', 'cards', 'ways_to_give', 'causes', 'events',
+  'testimonials', 'team', 'partners', 'faq', 'timeline', 'gallery', 'video', 'cta',
+  'newsletter', 'spacer', 'custom_html',
+];
+
+function presentationBlock(type, sectionPresentation, index = 0, content = {}) {
+  return {
+    uuid: `presentation-${type}-${index}`,
+    type,
+    label: `${type} section`,
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      heading: `${type} heading`,
+      body: 'Section body',
+      items: [],
+      section_presentation: sectionPresentation,
+      ...content,
+    },
+  };
+}
+
+describe('PageBlocks section presentations', () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    setPageSettings();
+  });
+
+  test.each(['standard', 'soft', 'framed', 'contrast'])('applies the %s surface to every block type', presentation => {
+    const blocks = sectionTypes.map((type, index) => presentationBlock(type, presentation, index));
+    const wrapper = mount(PageBlocks, { props: { blocks } });
+    const sections = wrapper.findAll('section.igf-page-block');
+
+    expect(sections).toHaveLength(sectionTypes.length);
+    sections.forEach(section => expect(section.classes()).toContain(`igf-page-block--presentation-${presentation}`));
+
+    wrapper.unmount();
+  });
+
+  test('normalizes old, empty, and unsupported presentation values to a safe class', () => {
+    const values = [undefined, null, '', 'unknown', 'soft another-class'];
+    const wrapper = mount(PageBlocks, {
+      props: { blocks: values.map((value, index) => presentationBlock('rich_text', value, index)) },
+    });
+
+    wrapper.findAll('section.igf-page-block').forEach(section => {
+      expect(section.classes()).toContain('igf-page-block--presentation-standard');
+    });
+    wrapper.unmount();
+  });
+
+  test('normalizes case and whitespace without replacing specialized content layouts', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          presentationBlock('cards', ' Soft ', 1, { variant: 'partners' }),
+          presentationBlock('causes', 'CONTRAST', 2, { presentation: 'focus_areas' }),
+        ],
+      },
+    });
+
+    expect(wrapper.get('.igf-page-block--cards').classes()).toEqual(expect.arrayContaining([
+      'igf-page-block--partners', 'igf-page-block--presentation-soft',
+    ]));
+    expect(wrapper.get('.igf-page-block--causes').classes()).toContain('igf-page-block--presentation-contrast');
+    expect(wrapper.find('.igf-focus-areas').exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  test('ships distinct public and responsive styles for every supported surface', () => {
+    ['standard', 'soft', 'framed', 'contrast'].forEach(presentation => {
+      expect(pageBlocksSource).toContain(`.igf-page-block--presentation-${presentation}`);
+    });
+    expect(pageBlocksSource).toContain('.igf-page-block--hero.igf-page-block--presentation-soft');
+    expect(pageBlocksSource).toContain('@media (max-width:767px)');
+  });
+});
+
 describe('PageBlocks hero carousel', () => {
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });

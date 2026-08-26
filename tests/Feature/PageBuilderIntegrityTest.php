@@ -1726,6 +1726,111 @@ class PageBuilderIntegrityTest extends TestCase
         $this->assertStringContainsString('renderPreview(); renderInspector();', $advancedSource);
     }
 
+    public function test_every_section_has_a_validated_persistent_presentation_surface(): void
+    {
+        $presentations = [
+            'standard' => 'Standard',
+            'soft' => 'Soft background',
+            'framed' => 'Framed panel',
+            'contrast' => 'Dark contrast',
+        ];
+        $this->assertSame($presentations, config('page-builder.section_presentations'));
+        $this->assertSame('standard', config('page-builder.section_presentation_default'));
+
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+        $block = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, ['locale' => 'en', 'type' => 'rich_text'])
+        )->assertCreated()
+            ->assertJsonPath('block.content.section_presentation', 'standard')
+            ->json('block');
+
+        $content = $block['content'];
+        $content['section_presentation'] = 'soft';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertOk()
+            ->assertJsonPath('block.content.section_presentation', 'soft');
+
+        $content['section_presentation'] = 'framed';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.simple.save', $page->uuid),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'blocks' => [[
+                    'uuid' => $block['uuid'],
+                    'label' => $block['label'],
+                    'content' => $content,
+                    'is_enabled' => true,
+                ]],
+            ])
+        )->assertOk()
+            ->assertJsonPath('blocks.0.content.section_presentation', 'framed');
+
+        $savedBlock = PageBlock::where('uuid', $block['uuid'])->firstOrFail();
+        $this->assertSame('framed', $savedBlock->content['section_presentation']);
+
+        $content['section_presentation'] = 'untrusted-style';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertUnprocessable()
+            ->assertJsonValidationErrors('content.section_presentation');
+        $this->assertSame('framed', $savedBlock->fresh()->content['section_presentation']);
+
+        foreach ([null, 'advanced'] as $mode) {
+            $parameters = ['uuid' => $page->uuid, 'locale' => 'en'];
+            if ($mode) {
+                $parameters['mode'] = $mode;
+            }
+
+            $response = $this->actingAs($admin, 'admin')
+                ->get(route('page.builder.edit', $parameters))
+                ->assertOk()
+                ->assertSee('Section presentation')
+                ->assertSee('Soft background')
+                ->assertSee('Framed panel')
+                ->assertSee('Dark contrast')
+                ->assertSee('Content layout')
+                ->assertSee('Giving layout');
+
+            $this->assertSame(
+                $presentations,
+                data_get($response->viewData('blockContentOptions'), 'presentations.sections')
+            );
+        }
+
+        $reusable = ReusableBlock::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Reusable presentation section',
+            'type' => 'rich_text',
+            'locale' => 'en',
+            'content' => ['heading' => 'Shared heading'],
+            'settings' => [],
+            'is_enabled' => true,
+        ]);
+        $reusablePayload = [
+            'expected_version' => (int) $reusable->editor_version,
+            'name' => $reusable->name,
+            'locale' => 'en',
+            'content' => ['heading' => 'Shared heading', 'section_presentation' => 'contrast'],
+            'settings' => [],
+            'is_enabled' => true,
+        ];
+        $this->actingAs($admin, 'admin')->putJson(route('reusable-blocks.update', $reusable), $reusablePayload)
+            ->assertOk()
+            ->assertJsonPath('block.content.section_presentation', 'contrast');
+
+        $reusablePayload['expected_version'] = (int) $reusable->fresh()->editor_version;
+        $reusablePayload['content']['section_presentation'] = 'unsafe-class';
+        $this->actingAs($admin, 'admin')->putJson(route('reusable-blocks.update', $reusable), $reusablePayload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('content.section_presentation');
+        $this->assertSame('contrast', $reusable->fresh()->content['section_presentation']);
+    }
+
     public function test_hero_carousel_slides_are_validated_sanitized_and_saved(): void
     {
         $admin = $this->makeAuthorizedAdmin();

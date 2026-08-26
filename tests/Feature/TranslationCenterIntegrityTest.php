@@ -271,6 +271,55 @@ class TranslationCenterIntegrityTest extends TestCase
         $this->assertSame($block->content['selected_items'], $translatedBlock->content['selected_items']);
     }
 
+    public function test_content_and_section_presentations_remain_machine_fields_during_translation(): void
+    {
+        [$page] = $this->makeEnglishPage();
+        $block = PageBlock::create([
+            'page_id' => $page->id,
+            'uuid' => (string) Str::uuid(),
+            'translation_key' => (string) Str::uuid(),
+            'type' => 'causes',
+            'label' => 'Community priorities',
+            'content' => [
+                'heading' => 'Programs designed with communities',
+                'presentation' => 'focus_areas',
+                'section_presentation' => 'contrast',
+            ],
+            'sort_order' => 4,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+        ]);
+        $service = app(TranslationCenterService::class);
+        $prepared = $service->prepareBlockTranslationContent($block->content);
+
+        $this->assertSame('', $prepared['heading']);
+        $this->assertSame('focus_areas', $prepared['presentation']);
+        $this->assertSame('contrast', $prepared['section_presentation']);
+
+        $blockRows = $service->rows('en', 'bn')->filter(fn (array $row) =>
+            ($row['identity']['type'] ?? null) === 'block'
+            && ($row['identity']['source_block_id'] ?? null) === $block->id
+        );
+        $paths = $blockRows->pluck('identity.path');
+        $this->assertFalse($paths->contains('presentation'));
+        $this->assertFalse($paths->contains('section_presentation'));
+        $headingRow = $blockRows->firstWhere('identity.path', 'heading');
+        $this->assertNotNull($headingRow);
+
+        $service->save('en', 'bn', [[
+            'key' => $headingRow['key'],
+            'precondition' => $headingRow['precondition'],
+            'value' => 'কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি',
+        ]], null);
+
+        $translatedPage = Page::where('uuid', $page->uuid)->where('language', 'bn')->firstOrFail();
+        $translatedBlock = $translatedPage->blocks()->where('translation_key', $block->translation_key)->firstOrFail();
+        $this->assertSame('কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি', $translatedBlock->content['heading']);
+        $this->assertSame('focus_areas', $translatedBlock->content['presentation']);
+        $this->assertSame('contrast', $translatedBlock->content['section_presentation']);
+    }
+
     public function test_media_choice_and_sources_are_machine_fields_while_the_caption_is_translatable(): void
     {
         [$page] = $this->makeEnglishPage();

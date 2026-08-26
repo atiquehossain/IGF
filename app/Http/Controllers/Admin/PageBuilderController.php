@@ -557,6 +557,10 @@ class PageBuilderController extends Controller
             $content = $this->sanitizer->sanitizeBlockContent(
                 $data['content'] ?? config('page-builder.default_content.' . $data['type'], [])
             );
+            $content['section_presentation'] ??= (string) config(
+                'page-builder.section_presentation_default',
+                'standard'
+            );
 
             $block = $page->blocks()->create([
                 'uuid' => (string) Str::uuid(),
@@ -990,6 +994,11 @@ class PageBuilderController extends Controller
             'content.limit' => ['sometimes', 'integer', 'between:1,12'],
             'content.selection_mode' => ['sometimes', 'string', Rule::in(['automatic', 'manual'])],
             'content.presentation' => ['sometimes', 'string', Rule::in(['card_grid', 'focus_areas'])],
+            'content.section_presentation' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.section_presentations', []))),
+            ],
             'content.layout' => ['sometimes', 'string', Rule::in(['single_cta', 'card_grid', 'banner'])],
             'content.project_uuid' => ['sometimes', 'nullable', 'uuid'],
             'content.link_label' => ['sometimes', 'nullable', 'string', 'max:80'],
@@ -1825,6 +1834,7 @@ class PageBuilderController extends Controller
             'sources' => config('page-builder.automatic_sources', []),
             'sorts' => config('page-builder.automatic_sort_options', []),
             'presentations' => [
+                'sections' => config('page-builder.section_presentations', []),
                 'causes' => config('page-builder.cause_presentations', []),
             ],
             'categories' => Category::query()

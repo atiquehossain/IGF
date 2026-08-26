@@ -166,6 +166,52 @@ class WebsiteCustomizerIntegrityTest extends TestCase
     }
 
 
+    public function test_admin_can_publish_dynamic_social_profile_links(): void
+    {
+        $admin = $this->makePageEditor();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Social profiles')
+            ->assertSee('Facebook URL')
+            ->assertSee('Instagram URL')
+            ->assertSee('LinkedIn URL')
+            ->assertSee('YouTube URL')
+            ->assertDontSee('TikTok URL');
+
+        $settings = $this->defaultSettingsPayload();
+        $managedProfiles = [
+            'facebook' => 'https://social.example.test/facebook',
+            'instagram' => 'https://social.example.test/instagram',
+            'linkedin' => 'https://social.example.test/linkedin',
+            'youtube' => 'https://social.example.test/youtube',
+        ];
+        $settings['social'] = array_replace($settings['social'], $managedProfiles);
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        foreach ($managedProfiles as $key => $value) {
+            $this->assertDatabaseHas('site_settings', [
+                'group' => 'social',
+                'key' => $key,
+                'locale' => '*',
+                'value' => $value,
+                'is_public' => true,
+                'updated_by' => $admin->id,
+            ]);
+        }
+
+        $publicProfiles = app(SiteSettingService::class)->values('en', true)['social'];
+
+        foreach ($managedProfiles as $key => $value) {
+            $this->assertSame($value, $publicProfiles[$key]);
+        }
+    }
+
+
     public function test_contact_page_faq_editor_saves_an_ordered_dynamic_list_safely(): void
     {
         $admin = $this->makePageEditor();

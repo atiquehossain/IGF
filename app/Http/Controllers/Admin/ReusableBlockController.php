@@ -63,6 +63,10 @@ class ReusableBlockController extends Controller
             'settings' => ['nullable', 'array'],
             'is_enabled' => ['required', 'boolean'],
         ]);
+        // Laravel only returns explicitly validated nested array members when
+        // a child rule is present. The complete block payload was already
+        // type-checked above, so restore it before sanitizing every value.
+        $data['content'] = $request->input('content', []);
 
         $anticipatedPageUuids = $this->affectedPageUuids($reusableBlock->getKey());
         $reusableBlock = DB::transaction(function () use ($reusableBlock, $data, $anticipatedPageUuids): ReusableBlock {

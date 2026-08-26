@@ -204,12 +204,14 @@ class IgniteParityContentTest extends TestCase
         $navigation = file_get_contents(resource_path('js/layouts/AppNav.vue'));
         $footer = file_get_contents(resource_path('js/layouts/AppFooter.vue'));
         $blocks = file_get_contents(resource_path('js/Shared/PageBlocks.vue'));
-        $this->assertStringContainsString('aria-label="TikTok"', $header);
+        $this->assertStringContainsString('aria-label="YouTube"', $header);
+        $this->assertStringNotContainsString('social.tiktok', $header);
         $this->assertStringContainsString('header.sponsorLabel', $navigation);
         $this->assertStringContainsString('desktop-nav__trigger', $navigation);
         $this->assertStringContainsString('mobile-nav__submenu', $navigation);
         $this->assertStringContainsString(':aria-expanded="openDesktop === index"', $navigation);
-        $this->assertStringContainsString('aria-label="TikTok"', $footer);
+        $this->assertStringContainsString('aria-label="YouTube"', $footer);
+        $this->assertStringNotContainsString('social.tiktok', $footer);
         $this->assertStringContainsString('branding.tagline', $footer);
         $this->assertStringContainsString('footer.newsletterTitle', $footer);
         $this->assertStringContainsString("router.post(route('frontend.subscribe')", $footer);

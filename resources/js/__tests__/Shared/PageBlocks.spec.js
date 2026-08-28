@@ -1004,6 +1004,21 @@ describe('PageBlocks editorial links', () => {
     wrapper.unmount();
   });
 
+  test('uses the Ignite brand palette for the campus presentation', () => {
+    const campusStyles = pageBlocksSource.slice(
+      pageBlocksSource.indexOf('.igf-page-block--hero.igf-page-block--campus { min-height:430px'),
+      pageBlocksSource.indexOf('.igf-video {'),
+    );
+
+    expect(campusStyles).not.toBe('');
+    expect(campusStyles).toContain('border-bottom:5px solid var(--orange)');
+    expect(campusStyles).toContain('background:rgba(25,28,29,.72)');
+    expect(campusStyles).toContain('background:var(--linen)');
+    expect(campusStyles).toContain('background:var(--cream)');
+    expect(campusStyles).toContain('background:var(--brown); color:var(--white)');
+    expect(campusStyles).not.toMatch(/campus-green|#609966|#40513b|#9dc08b|#d0f5b8|#e7fddc|#cff5b9|#fbfff9|#1d1d1d|rgba\(64,81,59|rgba\(10,17,9/);
+  });
+
   test('keeps URL-less initiatives non-interactive and renders safe contribution actions', () => {
     const wrapper = mount(PageBlocks, {
       props: {

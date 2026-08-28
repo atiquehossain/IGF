@@ -234,8 +234,9 @@ class PublicSeoEnrichmentIntegrityTest extends TestCase
         $this->assertStringContainsString('--action-hover:#783300', $detail);
         $this->assertStringContainsString('background:var(--action)', $detail);
         $this->assertStringContainsString('.igf-download:focus-visible', $detail);
-        $this->assertStringContainsString('.igf-reports__filters button{border-color:var(--brown);background:var(--brown)}', $listing);
-        $this->assertStringContainsString('.igf-report-table-wrap a:focus-visible', $listing);
+        $this->assertStringContainsString('class="igf-report-card__primary"', $listing);
+        $this->assertStringContainsString(':aria-label="actionLabel(settings.view_label, item.title)"', $listing);
+        $this->assertStringContainsString('.igf-report-card__actions a:focus-visible', $listing);
     }
 
     public function test_reports_do_not_invent_cross_language_hreflang_without_translation_identity(): void

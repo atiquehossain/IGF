@@ -7,16 +7,16 @@
       :aria-expanded="isOpen ? 'true' : 'false'"
       aria-controls="igf-chat-panel"
       :aria-label="isOpen ? copy.closeChat : `${copy.openChat}: ${title}`"
+      :title="isOpen ? copy.closeChat : copy.chatWithUs"
       @click="toggleChat"
     >
-      <svg v-if="!isOpen" viewBox="0 0 24 24" aria-hidden="true">
+      <svg v-if="!isOpen" class="igf-chat__launcher-icon igf-chat__launcher-icon--open" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4.4 4.5A2.4 2.4 0 0 1 6.8 2h10.4a2.4 2.4 0 0 1 2.4 2.5v8.1a2.4 2.4 0 0 1-2.4 2.5H11l-4.7 4.1c-.7.6-1.8.1-1.8-.9v-3.4a2.4 2.4 0 0 1-2.1-2.4v-8Z" />
         <path d="M7.2 7.3h9.6M7.2 10.5h6.4" class="igf-chat__icon-lines" />
       </svg>
-      <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+      <svg v-else class="igf-chat__launcher-icon igf-chat__launcher-icon--close" viewBox="0 0 24 24" aria-hidden="true">
         <path d="m6.5 6.5 11 11m0-11-11 11" class="igf-chat__icon-close" />
       </svg>
-      <span class="igf-chat__launcher-text">{{ isOpen ? copy.close : copy.chatWithUs }}</span>
     </button>
 
     <section
@@ -39,7 +39,7 @@
           <h2 :id="titleId">{{ title }}</h2>
           <p class="igf-chat__presence"><span aria-hidden="true" /> {{ copy.presence }}</p>
         </div>
-        <button class="igf-chat__close" type="button" :aria-label="copy.closeChat" @click="closeChat">
+        <button ref="closeButton" class="igf-chat__close" type="button" :aria-label="copy.closeChat" @click="closeChat">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.5 6.5 11 11m0-11-11 11" /></svg>
         </button>
       </header>
@@ -303,6 +303,7 @@ const draft = ref('')
 const showGuestDetails = ref(false)
 const launcher = ref(null)
 const panel = ref(null)
+const closeButton = ref(null)
 const messageArea = ref(null)
 const messageInput = ref(null)
 const guestNameInput = ref(null)
@@ -374,7 +375,8 @@ watch(isOpen, async open => {
   if (conversation.value) startPolling()
   await nextTick()
   scrollToLatest(false)
-  messageInput.value?.focus({ preventScroll: true })
+  const focusTarget = messageInput.value || closeButton.value
+  focusTarget?.focus({ preventScroll: true })
 })
 
 async function loadBootstrap() {
@@ -645,8 +647,8 @@ function formatTime(value) {
   --chat-line: #e5dfda;
   position: fixed;
   z-index: 1450;
-  right: max(22px, env(safe-area-inset-right));
-  bottom: max(22px, env(safe-area-inset-bottom));
+  right: calc(22px + env(safe-area-inset-right, 0px));
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
   color: var(--chat-ink);
   font-family: 'Hanken Grotesk', Arial, sans-serif;
 }
@@ -660,15 +662,15 @@ function formatTime(value) {
 .igf-chat__launcher {
   position: relative;
   display: inline-flex;
-  min-width: 60px;
-  height: 60px;
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   float: right;
   border: 0;
-  border-radius: 999px;
-  padding: 0 20px;
+  border-radius: 50%;
+  padding: 0;
   background: var(--chat-action);
   color: #fff;
   box-shadow: 0 13px 34px rgba(72, 32, 0, .28);
@@ -678,11 +680,11 @@ function formatTime(value) {
   transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
 }
 .igf-chat__launcher:hover { background: #7b3200; transform: translateY(-2px); box-shadow: 0 17px 38px rgba(72, 32, 0, .32); }
-.igf-chat__launcher svg { width: 25px; height: 25px; overflow: visible; fill: currentColor; }
+.igf-chat__launcher:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 5px #211f1e, 0 13px 34px rgba(72, 32, 0, .28); }
+.igf-chat__launcher svg { width: 24px; height: 24px; overflow: visible; fill: currentColor; }
 .igf-chat__launcher .igf-chat__icon-lines, .igf-chat__launcher .igf-chat__icon-close { fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 1.7; }
 .igf-chat__launcher .igf-chat__icon-close { stroke-width: 2; }
-.igf-chat.is-open .igf-chat__launcher { min-width: 52px; width: 52px; height: 52px; padding: 0; }
-.igf-chat.is-open .igf-chat__launcher-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.igf-chat.is-open .igf-chat__launcher { display: none; }
 .igf-chat__panel {
   position: absolute;
   right: 0;
@@ -698,6 +700,7 @@ function formatTime(value) {
   box-shadow: 0 24px 70px rgba(25, 28, 29, .25);
   animation: igf-chat-in .22s ease-out both;
 }
+.igf-chat.is-open .igf-chat__panel { bottom: 0; }
 .igf-chat__header {
   position: relative;
   display: grid;
@@ -784,11 +787,8 @@ function formatTime(value) {
 @keyframes igf-chat-dot { to { opacity: .28; transform: translateY(-4px); } }
 @keyframes igf-chat-spin { to { transform: rotate(360deg); } }
 @media (max-width: 620px) {
-  .igf-chat { right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); }
-  .igf-chat__launcher { width: 58px; min-width: 58px; height: 58px; padding: 0; }
-  .igf-chat__launcher-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .igf-chat { right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
   .igf-chat.is-open { inset: 0; }
-  .igf-chat.is-open .igf-chat__launcher { display: none; }
   .igf-chat__panel { position: fixed; inset: 0; width: 100%; height: 100dvh; border: 0; border-radius: 0; padding-bottom: env(safe-area-inset-bottom); }
   .igf-chat__header { padding-top: max(17px, env(safe-area-inset-top)); }
   .igf-chat__body { padding: 16px; }

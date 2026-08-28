@@ -28,6 +28,7 @@ class AnnualReport extends Model
         'url',
         'location',
         'image_path',
+        'cover_image_path',
         'file_path',
         'publisher_name',
         'published_at',

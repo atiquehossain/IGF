@@ -73,10 +73,7 @@ class LocalDevelopmentSeeder extends Seeder
             ['uuid' => '55555555-5555-4555-8555-000000000002', 'slug' => 'education', 'name' => 'Education', 'description' => 'Learning access, materials, and school support.', 'destination_type' => 'restricted_fund', 'destination_name' => 'Education Fund'],
             ['uuid' => '84ae0875-0656-494a-b3a2-9c9477397465', 'slug' => 'zakat', 'name' => 'Donate Your Zakat', 'description' => 'Direct eligible Zakat to approved programs in line with the foundation’s Zakat policy.', 'purpose_key' => 'zakat', 'destination_type' => 'restricted_fund', 'destination_name' => 'Zakat Fund'],
         ] as $donationType) {
-            DonationType::query()->updateOrCreate(
-                ['uuid' => $donationType['uuid']],
-                array_merge($donationType, ['status' => 1])
-            );
+            $this->upsertDemoDonationType($donationType, true);
         }
 
         foreach ([
@@ -95,10 +92,7 @@ class LocalDevelopmentSeeder extends Seeder
             ['uuid' => '7a4c2d8e-8b01-4f01-8a01-000000000009', 'slug' => 'youth-development', 'name' => 'Youth Development', 'description' => 'Equip young people with education, leadership and employability skills.', 'destination_type' => 'page', 'destination_name' => null, 'destination_page_uuid' => '62000000-0000-4000-8000-000000000002'],
             ['uuid' => '7a4c2d8e-8b01-4f01-8a01-000000000010', 'slug' => 'street-children-education', 'name' => 'Street Children Education', 'description' => 'Provide safe, accessible learning and support for street-connected children.', 'destination_type' => 'page', 'destination_name' => null, 'destination_page_uuid' => '22222222-2222-4222-8222-000000000020'],
         ] as $draftCause) {
-            DonationType::query()->updateOrCreate(
-                ['uuid' => $draftCause['uuid']],
-                array_merge($draftCause, ['status' => 0])
-            );
+            $this->upsertDemoDonationType($draftCause, false);
         }
 
         $category = Category::query()->updateOrCreate(
@@ -353,8 +347,42 @@ class LocalDevelopmentSeeder extends Seeder
 
         $completeCatalog = require database_path('migrations/2026_08_25_130000_complete_donation_card_catalog.php');
         $completeCatalog->up();
+
+        $causeGroups = require database_path('migrations/2026_08_28_100000_create_donation_cause_groups.php');
+        $causeGroups->up();
         if (app()->environment('testing')) {
             $this->seedCypressYouTubeMetadata();
+        }
+    }
+
+    /**
+     * Reuse the migration-owned public cause when its historical UUID differs
+     * from the local demo UUID. Matching only on UUID created a duplicate cause,
+     * detached it from its administrator-managed group, and made Cypress test a
+     * different catalog from a real upgraded installation.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function upsertDemoDonationType(array $attributes, bool $status): void
+    {
+        $cause = DonationType::withTrashed()
+            ->where('slug', (string) $attributes['slug'])
+            ->orWhere('uuid', (string) $attributes['uuid'])
+            ->first();
+
+        if (!$cause) {
+            DonationType::query()->create(array_merge($attributes, ['status' => $status]));
+
+            return;
+        }
+
+        // Slug and UUID are stable public identities. Preserve the existing
+        // record (and its group/SEO relationships) while refreshing demo copy.
+        unset($attributes['slug'], $attributes['uuid']);
+        $cause->fill(array_merge($attributes, ['status' => $status]));
+        $cause->save();
+        if ($cause->trashed()) {
+            $cause->restore();
         }
     }
 

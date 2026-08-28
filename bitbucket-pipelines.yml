@@ -151,12 +151,13 @@ definitions:
               npm run production
 
               php artisan optimize:clear
-              php artisan migrate:status
-              php artisan migrate --force
               php artisan config:cache
               php artisan route:cache
-              php artisan view:cache
               php artisan about --only=environment,cache,drivers
+              php artisan igf:production-preflight
+              php artisan migrate:status
+              php artisan migrate --force
+              php artisan view:cache
               php artisan up
 
               if ! curl --fail --silent --show-error --location --max-redirs 3 \

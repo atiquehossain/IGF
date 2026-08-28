@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AnnualReport;
 use App\Models\Category;
+use App\Models\DonationType;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\SeoAuditIssue;
@@ -121,6 +122,7 @@ final class TechnicalSeoEditorLinkService
             'event' => [NoticeBoard::query()->where('slug', $slug)->where('language', $locale)->first(), 'event'],
             'annual-report' => [AnnualReport::query()->where('slug', $slug)->where('language', $locale)->first(), 'annual_report'],
             'projects' => [Tag::query()->where('slug', $slug)->first(), 'project'],
+            'donate' => [DonationType::query()->where('slug', $slug)->first(), 'donation_cause'],
             default => [null, null],
         };
     }
@@ -134,6 +136,7 @@ final class TechnicalSeoEditorLinkService
             'event' => ['notice.board.edit', 'Edit event content'],
             'annual_report' => ['annual.report.edit', 'Edit report content'],
             'project' => ['tag.edit', 'Edit project content'],
+            'donation_cause' => ['donationType.edit', 'Edit donation cause'],
             default => [null, null],
         };
         if ($routeName && $label && Route::has($routeName)) {

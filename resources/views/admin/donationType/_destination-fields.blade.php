@@ -6,6 +6,7 @@
     $selectedMedia = old('image_media_uuid', '');
     $selectedOrder = old('display_order', $defaultDisplayOrder ?? '');
     $selectedIcon = old('icon_key', '');
+    $selectedGroup = old('donation_cause_group_id', '');
 @endphp
 
 <fieldset class="border rounded p-3 mt-3" aria-labelledby="{{ $fieldPrefix }}funding_destination_legend">
@@ -78,6 +79,17 @@
             <small class="form-text text-muted">Used only when no managed card image is selected.</small>
             @error('icon_key')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
         </div>
+    </div>
+    <div class="form-group mb-0">
+        <label for="{{ $fieldPrefix }}donation_cause_group_id" class="control-label mb-1">Catalog tab</label>
+        <select id="{{ $fieldPrefix }}donation_cause_group_id" name="donation_cause_group_id" class="form-control">
+            <option value="">All causes only (no category tab)</option>
+            @foreach($causeGroups as $group)
+                <option value="{{ $group->id }}" @selected((string) $selectedGroup === (string) $group->id)>{{ $group->name }}{{ $group->status ? '' : ' (tab hidden)' }}</option>
+            @endforeach
+        </select>
+        <small class="form-text text-muted">Groups are presentation-only. Changing this selection never changes where the gift is accounted or allocated.</small>
+        @error('donation_cause_group_id')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
     </div>
 </fieldset>
 

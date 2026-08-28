@@ -189,7 +189,7 @@ class PublicOpportunityControllerTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('workshop')
                 ->where('data.listing.title', 'English Workshop')
-                ->where('data.copy.title', 'বিনামূল্যের কর্মশালা')
+                ->where('data.copy.title', 'কর্মশালা')
             );
     }
 

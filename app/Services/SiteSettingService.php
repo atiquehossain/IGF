@@ -42,7 +42,7 @@ class SiteSettingService
                 $setting = $this->preferredSetting($matches, $locale);
                 $value = $setting
                     ? $setting->typed_value
-                    : ($field['default'] ?? null);
+                    : $this->localizedDefault($field, $locale);
                 $values[$groupKey][$key] = $publicOnly && in_array($field['type'] ?? null, ['url', 'url_or_path'], true)
                     ? $this->sanitizer->sanitizeUrl($value)
                     : $value;
@@ -196,5 +196,18 @@ class SiteSettingService
     {
         return $settings->firstWhere('locale', $locale)
             ?? $settings->firstWhere('locale', '*');
+    }
+
+    private function localizedDefault(array $field, string $locale): mixed
+    {
+        $localizedDefaults = $field['localized_defaults'] ?? [];
+
+        if (($field['localized'] ?? false)
+            && is_array($localizedDefaults)
+            && array_key_exists($locale, $localizedDefaults)) {
+            return $localizedDefaults[$locale];
+        }
+
+        return $field['default'] ?? null;
     }
 }

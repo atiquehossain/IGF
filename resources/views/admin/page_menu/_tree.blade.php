@@ -12,7 +12,7 @@
                     @if($canEditMenu)
                     <button class="igf-menu-action" type="button" data-menu-action="up" title="Move up" aria-label="Move {{ $item['name'] }} up">&uarr;</button>
                     <button class="igf-menu-action" type="button" data-menu-action="down" title="Move down" aria-label="Move {{ $item['name'] }} down">&darr;</button>
-                    <button class="igf-menu-action" type="button" data-menu-action="indent" title="Make submenu" aria-label="Make {{ $item['name'] }} a submenu">&rarr;</button>
+                    <button class="igf-menu-action" type="button" data-menu-action="indent" title="Make submenu" aria-label="Make {{ $item['name'] }} a submenu" @disabled($depth >= 2)>&rarr;</button>
                     <button class="igf-menu-action" type="button" data-menu-action="outdent" title="Move out of submenu" aria-label="Move {{ $item['name'] }} out of submenu">&larr;</button>
                     @endif
                     @if($canEditMenu || $canStatusMenu || $canDeleteMenu)

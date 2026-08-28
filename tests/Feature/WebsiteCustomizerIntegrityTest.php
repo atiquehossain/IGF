@@ -467,6 +467,14 @@ class WebsiteCustomizerIntegrityTest extends TestCase
     public function test_donation_builder_cannot_enable_only_gateway_methods_that_are_operationally_unavailable(): void
     {
         $admin = $this->makePageEditor();
+        SiteSetting::create([
+            'group' => 'donation_page',
+            'key' => 'enable_nagad',
+            'locale' => '*',
+            'value' => '0',
+            'type' => 'boolean',
+            'is_public' => true,
+        ]);
         $settings = [];
         foreach (config('site-settings.groups') as $groupKey => $group) {
             foreach ($group['fields'] as $key => $field) {
@@ -495,7 +503,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         ]);
     }
 
-    public function test_payment_provider_status_and_save_validation_fail_closed_without_credentials(): void
+    public function test_unavailable_payment_credentials_do_not_block_unrelated_customizer_changes(): void
     {
         $admin = $this->makePageEditor();
         config()->set('sslcommerz.store_id', '');
@@ -508,16 +516,18 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertSee('Not ready');
 
         $settings = $this->defaultSettingsPayload();
+        $settings['branding']['site_name'] = 'Ignite Foundation Updated';
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
             ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
-            ->assertRedirect(route('site.settings.index'))
-            ->assertSessionHasErrors('settings.donation_page.enable_bkash');
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']))
+            ->assertSessionHasNoErrors();
 
-        $this->assertDatabaseMissing('site_settings', [
-            'group' => 'donation_page',
-            'key' => 'enable_bkash',
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'branding',
+            'key' => 'site_name',
+            'value' => 'Ignite Foundation Updated',
         ]);
     }
 
@@ -527,9 +537,14 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         config()->set('sslcommerz.store_id', '');
         config()->set('sslcommerz.store_password', '');
 
+        $settings = $this->defaultSettingsPayload();
+        $settings['donation_page']['enable_bkash'] = false;
+        $settings['donation_page']['enable_card'] = false;
+        $settings['donation_page']['enable_nagad'] = false;
+
         $response = $this->actingAs($admin, 'admin')
             ->from(route('frontend.home'))
-            ->put(route('site.settings.update'), $this->settingsUpdatePayload($this->defaultSettingsPayload()));
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings));
 
         $response
             ->assertRedirect(route('site.settings.index'))

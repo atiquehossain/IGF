@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\DonationType;
 use App\Models\Page;
 use App\Models\SeoMetadata;
 use App\Models\SeoRedirect;
@@ -86,6 +87,68 @@ class GlobalSeoIntegrityTest extends TestCase
         $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
         $response->assertSee('/page/' . $included->slug, false);
         $response->assertDontSee('/page/' . $excluded->slug, false);
+    }
+
+    public function test_sitemap_includes_every_active_operational_donation_cause_and_honors_cause_seo_exclusion(): void
+    {
+        DonationType::query()->forceDelete();
+        $education = DonationType::create([
+            'name' => 'Education',
+            'description' => 'Reviewed education support.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Education Fund',
+            'status' => 1,
+        ]);
+        $relief = DonationType::create([
+            'name' => 'Emergency Relief',
+            'description' => 'Reviewed emergency support.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Emergency Relief Fund',
+            'status' => 1,
+        ]);
+        $excluded = DonationType::create([
+            'name' => 'Private Campaign',
+            'description' => 'Reviewed private campaign.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Private Campaign Fund',
+            'status' => 1,
+        ]);
+        $draft = DonationType::create([
+            'name' => 'Draft Cause',
+            'description' => 'Not yet public.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Draft Fund',
+            'status' => 0,
+        ]);
+        $broken = DonationType::create([
+            'name' => 'Broken Project Cause',
+            'description' => 'Linked to a missing project.',
+            'destination_type' => 'page',
+            'destination_page_uuid' => (string) Str::uuid(),
+            'status' => 1,
+        ]);
+        SeoMetadata::create([
+            'seoable_type' => DonationType::class,
+            'seoable_id' => $education->id,
+            'locale' => 'en',
+            'title' => 'Education giving in Bangladesh',
+            'description' => 'Support education through an accountable community donation.',
+            'canonical_url' => route('frontend.donate.cause', ['cause' => $education->slug]),
+        ]);
+        SeoMetadata::create([
+            'seoable_type' => DonationType::class,
+            'seoable_id' => $excluded->id,
+            'locale' => 'en',
+            'exclude_from_sitemap' => true,
+        ]);
+
+        $content = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<loc>' . route('frontend.donate.cause', ['cause' => $education->slug]) . '</loc>', $content);
+        $this->assertStringContainsString('<loc>' . route('frontend.donate.cause', ['cause' => $relief->slug]) . '</loc>', $content);
+        $this->assertStringNotContainsString('/donate/' . $excluded->slug, $content);
+        $this->assertStringNotContainsString('/donate/' . $draft->slug, $content);
+        $this->assertStringNotContainsString('/donate/' . $broken->slug, $content);
     }
 
     public function test_robots_file_points_crawlers_to_the_sitemap_and_blocks_admin(): void
@@ -182,18 +245,41 @@ class GlobalSeoIntegrityTest extends TestCase
 
     public function test_primary_public_routes_have_default_canonicals_and_sitemap_entries(): void
     {
-        foreach (['/contact-us', '/gallery', '/sponsor-child', '/events', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+        foreach (['/contact-us', '/gallery', '/sponsor-child', '/events', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
             $this->get($path)->assertOk()->assertSee('rel="canonical" href="' . url($path) . '"', false);
         }
 
         $sitemap = $this->get('/sitemap.xml')->assertOk()->getContent();
-        foreach (['/contact-us', '/gallery', '/events', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+        foreach (['/contact-us', '/gallery', '/events', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
             $this->assertStringContainsString('<loc>' . url($path) . '</loc>', $sitemap);
         }
         // Sponsor is configured as Page-backed. Rendering its safe fallback is
         // allowed, but it must not be advertised until its published Page
         // record actually exists in this language.
         $this->assertStringNotContainsString('<loc>' . url('/sponsor-child') . '</loc>', $sitemap);
+    }
+
+    public function test_legacy_career_category_is_a_permanent_alias_and_never_a_second_sitemap_url(): void
+    {
+        Category::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Careers',
+            'slug' => 'career',
+            'description' => 'Legacy career category content retained for editors.',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+
+        $this->get('/category/career')
+            ->assertStatus(301)
+            ->assertRedirect('/careers');
+        $this->get('/category/career?lang=bn')
+            ->assertStatus(301)
+            ->assertRedirect('/careers?lang=bn');
+
+        $sitemap = $this->get('/sitemap.xml')->assertOk()->getContent();
+        $this->assertSame(1, substr_count($sitemap, '<loc>' . url('/careers') . '</loc>'));
+        $this->assertStringNotContainsString('/category/career', $sitemap);
     }
 
     private function makePage(string $slug): Page

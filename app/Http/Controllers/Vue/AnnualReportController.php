@@ -52,12 +52,7 @@ class AnnualReportController extends Controller
 
         $annualReports->getCollection()->transform(function (AnnualReport $item): array {
             $publishedAt = $item->published_at;
-            $path = trim((string) $item->getRawOriginal('image_path'));
-            $imageUrl = $path === '' || str_ends_with(strtolower($path), '.pdf')
-                ? null
-                : (str_starts_with($path, '/') || preg_match('#^https?://#i', $path)
-                    ? $path
-                    : '/storage/photos/1/notice_board/' . $path);
+            $imageUrl = $this->coverImageUrl($item);
 
             return [
                 'id' => $item->id,
@@ -124,18 +119,19 @@ class AnnualReportController extends Controller
         );
         $downloadUrl = route('frontend.annual_report.download', ['slug' => $report->slug]);
         $summary = $this->summary($report);
+        $imageUrl = $this->coverImageUrl($report);
         $metaTag = $this->seo->metaForModel($report, [
             'meta_keyword' => trim((string) $report->title) . ', annual report, nonprofit transparency',
             'meta_title' => trim((string) $report->title) . ' | Ignite Global Foundation',
             'meta_description' => str($summary)->limit(160)->toString(),
-            'meta_image' => '',
+            'meta_image' => $imageUrl ?: '',
         ], $canonical);
         if (empty($metaTag['schema_markup'])) {
             $metaTag['schema_markup'] = $this->structuredData->report(
                 $report,
                 $canonical,
                 $downloadUrl,
-                null,
+                $imageUrl,
                 $this->breadcrumbs(
                     (string) $report->title,
                     $canonical,
@@ -165,6 +161,7 @@ class AnnualReportController extends Controller
                     'year' => $publishedAt?->year,
                     'file_type' => 'application/pdf',
                     'file_size' => is_numeric($report->file_size) ? (int) $report->file_size : null,
+                    'image_url' => $imageUrl,
                     'download_url' => $downloadUrl,
                     'source_url' => $sourceUrl,
                 ],
@@ -221,6 +218,54 @@ class AnnualReportController extends Controller
         return $value !== ''
             ? mb_substr($value, 0, 3000)
             : 'Review this annual report for a transparent record of Ignite Global Foundation programs, governance, and responsible stewardship.';
+    }
+
+    private function coverImageUrl(AnnualReport $report): ?string
+    {
+        $coverPath = trim(str_replace('\\', '/', (string) $report->cover_image_path));
+        $decodedSegments = explode('/', rawurldecode($coverPath));
+        if ($coverPath !== ''
+            && !str_starts_with($coverPath, '/')
+            && !preg_match('#^[a-z][a-z0-9+.-]*:#i', $coverPath)
+            && !preg_match('/[\x00-\x1F\x7F]/', $coverPath)
+            && !in_array('..', $decodedSegments, true)
+            && Storage::disk('public')->exists($coverPath)) {
+            return $this->sameOriginPublicPath(Storage::disk('public')->url($coverPath));
+        }
+
+        // Before cover_image_path existed, a small number of deployments used
+        // image_path for public artwork. Retain that read-only fallback while
+        // treating every PDF filename as the private document it is today.
+        $legacyPath = trim((string) $report->getRawOriginal('image_path'));
+        if ($legacyPath === '' || str_ends_with(strtolower($legacyPath), '.pdf')) {
+            return null;
+        }
+
+        if (str_starts_with($legacyPath, '/')) {
+            return preg_match('#^/(?!/)#', $legacyPath) === 1 ? $legacyPath : null;
+        }
+        if (preg_match('#^https?://#i', $legacyPath)) {
+            return $this->sameOriginPublicPath($legacyPath);
+        }
+
+        return '/storage/photos/1/notice_board/' . basename($legacyPath);
+    }
+
+    private function sameOriginPublicPath(string $value): ?string
+    {
+        $value = trim($value);
+        if (preg_match('#^/(?!/)#', $value) === 1) {
+            return $value;
+        }
+        if (!$this->seo->isSameOrigin($value)) {
+            return null;
+        }
+
+        $path = parse_url($value, PHP_URL_PATH);
+
+        return is_string($path) && preg_match('#^/(?!/)#', $path) === 1
+            ? $path
+            : null;
     }
 
     private function safeSourceUrl(string $value): ?string

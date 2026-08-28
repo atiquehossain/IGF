@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\Category;
+use App\Models\DonationType;
 use App\Models\MenuAction;
 use App\Models\Page;
 use App\Models\Role;
@@ -90,6 +91,49 @@ class SeoAdminExperienceTest extends TestCase
         $this->assertDatabaseMissing('seo_metadata', [
             'seoable_type' => Category::class,
             'seoable_id' => $category->id,
+        ]);
+    }
+
+    public function test_a_donation_cause_has_a_first_class_locale_specific_seo_editor(): void
+    {
+        $admin = $this->metadataAdmin();
+        $cause = DonationType::create([
+            'name' => 'Education',
+            'description' => 'Support learning materials and school access.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Education Fund',
+            'image' => '/images/education.jpg',
+            'status' => 1,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('seo.content.edit', ['type' => 'donation_cause', 'id' => $cause->id, 'locale' => 'en']))
+            ->assertOk()
+            ->assertSee('Donation cause')
+            ->assertSee(route('frontend.donate.cause', ['cause' => $cause->slug]), false)
+            ->assertSee('Donation cause addresses are stable');
+
+        $payload = $this->payload([
+            'schema_template' => 'donate',
+            'expected_seo_version' => app(SeoMetadataEditorVersionService::class)->currentForModel($cause, 'en'),
+            'seo' => [
+                'title' => 'Donate to education in Bangladesh',
+                'description' => 'Support accountable education programs that help children access learning materials, school meals and inclusive classrooms.',
+                'social_image_alt' => 'Children learning together in an Ignite classroom',
+            ],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('seo.content.update', ['type' => 'donation_cause', 'id' => $cause->id]), $payload)
+            ->assertRedirect(route('seo.content.edit', ['type' => 'donation_cause', 'id' => $cause->id, 'locale' => 'en']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'seoable_type' => DonationType::class,
+            'seoable_id' => $cause->id,
+            'locale' => 'en',
+            'title' => 'Donate to education in Bangladesh',
+            'social_image_alt' => 'Children learning together in an Ignite classroom',
         ]);
     }
 

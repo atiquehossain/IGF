@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Helper\Seq;
 use App\Models\Category;
+use App\Models\DonationCauseGroup;
 use App\Models\DonationType;
 use App\Models\MediaAsset;
 use App\Models\Page;
@@ -29,11 +30,13 @@ class DonationTypeController extends Controller
         $title = $request->Lang->DonationTitle;
         $search = $request->search;
         $donationTypes = DonationType::query()
-            ->with('imageAsset')
+            ->with(['imageAsset', 'causeGroup'])
             ->when($search, fn ($query) => $query->where(function ($builder) use ($search): void {
                 $builder->where('name', 'like', '%' . $search . '%')
                     ->orWhere('slug', 'like', '%' . $search . '%')
-                    ->orWhere('destination_name', 'like', '%' . $search . '%');
+                    ->orWhere('destination_name', 'like', '%' . $search . '%')
+                    ->orWhereHas('causeGroup', fn ($groups) => $groups
+                        ->where('name', 'like', '%' . $search . '%'));
             }))
             ->orderByRaw('CASE WHEN display_order IS NULL THEN 1 ELSE 0 END')
             ->orderBy('display_order')
@@ -50,6 +53,15 @@ class DonationTypeController extends Controller
         $destinationOptions = DonationType::DESTINATION_OPTIONS;
         $iconOptions = DonationType::ICON_OPTIONS;
         $nextDisplayOrder = ((int) DonationType::query()->max('display_order')) + 10;
+        $causeGroups = DonationCauseGroup::query()
+            ->withCount([
+                'causes as attached_causes_count' => fn ($query) => $query->withTrashed(),
+                'causes as published_causes_count' => fn ($query) => $query->where('status', 1),
+            ])
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get();
+        $nextGroupDisplayOrder = ((int) DonationCauseGroup::query()->max('display_order')) + 10;
         $categories = $this->categoryOptions(app()->getLocale());
         $pages = $this->pageOptions(app()->getLocale());
         $mediaAssets = MediaAsset::query()
@@ -80,13 +92,21 @@ class DonationTypeController extends Controller
             'destinationOptions',
             'iconOptions',
             'nextDisplayOrder',
+            'causeGroups',
+            'nextGroupDisplayOrder',
             'categories',
             'pages',
             'mediaAssets'
         ));
     }
 
-    public function create() {}
+    public function create()
+    {
+        // Donation causes use the guided inline builder on the index screen.
+        // Keep the conventional route useful for bookmarks and permission links
+        // instead of returning an empty page.
+        return redirect()->to(route('donationType.index') . '#new_donation_type');
+    }
 
     public function store(Request $request)
     {
@@ -130,7 +150,19 @@ class DonationTypeController extends Controller
         }
     }
 
-    public function show($id = null, Request $request) {}
+    public function show($id = null, Request $request)
+    {
+        $cause = DonationType::query()->find($id);
+        if (!$cause) {
+            return redirect()->route('donationType.index')->withErrors([
+                'donation_type' => $request->Lang->Common->Form->DataNotFound,
+            ]);
+        }
+
+        // Editing also happens in the index modal. The row fragment gives a
+        // meaningful destination for legacy/show links without a blank screen.
+        return redirect()->to(route('donationType.index') . '#' . $cause->getKey());
+    }
 
     public function edit($id = null, Request $request)
     {
@@ -148,6 +180,7 @@ class DonationTypeController extends Controller
                 'image_media_uuid',
                 'display_order',
                 'icon_key',
+                'donation_cause_group_id',
             ])->where('id', $id)->firstOrFail();
             $response = ['data' => $donation];
             return response($response, 200);
@@ -364,6 +397,11 @@ class DonationTypeController extends Controller
         return [
             'display_order' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'icon_key' => ['nullable', 'string', Rule::in(array_keys(DonationType::ICON_OPTIONS))],
+            'donation_cause_group_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('donation_cause_groups', 'id'),
+            ],
         ];
     }
 
@@ -377,6 +415,11 @@ class DonationTypeController extends Controller
         }
         if (array_key_exists('icon_key', $validated)) {
             $attributes['icon_key'] = filled($validated['icon_key']) ? (string) $validated['icon_key'] : null;
+        }
+        if (array_key_exists('donation_cause_group_id', $validated)) {
+            $attributes['donation_cause_group_id'] = filled($validated['donation_cause_group_id'])
+                ? (int) $validated['donation_cause_group_id']
+                : null;
         }
 
         return $attributes;

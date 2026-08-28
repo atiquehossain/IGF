@@ -73,6 +73,16 @@ describe('AppHeader verified language switcher', () => {
     expect(links.every(link => link.attributes('rel') === 'noopener noreferrer')).toBe(true);
   });
 
+  test('does not render the annual reports link in the utility bar', () => {
+    usePage().props.siteSettings.header.annual_reports_label = 'Annual reports';
+    usePage().props.siteSettings.header.annual_reports_url = '/annual-report';
+
+    const wrapper = mount(AppHeader);
+
+    expect(wrapper.find('.utility-bar__links a[href="/annual-report"]').exists()).toBe(false);
+    expect(wrapper.get('.utility-bar__links').text()).not.toContain('Annual reports');
+  });
+
   test('honors explicitly blank managed contact fields by hiding those links', () => {
     usePage().props.siteSettings.contact = {
       phone_primary: '',

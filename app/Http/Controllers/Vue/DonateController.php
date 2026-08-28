@@ -74,6 +74,41 @@ class DonateController extends Controller
             []
         );
         $causes = $this->destinations->activeCauses($locale);
+        $pageMode = $causeToken === null ? 'catalog' : 'detail';
+        $donationGroups = collect();
+        if ($pageMode === 'catalog') {
+            $causeGroups = $causes
+                ->pluck('causeGroup')
+                ->filter(fn ($group): bool => $group !== null && (bool) $group->status)
+                ->unique('id')
+                ->sort(function ($left, $right): int {
+                    $orderComparison = (int) $left->display_order <=> (int) $right->display_order;
+
+                    return $orderComparison !== 0 ? $orderComparison : (int) $left->id <=> (int) $right->id;
+                })
+                ->values();
+            $groupFallbacks = $causeGroups->mapWithKeys(fn ($group): array => [
+                (string) $group->uuid => [
+                    'name' => (string) $group->name,
+                    'description' => (string) ($group->description ?? ''),
+                ],
+            ])->all();
+            $localizedGroups = $this->translations->localizedContentValues(
+                'donation_cause_group',
+                $groupFallbacks,
+                $locale
+            );
+            $donationGroups = $causeGroups->map(function ($group) use ($localizedGroups): array {
+                $localized = $localizedGroups[(string) $group->uuid] ?? [];
+
+                return [
+                    'uuid' => (string) $group->uuid,
+                    'slug' => (string) $group->slug,
+                    'name' => (string) ($localized['name'] ?? $group->name),
+                    'description' => (string) ($localized['description'] ?? $group->description ?? ''),
+                ];
+            })->values();
+        }
         $localizedFallbacks = $causes->mapWithKeys(function (DonationType $cause): array {
             return [
                 (string) $cause->uuid => [
@@ -97,7 +132,6 @@ class DonateController extends Controller
             })
             ->values();
 
-        $pageMode = $causeToken === null ? 'catalog' : 'detail';
         $selectionWarning = null;
         $selectedCause = null;
         if ($causeToken !== null) {
@@ -163,10 +197,13 @@ class DonateController extends Controller
             'meta_description' => $causeDescription !== ''
                 ? mb_substr(strip_tags($causeDescription), 0, 160)
                 : 'Support community-led education, healthcare, livelihoods, clean water, and urgent relief in Bangladesh through a secure donation.',
+            'meta_image'       => (string) data_get($selectedCauseOption, 'image', ''),
         ];
         $routeSeo = (array) $request->attributes->get('route_seo', []);
-        $contentSeo = [];
-        if (empty($routeSeo['schema_markup'])) {
+        $contentSeo = $selectedCause
+            ? $this->seo->metaForModel($selectedCause, $metaTag, $request->url(), $locale)
+            : [];
+        if (empty($contentSeo['schema_markup']) && empty($routeSeo['schema_markup'])) {
             $pageUrl = (string) $this->seo->localizedUrl($request->url(), $locale);
             $breadcrumbs = [
                 ['name' => 'Home', 'url' => (string) $this->seo->localizedUrl(url('/'), $locale)],
@@ -177,8 +214,8 @@ class DonateController extends Controller
             }
 
             $contentSeo['schema_markup'] = $this->structuredData->donation(
-                (string) ($routeSeo['meta_title'] ?? $metaTag['meta_title']),
-                (string) ($routeSeo['meta_description'] ?? $metaTag['meta_description']),
+                (string) ($contentSeo['meta_title'] ?? $routeSeo['meta_title'] ?? $metaTag['meta_title']),
+                (string) ($contentSeo['meta_description'] ?? $routeSeo['meta_description'] ?? $metaTag['meta_description']),
                 $pageUrl,
                 $breadcrumbs
             );
@@ -193,6 +230,7 @@ class DonateController extends Controller
                 'pageMode' => $pageMode,
                 'catalogUrl' => route('frontend.donate.index'),
                 'donationTypes' => $donationTypes,
+                'donationGroups' => $donationGroups,
                 'selectedUUID'  => $selectedUUID,
                 'selectedCauseSlug' => $selectedCause?->slug,
                 'selectedProjectUUID' => $selectedProject?->uuid,

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Middleware\Permission;
 use App\Models\AnnualReport;
 use App\Models\Category;
+use App\Models\DonationType;
 use App\Models\MediaAsset;
 use App\Models\NoticeBoard;
 use App\Models\Page;
@@ -463,7 +464,7 @@ class SeoController extends Controller
             'selection_mode' => ['nullable', Rule::in(['explicit'])],
             'items' => ['required', 'array', 'min:1', 'max:25'],
             'items.*.selected' => ['sometimes', 'boolean'],
-            'items.*.owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project'])],
+            'items.*.owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'])],
             'items.*.owner_id' => ['nullable', 'integer'],
             'items.*.route_name' => ['nullable', 'string', 'max:150'],
             'items.*.locale' => ['required', 'string', Rule::in($this->localeIds())],
@@ -933,6 +934,7 @@ class SeoController extends Controller
             'description' => $effectiveDescription,
             'focus_keyword' => (string) $raw('focus_keyword'),
             'image' => $effectiveImage,
+            'image_alt' => $imageAlt,
             'canonical' => (string) $raw('canonical_url'),
             'default_url' => $defaultCanonical,
             'indexable' => (bool) ($source?->robots_index ?? true),
@@ -1032,13 +1034,14 @@ class SeoController extends Controller
             'type' => (string) $request->query('type', 'all'),
             'issue' => (string) $request->query('issue', $hasExplicitFilters ? 'all' : 'needs_attention'),
         ];
-        $allowedTypes = ['all', 'page', 'category', 'event', 'annual_report', 'project', 'route'];
+        $allowedTypes = ['all', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'route'];
         $allowedIssues = [
             'all',
             'needs_attention',
             'missing_title',
             'missing_description',
             'missing_image',
+            'missing_image_alt',
             'duplicate_title',
             'duplicate_description',
             'focus_missing_title',
@@ -1110,6 +1113,7 @@ class SeoController extends Controller
                 'event' => 'Events & publications',
                 'annual_report' => 'Annual reports',
                 'project' => 'Projects',
+                'donation_cause' => 'Donation causes',
                 'route' => 'Website features',
             ],
         ];
@@ -1166,6 +1170,9 @@ class SeoController extends Controller
         }
         foreach (Tag::query()->orderBy('name')->get() as $project) {
             $targets->push($this->dashboardTarget($project, 'project', $locale, $modelMetadata->get(Tag::class . ':' . $project->getKey())));
+        }
+        foreach (DonationType::query()->orderBy('name')->get() as $cause) {
+            $targets->push($this->dashboardTarget($cause, 'donation_cause', $locale, $modelMetadata->get(DonationType::class . ':' . $cause->getKey())));
         }
 
         foreach ($this->routeRegistry->all() as $name => $definition) {
@@ -1274,6 +1281,7 @@ class SeoController extends Controller
                 'category' => 'Category',
                 'event' => 'Event / publication',
                 'annual_report' => 'Annual report',
+                'donation_cause' => 'Donation cause · localized SEO',
                 default => 'Project · shared across languages',
             },
             $this->modelTitle($model),
@@ -1309,6 +1317,7 @@ class SeoController extends Controller
             'description' => $meta['meta_description'] ?? '',
             'focus_keyword' => (string) ($seo?->focus_keyword ?? ''),
             'image' => $meta['og_image'] ?? '',
+            'image_alt' => $this->seo->socialImageAltText($meta['social_image_alt'] ?? ''),
             'canonical' => $meta['canonical_url'] ?? '',
             'default_url' => $url,
             'indexable' => $indexable,
@@ -1359,12 +1368,15 @@ class SeoController extends Controller
 
     private function fallbackForModel(Model $model, string $type): array
     {
-        $title = $this->modelTitle($model);
+        $title = $type === 'donation_cause'
+            ? 'Donate to ' . $this->modelTitle($model) . ' | ' . config('app.name')
+            : $this->modelTitle($model);
         $description = match ($type) {
             'page' => $model->getAttribute('meta_description') ?: $model->getAttribute('sub_title') ?: $model->getAttribute('description'),
             'category' => $model->getAttribute('meta_description') ?: $model->getAttribute('description'),
             'event' => $model->getAttribute('description') ?: $model->getAttribute('sub_title'),
             'annual_report' => $model->getAttribute('description') ?: $model->getAttribute('sub_title'),
+            'donation_cause' => $model->getAttribute('description'),
             default => '',
         };
         $image = match ($type) {
@@ -1372,6 +1384,7 @@ class SeoController extends Controller
             'category' => $model->getAttribute('path') ?: $model->getAttribute('image'),
             'event' => $model->getAttribute('image_path'),
             'annual_report' => $this->annualReportImage($model),
+            'donation_cause' => $model->getAttribute('image'),
             default => '',
         };
 
@@ -1414,6 +1427,7 @@ class SeoController extends Controller
             'event' => route('frontend.event', ['slug' => $model->getAttribute('slug')]),
             'annual_report' => route('frontend.annual_report.show', ['slug' => $model->getAttribute('slug')]),
             'project' => route('frontend.project', ['slug' => $model->getAttribute('slug')]),
+            'donation_cause' => route('frontend.donate.cause', ['cause' => $model->getAttribute('slug')]),
             default => url('/'),
         };
 
@@ -1588,7 +1602,7 @@ class SeoController extends Controller
     private function englishSource(Model $model, string $type): array
     {
         $source = $model;
-        if ($type !== 'project' && $model->getAttribute('language') !== 'en') {
+        if (!in_array($type, ['project', 'donation_cause'], true) && $model->getAttribute('language') !== 'en') {
             $source = match ($type) {
                 'page', 'category' => $model->getAttribute('uuid')
                     ? $model::query()->where('uuid', $model->getAttribute('uuid'))->where('language', 'en')->first()
@@ -1620,12 +1634,20 @@ class SeoController extends Controller
 
     private function permalinkEditable(Model $model, string $type): bool
     {
+        if ($type === 'donation_cause') {
+            return false;
+        }
+
         return $type !== 'page'
             || !$this->routeRegistry->all()->contains(fn (array $definition) => ($definition['page_slug'] ?? null) === $model->getAttribute('slug'));
     }
 
     private function permalinkRestrictionMessage(Model $model, string $type): string
     {
+        if ($type === 'donation_cause') {
+            return 'Donation cause addresses are stable so saved links and payment attribution do not break. Edit the cause name instead.';
+        }
+
         return 'This is a protected primary website address. Change its navigation label instead of its URL.';
     }
 
@@ -1636,6 +1658,7 @@ class SeoController extends Controller
             'event' => '/event/',
             'annual_report' => '/annual-report/',
             'project' => '/projects/',
+            'donation_cause' => '/donate/',
             default => '/page/',
         };
     }
@@ -1860,7 +1883,7 @@ class SeoController extends Controller
         if ($filters['locale'] !== 'all' && !in_array($filters['locale'], $this->localeIds(), true)) {
             $filters['locale'] = 'all';
         }
-        if (!in_array($filters['type'], ['all', 'route', 'page', 'category', 'event', 'annual_report', 'project'], true)) {
+        if (!in_array($filters['type'], ['all', 'route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'], true)) {
             $filters['type'] = 'all';
         }
 
@@ -2116,7 +2139,7 @@ class SeoController extends Controller
         // This cross-feature order is shared with Translation Center. Keep
         // every transaction that can touch several translated owner tables
         // on the same sequence before any owned SEO metadata is locked.
-        foreach (['category', 'event', 'annual_report', 'project'] as $type) {
+        foreach (['category', 'event', 'annual_report', 'project', 'donation_cause'] as $type) {
             $rows = $requested->get($type);
             if (!$rows) {
                 continue;
@@ -2155,6 +2178,7 @@ class SeoController extends Controller
             'event' => NoticeBoard::class,
             'annual_report' => AnnualReport::class,
             'project' => Tag::class,
+            'donation_cause' => DonationType::class,
             default => null,
         };
     }
@@ -2349,7 +2373,7 @@ class SeoController extends Controller
     private function reviewIdentityRules(): array
     {
         return [
-            'owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project'])],
+            'owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'])],
             'owner_id' => ['nullable', 'integer'],
             'route_name' => ['nullable', 'string', 'max:150'],
             'locale' => ['required', 'string', Rule::in($this->localeIds())],
@@ -2410,6 +2434,7 @@ class SeoController extends Controller
             'description' => $meta['meta_description'] ?? '',
             'focus_keyword' => (string) ($metadata->focus_keyword ?? ''),
             'image' => $meta['og_image'] ?? '',
+            'image_alt' => $this->seo->socialImageAltText($meta['social_image_alt'] ?? ''),
             'canonical' => $meta['canonical_url'] ?? '',
             'default_url' => $url,
             'indexable' => (bool) $metadata->robots_index,
@@ -2486,6 +2511,7 @@ class SeoController extends Controller
             'event' => [NoticeBoard::class, 'Event / publication'],
             'annual_report' => [AnnualReport::class, 'Annual report'],
             'project' => [Tag::class, 'Project'],
+            'donation_cause' => [DonationType::class, 'Donation cause'],
             default => null,
         };
         abort_unless($definition, 404);
@@ -2523,6 +2549,7 @@ class SeoController extends Controller
             NoticeBoard::class => 'event',
             AnnualReport::class => 'annual_report',
             Tag::class => 'project',
+            DonationType::class => 'donation_cause',
             default => null,
         };
     }
@@ -2541,7 +2568,7 @@ class SeoController extends Controller
     private function contentIdentity(Model $model, string $type): string
     {
         $identity = match ($type) {
-            'page', 'category', 'project' => $model->getAttribute('uuid') ?: $model->getAttribute('slug'),
+            'page', 'category', 'project', 'donation_cause' => $model->getAttribute('uuid') ?: $model->getAttribute('slug'),
             'event' => $model->getAttribute('translation_key') ?: 'record:' . $model->getKey(),
             'annual_report' => $model->getAttribute('translation_key') ?: 'record:' . $model->getKey(),
             default => null,

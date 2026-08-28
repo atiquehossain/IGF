@@ -472,25 +472,28 @@
             {{ group.name }}
           </button>
         </div>
-        <div
-          v-if="teamHasItems(block)"
-          :id="teamPanelId(block, activeTeamGroup(block))"
-          class="igf-team-panel"
-          :role="hasTeamTabs(block) ? 'tabpanel' : null"
-          :aria-labelledby="hasTeamTabs(block) ? teamTabId(block, activeTeamGroup(block)) : null"
-          :aria-describedby="activeTeamGroup(block)?.description ? teamPanelDescriptionId(block, activeTeamGroup(block)) : null"
-          :tabindex="hasTeamTabs(block) ? 0 : null"
-        >
-          <p
-            v-if="activeTeamGroup(block)?.description"
-            :id="teamPanelDescriptionId(block, activeTeamGroup(block))"
-            class="igf-team-panel__description"
+        <template v-if="teamHasItems(block)">
+          <div
+            v-for="group in teamGroups(block)"
+            :id="teamPanelId(block, group)"
+            :key="group.key"
+            class="igf-team-panel"
+            :role="hasTeamTabs(block) ? 'tabpanel' : null"
+            :aria-labelledby="hasTeamTabs(block) ? teamTabId(block, group) : null"
+            :aria-describedby="group.description ? teamPanelDescriptionId(block, group) : null"
+            :tabindex="hasTeamTabs(block) ? 0 : null"
+            :hidden="!isActiveTeamGroup(block, group)"
           >
-            {{ activeTeamGroup(block).description }}
-          </p>
-          <div class="igf-team-grid">
+            <p
+              v-if="group.description"
+              :id="teamPanelDescriptionId(block, group)"
+              class="igf-team-panel__description"
+            >
+              {{ group.description }}
+            </p>
+            <div class="igf-team-grid">
           <article
-            v-for="(item, index) in visibleTeamItems(block)"
+            v-for="(item, index) in group.items"
             :key="item.id ?? index"
             class="igf-team-card"
             :class="{
@@ -579,8 +582,9 @@
               </div>
             </div>
           </article>
-        </div>
-        </div>
+            </div>
+          </div>
+        </template>
         <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'team_empty_state', 'Published board and team members will appear here automatically.') }}</p>
       </div>
 
@@ -1041,6 +1045,7 @@ function teamGroups(block) {
       name,
       description: String(group?.description || '').trim(),
       items,
+      managed: true,
     };
   }).filter(group => group.items.length);
 
@@ -1055,6 +1060,7 @@ function teamGroups(block) {
     name: String(block?.content?.heading || teamText('team_member') || 'Team').trim(),
     description: '',
     items: legacyItems,
+    managed: false,
   }];
 }
 function activeTeamGroup(block) {
@@ -1062,14 +1068,11 @@ function activeTeamGroup(block) {
   const selectedKey = activeTeamGroupKeys.value[teamBlockStateKey(block)];
   return groups.find(group => group.key === selectedKey) || groups[0] || null;
 }
-function visibleTeamItems(block) {
-  return activeTeamGroup(block)?.items || [];
-}
 function teamHasItems(block) {
   return teamGroups(block).some(group => group.items.length);
 }
 function hasTeamTabs(block) {
-  return teamGroups(block).length > 1;
+  return teamGroups(block).some(group => group.managed);
 }
 function isActiveTeamGroup(block, group) {
   return activeTeamGroup(block)?.key === group?.key;
@@ -1502,7 +1505,7 @@ function setupStatAnimations() {
 function setupTeamCardViewportAnimations() {
   teamObserver?.disconnect();
   teamObserver = null;
-  const cards = [...(pageBlocksRoot.value?.querySelectorAll('.igf-team-panel .igf-team-card.has-details') || [])];
+  const cards = [...(pageBlocksRoot.value?.querySelectorAll('.igf-team-panel:not([hidden]) .igf-team-card.has-details') || [])];
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const touchPointer = window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
   if (!cards.length || reducedMotion || !touchPointer || typeof window.IntersectionObserver !== 'function') return;
@@ -1827,9 +1830,9 @@ function subscribe() {
 .igf-focus-areas::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(900px,100%); height:600px; background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%); content:''; pointer-events:none; transform:translate(-50%,-50%); }
 .igf-focus-area__reveal.is-reveal-ready { opacity:0; transform:translateY(100px); transition:opacity 500ms ease-out,transform 500ms ease-out; transition-delay:var(--igf-focus-delay,0ms); }
 .igf-focus-area__reveal.is-reveal-ready.is-visible { opacity:1; transform:translateY(0); }
-.igf-focus-areas__heading { display:flex; min-width:0; min-height:390px; justify-content:center; padding:clamp(30px,4vw,52px); flex-direction:column; border-radius:var(--igf-card-radius,16px); background:var(--orange); color:#fff; }
+.igf-focus-areas__heading { container-type:inline-size; display:flex; min-width:0; min-height:390px; justify-content:center; padding:clamp(28px,3vw,46px); flex-direction:column; overflow:hidden; border-radius:var(--igf-card-radius,16px); background:var(--orange); color:#fff; }
 .igf-focus-areas__heading .igf-page-block__eyebrow { color:#572500; }
-.igf-focus-areas__heading h2 { margin:0; font-size:clamp(38px,4.5vw,56px); line-height:1.08; }
+.igf-focus-areas__heading h2 { max-width:100%; margin:0; font-size:clamp(30px,3vw,44px); font-size:clamp(30px,10.5cqi,44px); line-height:1.08; overflow-wrap:anywhere; }
 .igf-focus-areas__heading .igf-section-lead { margin:18px 0 0; color:rgba(255,255,255,.9); }
 .igf-focus-areas__heading .igf-text-link { width:fit-content; margin-top:28px; color:#fff; }
 .igf-focus-area-card { position:relative; isolation:isolate; display:flex; min-width:0; min-height:390px; overflow:hidden; padding:clamp(26px,3vw,38px); flex-direction:column; border:1px solid var(--igf-card-border,var(--line)); border-radius:var(--igf-card-radius,16px); background:#fff; box-shadow:var(--igf-card-shadow,0 8px 22px rgba(25,28,29,.08)); color:var(--ink); text-decoration:none; transition:color 300ms ease-out,border-color 300ms ease-out,box-shadow 300ms ease-out,opacity 500ms ease-out,transform 500ms ease-out; transition-delay:0ms,0ms,0ms,var(--igf-focus-delay,0ms),var(--igf-focus-delay,0ms); }

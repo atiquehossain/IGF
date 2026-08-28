@@ -112,6 +112,14 @@ class IgniteParityContentTest extends TestCase
         $this->assertSame(0, MediaAsset::where('path', 'like', 'media/ignite-live/%')->whereNull('alt_text')->count());
         $this->assertSame(6, PageMenu::where('type', 'main')->where('status', 1)->whereNull('parent_id')->count());
         $this->assertFalse(PageMenu::where('type', 'main')->where('status', 1)->where('slug', "founder's-letter")->exists());
+        $ourWorkMenu = PageMenu::where('uuid', '67000000-0000-4000-8000-000000000003')->firstOrFail();
+        $youthDevelopmentMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000004')->firstOrFail();
+        $workshopMenu = PageMenu::where('link', 'frontend.workshops.index')->firstOrFail();
+        $this->assertSame($ourWorkMenu->id, $youthDevelopmentMenu->parent_id);
+        $this->assertSame($youthDevelopmentMenu->id, $workshopMenu->parent_id);
+        $this->assertSame('68000000-0304-4000-8000-000000000001', $workshopMenu->uuid);
+        $this->assertSame('Workshop', $workshopMenu->name);
+        $this->assertSame(0, $workshopMenu->order_by);
 
         $this->get(route('frontend.home'))
             ->assertOk()
@@ -124,6 +132,10 @@ class IgniteParityContentTest extends TestCase
                 ->where('appMenus.1.children.2.name', 'Photo Gallery')
                 ->where('appMenus.1.children.3.name', 'Annual Reports')
                 ->where('appMenus.1.children.4.name', 'Contact Us')
+                ->has('appMenus.2.children.3.children', 1)
+                ->where('appMenus.2.children.3.name', 'Youth Development')
+                ->where('appMenus.2.children.3.children.0.name', 'Workshop')
+                ->where('appMenus.2.children.3.children.0.link', 'frontend.workshops.index')
                 ->has('data.homePage.visible_blocks', 13)
                 ->has('data.homePage.visible_blocks.0.content.slides', 8)
                 ->where('data.homePage.visible_blocks.1.content.items.0.value', '23,000+')
@@ -139,7 +151,11 @@ class IgniteParityContentTest extends TestCase
             ->where('data.about_us.visible_blocks.0.type', 'cards')
             ->where('data.about_us.visible_blocks.0.content.variant', 'about-pillars')
             ->where('data.about_us.visible_blocks.0.content.items.0.eyebrow', 'Our mission')
+            ->where('data.about_us.visible_blocks.0.content.items.0.url', '/page/our-mission')
+            ->where('data.about_us.visible_blocks.0.content.items.0.link_label', 'Read more')
             ->where('data.about_us.visible_blocks.0.content.items.1.eyebrow', 'Our vision')
+            ->where('data.about_us.visible_blocks.0.content.items.1.url', '/page/our-vision')
+            ->where('data.about_us.visible_blocks.0.content.items.1.link_label', 'Read more')
             ->has('data.about_us.visible_blocks.0.content.items', 2)
             ->has('data.about_us.visible_blocks.3.content.items', 4)
             ->has('data.about_us.visible_blocks.4.content.items', 7)
@@ -151,6 +167,9 @@ class IgniteParityContentTest extends TestCase
             ->where('data.about_us.visible_blocks.5.content.items.0.heading', 'Bangladesh Brand Forum')
             ->where('data.about_us.visible_blocks.5.content.items.19.heading', 'What’s On Guide')
         );
+
+        $this->get('/page/our-mission')->assertOk();
+        $this->get('/page/our-vision')->assertOk();
 
         $this->get('/page/education')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->has('data.page.visible_blocks', 4)
@@ -185,7 +204,6 @@ class IgniteParityContentTest extends TestCase
             '/page/youth-development',
             '/page/disaster-response-and-resilience',
             '/page/refund-policy',
-            '/category/career',
             '/category/awards-&-recognition',
             '/projects/current-project',
             '/projects/completed-project',
@@ -195,6 +213,9 @@ class IgniteParityContentTest extends TestCase
         ] as $uri) {
             $this->get($uri)->assertOk();
         }
+        $this->get('/category/career')
+            ->assertStatus(301)
+            ->assertRedirect('/careers');
 
         $this->get('/annual-report/download/ignite-foundation-annual-report-2024')
             ->assertOk()
@@ -209,7 +230,7 @@ class IgniteParityContentTest extends TestCase
         $this->assertStringContainsString('header.sponsorLabel', $navigation);
         $this->assertStringContainsString('desktop-nav__trigger', $navigation);
         $this->assertStringContainsString('mobile-nav__submenu', $navigation);
-        $this->assertStringContainsString(':aria-expanded="openDesktop === index"', $navigation);
+        $this->assertStringContainsString("'aria-expanded': String(expanded)", $navigation);
         $this->assertStringContainsString('aria-label="YouTube"', $footer);
         $this->assertStringNotContainsString('social.tiktok', $footer);
         $this->assertStringContainsString('branding.tagline', $footer);
@@ -222,5 +243,66 @@ class IgniteParityContentTest extends TestCase
             $this->assertStringContainsString("block.type === '{$type}'", $blocks);
             $this->assertArrayHasKey($type, config('page-builder.simple_sections'));
         }
+    }
+
+    public function test_navigation_seed_preserves_an_edited_or_deleted_workshop_menu(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        $this->seed(IgniteParityContentSeeder::class);
+
+        $workshop = PageMenu::where('link', 'frontend.workshops.index')->firstOrFail();
+        $originalId = $workshop->id;
+        $workshop->update([
+            'name' => 'Community learning sessions',
+            'description' => 'An editor-managed navigation label.',
+            'order_by' => 37,
+            'status' => 0,
+        ]);
+        $opportunities = PageMenu::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Opportunities',
+            'type' => 'main',
+            'link' => 'custom',
+            'slug' => '#',
+            'language' => 'en',
+            'order_by' => 90,
+            'status' => 1,
+        ]);
+        $career = PageMenu::create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'parent_id' => $opportunities->id,
+            'name' => 'Fellowships',
+            'type' => 'main',
+            'link' => 'custom',
+            'slug' => '/fellowships',
+            'language' => 'en',
+            'order_by' => 0,
+            'status' => 1,
+        ]);
+
+        $this->seed(IgniteParityContentSeeder::class);
+
+        $workshop = PageMenu::findOrFail($originalId);
+        $youthDevelopment = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000004')->firstOrFail();
+        $this->assertSame('Community learning sessions', $workshop->name);
+        $this->assertSame('An editor-managed navigation label.', $workshop->description);
+        $this->assertSame(37, $workshop->order_by);
+        $this->assertSame(0, $workshop->status);
+        $this->assertSame($youthDevelopment->id, $workshop->parent_id);
+        $this->assertDatabaseHas('page_menus', ['id' => $opportunities->id, 'status' => 1]);
+        $this->assertDatabaseHas('page_menus', [
+            'id' => $career->id,
+            'parent_id' => $opportunities->id,
+            'status' => 1,
+        ]);
+
+        $workshop->delete();
+        $this->seed(IgniteParityContentSeeder::class);
+
+        $this->assertSoftDeleted('page_menus', ['id' => $originalId]);
+        $this->assertSame(0, PageMenu::where('link', 'frontend.workshops.index')->count());
+        $this->assertDatabaseHas('page_menus', ['id' => $opportunities->id, 'status' => 1]);
+        $this->assertDatabaseHas('page_menus', ['id' => $career->id, 'status' => 1]);
     }
 }

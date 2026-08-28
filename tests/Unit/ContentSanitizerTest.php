@@ -55,6 +55,22 @@ class ContentSanitizerTest extends TestCase
         $this->assertSame('', $safe['items'][0]['image']);
     }
 
+    public function test_url_policy_rejects_active_schemes_and_backslash_network_paths(): void
+    {
+        foreach ([
+            'javascript:alert(1)',
+            'data:text/html,<script>alert(1)</script>',
+            '\\\\attacker.test/share',
+            '/%5c%5cattacker.test/share',
+        ] as $unsafe) {
+            $this->assertSame('', $this->sanitizer->sanitizeUrl($unsafe), $unsafe);
+        }
+
+        $this->assertSame('/about-us', $this->sanitizer->sanitizeUrl('/about-us'));
+        $this->assertSame('https://example.org/path', $this->sanitizer->sanitizeUrl('https://example.org/path'));
+        $this->assertSame('https://example.org/path', $this->sanitizer->sanitizeUrl('//example.org/path'));
+    }
+
     public function test_css_blocks_remote_loading_and_active_legacy_constructs(): void
     {
         $safe = $this->sanitizer->sanitizeCss(

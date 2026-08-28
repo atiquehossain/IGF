@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Mattiverse\Userstamps\Traits\Userstamps;
 use Illuminate\Support\Str;
@@ -59,6 +61,7 @@ class DonationType extends Model
         'image_media_uuid',
         'display_order',
         'icon_key',
+        'donation_cause_group_id',
         'status',
     ];
 
@@ -107,6 +110,17 @@ class DonationType extends Model
     public function imageAsset()
     {
         return $this->belongsTo(MediaAsset::class, 'image_media_uuid', 'uuid')->withTrashed();
+    }
+
+    public function causeGroup(): BelongsTo
+    {
+        return $this->belongsTo(DonationCauseGroup::class, 'donation_cause_group_id');
+    }
+
+    public function seo(): MorphOne
+    {
+        return $this->morphOne(SeoMetadata::class, 'seoable')
+            ->where('locale', app()->getLocale());
     }
 
     private static function availableSlug(string $name): string

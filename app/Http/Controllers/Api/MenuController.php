@@ -6,26 +6,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Helper\MyMenu;
+use App\Services\ContentSanitizer;
 use Exception;
 use Illuminate\Support\Facades\Route;
 
 class MenuController extends Controller {
 
+    public function __construct(private ContentSanitizer $sanitizer)
+    {
+    }
+
     public function index(Request $request) {
         try {
             $myMenu =  MyMenu::frontMenus($request->header('locale'))->toArray();
-            $menus = array_map(function ($menu) {
-                $children = [];
-                if(@$menu['children']){
-                    $children =  array_map(function($sub_menu){
-                        $sub_menu['api'] = $this->menuUrl($sub_menu);
-                        return $sub_menu;
-                    } ,$menu['children']);
-                }
-                $menu['children'] = $children;
-                $menu['api'] = $this->menuUrl($menu);
-                return $menu;
-               },$myMenu);
+            $menus = array_map(fn (array $menu): array => $this->decorateMenu($menu), $myMenu);
             $response = [
                 'status' => true,
                 'data' => $menus,
@@ -36,10 +30,24 @@ class MenuController extends Controller {
         }
     }
 
+    private function decorateMenu(array $menu): array
+    {
+        $menu['children'] = array_map(
+            fn (array $child): array => $this->decorateMenu($child),
+            is_array($menu['children'] ?? null) ? $menu['children'] : []
+        );
+        if (($menu['link'] ?? '') === 'custom') {
+            $menu['slug'] = $this->safeCustomUrl($menu['slug'] ?? null);
+        }
+        $menu['api'] = $this->menuUrl($menu);
+
+        return $menu;
+    }
+
     private function menuUrl(array $menu): string
     {
         if (($menu['link'] ?? '') === 'custom') {
-            return (string) ($menu['slug'] ?? '#');
+            return $this->safeCustomUrl($menu['slug'] ?? null);
         }
         $routeName = 'api.' . ($menu['link'] ?? '');
         if (!Route::has($routeName)) {
@@ -47,6 +55,11 @@ class MenuController extends Controller {
         }
 
         return route($routeName, array_filter([(string) ($menu['slug'] ?? '')]));
+    }
+
+    private function safeCustomUrl(mixed $value): string
+    {
+        return $this->sanitizer->sanitizeUrl($value) ?: '#';
     }
 
 }

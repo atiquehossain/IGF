@@ -77,8 +77,9 @@ class SiteSettingsController extends Controller
             }
         }
 
+        $currentSettings = $this->settings->values($locale);
         $validator = Validator::make($request->all(), $rules);
-        $validator->after(function ($validator) use ($request): void {
+        $validator->after(function ($validator) use ($request, $currentSettings): void {
             $goldPrice = data_get($request->all(), 'settings.zakat_calculator.gold_price_per_gram');
             $silverPrice = data_get($request->all(), 'settings.zakat_calculator.silver_price_per_gram');
             $priceDate = data_get($request->all(), 'settings.zakat_calculator.nisab_price_updated_at');
@@ -114,6 +115,26 @@ class SiteSettingsController extends Controller
                 data_get($request->all(), "settings.donation_page.{$key}", false),
                 FILTER_VALIDATE_BOOLEAN
             );
+
+            // Provider credentials are an operations concern and checkout
+            // already fails closed when they are unavailable. Do not prevent
+            // a non-technical editor from saving unrelated branding, contact,
+            // content, or layout changes merely because deployment has not
+            // connected the payment account yet. Re-check readiness only when
+            // an editor actually changes one of the public payment offers.
+            $paymentOfferChanged = collect($this->paymentMethods->publicKeys())
+                ->contains(function (string $key) use ($enabled, $currentSettings): bool {
+                    $current = filter_var(
+                        data_get($currentSettings, "donation_page.enable_{$key}", false),
+                        FILTER_VALIDATE_BOOLEAN
+                    );
+
+                    return $enabled('enable_' . $key) !== $current;
+                });
+
+            if (!$paymentOfferChanged) {
+                return;
+            }
 
             $hasUsableMethod = collect($this->paymentMethods->publicKeys())
                 ->contains(fn (string $key): bool => $enabled('enable_' . $key)

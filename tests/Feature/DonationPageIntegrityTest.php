@@ -75,7 +75,7 @@ class DonationPageIntegrityTest extends TestCase
                 ->where('data.paymentMethods', [])
                 ->where('data.donationFrequencies', [])
                 ->where('data.checkout_key', null)
-                ->where('siteSettings.donation_page.show_cause_gallery', false)
+                ->missing('siteSettings.donation_page.show_cause_gallery')
                 ->where('siteSettings.donation_page.checkout_layout', 'centered')
                 ->where('siteSettings.donation_page.card_style', 'soft')
                 ->where('siteSettings.donation_page.amount_button_count', '5')
@@ -88,6 +88,19 @@ class DonationPageIntegrityTest extends TestCase
                 ->where('siteSettings.donation_page.show_custom_amount', true)
                 ->where('siteSettings.donation_page.show_gateway_note', true)
             );
+
+        $donationFields = config('site-settings.groups.donation_page.fields');
+        foreach ([
+            'show_cause_gallery',
+            'show_intro_panel',
+            'cause_card_selected_label',
+            'cause_card_selected_cta_label',
+            'aside_eyebrow',
+            'aside_title',
+            'aside_body',
+        ] as $obsoleteControl) {
+            $this->assertArrayNotHasKey($obsoleteControl, $donationFields, "{$obsoleteControl} must not appear as a no-op admin control.");
+        }
     }
 
     public function test_dedicated_cause_page_exposes_one_locked_checkout_and_cause_specific_metadata(): void

@@ -11,9 +11,10 @@ return [
         'frontend.sponsor_child' => ['label' => 'Sponsor a child', 'path' => '/sponsor-child', 'page_slug' => 'sponsor-a-child'],
         'frontend.events' => ['label' => 'Events & publications', 'path' => '/events'],
         'frontend.project' => ['label' => 'Projects', 'path' => '/projects'],
+        'frontend.jobs.index' => ['label' => 'Careers', 'path' => '/careers'],
+        'frontend.workshops.index' => ['label' => 'Workshops', 'path' => '/workshops'],
         'frontend.volunteer_registration.index' => ['label' => 'Volunteer registration', 'path' => '/volunteer/register'],
         'frontend.donate.index' => ['label' => 'Donate', 'path' => '/donate'],
-        'frontend.donate.cause' => ['label' => 'Donate — Zakat', 'path' => '/donate/zakat'],
         'frontend.annual_report.index' => ['label' => 'Annual reports', 'path' => '/annual-report'],
     ],
 

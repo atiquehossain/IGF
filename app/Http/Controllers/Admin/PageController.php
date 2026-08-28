@@ -131,6 +131,7 @@ class PageController extends Controller
                 'description' => $meta['meta_description'] ?? '',
                 'focus_keyword' => (string) ($metadata?->focus_keyword ?? ''),
                 'image' => $meta['og_image'] ?? '',
+                'image_alt' => $this->seoMetadata->socialImageAltText($meta['social_image_alt'] ?? ''),
                 'canonical' => $meta['canonical_url'] ?? '',
                 'default_url' => $defaultUrl,
                 'indexable' => (bool) ($metadata?->robots_index ?? true),

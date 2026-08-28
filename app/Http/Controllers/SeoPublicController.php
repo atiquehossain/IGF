@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AnnualReport;
 use App\Models\Category;
+use App\Models\DonationType;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\SeoMetadata;
 use App\Models\Tag;
 use App\Services\CategoryLandingPageAliasService;
+use App\Services\DonationDestinationService;
 use App\Services\LocalizationManager;
 use App\Services\SeoMetadataService;
 use App\Services\SeoIndexingPolicy;
@@ -29,6 +31,7 @@ class SeoPublicController extends Controller
         private SeoRouteRegistry $routes,
         private LocalizationManager $localization,
         private CategoryLandingPageAliasService $landingPageAliases,
+        private DonationDestinationService $donationDestinations,
     ) {
     }
 
@@ -178,6 +181,7 @@ class SeoPublicController extends Controller
             ->where('language', $locale)
             ->whereNotNull('slug')
             ->get()
+            ->reject(fn (Category $category) => hash_equals('career', (string) $category->slug))
             ->filter(fn (Category $category) => $this->isIndexable($category->seo))
             ->map(fn (Category $category) => [
                 'loc' => $this->sitemapLocation(
@@ -234,11 +238,25 @@ class SeoPublicController extends Controller
                 'alternates' => $this->annualReportSitemapAlternates($report),
             ]);
 
+        $donationCauses = $this->donationDestinations
+            ->activeCauses($locale)
+            ->each(fn (DonationType $cause) => $cause->loadMissing('seo'))
+            ->filter(fn (DonationType $cause) => $this->isIndexable($cause->seo))
+            ->map(fn (DonationType $cause) => [
+                'loc' => $this->sitemapLocation(
+                    $cause->seo?->canonical_url,
+                    route('frontend.donate.cause', ['cause' => $cause->slug]),
+                    $locale
+                ),
+                'lastmod' => $this->lastModified($cause, $cause->seo),
+            ]);
+
         return $staticEntries
             ->concat($categories)
             ->concat($events)
             ->concat($projects)
             ->concat($reports)
+            ->concat($donationCauses)
             ->concat($pages)
             ->filter(fn (array $entry) => $this->seo->isSameOrigin($entry['loc']))
             ->sortBy('loc')
@@ -374,6 +392,7 @@ class SeoPublicController extends Controller
             NoticeBoard::where('language', $locale)->max('updated_at'),
             AnnualReport::where('language', $locale)->max('updated_at'),
             Tag::max('updated_at'),
+            DonationType::max('updated_at'),
             SeoMetadata::where('locale', $locale)->max('updated_at'),
         ])->filter()->map(fn ($date) => \Illuminate\Support\Carbon::parse($date));
 

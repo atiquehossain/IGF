@@ -55,6 +55,27 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $this->assertSame('Ready', $ready['status']);
         $this->assertSame([], $ready['issues']);
 
+        $missingSocialAlt = $service->evaluate([
+            'title' => 'Community education programs in Bangladesh',
+            'description' => str_repeat('Clear information for families and supporters. ', 3),
+            'image' => 'https://example.test/share.jpg',
+            'image_alt' => '',
+            'indexable' => true,
+        ]);
+        $this->assertSame('Needs attention', $missingSocialAlt['status']);
+        $this->assertContains('missing_image_alt', collect($missingSocialAlt['issues'])->pluck('key')->all());
+        $this->assertSame(1, $missingSocialAlt['recommended_count']);
+
+        $describedSocialImage = $service->evaluate([
+            'title' => 'Community education programs in Bangladesh',
+            'description' => str_repeat('Clear information for families and supporters. ', 3),
+            'image' => 'https://example.test/share.jpg',
+            'image_alt' => 'Students learning together in a community classroom',
+            'indexable' => true,
+        ]);
+        $this->assertSame('Ready', $describedSocialImage['status']);
+        $this->assertSame([], $describedSocialImage['issues']);
+
         $lowerBoundary = $service->evaluate([
             'title' => str_repeat('T', 35),
             'description' => str_repeat('D', 120),
@@ -121,6 +142,29 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $secondPage = $this->get(route('seo.index', ['issue' => 'all', 'seo_page' => 2]))->assertOk();
         $this->assertSame('all', data_get($secondPage->viewData('dashboardFilters'), 'issue'));
         $this->assertSame(2, $secondPage->viewData('dashboardPagination')->currentPage());
+    }
+
+    public function test_dashboard_can_filter_authored_social_images_missing_a_description(): void
+    {
+        $admin = $this->adminWith(actions: ['seo.metadata.edit']);
+        $page = $this->page('social-image-description-filter');
+        app(SeoMetadataService::class)->updateForModel($page, [
+            'title' => 'Community education progress and impact in Bangladesh',
+            'description' => $this->description(),
+            'og_image' => 'https://example.test/community-program.jpg',
+            'social_image_alt' => '',
+            'robots_index' => true,
+        ], 'en');
+
+        $response = $this->actingAs($admin, 'admin')->get(route('seo.index', [
+            'issue' => 'missing_image_alt',
+            'search' => 'social image description filter',
+        ]))->assertOk()->assertSee('Missing social image description');
+
+        $this->assertSame('missing_image_alt', data_get($response->viewData('dashboardFilters'), 'issue'));
+        $target = collect($response->viewData('dashboardVisibleTargets'))->first();
+        $this->assertNotNull($target);
+        $this->assertContains('missing_image_alt', collect($target['issues'])->pluck('key')->all());
     }
 
     public function test_auto_metadata_mode_shows_the_inherited_values_without_saving_an_override(): void
@@ -586,7 +630,9 @@ class SeoAdminWorkflowEnhancementTest extends TestCase
         $page = $this->page('content-hub-seo');
         app(SeoMetadataService::class)->updateForModel($page, [
             'title' => 'Ignite content hub search and sharing title', 'description' => $this->description(),
-            'og_image' => 'https://example.test/share.jpg', 'robots_index' => true,
+            'og_image' => 'https://example.test/share.jpg',
+            'social_image_alt' => 'Ignite community program participants',
+            'robots_index' => true,
         ], 'en');
 
         $this->actingAs($admin, 'admin')->get(route('page.index'))

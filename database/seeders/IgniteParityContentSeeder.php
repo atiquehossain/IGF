@@ -26,6 +26,11 @@ class IgniteParityContentSeeder extends Seeder
 {
     private const MEDIA = '/storage/media/ignite-live/';
 
+    private const WORKSHOP_MENU_UUIDS = [
+        '68000000-0304-4000-8000-000000000001',
+        '68000000-0304-4000-8000-000000000002',
+    ];
+
     public function run(): void
     {
         if (! app()->environment(['local', 'testing'])) {
@@ -342,6 +347,24 @@ class IgniteParityContentSeeder extends Seeder
 
     private function seedAboutContent(Category $about): void
     {
+        $this->page($about, [
+            'uuid' => '6a000000-0000-4000-8000-000000000001',
+            'slug' => 'our-mission',
+            'name' => 'Our mission',
+            'sub_title' => 'Turning compassion into practical opportunity alongside communities.',
+            'description' => '<h2>Turn compassion into practical opportunity</h2><p>Ignite Global Foundation mobilizes volunteers and works alongside communities to expand inclusive education, youth development, women’s empowerment, healthcare, livelihoods, safe water, food security, and humanitarian support.</p><h2>How we work</h2><p>We listen first, respect community leadership, and connect responsible support with practical action. Programs are designed around dignity, accountability, and outcomes that communities can sustain.</p>',
+            'order_by' => 110,
+        ]);
+
+        $this->page($about, [
+            'uuid' => '6a000000-0000-4000-8000-000000000002',
+            'slug' => 'our-vision',
+            'name' => 'Our vision',
+            'sub_title' => 'A more equitable and compassionate society where every person can thrive.',
+            'description' => '<h2>A more equitable and compassionate society</h2><p>Ignite envisions a future where every person can learn, grow, and shape a dignified life.</p><h2>What that future looks like</h2><p>Children can access inclusive education, families can strengthen their health and livelihoods, and young people can lead practical change. Resilient communities have the confidence, opportunity, and support to shape their own futures.</p>',
+            'order_by' => 111,
+        ]);
+
         $page = $this->page($about, [
             'uuid' => '22222222-2222-4222-8222-000000000010',
             'slug' => 'about-us',
@@ -360,8 +383,8 @@ class IgniteParityContentSeeder extends Seeder
                     'eyebrow' => 'What guides us', 'heading' => 'Purpose that turns care into action',
                     'body' => 'Our mission and vision keep every program focused on dignity, opportunity, and accountable service.',
                     'items' => [
-                        ['eyebrow' => 'Our mission', 'heading' => 'Turn compassion into practical opportunity', 'body' => 'Mobilize volunteers and work alongside communities to expand inclusive education, youth development, women’s empowerment, health, livelihoods, and humanitarian support.', 'icon' => 'heart'],
-                        ['eyebrow' => 'Our vision', 'heading' => 'A more equitable and compassionate society', 'body' => 'A future where every person can learn, grow, and shape a dignified life, supported by resilient communities and young people prepared to lead.', 'icon' => 'map'],
+                        ['eyebrow' => 'Our mission', 'heading' => 'Turn compassion into practical opportunity', 'body' => 'Mobilize volunteers and work alongside communities to expand inclusive education, youth development, women’s empowerment, health, livelihoods, and humanitarian support.', 'icon' => 'heart', 'url' => '/page/our-mission', 'link_label' => 'Read more'],
+                        ['eyebrow' => 'Our vision', 'heading' => 'A more equitable and compassionate society', 'body' => 'A future where every person can learn, grow, and shape a dignified life, supported by resilient communities and young people prepared to lead.', 'icon' => 'map', 'url' => '/page/our-vision', 'link_label' => 'Read more'],
                     ],
                 ],
             ],
@@ -725,61 +748,277 @@ class IgniteParityContentSeeder extends Seeder
 
     private function seedNavigation(): void
     {
-        PageMenu::query()->where('type', 'main')->where('language', 'en')->update(['status' => 0]);
+        $locale = 'en';
+        $workshopState = $this->workshopMenuState($locale);
 
         $roots = [
-            ['Home', 'frontend.home', null, []],
-            ['About Us', 'custom', '#', [
-                ['Who We Are', 'frontend.about', null],
-                ['Awards & Recognition', 'frontend.category', 'awards-&-recognition'],
-                ['Photo Gallery', 'frontend.gallery', null],
-                ['Annual Reports', 'frontend.annual_report.index', null],
-                ['Contact Us', 'frontend.contactUs', null],
+            ['uuid' => '67000000-0000-4000-8000-000000000001', 'name' => 'Home', 'link' => 'frontend.home', 'slug' => null, 'order' => 0, 'children' => []],
+            ['uuid' => '67000000-0000-4000-8000-000000000002', 'name' => 'About Us', 'link' => 'custom', 'slug' => '#', 'order' => 1, 'children' => [
+                ['uuid' => '68000000-0002-4000-8000-000000000001', 'name' => 'Who We Are', 'link' => 'frontend.about', 'slug' => null, 'order' => 0],
+                ['uuid' => '68000000-0002-4000-8000-000000000003', 'name' => 'Awards & Recognition', 'link' => 'frontend.category', 'slug' => 'awards-&-recognition', 'order' => 1],
+                ['uuid' => '68000000-0002-4000-8000-000000000004', 'name' => 'Photo Gallery', 'link' => 'frontend.gallery', 'slug' => null, 'order' => 2],
+                ['uuid' => '68000000-0002-4000-8000-000000000005', 'name' => 'Annual Reports', 'link' => 'frontend.annual_report.index', 'slug' => null, 'order' => 3],
+                ['uuid' => '68000000-0002-4000-8000-000000000006', 'name' => 'Contact Us', 'link' => 'frontend.contactUs', 'slug' => null, 'order' => 4],
             ]],
-            ['Our Work', 'custom', '#', [
-                ['Program Overview', 'frontend.category', 'our-causes'],
-                ['Inclusive Education', 'frontend.page', 'education'],
-                ['Visit Ignite School', 'frontend.category', 'visit-ignite-school'],
-                ['Youth Development', 'frontend.page', 'youth-development'],
-                ['Disaster Resilience', 'frontend.page', 'disaster-response-and-resilience'],
-                ['Current Projects', 'frontend.project', 'current-project'],
-                ['Completed Projects', 'frontend.project', 'completed-project'],
+            ['uuid' => '67000000-0000-4000-8000-000000000003', 'name' => 'Our Work', 'link' => 'custom', 'slug' => '#', 'order' => 2, 'children' => [
+                ['uuid' => '68000000-0003-4000-8000-000000000001', 'name' => 'Program Overview', 'link' => 'frontend.category', 'slug' => 'our-causes', 'order' => 0],
+                ['uuid' => '68000000-0003-4000-8000-000000000002', 'name' => 'Inclusive Education', 'link' => 'frontend.page', 'slug' => 'education', 'order' => 1],
+                ['uuid' => '68000000-0003-4000-8000-000000000003', 'name' => 'Visit Ignite School', 'link' => 'frontend.category', 'slug' => 'visit-ignite-school', 'order' => 2],
+                ['uuid' => '68000000-0003-4000-8000-000000000004', 'name' => 'Youth Development', 'link' => 'frontend.page', 'slug' => 'youth-development', 'order' => 3, 'children' => [
+                    ['uuid' => self::WORKSHOP_MENU_UUIDS[0], 'name' => 'Workshop', 'link' => 'frontend.workshops.index', 'slug' => null, 'order' => 0, 'workshop' => true],
+                ]],
+                ['uuid' => '68000000-0003-4000-8000-000000000005', 'name' => 'Disaster Resilience', 'link' => 'frontend.page', 'slug' => 'disaster-response-and-resilience', 'order' => 4],
+                ['uuid' => '68000000-0003-4000-8000-000000000006', 'name' => 'Current Projects', 'link' => 'frontend.project', 'slug' => 'current-project', 'order' => 5],
+                ['uuid' => '68000000-0003-4000-8000-000000000007', 'name' => 'Completed Projects', 'link' => 'frontend.project', 'slug' => 'completed-project', 'order' => 6],
             ]],
-            ['Get Involved', 'custom', '#', [
-                ['Volunteer', 'frontend.volunteer_registration.index', null],
-                ['Careers', 'frontend.category', 'career'],
-                ['Sponsor a Child', 'frontend.sponsor_child', null],
+            ['uuid' => '67000000-0000-4000-8000-000000000004', 'name' => 'Get Involved', 'link' => 'custom', 'slug' => '#', 'order' => 3, 'children' => [
+                ['uuid' => '68000000-0004-4000-8000-000000000001', 'name' => 'Volunteer', 'link' => 'frontend.volunteer_registration.index', 'slug' => null, 'order' => 0],
+                ['uuid' => '68000000-0004-4000-8000-000000000002', 'name' => 'Careers', 'link' => 'frontend.category', 'slug' => 'career', 'order' => 1],
+                ['uuid' => '68000000-0004-4000-8000-000000000003', 'name' => 'Sponsor a Child', 'link' => 'frontend.sponsor_child', 'slug' => null, 'order' => 2],
             ]],
-            ['News & Stories', 'custom', '#', [
-                ['Stories', 'frontend.category', 'stories'],
-                ['Events & News', 'frontend.events', null],
+            ['uuid' => '67000000-0000-4000-8000-000000000005', 'name' => 'News & Stories', 'link' => 'custom', 'slug' => '#', 'order' => 4, 'children' => [
+                ['uuid' => '68000000-0005-4000-8000-000000000001', 'name' => 'Stories', 'link' => 'frontend.category', 'slug' => 'stories', 'order' => 0],
+                ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events & News', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
             ]],
-            ['Donate', 'custom', '#', [
-                ['Make a Donation', 'frontend.donate.index', null],
-                ['Give Zakat', 'frontend.zakat', null],
+            ['uuid' => '67000000-0000-4000-8000-000000000006', 'name' => 'Donate', 'link' => 'custom', 'slug' => '#', 'order' => 5, 'children' => [
+                ['uuid' => '68000000-0006-4000-8000-000000000001', 'name' => 'Make a Donation', 'link' => 'frontend.donate.index', 'slug' => null, 'order' => 0],
+                ['uuid' => '68000000-0006-4000-8000-000000000002', 'name' => 'Give Zakat', 'link' => 'frontend.zakat', 'slug' => null, 'order' => 1],
             ]],
         ];
 
-        foreach ($roots as $rootIndex => [$name, $link, $slug, $children]) {
-            $root = $this->menu(
-                '67000000-0000-4000-8000-' . str_pad((string) ($rootIndex + 1), 12, '0', STR_PAD_LEFT),
-                $name,
-                $link,
-                $slug,
-                null,
-                $rootIndex
-            );
-            foreach ($children as $childIndex => [$childName, $childLink, $childSlug]) {
-                $this->menu(
-                    '68000000-' . str_pad((string) ($rootIndex + 1), 4, '0', STR_PAD_LEFT) . '-4000-8000-' . str_pad((string) ($childIndex + 1), 12, '0', STR_PAD_LEFT),
-                    $childName,
-                    $childLink,
-                    $childSlug,
-                    $root->id,
-                    $childIndex
-                );
+        // This local/testing parity fixture may retire its own known rows, but
+        // must never hide an editor-created top-level tree such as Opportunities.
+        $knownSeedUuids = array_values(array_diff(
+            array_merge(
+                ['68000000-0002-4000-8000-000000000002'],
+                $this->menuTreeUuids($roots)
+            ),
+            self::WORKSHOP_MENU_UUIDS
+        ));
+        PageMenu::query()
+            ->where('type', 'main')
+            ->where('language', $locale)
+            ->where(function ($query) use ($knownSeedUuids): void {
+                $query->whereIn('uuid', $knownSeedUuids)
+                    ->orWhere('uuid', 'like', '69000000-%');
+            })
+            ->update(['status' => 0]);
+
+        foreach ($roots as $root) {
+            $this->seedMenuTree($root, null, $locale, $workshopState);
+        }
+    }
+
+    /** @param array<int, array<string, mixed>> $nodes @return list<string> */
+    private function menuTreeUuids(array $nodes): array
+    {
+        $uuids = [];
+        foreach ($nodes as $node) {
+            $uuids[] = $node['uuid'];
+            array_push($uuids, ...$this->menuTreeUuids($node['children'] ?? []));
+        }
+
+        return $uuids;
+    }
+
+    /** @param array<string, mixed> $node @param array<string, mixed> $workshopState */
+    private function seedMenuTree(array $node, ?int $parentId, string $locale, array $workshopState): void
+    {
+        $menu = ($node['workshop'] ?? false)
+            ? $this->seedWorkshopMenu($node, $parentId, $locale, $workshopState)
+            : $this->menu($node['uuid'], $node['name'], $node['link'], $node['slug'], $parentId, $node['order']);
+
+        if (! $menu || $menu->trashed()) {
+            return;
+        }
+
+        foreach ($node['children'] ?? [] as $child) {
+            $this->seedMenuTree($child, $menu->id, $locale, $workshopState);
+        }
+    }
+
+    /** @return array{live: \Illuminate\Support\Collection<int, PageMenu>, has_tombstone: bool} */
+    private function workshopMenuState(string $locale): array
+    {
+        $matches = $this->workshopMenus($locale)->get()->sortBy(fn (PageMenu $menu): array => [
+            $menu->trashed() ? 1 : 0,
+            (int) $menu->status === 1 ? 0 : 1,
+            in_array($menu->uuid, self::WORKSHOP_MENU_UUIDS, true) ? 0 : 1,
+            $menu->order_by === null ? PHP_INT_MAX : (int) $menu->order_by,
+            (int) $menu->id,
+        ]);
+
+        return [
+            'live' => $matches->filter(fn (PageMenu $menu): bool => ! $menu->trashed())->values(),
+            'has_tombstone' => $matches->contains(fn (PageMenu $menu): bool => $menu->trashed()),
+        ];
+    }
+
+    /** @param array<string, mixed> $node @param array{live: \Illuminate\Support\Collection<int, PageMenu>, has_tombstone: bool} $state */
+    private function seedWorkshopMenu(array $node, ?int $parentId, string $locale, array $state): ?PageMenu
+    {
+        if ($state['live']->isNotEmpty()) {
+            $snapshot = $state['live']->first(fn (PageMenu $candidate): bool => (int) $candidate->parent_id === (int) $parentId
+                || $this->canMoveSeededSubtree((int) $candidate->id, (int) $parentId));
+
+            if (! $snapshot) {
+                // All existing destinations own descendants that would become
+                // a fourth level. Preserve the complete editor-owned trees.
+                return $state['live']->first();
+            }
+
+            $menu = PageMenu::withTrashed()->find($snapshot->id);
+            if (! $menu || $menu->trashed()) {
+                return null;
+            }
+
+            if ((int) $menu->parent_id !== (int) $parentId) {
+                $menu->parent_id = $parentId;
+            }
+            $menu->status = $snapshot->status;
+            $menu->save();
+
+            $state['live']
+                ->reject(fn (PageMenu $candidate): bool => (int) $candidate->id === (int) $snapshot->id)
+                ->filter(fn (PageMenu $candidate): bool => $this->hasNoLiveMenuDescendants((int) $candidate->id))
+                ->each(function (PageMenu $duplicate): void {
+                    if ((int) $duplicate->status !== 0) {
+                        $duplicate->update(['status' => 0]);
+                    }
+                });
+
+            return $menu;
+        }
+
+        if ($state['has_tombstone']) {
+            return null;
+        }
+
+        $uuid = $this->globallyCompatibleWorkshopMenuUuid();
+
+        if (! $uuid || $this->menuDepth((int) $parentId) !== 2) {
+            return null;
+        }
+
+        return PageMenu::create([
+            'uuid' => $uuid,
+            'name' => $node['name'],
+            'type' => 'main',
+            'link' => $node['link'],
+            'slug' => $node['slug'],
+            'parent_id' => $parentId,
+            'language' => $locale,
+            'order_by' => $node['order'],
+            'status' => 1,
+        ]);
+    }
+
+    private function workshopMenus(string $locale)
+    {
+        return PageMenu::withTrashed()
+            ->where('type', 'main')
+            ->where('language', $locale)
+            ->where(function ($query): void {
+                $query->where('link', 'frontend.workshops.index')
+                    ->orWhere(function ($legacy): void {
+                        $legacy->where('link', 'custom')->whereIn('slug', ['/workshops', 'workshops']);
+                    })
+                    ->orWhereIn('link', ['/workshops', 'workshops']);
+            });
+    }
+
+    private function globallyCompatibleWorkshopMenuUuid(): ?string
+    {
+        foreach (self::WORKSHOP_MENU_UUIDS as $candidate) {
+            $owners = PageMenu::withTrashed()->where('uuid', $candidate)->get();
+            if ($owners->isEmpty() || $owners->every(fn (PageMenu $menu): bool => $menu->type === 'main'
+                && $this->isWorkshopMenuDestination($menu))) {
+                return $candidate;
             }
         }
+
+        return null;
+    }
+
+    private function isWorkshopMenuDestination(PageMenu $menu): bool
+    {
+        $link = trim((string) $menu->link);
+        $slug = rtrim(trim((string) $menu->slug), '/');
+
+        return $link === 'frontend.workshops.index'
+            || ($link === 'custom' && in_array($slug, ['/workshops', 'workshops'], true))
+            || in_array(rtrim($link, '/'), ['/workshops', 'workshops'], true);
+    }
+
+    private function canMoveSeededSubtree(int $menuId, int $targetParentId): bool
+    {
+        $parentDepth = $this->menuDepth($targetParentId);
+        $subtree = $this->seededSubtreeMetrics($menuId);
+
+        return $parentDepth !== null
+            && $subtree !== null
+            && ! in_array($targetParentId, $subtree['ids'], true)
+            && ($parentDepth + 1 + $subtree['height']) <= 3;
+    }
+
+    private function menuDepth(int $menuId): ?int
+    {
+        $depth = 0;
+        $visited = [];
+        $cursor = $menuId;
+
+        while ($cursor > 0) {
+            if (isset($visited[$cursor])) {
+                return null;
+            }
+            $visited[$cursor] = true;
+
+            $menu = PageMenu::query()->find($cursor, ['parent_id']);
+            if (! $menu) {
+                return null;
+            }
+
+            $depth++;
+            $cursor = (int) ($menu->parent_id ?? 0);
+        }
+
+        return $depth;
+    }
+
+    /** @return array{height: int, ids: list<int>}|null */
+    private function seededSubtreeMetrics(int $menuId): ?array
+    {
+        $visited = [];
+        $frontier = [$menuId];
+        $height = 0;
+
+        while ($frontier !== []) {
+            foreach ($frontier as $id) {
+                if (isset($visited[$id])) {
+                    return null;
+                }
+                $visited[$id] = true;
+            }
+
+            $children = PageMenu::query()
+                ->whereIn('parent_id', $frontier)
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+            if ($children === []) {
+                break;
+            }
+
+            $height++;
+            $frontier = $children;
+        }
+
+        return ['height' => $height, 'ids' => array_map('intval', array_keys($visited))];
+    }
+
+    private function hasNoLiveMenuDescendants(int $menuId): bool
+    {
+        return ! PageMenu::query()->where('parent_id', $menuId)->exists();
     }
 
     private function seedTeam(): void

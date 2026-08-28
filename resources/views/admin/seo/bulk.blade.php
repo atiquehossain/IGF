@@ -17,7 +17,7 @@
         <div class="seo2-card__body"><form class="seo2-filter" method="GET" action="{{ route('seo.bulk.index') }}">
             <label class="seo2-field"><span>Find content</span><input type="search" name="search" value="{{ $filters['search'] }}" placeholder="Title or public address"></label>
             <label class="seo2-field"><span>Language</span><select name="locale"><option value="all">English + Bangla</option>@foreach($locales as $option)<option value="{{ $option->id }}" @selected($filters['locale'] === (string)$option->id)>{{ $option->name }}</option>@endforeach</select></label>
-            <label class="seo2-field"><span>Content type</span><select name="type">@foreach(['all'=>'All content','page'=>'Pages','category'=>'Categories','event'=>'Events & publications','annual_report'=>'Annual reports','project'=>'Projects','route'=>'Website features'] as $key=>$label)<option value="{{ $key }}" @selected($filters['type'] === $key)>{{ $label }}</option>@endforeach</select></label>
+            <label class="seo2-field"><span>Content type</span><select name="type">@foreach(['all'=>'All content','page'=>'Pages','category'=>'Categories','event'=>'Events & publications','annual_report'=>'Annual reports','project'=>'Projects','donation_cause'=>'Donation causes','route'=>'Website features'] as $key=>$label)<option value="{{ $key }}" @selected($filters['type'] === $key)>{{ $label }}</option>@endforeach</select></label>
             <button class="seo2-btn" type="submit">Apply filters</button>
         </form></div>
     </section>

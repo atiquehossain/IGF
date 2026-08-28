@@ -14,6 +14,7 @@ use Inertia\Inertia;
 class CategoryController extends Controller
 {
     private const AWARDS_CATEGORY_UUID = '61000000-0000-4000-8000-000000000003';
+    private const LEGACY_CAREER_SLUG = 'career';
 
     public function __construct(
         private ContentSanitizer $sanitizer,
@@ -24,6 +25,17 @@ class CategoryController extends Controller
 
     public function category(Request $request, $slug = '')
     {
+        if (hash_equals(self::LEGACY_CAREER_SLUG, (string) $slug)) {
+            $url = route('frontend.jobs.index');
+            $localeParameter = (string) config('seo.locale_query_parameter', 'lang');
+            $requestedLocale = trim((string) $request->query($localeParameter, ''));
+            if ($requestedLocale !== '') {
+                $url .= '?' . http_build_query([$localeParameter => $requestedLocale]);
+            }
+
+            return redirect()->to($url, 301);
+        }
+
         $search = trim((string) $request->query('search', ''));
         $category = Category::select('categories.*')
             ->with(['banner'])

@@ -23,7 +23,7 @@
         <span class="igf-donate__hero-overlay" aria-hidden="true" />
         <div class="igf-shell igf-donate__hero-grid">
           <div class="igf-donate__hero-copy">
-            <a class="igf-cause-back-link" :href="catalogUrl"><span aria-hidden="true">&larr;</span> All donation causes</a>
+            <a class="igf-cause-back-link" :href="catalogUrl"><span aria-hidden="true">&larr;</span> {{ settings.cause_catalog_back_label || 'All donation causes' }}</a>
             <p class="igf-eyebrow">{{ settings.form_badge || 'Secure donation' }}</p>
             <h1>{{ selectedCause?.name || settings.title }}</h1>
             <p class="igf-donate__lead">{{ selectedCause?.description || selectionWarning || settings.introduction }}</p>
@@ -43,27 +43,74 @@
             <h2 id="donation-causes-title">{{ settings.cause_gallery_title }}</h2>
             <p v-if="settings.cause_gallery_introduction">{{ settings.cause_gallery_introduction }}</p>
           </header>
-          <div v-if="donationTypes.length" class="igf-donate-causes__grid">
-            <article v-for="(cause, index) in donationTypes" :key="cause.uuid" class="igf-donation-cause-card"
-              data-test="donation-cause-card">
-              <div class="igf-donation-cause-card__media">
-                <img v-if="cause.image" :src="cause.image" alt="" width="720" height="450" loading="lazy">
-                <div v-else class="igf-donation-cause-card__placeholder" :data-variant="(index % 6) + 1" aria-hidden="true">
-                  <i :class="causeCardIcon(cause)" />
-                </div>
+          <template v-if="donationTypes.length">
+            <div
+              class="igf-donate-causes__tabs"
+              data-test="donation-cause-tablist"
+              role="tablist"
+              aria-orientation="horizontal"
+              :aria-label="donationTabsLabel"
+              @keydown="handleDonationTabKeydown"
+            >
+              <button
+                v-for="tab in donationTabs"
+                :id="donationTabId(tab)"
+                :key="tab.key"
+                type="button"
+                class="igf-donate-causes__tab"
+                :class="{ 'is-active': isActiveDonationTab(tab) }"
+                data-test="donation-cause-tab"
+                role="tab"
+                :aria-selected="isActiveDonationTab(tab) ? 'true' : 'false'"
+                :aria-controls="donationPanelId(tab)"
+                :tabindex="isActiveDonationTab(tab) ? 0 : -1"
+                @click="selectDonationTab(tab, $event.currentTarget)"
+              >
+                {{ tab.name }}
+              </button>
+            </div>
+            <div
+              v-for="tab in donationTabs"
+              :id="donationPanelId(tab)"
+              :key="`${tab.key}-panel`"
+              class="igf-donate-causes__panel"
+              data-test="donation-cause-panel"
+              role="tabpanel"
+              :aria-labelledby="donationTabId(tab)"
+              :aria-describedby="tab.description ? donationTabDescriptionId(tab) : undefined"
+              tabindex="0"
+              :hidden="!isActiveDonationTab(tab)"
+            >
+              <p
+                v-if="tab.description"
+                :id="donationTabDescriptionId(tab)"
+                class="igf-donate-causes__tab-description"
+              >
+                {{ tab.description }}
+              </p>
+              <div v-if="isActiveDonationTab(tab)" class="igf-donate-causes__grid">
+                <article v-for="(cause, index) in filteredDonationTypes" :key="cause.uuid" class="igf-donation-cause-card"
+                  data-test="donation-cause-card">
+                  <div class="igf-donation-cause-card__media">
+                    <img v-if="cause.image" :src="cause.image" alt="" width="720" height="450" loading="lazy">
+                    <div v-else class="igf-donation-cause-card__placeholder" :data-variant="(index % 6) + 1" aria-hidden="true">
+                      <i :class="causeCardIcon(cause)" />
+                    </div>
+                  </div>
+                  <div class="igf-donation-cause-card__body">
+                    <h3 :id="causeCardId(cause)">{{ cause.name }}</h3>
+                    <p v-if="cause.description">{{ cause.description }}</p>
+                    <a data-test="donation-cause-link" :href="causePageUrl(cause)"
+                      :aria-label="`${settings.cause_card_cta_label || 'Donate to this cause'}: ${cause.name}`"
+                      :aria-describedby="causeCardId(cause)">
+                      {{ settings.cause_card_cta_label || 'Donate to this cause' }}
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </article>
               </div>
-              <div class="igf-donation-cause-card__body">
-                <h3 :id="causeCardId(cause)">{{ cause.name }}</h3>
-                <p v-if="cause.description">{{ cause.description }}</p>
-                <a data-test="donation-cause-link" :href="causePageUrl(cause)"
-                  :aria-label="`${settings.cause_card_cta_label || 'Donate to this cause'}: ${cause.name}`"
-                  :aria-describedby="causeCardId(cause)">
-                  {{ settings.cause_card_cta_label || 'Donate to this cause' }}
-                  <span aria-hidden="true">&rarr;</span>
-                </a>
-              </div>
-            </article>
-          </div>
+            </div>
+          </template>
           <p v-else class="igf-donate-causes__empty" data-test="donation-catalog-empty" role="status" aria-live="polite">
             {{ settings.causes_unavailable_message || 'Donation causes are being updated. Please contact us before attempting a payment.' }}
           </p>
@@ -81,7 +128,7 @@
                 </div>
               </div>
               <div class="igf-cause-story__body">
-                <p class="igf-eyebrow">Your selected cause</p>
+                <p class="igf-eyebrow">{{ settings.selected_cause_eyebrow || 'Your selected cause' }}</p>
                 <h2 id="selected-cause-story-title">{{ selectedCause.name }}</h2>
                 <p v-if="selectedCause.description">{{ selectedCause.description }}</p>
                 <div class="igf-cause-story__destination">
@@ -395,6 +442,7 @@ const paymentMethods = computed(() => {
     .filter(method => method.key !== '');
 });
 const donationTypes = ref([]);
+const activeDonationTabKey = ref('all');
 const form = ref(null);
 const isFormValid = ref(false);
 const loading = ref(false);
@@ -409,9 +457,59 @@ const donation = ref({ amount: '', donor_name: '', email: '', phone: '', address
 const submittedPayloadFingerprint = ref(null);
 const checkoutKeyNeedsRefresh = ref(false);
 const selectedCause = computed(() => donationTypes.value.find(cause => [cause.uuid, cause.slug].includes(donation.value.payment_cause)) || null);
-// show_cause_gallery is retained as a legacy setting for stored editor data,
-// but the catalog itself is now the only route into a checkout and is mandatory.
+// The catalog is the only route into a checkout and therefore always remains
+// visible on the catalog page; there is deliberately no misleading hide toggle.
 const showCauseGallery = computed(() => isCatalogPage.value);
+const donationGroupSource = computed(() => {
+  const groups = inertiaPage.props.data?.donationGroups;
+  if (Array.isArray(groups)) return groups;
+
+  const transitionalGroups = inertiaPage.props.data?.donationCauseGroups;
+  return Array.isArray(transitionalGroups) ? transitionalGroups : [];
+});
+const donationTabsLabel = computed(() => String(
+  settings.value.cause_tabs_accessible_label
+    || settings.value.cause_gallery_title
+    || 'Donation cause categories',
+).trim());
+const donationTabs = computed(() => {
+  if (!donationTypes.value.length) return [];
+
+  const tabs = [{
+    key: 'all',
+    name: String(settings.value.cause_tabs_all_label || 'All causes').trim(),
+    description: '',
+    groupUuid: null,
+  }];
+  const seenGroupUuids = new Set();
+
+  donationGroupSource.value.forEach((group, index) => {
+    if (!group || typeof group !== 'object' || Array.isArray(group)) return;
+    const groupUuid = String(group.uuid || '').trim();
+    if (!groupUuid || seenGroupUuids.has(groupUuid)) return;
+
+    const groupCauses = donationTypes.value.filter(cause => String(cause?.group_uuid || '').trim() === groupUuid);
+    if (!groupCauses.length) return;
+
+    seenGroupUuids.add(groupUuid);
+    tabs.push({
+      key: `group-${groupUuid}`,
+      name: String(group.name || group.slug || `Group ${index + 1}`).trim(),
+      description: String(group.description || '').trim(),
+      groupUuid,
+    });
+  });
+
+  return tabs;
+});
+const activeDonationTab = computed(() => donationTabs.value.find(tab => tab.key === activeDonationTabKey.value)
+  || donationTabs.value[0]
+  || null);
+const filteredDonationTypes = computed(() => {
+  const active = activeDonationTab.value;
+  if (!active || active.key === 'all') return donationTypes.value;
+  return donationTypes.value.filter(cause => String(cause?.group_uuid || '').trim() === active.groupUuid);
+});
 const projectOptions = computed(() => Array.isArray(selectedCause.value?.projects) ? selectedCause.value.projects : []);
 const selectedProject = computed(() => projectOptions.value.find(project => project.uuid === donation.value.project_uuid) || null);
 const projectSelectionSatisfied = computed(() => selectedCause.value?.project_selection !== 'fixed' || !!selectedProject.value);
@@ -531,6 +629,57 @@ function causeCardId(cause) {
   return `donation-cause-${String(cause?.uuid || cause?.slug || 'option').replace(/[^a-z0-9_-]/gi, '-')}`;
 }
 
+function donationTabToken(value) {
+  return String(value || 'tab')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'tab';
+}
+
+function donationTabId(tab) {
+  return `donation-cause-tab-${donationTabToken(tab?.key)}`;
+}
+
+function donationPanelId(tab) {
+  return `donation-cause-panel-${donationTabToken(tab?.key)}`;
+}
+
+function donationTabDescriptionId(tab) {
+  return `${donationPanelId(tab)}-description`;
+}
+
+function isActiveDonationTab(tab) {
+  return activeDonationTab.value?.key === tab?.key;
+}
+
+function selectDonationTab(tab, tabElement = null) {
+  const selected = donationTabs.value.find(candidate => candidate.key === tab?.key);
+  if (!selected) return;
+
+  activeDonationTabKey.value = selected.key;
+  nextTick(() => {
+    tabElement?.focus?.();
+    tabElement?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+  });
+}
+
+function handleDonationTabKeydown(event) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key) || donationTabs.value.length < 2) return;
+
+  const activeIndex = Math.max(0, donationTabs.value.findIndex(tab => isActiveDonationTab(tab)));
+  let nextIndex = activeIndex;
+  if (event.key === 'Home') nextIndex = 0;
+  else if (event.key === 'End') nextIndex = donationTabs.value.length - 1;
+  else if (event.key === 'ArrowRight') nextIndex = (activeIndex + 1) % donationTabs.value.length;
+  else nextIndex = (activeIndex - 1 + donationTabs.value.length) % donationTabs.value.length;
+
+  event.preventDefault();
+  const tabElements = [...(event.currentTarget?.querySelectorAll('[role="tab"]') || [])];
+  selectDonationTab(donationTabs.value[nextIndex], tabElements[nextIndex] || null);
+}
+
 function causeCardIcon(cause) {
   const managedIcon = CAUSE_CARD_ICONS[String(cause?.icon_key || '')];
   if (managedIcon) return managedIcon;
@@ -629,6 +778,12 @@ watch(() => donation.value.payment_cause, () => {
   selectionWarning.value = '';
   syncProjectForCause();
 }, { flush: 'sync' });
+
+watch(donationTabs, tabs => {
+  if (!tabs.some(tab => tab.key === activeDonationTabKey.value)) {
+    activeDonationTabKey.value = tabs[0]?.key || 'all';
+  }
+});
 
 function syncProjectForCause(preferredProjectUuid = '') {
   const cause = selectedCause.value;
@@ -758,6 +913,14 @@ function acceptReplacementCheckoutKey(value) {
 .igf-donate-causes__header .igf-eyebrow { color:var(--brown); }
 .igf-donate-causes__header h2 { margin:0; font-size:clamp(34px,4vw,48px); font-weight:650; line-height:1.12; text-wrap:balance; }
 .igf-donate-causes__header>p:last-child:not(.igf-eyebrow) { margin:15px auto 0; color:var(--muted); font-size:17px; line-height:1.65; }
+.igf-donate-causes__tabs { display:flex; width:100%; align-items:center; gap:10px; overflow-x:auto; margin:0 auto 34px; padding:7px; overscroll-behavior-inline:contain; scroll-padding-inline:7px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; }
+.igf-donate-causes__tab { display:inline-flex; min-height:44px; flex:0 0 auto; align-items:center; justify-content:center; border:1px solid #d7d0c8; border-radius:999px; padding:10px 20px; background:#fff; color:var(--ink); font:750 14px/1.2 'Hanken Grotesk',Arial,sans-serif; white-space:nowrap; cursor:pointer; scroll-snap-align:start; transition:background-color .2s ease,border-color .2s ease,color .2s ease; }
+.igf-donate-causes__tab:hover { border-color:var(--orange); }
+.igf-donate-causes__tab.is-active { border-color:var(--brown); background:var(--brown); color:#fff; }
+.igf-donate-causes__tab:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-donate-causes__panel { min-width:0; }
+.igf-donate-causes__panel:focus-visible { outline:3px solid rgba(27,111,220,.55); outline-offset:8px; }
+.igf-donate-causes__tab-description { max-width:760px; margin:-10px auto 30px; color:var(--muted); font-size:16px; line-height:1.65; text-align:center; }
 .igf-donate-causes__grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
 .igf-donation-cause-card { display:flex; min-width:0; flex-direction:column; overflow:hidden; border:1px solid #dedad6; border-radius:20px; background:#fff; box-shadow:0 14px 34px rgba(37,31,26,.08); transition:border-color .2s,box-shadow .2s,transform .2s; }
 .igf-donation-cause-card:hover { border-color:#c9895d; box-shadow:0 19px 42px rgba(62,39,23,.13); transform:translateY(-4px); }

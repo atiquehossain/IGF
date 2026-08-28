@@ -46,7 +46,7 @@ const properties = computed(() => page.props.properties || {})
 const copy = computed(() => ({
   eyebrow: 'Learn together',
   title: '',
-  introduction: 'Register for free workshops led by Ignite Global Foundation.',
+  introduction: 'Register for workshops led by Ignite Global Foundation.',
   listing_title: 'Upcoming workshops',
   listing_introduction: '',
   empty_title: 'No workshops are open right now',

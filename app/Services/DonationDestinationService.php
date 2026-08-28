@@ -8,6 +8,7 @@ use App\Models\DonationType;
 use App\Models\MediaAsset;
 use App\Models\Page;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -79,7 +80,7 @@ class DonationDestinationService
         $locale ??= app()->getLocale();
         $causes = DonationType::query()
             ->active()
-            ->with('imageAsset')
+            ->with(['imageAsset', 'causeGroup'])
             ->orderByRaw('CASE WHEN display_order IS NULL THEN 1 ELSE 0 END')
             ->orderBy('display_order')
             ->orderBy('id')
@@ -221,6 +222,9 @@ class DonationDestinationService
         array $localizedByUuid = []
     ): Collection {
         $locale ??= app()->getLocale();
+        if ($causes instanceof EloquentCollection) {
+            $causes->loadMissing('causeGroup');
+        }
         $causes = $causes->values();
         if ($causes->isEmpty()) {
             return collect();
@@ -347,6 +351,9 @@ class DonationDestinationService
                 'description' => $description,
                 'image' => $this->causeImageUrl($cause),
                 'icon_key' => (string) ($cause->icon_key ?? ''),
+                'group_uuid' => $cause->causeGroup && $cause->causeGroup->status
+                    ? (string) $cause->causeGroup->uuid
+                    : null,
                 'destination_type' => (string) $cause->destination_type,
                 'destination_uuid' => $this->destinationUuid($cause),
                 'destination_name' => $destinationName,
@@ -368,6 +375,7 @@ class DonationDestinationService
         ?string $localizedDestinationName = null
     ): array {
         $locale ??= app()->getLocale();
+        $cause->loadMissing('causeGroup');
         $projects = $this->selectablePages($cause, $locale)
             ->map(fn (Page $page): array => $this->publicPageOption($page, $locale))
             ->values()
@@ -380,6 +388,9 @@ class DonationDestinationService
             'description' => $localizedDescription ?? (string) $cause->description,
             'image' => $this->causeImageUrl($cause),
             'icon_key' => (string) ($cause->icon_key ?? ''),
+            'group_uuid' => $cause->causeGroup && $cause->causeGroup->status
+                ? (string) $cause->causeGroup->uuid
+                : null,
             'destination_type' => (string) $cause->destination_type,
             'destination_uuid' => $this->destinationUuid($cause),
             'destination_name' => match ((string) $cause->destination_type) {

@@ -71,7 +71,7 @@ class TranslationCenterIntegrityTest extends TestCase
         $blockRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'block' && $row['identity']['source_block_id'] === $block->id && $row['identity']['path'] === 'heading');
         $menuRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'menu' && $row['identity']['source_id'] === $menu->id && $row['identity']['field'] === 'name');
         $menuDescriptionRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'menu' && $row['identity']['source_id'] === $menu->id && $row['identity']['field'] === 'description');
-        $settingRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'setting' && $row['identity']['group'] === 'header' && $row['identity']['field'] === 'annual_reports_label');
+        $settingRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'setting' && $row['identity']['group'] === 'header' && $row['identity']['field'] === 'close_submenu_label');
         $interfaceRow = $rows->first(fn (array $row) => $row['identity']['type'] === 'interface');
 
         $translations = [
@@ -79,7 +79,7 @@ class TranslationCenterIntegrityTest extends TestCase
             ['key' => $blockRow['key'], 'precondition' => $blockRow['precondition'], 'value' => 'আশা থেকে পরিবর্তন'],
             ['key' => $menuRow['key'], 'precondition' => $menuRow['precondition'], 'value' => 'কর্মসূচি'],
             ['key' => $menuDescriptionRow['key'], 'precondition' => $menuDescriptionRow['precondition'], 'value' => 'আমাদের কর্মসূচি দেখুন'],
-            ['key' => $settingRow['key'], 'precondition' => $settingRow['precondition'], 'value' => 'বার্ষিক প্রতিবেদন'],
+            ['key' => $settingRow['key'], 'precondition' => $settingRow['precondition'], 'value' => '{item} সাবমেনু বন্ধ করুন'],
             ['key' => $interfaceRow['key'], 'precondition' => $interfaceRow['precondition'], 'value' => 'বাংলা ইন্টারফেস লেখা'],
         ];
 
@@ -97,7 +97,7 @@ class TranslationCenterIntegrityTest extends TestCase
         $this->assertFalse((bool) $banglaPage->status);
         $this->assertSame('আশা থেকে পরিবর্তন', $banglaPage->blocks()->where('translation_key', $block->translation_key)->firstOrFail()->content['heading']);
         $this->assertDatabaseHas('page_menus', ['uuid' => $menu->uuid, 'language' => 'bn', 'name' => 'কর্মসূচি', 'description' => 'আমাদের কর্মসূচি দেখুন', 'status' => 0]);
-        $this->assertDatabaseHas('site_settings', ['group' => 'header', 'key' => 'annual_reports_label', 'locale' => 'bn', 'value' => 'বার্ষিক প্রতিবেদন']);
+        $this->assertDatabaseHas('site_settings', ['group' => 'header', 'key' => 'close_submenu_label', 'locale' => 'bn', 'value' => '{item} সাবমেনু বন্ধ করুন']);
         $this->assertDatabaseHas('translation_strings', ['key' => $interfaceRow['identity']['path'], 'locale' => 'bn', 'value' => 'বাংলা ইন্টারফেস লেখা', 'status' => 'translated']);
         $this->assertSame(
             [1],

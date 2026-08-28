@@ -20,6 +20,18 @@
     $canDeleteMenu = $permissions->allows($admin, 'page.menu.destroy');
     $canViewMenuTrash = $permissions->allows($admin, 'page.menu.trash');
     $isNavigationViewOnly = !$canCreateMenu && !$canEditMenu && !$canStatusMenu && !$canDeleteMenu;
+    $navigationParentOptions = [];
+    $collectNavigationParents = function (array $items, int $depth = 0) use (&$collectNavigationParents, &$navigationParentOptions): void {
+        if ($depth >= 2) return;
+        foreach ($items as $item) {
+            $navigationParentOptions[] = [
+                'uuid' => $item['uuid'],
+                'label' => str_repeat('— ', $depth).$item['name'],
+            ];
+            $collectNavigationParents($item['children'] ?? [], $depth + 1);
+        }
+    };
+    $collectNavigationParents($menuTree);
 @endphp
 
 <main class="igf-nav-editor">
@@ -49,11 +61,12 @@
                     <label id="destination-custom-field" class="igf-nav-field" hidden><span>Custom URL</span><input id="destination-custom" type="text" inputmode="url" placeholder="/contact-us or https://example.org"></label>
                     <label class="igf-nav-field"><span>Navigation label</span><input id="navigation-label" type="text" maxlength="120" required placeholder="What visitors will see"></label>
                     <label class="igf-nav-field"><span>Short description (optional)</span><textarea id="navigation-description" maxlength="255" placeholder="A short explanation shown below submenu links"></textarea></label>
-                    <label class="igf-nav-field"><span>Parent item (optional)</span><select id="navigation-parent"><option value="">Top level</option>@foreach($menuTree as $item)<option value="{{ $item['uuid'] }}">{{ $item['name'] }}</option>@endforeach</select></label>
-                    <label class="igf-nav-check"><input id="navigation-enabled" type="checkbox" checked> Show this item on the website</label>
+                    <label class="igf-nav-field"><span>Parent item (optional)</span><select id="navigation-parent"><option value="">Top level</option>@foreach($navigationParentOptions as $item)<option value="{{ $item['uuid'] }}">{{ $item['label'] }}</option>@endforeach</select></label>
+                    <label class="igf-nav-check"><input id="navigation-enabled" type="checkbox" @checked($canStatusMenu) @disabled(!$canStatusMenu)> Show this item on the website</label>
+                    @if(!$canStatusMenu)<p class="igf-nav-help">New items are hidden until someone with publication access makes them visible.</p>@endif
                     <button id="add-menu-button" class="igf-nav-button igf-nav-button--primary" type="submit"><span class="igf-nav-spinner" aria-hidden="true">&#8635;</span><span>Add to menu</span></button>
                 </form>
-                <p class="igf-nav-help"><strong>Submenus:</strong> choose a parent now, or add the item at the top level and use the right-arrow button later.</p>
+                <p class="igf-nav-help"><strong>Submenus:</strong> navigation supports up to three levels. Choose a parent now, or use the arrow controls later.</p>
                 @else
                     <p>Adding new menu items is not available for your role. You can still use any edit, visibility, or removal controls shown beside existing items.</p>
                 @endif
@@ -89,6 +102,7 @@
         @if($canEditMenu)reorder: @json(route('page.menu.reorder')),@endif
     };
     const canEditMenu = @json($canEditMenu);
+    const maxMenuDepth = 3;
     const locale = @json($locale);
     const locationName = @json($location);
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -183,8 +197,23 @@
         dirtyLabel?.classList.add('is-visible');
         saveOrderButton?.removeAttribute('disabled');
     }
-    function listDepth(list) { return list.closest('.igf-menu-item') ? 1 : 0; }
+    function listDepth(list) {
+        let depth = 0;
+        let cursor = list.parentElement;
+        while (cursor) {
+            if (cursor.matches?.('.igf-menu-item')) depth += 1;
+            cursor = cursor.parentElement;
+        }
+        return depth;
+    }
+    function itemSubtreeDepth(item) {
+        const children = directItems(childList(item));
+        return children.length ? 1 + Math.max(...children.map(itemSubtreeDepth)) : 1;
+    }
     function itemHasChildren(item) { return directItems(childList(item)).length > 0; }
+    function canMoveToList(item, list) {
+        return Boolean(item && list && !item.contains(list) && listDepth(list) + itemSubtreeDepth(item) <= maxMenuDepth);
+    }
 
     tree.querySelectorAll('[data-menu-toggle]').forEach(button => button.addEventListener('click', () => {
         const panel = button.closest('.igf-menu-item').querySelector(':scope > .igf-menu-item__settings');
@@ -203,9 +232,10 @@
         if (type === 'up' && index > 0) list.insertBefore(item, items[index - 1]);
         else if (type === 'down' && index < items.length - 1) list.insertBefore(items[index + 1], item);
         else if (type === 'indent') {
-            if (listDepth(list) > 0) return showNotice('Only one submenu level is supported in the public navigation.', 'warning');
             if (index < 1) return showNotice('Place this item after its intended parent first.', 'warning');
-            childList(items[index - 1]).append(item);
+            const targetList = childList(items[index - 1]);
+            if (!canMoveToList(item, targetList)) return showNotice('Navigation supports at most three levels.', 'warning');
+            targetList.append(item);
         } else if (type === 'outdent') {
             const parentItem = list.closest('.igf-menu-item');
             if (!parentItem) return showNotice('This item is already at the top level.', 'warning');
@@ -232,7 +262,7 @@
         list.addEventListener('dragover', event => {
             event.preventDefault();
             event.stopPropagation();
-            if (!dragged || (listDepth(list) > 0 && itemHasChildren(dragged))) return;
+            if (!canMoveToList(dragged, list)) return;
             const target = event.target.closest('.igf-menu-item');
             if (!target || target === dragged || target.parentElement !== list) return;
             const rect = target.getBoundingClientRect();
@@ -241,8 +271,9 @@
         list.addEventListener('drop', event => {
             event.preventDefault();
             event.stopPropagation();
-            if (!dragged || (listDepth(list) > 0 && itemHasChildren(dragged))) return;
-            if (!event.target.closest('.igf-menu-item') && dragged.parentElement !== list) list.append(dragged);
+            if (!canMoveToList(dragged, list)) return showNotice('That move would create a circular branch or more than three levels.', 'warning');
+            const target = event.target.closest('.igf-menu-item');
+            if ((!target || target.parentElement !== list) && dragged.parentElement !== list) list.append(dragged);
             markOrderDirty();
         });
     });

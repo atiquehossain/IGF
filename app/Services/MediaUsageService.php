@@ -46,7 +46,7 @@ class MediaUsageService
                 'events' => [NoticeBoard::class, ['description', 'inline_css', 'image_path', 'file_path', 'url']],
                 'testimonials' => [Testimonial::class, ['testimonial', 'photo']],
                 'team' => [LatestNews::class, ['description', 'image', 'path', 'url']],
-                'annual_reports' => [AnnualReport::class, ['description', 'inline_css', 'image_path', 'file_path', 'url']],
+                'annual_reports' => [AnnualReport::class, ['description', 'inline_css', 'image_path', 'cover_image_path', 'file_path', 'url']],
                 'site_settings' => [SiteSetting::class, ['value']],
                 'donation_causes' => [DonationType::class, ['image']],
             ];

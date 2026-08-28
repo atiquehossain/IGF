@@ -38,6 +38,14 @@ class PageMenu extends Model
                 ->selectRaw("IFNULL(parent_id, '') as parent_id")
                 ->selectRaw("IFNULL(slug, '') as slug")
                 ->selectRaw("IFNULL(icon, '') as icon")
+                ->whereExists(function ($query): void {
+                    $query->selectRaw('1')
+                        ->from('page_menus as navigation_parent')
+                        ->whereColumn('navigation_parent.id', 'page_menus.parent_id')
+                        ->whereColumn('navigation_parent.language', 'page_menus.language')
+                        ->whereColumn('navigation_parent.type', 'page_menus.type')
+                        ->whereNull('navigation_parent.deleted_at');
+                })
                 ->where('status', 1)
                 ->orderBy('order_by', 'ASC');
         return $children;

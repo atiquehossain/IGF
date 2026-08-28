@@ -28,6 +28,117 @@
         <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review donation causes, but your role cannot create, edit, publish, or remove them.</div>
     @endif
 
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <strong class="card-title">Donation cause groups</strong>
+                    <small class="d-block text-muted">Manage the tabs visitors use to browse causes. Lower display-order numbers appear first. Hiding a tab never hides its causes from “All causes”.</small>
+                </div>
+                <span class="badge badge-light">{{ $causeGroups->count() }} {{ Str::plural('group', $causeGroups->count()) }}</span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if($errors->donationCauseGroup->any())
+                <div class="alert alert-danger" role="alert">
+                    <strong>Unable to save the donation cause group.</strong>
+                    <ul class="mb-0 mt-2">@foreach($errors->donationCauseGroup->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                </div>
+            @endif
+
+            @if($canCreateDonationTypes)
+                <form action="{{ route('donationType.group.store') }}" method="POST" class="border rounded p-3 mb-4">
+                    @csrf
+                    <h2 class="h6 mb-3">Create a donation cause group</h2>
+                    <div class="form-row">
+                        <div class="form-group col-md-5">
+                            <label for="new-donation-group-name">Group name <span>*</span></label>
+                            <input id="new-donation-group-name" class="form-control" name="group_name" value="{{ old('group_name') }}" maxlength="255" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="new-donation-group-order">Display order <span>*</span></label>
+                            <input id="new-donation-group-order" class="form-control" name="group_display_order" type="number" min="0" max="100000" value="{{ old('group_display_order', $nextGroupDisplayOrder) }}" required>
+                        </div>
+                        <div class="form-group col-md-3 d-flex align-items-end">
+                            <button class="btn igf-btn igf-btn-primary w-100" type="submit"><i class="fa fa-plus" aria-hidden="true"></i> Create group</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-donation-group-description">Short description</label>
+                        <textarea id="new-donation-group-description" class="form-control" name="group_description" rows="2" maxlength="2000">{{ old('group_description') }}</textarea>
+                        <small class="form-text text-muted">Shown with the active tab when provided.</small>
+                    </div>
+                    <small class="text-muted">The stable internal slug is generated automatically. Translate the visitor-facing group name in the Translation Center.</small>
+                </form>
+            @endif
+
+            <div class="row">
+                @forelse($causeGroups as $group)
+                    <div class="col-xl-6 col-12 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <strong>{{ $group->name }}</strong>
+                                    <span class="badge {{ $group->status ? 'badge-success' : 'badge-secondary' }} ml-2">{{ $group->status ? 'Visible tab' : 'Hidden tab' }}</span>
+                                </div>
+                                <span class="badge badge-light">{{ $group->published_causes_count }} published · {{ $group->attached_causes_count }} attached</span>
+                            </div>
+
+                            @if($canEditDonationTypes)
+                                <form action="{{ route('donationType.group.update', $group) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="form-row">
+                                        <div class="form-group col-md-8">
+                                            <label for="donation-group-name-{{ $group->id }}">Group name</label>
+                                            <input id="donation-group-name-{{ $group->id }}" class="form-control" name="group_name" value="{{ $group->name }}" maxlength="255" required>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label for="donation-group-order-{{ $group->id }}">Display order</label>
+                                            <input id="donation-group-order-{{ $group->id }}" class="form-control" name="group_display_order" type="number" min="0" max="100000" value="{{ $group->display_order }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donation-group-description-{{ $group->id }}">Short description</label>
+                                        <textarea id="donation-group-description-{{ $group->id }}" class="form-control" name="group_description" rows="2" maxlength="2000">{{ $group->description }}</textarea>
+                                    </div>
+                                    <small class="d-block text-muted mb-3">Stable slug: {{ $group->slug }}</small>
+                                    <button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="submit"><i class="fa fa-save" aria-hidden="true"></i> Save group</button>
+                                </form>
+                            @else
+                                @if($group->description)<p class="mb-2">{{ $group->description }}</p>@endif
+                                <small class="text-muted">Stable slug: {{ $group->slug }} · Display order: {{ $group->display_order }}</small>
+                            @endif
+
+                            <div class="d-flex flex-wrap mt-3" style="gap:8px">
+                                @if($canPublishDonationTypes)
+                                    <form action="{{ route('donationType.group.status', $group) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
+                                        <button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="submit"><i class="fa {{ $group->status ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i> {{ $group->status ? 'Hide tab' : 'Show tab' }}</button>
+                                    </form>
+                                @endif
+                                @if($canDeleteDonationTypes)
+                                    @if($group->attached_causes_count)
+                                        <button class="btn igf-btn igf-btn-danger igf-btn-compact" type="button" disabled title="Move attached causes before deleting this group"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete group</button>
+                                    @else
+                                        <form action="{{ route('donationType.group.destroy', $group) }}" method="POST" onsubmit="return confirm('Delete this empty donation cause group?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn igf-btn igf-btn-danger igf-btn-compact" type="submit"><i class="fa fa-trash-o" aria-hidden="true"></i> Delete group</button>
+                                        </form>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-12"><p class="alert alert-warning mb-0">No category tabs are configured. Causes remain available under “All causes”.</p></div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         @if($canCreateDonationTypes)
         <div class="col-lg-5 col-md-12">
@@ -117,7 +228,7 @@
                             <tr id="{{ @$donationType->id }}">
                                 <td> #{{@$donationType->id}} </td>
                                 <td><span class="name"><strong>{{ $donationType->name }}</strong></span><br><small class="text-muted">/donate/{{ $donationType->slug }}</small></td>
-                                <td><strong>Order {{ $donationType->display_order ?? '—' }}</strong><br><small>{{ $iconOptions[$donationType->icon_key] ?? 'Automatic icon' }}</small></td>
+                                <td><strong>Order {{ $donationType->display_order ?? '—' }}</strong><br><small>{{ $iconOptions[$donationType->icon_key] ?? 'Automatic icon' }}</small><br><small>Tab: {{ $donationType->causeGroup?->name ?? 'All causes only' }}</small></td>
                                 <td>{{ $purposeOptions[$donationType->purpose_key ?? ''] ?? 'Regular donation cause' }}</td>
                                 <td><strong>{{ $destinationOptions[$donationType->destination_type] ?? 'Needs review' }}</strong><br><small>{{ $donationType->destination_label }}</small></td>
                                 <td>
@@ -293,6 +404,7 @@
                     $('.modal #e_image_media_uuid').val(res.data.image_media_uuid || '');
                     $('.modal #e_display_order').val(res.data.display_order ?? '');
                     $('.modal #e_icon_key').val(res.data.icon_key || '');
+                    $('.modal #e_donation_cause_group_id').val(res.data.donation_cause_group_id || '');
                     syncDestination('e_');
                     syncImagePreview('e_');
                 }

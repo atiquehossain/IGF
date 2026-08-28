@@ -38,6 +38,25 @@ describe('anonymous public jobs and workshops', () => {
     });
   };
 
+  const assertReciprocalDisclosure = ($toggle) => {
+    const toggle = $toggle[0];
+    const toggleId = toggle.getAttribute('id');
+    const panelId = toggle.getAttribute('aria-controls');
+    const panel = toggle.ownerDocument.getElementById(panelId);
+
+    expect(typeof toggleId, 'disclosure id type').to.eq('string');
+    expect(toggleId, 'disclosure has a stable id').not.to.eq('');
+    expect(typeof panelId, 'panel id type').to.eq('string');
+    expect(panelId, 'disclosure identifies its panel').not.to.eq('');
+    expect(panel, 'controlled panel exists').not.to.eq(null);
+    const labelId = panel.getAttribute('aria-labelledby');
+    const label = toggle.ownerDocument.getElementById(labelId);
+    expect(typeof labelId, 'panel label id type').to.eq('string');
+    expect(labelId, 'panel has a stable visible label reference').not.to.eq('');
+    expect(label, 'panel label exists').not.to.eq(null);
+    expect(label.textContent.trim(), 'panel label has visible text').not.to.eq('');
+  };
+
   const validPdf = (fileName = 'candidate-cv.pdf') => {
     const objects = [
       '<< /Type /Catalog /Pages 2 0 R >>',
@@ -85,6 +104,53 @@ describe('anonymous public jobs and workshops', () => {
     assertNoHorizontalOverflow();
   });
 
+  it('renders Workshop only under Our Work and Youth Development with keyboard disclosures', () => {
+    cy.viewport(1280, 900);
+    cy.visit('/workshops?lang=en');
+
+    cy.get('.desktop-nav')
+      .should('not.contain.text', 'Opportunities')
+      .and('not.contain.text', 'Free Workshop');
+    cy.get('.desktop-nav a[href="/workshops"]')
+      .should('have.length', 1)
+      .and('contain.text', 'Workshop')
+      .and('have.attr', 'aria-current', 'page')
+      .parents('.desktop-nav__item')
+      .first()
+      .should('have.class', 'is-active')
+      .then(($ourWork) => {
+        const $topToggle = $ourWork.children('.desktop-nav__trigger');
+        const $youth = $ourWork.find('a[href="/workshops"]')
+          .first()
+          .closest('.desktop-nav__entry[data-nav-depth="2"]');
+        const $youthToggle = $youth.children('.desktop-nav__parent-row').find('button[aria-expanded]');
+
+        expect($topToggle).to.have.length(1);
+        expect($youth).to.have.length(1).and.have.class('is-active');
+        expect($youthToggle).to.have.length(1);
+        assertReciprocalDisclosure($topToggle);
+        assertReciprocalDisclosure($youthToggle);
+
+        cy.wrap($topToggle)
+          .focus()
+          .should('be.focused')
+          .and('have.attr', 'aria-expanded', 'false')
+          .type('{enter}')
+          .should('have.attr', 'aria-expanded', 'true');
+        cy.wrap($youthToggle)
+          .focus()
+          .type('{enter}')
+          .should('have.attr', 'aria-expanded', 'true');
+        assertNoHorizontalOverflow();
+        cy.wrap($youth).find('a[href="/workshops"]')
+          .should('be.visible')
+          .focus()
+          .type('{esc}');
+        cy.wrap($youthToggle).should('be.focused').and('have.attr', 'aria-expanded', 'false');
+        cy.wrap($topToggle).should('have.attr', 'aria-expanded', 'true');
+      });
+  });
+
   it('uses the desktop navigation to reach the active job list and full detail', () => {
     cy.viewport(1280, 900);
     cy.visit('/?lang=en');
@@ -128,33 +194,83 @@ describe('anonymous public jobs and workshops', () => {
     cy.viewport(390, 844);
     cy.visit('/?lang=en');
 
+    cy.get('.menu-button').should(($button) => {
+      const panelId = $button.attr('aria-controls');
+      const panel = $button[0].ownerDocument.getElementById(panelId);
+      expect(panel, 'collapsed menu button keeps its controlled region mounted').not.to.eq(null);
+      expect(panel.hidden, 'controlled region is hidden while collapsed').to.eq(true);
+    });
     cy.get('.menu-button')
       .focus()
       .should('be.focused')
       .and('have.attr', 'aria-expanded', 'false')
       .type('{enter}')
       .should('have.attr', 'aria-expanded', 'true');
+    cy.get('.mobile-nav')
+      .should('not.contain.text', 'Opportunities')
+      .and('not.contain.text', 'Free Workshop');
     cy.get('.mobile-nav a[href="/workshops"]')
+      .should('have.length', 1)
+      .and('contain.text', 'Workshop')
       .parents('.mobile-nav__group')
       .first()
-      .within(() => {
-        cy.get('button[aria-expanded]').first().click().should('have.attr', 'aria-expanded', 'true');
-        cy.get('a[href="/workshops"]').should('be.visible').focus().type('{esc}');
+      .then(($ourWork) => {
+        const $topToggle = $ourWork.children('.mobile-nav__parent');
+        const $youth = $ourWork.find('a[href="/workshops"]')
+          .first()
+          .closest('.mobile-nav__entry[data-nav-depth="2"]');
+        const $youthToggle = $youth.children('.mobile-nav__parent-row').find('button[aria-expanded]');
+
+        expect($topToggle).to.have.length(1);
+        expect($youthToggle).to.have.length(1);
+        assertReciprocalDisclosure($topToggle);
+        assertReciprocalDisclosure($youthToggle);
+
+        cy.wrap($topToggle).click().should('have.attr', 'aria-expanded', 'true');
+        cy.wrap($youthToggle).click().should('have.attr', 'aria-expanded', 'true');
+        assertNoHorizontalOverflow();
+        cy.wrap($youth).find('a[href="/workshops"]').should('be.visible').focus().type('{esc}');
+        cy.wrap($youthToggle).should('be.focused').and('have.attr', 'aria-expanded', 'false');
+        cy.wrap($topToggle).should('have.attr', 'aria-expanded', 'true');
+
+        cy.wrap($youthToggle).type('{esc}');
+        cy.wrap($topToggle).should('be.focused').and('have.attr', 'aria-expanded', 'false');
+        cy.wrap($topToggle).type('{esc}');
       });
-    cy.get('.mobile-nav').should('not.exist');
+    cy.get('.mobile-nav').should('exist').and('not.be.visible').and('have.attr', 'hidden');
     cy.get('.menu-button').should('be.focused').and('have.attr', 'aria-expanded', 'false');
 
     cy.get('.menu-button').type('{enter}');
     cy.get('.mobile-nav a[href="/workshops"]')
       .parents('.mobile-nav__group')
       .first()
-      .within(() => {
-        cy.get('button[aria-expanded]').first().click();
-        cy.get('a[href="/workshops"]').should('be.visible').click();
+      .then(($ourWork) => {
+        const $youth = $ourWork.find('a[href="/workshops"]')
+          .first()
+          .closest('.mobile-nav__entry[data-nav-depth="2"]');
+
+        cy.wrap($ourWork).children('.mobile-nav__parent').click();
+        cy.wrap($youth).children('.mobile-nav__parent-row').find('button[aria-expanded]').click();
+        cy.wrap($youth).find('a[href="/workshops"]').should('be.visible').click();
       });
 
     cy.location('pathname').should('eq', '/workshops');
-    assertSinglePageHeading('Free workshops');
+    cy.get('.menu-button').click();
+    cy.get('.mobile-nav a[href="/workshops"]')
+      .should('have.attr', 'aria-current', 'page')
+      .parents('.mobile-nav__entry[data-nav-depth="3"]')
+      .should('have.class', 'is-active')
+      .parents('.mobile-nav__entry[data-nav-depth="2"]')
+      .should('have.class', 'is-active')
+      .parents('.mobile-nav__group')
+      .should('have.class', 'is-active')
+      .find('button[aria-expanded="true"]')
+      .should('have.length', 2);
+    cy.get('.mobile-nav__group.is-active > .mobile-nav__parent')
+      .should('have.css', 'background-color', 'rgb(255, 243, 232)')
+      .and('not.have.css', 'box-shadow', 'none');
+    cy.get('.menu-button').click();
+    assertSinglePageHeading('Workshops');
     cy.get('.igf-opportunity-card').should('have.length', 1).and('contain.text', 'Community Leadership Workshop');
     cy.get('.igf-opportunity-card').should('not.contain.text', 'Closed Workshop');
     cy.get('.igf-opportunity-card').should('not.contain.text', 'A free, practical leadership workshop.');
@@ -168,6 +284,7 @@ describe('anonymous public jobs and workshops', () => {
     assertLinkPath('.igf-opportunity-card h2 a', workshopPath);
     cy.get('.igf-opportunity-card h2 a').click();
     cy.location('pathname').should('eq', workshopPath);
+    cy.get('.desktop-nav a[href="/workshops"]').should('not.have.attr', 'aria-current');
     assertSinglePageHeading('Community Leadership Workshop');
     cy.get('.igf-opportunity-detail__lead').should('contain.text', 'A free, practical leadership workshop.');
     cy.get('#workshop-form-title').should('be.visible');
@@ -197,7 +314,7 @@ describe('anonymous public jobs and workshops', () => {
       .and('contain.text', 'পূর্ণ নাম আবশ্যক।');
 
     cy.visit('/workshops?lang=bn');
-    assertSinglePageHeading('বিনামূল্যের কর্মশালা');
+    assertSinglePageHeading('কর্মশালা');
     cy.get('.igf-opportunity-card h2 a').should('contain.text', 'কমিউনিটি নেতৃত্ব কর্মশালা');
     assertLinkPath('.igf-opportunity-card h2 a', '/workshops/free-leadership-bn');
     assertNoHorizontalOverflow();

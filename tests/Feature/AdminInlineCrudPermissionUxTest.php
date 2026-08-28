@@ -201,6 +201,11 @@ class AdminInlineCrudPermissionUxTest extends TestCase
             ->assertSee('data-url="'.route('donationType.status', $this->donationType->id).'"', false)
             ->assertSee('data-url="'.route('donationType.destroy', $this->donationType->id).'"', false);
 
+        $this->actingAs($admin, 'admin')->get(route('donationType.create'))
+            ->assertRedirect(route('donationType.index').'#new_donation_type');
+        $this->actingAs($admin, 'admin')->get(route('donationType.show', $this->donationType->id))
+            ->assertRedirect(route('donationType.index').'#'.$this->donationType->id);
+
         $this->actingAs($admin, 'admin')->get(route('testimonial.index'))
             ->assertOk()
             ->assertSee('id="new_testimonial"', false)

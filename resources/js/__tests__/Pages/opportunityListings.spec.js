@@ -86,12 +86,12 @@ describe('public opportunity listings', () => {
           venue: 'ঢাকা',
           registration_deadline_label: '৮ অক্টোবর',
         }],
-        copy: { title: 'বিনামূল্যের কর্মশালা', listing_title: 'আসন্ন কর্মশালা', card: { link_label: 'বিস্তারিত ও নিবন্ধন' } },
+        copy: { title: 'কর্মশালা', listing_title: 'আসন্ন কর্মশালা', card: { link_label: 'বিস্তারিত ও নিবন্ধন' } },
       },
       properties: { page: 1, total_page: 1 },
     }
     const wrapper = mountPage(Workshops)
-    expect(wrapper.get('h1').text()).toBe('বিনামূল্যের কর্মশালা')
+    expect(wrapper.get('h1').text()).toBe('কর্মশালা')
     expect(wrapper.get('h2 a').attributes('href')).toBe('/frontend.workshops.show/leadership')
     expect(wrapper.get('.igf-opportunity-card__media img').attributes()).toMatchObject({
       src: '/storage/workshops/leadership-poster.webp',
@@ -110,5 +110,14 @@ describe('public opportunity listings', () => {
     const wrapper = mountPage(Workshops)
     expect(wrapper.get('[role="status"]').text()).toContain('No sessions available')
     expect(wrapper.find('input[type="file"]').exists()).toBe(false)
+  })
+
+  test('uses a neutral Workshop fallback while server-managed copy is loading', () => {
+    usePage().props = { data: { items: [] }, properties: {} }
+    const wrapper = mountPage(Workshops)
+
+    expect(wrapper.get('h1').text()).toBe('Workshops')
+    expect(wrapper.text()).toContain('Register for workshops led by Ignite Global Foundation.')
+    expect(wrapper.text().toLocaleLowerCase()).not.toContain('free workshops')
   })
 })

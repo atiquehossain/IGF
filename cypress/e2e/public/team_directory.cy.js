@@ -10,16 +10,25 @@ describe('public team directory', () => {
     cy.get('.igf-page-block--team').scrollIntoView().should('be.visible');
     cy.get('.igf-team-panel').should('be.visible');
     cy.get('.igf-team-card').its('length').should('be.greaterThan', 0);
+    cy.get('.igf-team-tabs[role="tablist"]').should('be.visible');
+    cy.get('.igf-team-tabs [role="tab"]').its('length').should('be.greaterThan', 0);
+    cy.get('.igf-team-tabs [role="tab"]').first()
+      .should('have.attr', 'aria-selected', 'true')
+      .and('have.attr', 'tabindex', '0');
+    cy.get('.igf-team-tabs [role="tab"]').each(($tab) => {
+      const panelId = $tab.attr('aria-controls');
+      expect(panelId, 'tab panel id').to.be.a('string').and.not.be.empty;
+      cy.get('#' + panelId)
+        .should('have.attr', 'role', 'tabpanel')
+        .and('have.attr', 'aria-labelledby', $tab.attr('id'));
+    });
+    cy.get('.igf-team-panel:not([hidden])').should('have.length', 1).and('be.visible');
 
-    cy.get('body').then(($body) => {
-      const tabs = $body.find('[role="tab"]');
-
-      if (tabs.length > 1) {
-        cy.wrap(tabs.first()).should('have.attr', 'aria-selected', 'true');
-        cy.wrap(tabs.eq(1)).click().should('have.attr', 'aria-selected', 'true');
-        cy.get('.igf-team-panel').should('be.visible');
-      } else {
-        cy.get('.igf-team-tabs').should('not.exist');
+    cy.get('.igf-team-tabs [role="tab"]').then(($tabs) => {
+      if ($tabs.length > 1) {
+        cy.wrap($tabs.eq(1)).click().should('have.attr', 'aria-selected', 'true');
+        cy.wrap($tabs.eq(0)).should('have.attr', 'aria-selected', 'false');
+        cy.get('.igf-team-panel:not([hidden])').should('have.length', 1).and('be.visible');
       }
     });
   };

@@ -29,10 +29,15 @@ function bootstrap(overrides = {}) {
   }
 }
 
-async function mountChat(payload = bootstrap()) {
+async function mountClosedChat(payload = bootstrap()) {
   axios.get.mockResolvedValueOnce({ data: payload })
   const wrapper = mount(WebsiteChat, { attachTo: document.body })
   await flushPromises()
+  return wrapper
+}
+
+async function mountChat(payload = bootstrap()) {
+  const wrapper = await mountClosedChat(payload)
   await wrapper.get('.igf-chat__launcher').trigger('click')
   await flushPromises()
   return wrapper
@@ -69,6 +74,47 @@ describe('WebsiteChat question workflow', () => {
     document.body.innerHTML = ''
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
+  })
+
+  test('uses a compact icon-only launcher with clear open, close, and focus states', async () => {
+    const wrapper = await mountClosedChat()
+    const launcher = wrapper.get('.igf-chat__launcher')
+
+    expect(launcher.attributes('aria-expanded')).toBe('false')
+    expect(launcher.attributes('aria-controls')).toBe('igf-chat-panel')
+    expect(launcher.attributes('aria-label')).toBe('Open chat: Chat with Ignite')
+    expect(launcher.attributes('title')).toBe('Chat with us')
+    expect(wrapper.find('.igf-chat__launcher-text').exists()).toBe(false)
+    expect(wrapper.find('.igf-chat__launcher-icon--open').exists()).toBe(true)
+    expect(wrapper.find('.igf-chat__launcher-icon--close').exists()).toBe(false)
+
+    await launcher.trigger('click')
+    await flushPromises()
+    expect(launcher.attributes('aria-expanded')).toBe('true')
+    expect(launcher.attributes('aria-label')).toBe('Close support chat')
+    expect(launcher.attributes('title')).toBe('Close support chat')
+    expect(wrapper.find('.igf-chat__launcher-icon--open').exists()).toBe(false)
+    expect(wrapper.find('.igf-chat__launcher-icon--close').exists()).toBe(true)
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await flushPromises()
+    expect(launcher.attributes('aria-expanded')).toBe('false')
+    expect(document.activeElement).toBe(launcher.element)
+
+    wrapper.unmount()
+  })
+
+  test('focuses the dialog close control when a closed conversation has no composer', async () => {
+    const wrapper = await mountClosedChat(bootstrap({
+      conversation: { id: 'closed-conversation', status: 'closed', messages: [] },
+    }))
+
+    await wrapper.get('.igf-chat__launcher').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('#igf-chat-message').exists()).toBe(false)
+    expect(document.activeElement).toBe(wrapper.get('.igf-chat__close').element)
+    wrapper.unmount()
   })
 
   test('uses the same admin-managed logo as the main site header', async () => {

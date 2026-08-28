@@ -162,6 +162,7 @@ Route::prefix('admin')->group(function () {
         Route::get('annual-report/create', 'Admin\AnnualReportController@create')->name('annual.report.create');
         Route::post('annual-report', 'Admin\AnnualReportController@store')->name('annual.report.store');
         Route::get('annual-report/{id}/edit', 'Admin\AnnualReportController@edit')->name('annual.report.edit');
+        Route::get('annual-report/{id}', 'Admin\AnnualReportController@show')->whereNumber('id')->name('annual.report.show');
         Route::put('annual-report', 'Admin\AnnualReportController@update')->name('annual.report.update');
         Route::put('annual-report/{id}', 'Admin\AnnualReportController@status')->name('annual.report.status');
         Route::delete('annual-report/{id}/', 'Admin\AnnualReportController@destroy')->name('annual.report.destroy');
@@ -349,6 +350,10 @@ Route::prefix('admin')->group(function () {
         Route::get('donation-type', 'Admin\DonationTypeController@index')->name('donationType.index');
         Route::get('donation-type/create', 'Admin\DonationTypeController@create')->name('donationType.create');
         Route::post('donation-type', 'Admin\DonationTypeController@store')->name('donationType.store');
+        Route::post('donation-type/group', 'Admin\DonationCauseGroupController@store')->name('donationType.group.store');
+        Route::put('donation-type/group/{donationCauseGroup}', 'Admin\DonationCauseGroupController@update')->name('donationType.group.update');
+        Route::put('donation-type/group/{donationCauseGroup}/status', 'Admin\DonationCauseGroupController@status')->name('donationType.group.status');
+        Route::delete('donation-type/group/{donationCauseGroup}', 'Admin\DonationCauseGroupController@destroy')->name('donationType.group.destroy');
         Route::get('donation-type/{id}', 'Admin\DonationTypeController@show')->name('donationType.show');
         Route::get('donation-type/{id}/edit', 'Admin\DonationTypeController@edit')->name('donationType.edit');
         Route::put('donation-type', 'Admin\DonationTypeController@update')->name('donationType.update');

@@ -100,14 +100,17 @@ Treat an existing installation as an in-place data migration. Back up the databa
 ```bash
 php artisan down
 php artisan optimize:clear
-php artisan migrate:status
-php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
+php artisan igf:production-preflight
+php artisan migrate:status
+php artisan migrate --force
 php artisan view:cache
 php artisan up
 php artisan seo:audit
 ```
+
+`igf:production-preflight` is a fail-closed release gate. It checks the cached environment, debug mode, application encryption key, HTTPS application URL, session-cookie policy, explicit HTTPS CORS origins, production database driver, developer-route inventory, and the branch-specific PHP security patch baseline. Run it before migrations so an invalid target environment cannot receive database changes. Do not run `artisan up` when any check fails; correct the target environment and rerun the cached preflight. Keep its PHP patch baselines current with the supported releases published by PHP before each release cycle.
 
 Never use `migrate:fresh`, `migrate:refresh`, `migrate:reset`, or a destructive database rebuild on an existing environment. If `migrate --force` fails, leave indexing disabled, preserve the database, inspect the application log and failed migration, and restore from the verified backup if rollback is required.
 

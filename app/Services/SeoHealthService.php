@@ -5,7 +5,7 @@ namespace App\Services;
 class SeoHealthService
 {
     /**
-     * @param array{title?: string, description?: string, focus_keyword?: string, image?: string, canonical?: string, default_url?: string, indexable?: bool, excluded?: bool, content_analysis?: array<string, mixed>} $values
+     * @param array{title?: string, description?: string, focus_keyword?: string, image?: string, image_alt?: string, canonical?: string, default_url?: string, indexable?: bool, excluded?: bool, content_analysis?: array<string, mixed>} $values
      * @return array{score: int, status: string, issues: array<int, array{key: string, label: string, tone: string, level: string}>, required_count: int, recommended_count: int}
      */
     public function evaluate(array $values): array
@@ -14,6 +14,8 @@ class SeoHealthService
         $description = trim((string) ($values['description'] ?? ''));
         $focusKeyword = mb_strtolower(trim((string) ($values['focus_keyword'] ?? '')));
         $image = trim((string) ($values['image'] ?? ''));
+        $imageAltWasSupplied = array_key_exists('image_alt', $values);
+        $imageAlt = trim((string) ($values['image_alt'] ?? ''));
         $canonical = trim((string) ($values['canonical'] ?? ''));
         $defaultUrl = trim((string) ($values['default_url'] ?? ''));
         $indexable = (bool) ($values['indexable'] ?? true);
@@ -47,6 +49,9 @@ class SeoHealthService
             $issues[] = $this->issue('missing_image', 'Choose a social sharing image', 'warning');
         } else {
             $score += 20;
+            if ($imageAltWasSupplied && $imageAlt === '') {
+                $issues[] = $this->issue('missing_image_alt', 'Describe the social sharing image', 'warning');
+            }
         }
 
         if (!$indexable) {

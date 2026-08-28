@@ -15,6 +15,7 @@ use App\Services\ContentSanitizer;
 use App\Services\JobApplicationSubmissionService;
 use App\Services\PublicCardImageService;
 use App\Services\PublicFormTokenService;
+use App\Services\SiteSettingService;
 use App\Services\WorkshopRegistrationService;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,7 @@ class OpportunityController extends Controller
         private ContentSanitizer $sanitizer,
         private PublicCardImageService $cardImages,
         private PublicFormTokenService $tokens,
+        private SiteSettingService $siteSettings,
     ) {
     }
 
@@ -60,9 +62,7 @@ class OpportunityController extends Controller
             'title' => $copy['title'],
             'meta_tag' => $this->meta(
                 $copy['title'],
-                $locale === 'bn'
-                    ? 'ইগনাইট গ্লোবাল ফাউন্ডেশনের বর্তমান চাকরির সুযোগ দেখুন এবং অনলাইনে আবেদন করুন।'
-                    : 'Explore current opportunities to work with Ignite Global Foundation and apply online.'
+                $copy['search_description']
             ),
             'properties' => [
                 'page' => $paginator->currentPage(),
@@ -145,9 +145,7 @@ class OpportunityController extends Controller
             'title' => $copy['title'],
             'meta_tag' => $this->meta(
                 $copy['title'],
-                $locale === 'bn'
-                    ? 'ইগনাইট গ্লোবাল ফাউন্ডেশনের বিনামূল্যের কর্মশালাগুলো দেখুন এবং অনলাইনে নিবন্ধন করুন।'
-                    : 'Explore free workshops from Ignite Global Foundation and register online.'
+                $copy['search_description']
             ),
             'properties' => [
                 'page' => $paginator->currentPage(),
@@ -612,11 +610,13 @@ class OpportunityController extends Controller
     private function jobCopy(string $locale): array
     {
         if ($locale === 'bn') {
-            return [
+            return $this->withManagedOpportunityShell('career_page', $locale, [
                 'eyebrow' => 'আমাদের দলে যোগ দিন',
                 'title' => 'কর্মজীবন',
                 'introduction' => 'ইগনাইট গ্লোবাল ফাউন্ডেশনের সঙ্গে কাজ করার বর্তমান সুযোগগুলো দেখুন।',
+                'search_description' => 'ইগনাইট গ্লোবাল ফাউন্ডেশনের বর্তমান চাকরির সুযোগ দেখুন এবং অনলাইনে আবেদন করুন।',
                 'listing_title' => 'বর্তমান চাকরির সুযোগ',
+                'listing_introduction' => '',
                 'empty_title' => 'এই মুহূর্তে কোনো পদ খালি নেই',
                 'empty_message' => 'নতুন সুযোগের জন্য পরে আবার দেখুন।',
                 'pagination_label' => 'চাকরির তালিকার পৃষ্ঠা',
@@ -660,16 +660,19 @@ class OpportunityController extends Controller
                     'updated_message' => 'এই পদের জন্য আপনার আগের আবেদনটি সর্বশেষ তথ্য দিয়ে হালনাগাদ হয়েছে।',
                     'reference_label' => 'রেফারেন্স নম্বর',
                 ],
-            ];
+            ]);
         }
 
-        return [
+        return $this->withManagedOpportunityShell('career_page', $locale, [
             'eyebrow' => 'Join our team',
             'title' => 'Careers',
             'introduction' => 'Explore current opportunities to work with Ignite Global Foundation.',
+            'search_description' => 'Explore current opportunities to work with Ignite Global Foundation and apply online.',
             'listing_title' => 'Current opportunities',
+            'listing_introduction' => '',
             'empty_title' => 'No open positions right now',
             'empty_message' => 'Please check again for future opportunities.',
+            'pagination_label' => 'Career listing pages',
             'back_label' => 'Back to careers',
             'card' => ['link_label' => 'View job and apply'],
             'error_summary' => [
@@ -685,18 +688,20 @@ class OpportunityController extends Controller
                 'updated_message' => 'Your latest submission replaced your earlier application for this position.',
                 'reference_label' => 'Reference number',
             ],
-        ];
+        ]);
     }
 
     /** @return array<string, mixed> */
     private function workshopCopy(string $locale): array
     {
         if ($locale === 'bn') {
-            return [
+            return $this->withManagedOpportunityShell('workshop_page', $locale, [
                 'eyebrow' => 'একসঙ্গে শিখি',
-                'title' => 'বিনামূল্যের কর্মশালা',
-                'introduction' => 'ইগনাইট গ্লোবাল ফাউন্ডেশনের বিনামূল্যের কর্মশালায় নিবন্ধন করুন।',
+                'title' => 'কর্মশালা',
+                'introduction' => 'ইগনাইট গ্লোবাল ফাউন্ডেশনের কর্মশালায় নিবন্ধন করুন।',
+                'search_description' => 'ইগনাইট গ্লোবাল ফাউন্ডেশনের কর্মশালাগুলো দেখুন এবং অনলাইনে নিবন্ধন করুন।',
                 'listing_title' => 'আসন্ন কর্মশালা',
+                'listing_introduction' => '',
                 'empty_title' => 'এই মুহূর্তে কোনো কর্মশালা খোলা নেই',
                 'empty_message' => 'আসন্ন সেশনের জন্য পরে আবার দেখুন।',
                 'pagination_label' => 'কর্মশালার তালিকার পৃষ্ঠা',
@@ -737,16 +742,19 @@ class OpportunityController extends Controller
                     'updated_message' => 'এই কর্মশালার জন্য আপনার আগের নিবন্ধনটি সর্বশেষ তথ্য দিয়ে হালনাগাদ হয়েছে।',
                     'reference_label' => 'রেফারেন্স নম্বর',
                 ],
-            ];
+            ]);
         }
 
-        return [
+        return $this->withManagedOpportunityShell('workshop_page', $locale, [
             'eyebrow' => 'Learn together',
-            'title' => 'Free workshops',
-            'introduction' => 'Register for free workshops led by Ignite Global Foundation.',
+            'title' => 'Workshops',
+            'introduction' => 'Register for workshops led by Ignite Global Foundation.',
+            'search_description' => 'Explore workshops from Ignite Global Foundation and register online.',
             'listing_title' => 'Upcoming workshops',
+            'listing_introduction' => '',
             'empty_title' => 'No workshops are open right now',
             'empty_message' => 'Please check again for upcoming sessions.',
+            'pagination_label' => 'Workshop listing pages',
             'back_label' => 'Back to workshops',
             'card' => ['link_label' => 'View workshop and register'],
             'error_summary' => [
@@ -762,7 +770,31 @@ class OpportunityController extends Controller
                 'updated_message' => 'Your latest submission replaced your earlier registration for this workshop.',
                 'reference_label' => 'Reference number',
             ],
-        ];
+        ]);
+    }
+
+    /**
+     * Overlay the public shell fields managed in Website Customizer while
+     * keeping protected workflow/status copy and safe controller fallbacks.
+     *
+     * @param array<string, mixed> $fallback
+     * @return array<string, mixed>
+     */
+    private function withManagedOpportunityShell(string $group, string $locale, array $fallback): array
+    {
+        $managed = (array) data_get($this->siteSettings->values($locale, true), $group, []);
+        $cardLinkLabel = $managed['card_link_label'] ?? null;
+        unset($managed['card_link_label']);
+
+        $copy = array_replace($fallback, $managed);
+        if (is_string($cardLinkLabel)) {
+            $copy['card'] = array_replace(
+                is_array($fallback['card'] ?? null) ? $fallback['card'] : [],
+                ['link_label' => $cardLinkLabel],
+            );
+        }
+
+        return $copy;
     }
 
     /** @return array<string, string> */

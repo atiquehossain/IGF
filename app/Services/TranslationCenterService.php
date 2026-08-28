@@ -6,6 +6,7 @@ use App\Models\Album;
 use App\Models\AnnualReport;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\DonationCauseGroup;
 use App\Models\DonationType;
 use App\Models\Gallery;
 use App\Models\LatestNews;
@@ -72,6 +73,7 @@ class TranslationCenterService
     private const OVERLAY_CONTENT = [
         'team_group' => ['class' => TeamGroup::class, 'label' => 'Team group', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'team_member' => ['class' => LatestNews::class, 'label' => 'Team member', 'key' => 'id', 'fields' => ['name', 'description', 'biography', 'qualification']],
+        'donation_cause_group' => ['class' => DonationCauseGroup::class, 'label' => 'Donation cause group', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'donation_cause' => ['class' => DonationType::class, 'label' => 'Donation cause', 'key' => 'uuid', 'fields' => ['name', 'description', 'destination_name']],
         'volunteer_opportunity' => ['class' => VolunteerCause::class, 'label' => 'Volunteer opportunity', 'key' => 'id', 'fields' => ['name', 'description']],
     ];
@@ -810,7 +812,7 @@ class TranslationCenterService
                         Str::headline($field),
                         $sourceValue,
                         (string) ($targets[$storageKey] ?? ''),
-                        $field === 'description' && $alias !== 'team_group' ? 'html' : 'text',
+                        $field === 'description' && !in_array($alias, ['team_group', 'donation_cause_group'], true) ? 'html' : 'text',
                         $sourceLocale,
                         $targetLocale,
                         $this->isActiveSource($source)
@@ -1316,7 +1318,8 @@ class TranslationCenterService
         }
 
         $field = $identity['field'];
-        $cleanValue = $field === 'description' && $identity['model'] !== 'team_group'
+        $cleanValue = $field === 'description'
+            && !in_array($identity['model'], ['team_group', 'donation_cause_group'], true)
             ? $this->sanitizer->sanitizeHtml($value)
             : trim(strip_tags($value));
         $sourceValue = (string) ($source->{$field} ?? '');

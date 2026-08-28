@@ -252,6 +252,7 @@ class SeoContentAnalysisService
             'page' => [$model->getAttribute('sub_title'), $model->getAttribute('description')],
             'category' => [$model->getAttribute('description')],
             'event', 'annual_report' => [$model->getAttribute('sub_title'), $model->getAttribute('description')],
+            'donation_cause' => [$model->getAttribute('description')],
             default => [],
         };
     }

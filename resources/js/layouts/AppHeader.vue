@@ -19,8 +19,6 @@
             <a v-if="social.youtube" :href="social.youtube" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true" /></a>
           </div>
           <span aria-hidden="true">•</span>
-          <a :href="header.annualReportsUrl">{{ header.annualReportsLabel }}</a>
-          <span aria-hidden="true">•</span>
           <a :href="header.contactUrl">{{ header.contactLabel }}</a>
           <template v-if="showLanguage">
             <span aria-hidden="true">•</span>
@@ -61,8 +59,6 @@ const contact = computed(() => ({
 }));
 const social = computed(() => settings.value.social || {});
 const header = computed(() => ({
-  annualReportsLabel: settings.value.header?.annual_reports_label || 'Annual reports',
-  annualReportsUrl: settings.value.header?.annual_reports_url || '/annual-report',
   contactLabel: settings.value.header?.contact_label || 'Contact',
   contactUrl: settings.value.header?.contact_url || '/contact-us',
   socialProfilesLabel: settings.value.header?.social_profiles_label || 'Social profiles',

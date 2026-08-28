@@ -45,16 +45,16 @@ $custom_inline_css = '';
                   </div>
                 </div>
 
-                {{-- <div class="col-6">
+                <div class="col-8">
                   <div class="form-group">
                     <label for="sub_title" class="control-label mb-1">{{ $Lang->Common->Form->SubTitle }}</label>
-                    <input name="sub_title" type="text" class="form-control" value="{{ $annual_report->sub_title }}"
+                    <input id="sub_title" name="sub_title" type="text" class="form-control" maxlength="500" value="{{ old('sub_title', $annual_report->sub_title) }}"
                       data-e2e="sub-title">
                     @if ($errors->has('sub_title'))
                       <small class="help-block form-text text-danger">{{ $errors->first('sub_title') }}</small>
                     @endif
                   </div>
-                </div> --}}
+                </div>
 
                 <div class="col-md-4">
                   <div class="form-group">
@@ -76,6 +76,25 @@ $custom_inline_css = '';
                     @if ($errors->has('published_at'))
                       <small class="help-block form-text text-danger">{{ $errors->first('published_at') }}</small>
                     @endif
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="publisher_name" class="control-label mb-1">Publisher name</label>
+                    <input id="publisher_name" name="publisher_name" type="text" maxlength="100"
+                      value="{{ old('publisher_name', $annual_report->publisher_name) }}" class="form-control">
+                    @error('publisher_name')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+                  </div>
+                </div>
+
+                <div class="col-md-8">
+                  <div class="form-group">
+                    <label for="url" class="control-label mb-1">External source URL</label>
+                    <input id="url" name="url" type="url" maxlength="2048" placeholder="https://example.org/report"
+                      value="{{ old('url', $annual_report->url) }}" class="form-control">
+                    <small class="form-text text-muted">Optional publisher or source page. External links must use HTTPS.</small>
+                    @error('url')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                   </div>
                 </div>
 
@@ -109,24 +128,18 @@ $custom_inline_css = '';
                   </div>
                 </div>
 
-                {{-- <div class="col-md-12">
+                @include('admin.annual-report._cover-picker', ['selectedCoverPath' => $annual_report->cover_image_path])
+
+                <div class="col-md-12">
                   <div class="form-group has-success">
-                    <label for="description">{{ $Lang->Common->Form->Description }}</label>
-                    <textarea class="form-control form-control-danger my-editor" name="description" data-e2e="description">{{ $annual_report->description }}</textarea>
+                    <label for="description">Summary / description</label>
+                    <textarea id="description" class="form-control form-control-danger" name="description" rows="6" maxlength="10000" data-e2e="description">{{ old('description', $annual_report->description) }}</textarea>
+                    <small class="form-text text-muted">This text appears on the public report card and detail page.</small>
                     @if ($errors->has('description'))
                       <small class="help-block form-text text-danger">{{ $errors->first('description') }}</small>
                     @endif
                   </div>
                 </div>
-                <div class="col-md-12">
-                  <div class="form-group has-success">
-                    <label for="description">CSS</label>
-                    <textarea class="form-control form-control-danger" name="inline_css" rows="6" data-e2e="inline-css"> {{ $annual_report->inline_css }}</textarea>
-                    @if ($errors->has('inline_css'))
-                      <small class="help-block form-text text-danger">{{ $errors->first('inline_css') }}</small>
-                    @endif
-                  </div>
-                </div> --}}
 
               </div>
 
@@ -149,4 +162,5 @@ $custom_inline_css = '';
 
 @section('custom-js')
   @include('admin.layouts.tinymce', ['contentStyle' => @$custom_inline_css])
+  @include('admin.annual-report._cover-picker-script')
 @endsection

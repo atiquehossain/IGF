@@ -43,6 +43,57 @@ describe('public donation catalog', () => {
   const assertCatalogAndOpenLastCause = () => {
     assertPageMode('catalog');
     cy.get('.igf-donate-causes').scrollIntoView().should('be.visible');
+    cy.get('[data-test="donation-cause-tablist"]')
+      .should('be.visible')
+      .and('have.attr', 'role', 'tablist')
+      .and('have.attr', 'aria-orientation', 'horizontal');
+    cy.get('[data-test="donation-cause-tab"]')
+      .should(($tabs) => {
+        expect([...$tabs].map(tab => tab.textContent.trim())).to.deep.equal([
+          'All causes',
+          'General Giving',
+          'Education & Children',
+          'Faith & Seasonal Giving',
+          'Community & Relief',
+        ]);
+      });
+    cy.get('[data-test="donation-cause-tab"]')
+      .first()
+      .should('have.attr', 'aria-selected', 'true')
+      .and('have.attr', 'tabindex', '0');
+    cy.get('[data-test="donation-cause-tab"]')
+      .not(':first')
+      .each(($tab) => {
+        expect($tab).to.have.attr('aria-selected', 'false');
+        expect($tab).to.have.attr('tabindex', '-1');
+      });
+    cy.get('[data-test="donation-cause-tab"]').each(($tab, index) => {
+      const panelId = $tab.attr('aria-controls');
+      expect(panelId).to.be.a('string').and.not.be.empty;
+      cy.get(`#${panelId}`)
+        .should('have.attr', 'role', 'tabpanel')
+        .and('have.attr', 'aria-labelledby', $tab.attr('id'));
+      if (index === 0) cy.get(`#${panelId}`).should('not.have.attr', 'hidden');
+      else cy.get(`#${panelId}`).should('have.attr', 'hidden');
+    });
+
+    cy.get('[data-test="donation-cause-tab"]').then(($tabs) => {
+      if ($tabs.length < 2) return;
+
+      cy.wrap($tabs.first()).focus().trigger('keydown', { key: 'ArrowRight' });
+      cy.get('[data-test="donation-cause-tab"]').eq(1)
+        .should('have.attr', 'aria-selected', 'true')
+        .and('have.attr', 'tabindex', '0')
+        .and('be.focused');
+      cy.get(causeCardSelector)
+        .should('have.length', 1)
+        .and('contain.text', 'Where it is needed most');
+      cy.get('[data-test="donation-cause-tab"]').eq(1).trigger('keydown', { key: 'Home' });
+      cy.get('[data-test="donation-cause-tab"]').first()
+        .should('have.attr', 'aria-selected', 'true')
+        .and('be.focused');
+    });
+
     cy.get(causeCardSelector).should('have.length', 17);
     cy.get(causeLinkSelector)
       .should('have.length', 17)

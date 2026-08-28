@@ -69,11 +69,11 @@ describe('active public page regional formatting', () => {
     search.unmount()
   })
 
-  test('formats annual-report totals, row numbers, and raw ISO dates', () => {
+  test('formats annual-report totals, cover years, and raw ISO dates', () => {
     const publishedAt = '2026-08-19'
     const wrapper = mountPage(AnnualReport, {
       data: {
-        items: [{ id: 1, title: 'Impact report', published_at: publishedAt, download_url: '/annual-report/download/impact' }],
+        items: [{ id: 1, title: 'Impact report', published_at: publishedAt, landing_url: '/annual-report/impact', download_url: '/annual-report/download/impact' }],
       },
       properties: { total: 12345, current_page: 2, per_page: 12, total_page: 2 },
       siteSettings: {
@@ -84,11 +84,12 @@ describe('active public page regional formatting', () => {
         },
       },
     })
-    const cells = wrapper.findAll('tbody td')
+    const date = wrapper.get('.igf-report-card time')
 
     expect(wrapper.get('.igf-reports__heading > span').text()).toContain(new Intl.NumberFormat('bn-BD').format(12345))
-    expect(cells[0].text()).toBe(new Intl.NumberFormat('bn-BD').format(13))
-    expect(cells[2].text()).toBe(
+    expect(wrapper.get('.igf-report-card__year').text()).toBe(new Intl.NumberFormat('bn-BD', { useGrouping: false }).format(2026))
+    expect(date.attributes('datetime')).toBe(publishedAt)
+    expect(date.text()).toBe(
       new Intl.DateTimeFormat('bn-BD', { dateStyle: 'long', timeZone: 'Asia/Dhaka' }).format(new Date(publishedAt)),
     )
     wrapper.unmount()

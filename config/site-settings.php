@@ -1,5 +1,28 @@
 <?php
 
+$localizedCopyField = static function (
+    string $label,
+    string $default,
+    string $banglaDefault,
+    string $type = 'text',
+    ?string $help = null,
+): array {
+    $field = [
+        'label' => $label,
+        'type' => $type,
+        'default' => $default,
+        'localized_defaults' => ['bn' => $banglaDefault],
+        'localized' => true,
+        'public' => true,
+    ];
+
+    if ($help !== null) {
+        $field['help'] = $help;
+    }
+
+    return $field;
+};
+
 return [
     'groups' => [
         'branding' => [
@@ -35,8 +58,6 @@ return [
                 'announcement_label' => ['label' => 'Announcement accessible label', 'type' => 'text', 'default' => 'Announcement', 'localized' => true, 'public' => true],
                 'announcement_text' => ['label' => 'Announcement text', 'type' => 'text', 'default' => '', 'localized' => true, 'public' => true],
                 'announcement_url' => ['label' => 'Announcement link', 'type' => 'url_or_path', 'default' => '', 'localized' => true, 'public' => true],
-                'annual_reports_label' => ['label' => 'Top-bar reports link', 'type' => 'text', 'default' => 'Annual reports', 'localized' => true, 'public' => true],
-                'annual_reports_url' => ['label' => 'Top-bar reports destination', 'type' => 'url_or_path', 'default' => '/annual-report', 'localized' => false, 'public' => true],
                 'contact_label' => ['label' => 'Top-bar contact link', 'type' => 'text', 'default' => 'Contact', 'localized' => true, 'public' => true],
                 'contact_url' => ['label' => 'Top-bar contact destination', 'type' => 'url_or_path', 'default' => '/contact-us', 'localized' => false, 'public' => true],
                 'search_label' => ['label' => 'Search action label', 'type' => 'text', 'default' => 'Search', 'localized' => true, 'public' => true],
@@ -47,6 +68,7 @@ return [
                 'mobile_navigation_label' => ['label' => 'Mobile-navigation accessible label', 'type' => 'text', 'default' => 'Mobile navigation', 'localized' => true, 'public' => true],
                 'toggle_navigation_label' => ['label' => 'Menu-button accessible label', 'type' => 'text', 'default' => 'Toggle navigation', 'localized' => true, 'public' => true],
                 'open_submenu_label' => ['label' => 'Open-submenu accessible label', 'type' => 'text', 'default' => 'Open {item} submenu', 'localized' => true, 'public' => true, 'help' => 'Use {item} where the menu-item name should appear.'],
+                'close_submenu_label' => ['label' => 'Close-submenu accessible label', 'type' => 'text', 'default' => 'Close {item} submenu', 'localized' => true, 'public' => true, 'help' => 'Use {item} where the menu-item name should appear.'],
                 'brand_home_label' => ['label' => 'Logo-link accessible label', 'type' => 'text', 'default' => '{site} home', 'localized' => true, 'public' => true, 'help' => 'Use {site} where the website name should appear.'],
                 'skip_link_label' => ['label' => 'Skip-link label', 'type' => 'text', 'default' => 'Skip to main content', 'localized' => true, 'public' => true],
                 'donate_label' => ['label' => 'Donate button label', 'type' => 'text', 'default' => 'Donate', 'localized' => true, 'public' => true, 'help' => 'Shown in desktop, tablet, and phone headers. Keep this short—usually one to three words.'],
@@ -80,6 +102,40 @@ return [
                 'number_locale' => ['label' => 'Number format', 'type' => 'select', 'default' => 'en-BD', 'options' => ['en-BD' => 'English (Bangladesh)', 'bn-BD' => 'Bangla (Bangladesh)', 'en-US' => 'English (United States)', 'en-GB' => 'English (United Kingdom)'], 'localized' => false, 'public' => true],
                 'date_locale' => ['label' => 'Date format', 'type' => 'select', 'default' => 'en-BD', 'options' => ['en-BD' => 'English (Bangladesh)', 'bn-BD' => 'Bangla (Bangladesh)', 'en-US' => 'English (United States)', 'en-GB' => 'English (United Kingdom)'], 'localized' => false, 'public' => true],
                 'timezone' => ['label' => 'Public date timezone', 'type' => 'select', 'default' => 'Asia/Dhaka', 'options' => ['Asia/Dhaka' => 'Bangladesh time', 'UTC' => 'UTC'], 'localized' => false, 'public' => true],
+            ],
+        ],
+        'career_page' => [
+            'label' => 'Careers page',
+            'description' => 'Public Careers introduction, listing headings, empty state, and navigation wording. Individual roles and application forms are managed under Careers.',
+            'fields' => [
+                'eyebrow' => $localizedCopyField('Small heading', 'Join our team', 'আমাদের দলে যোগ দিন'),
+                'title' => $localizedCopyField('Page title', 'Careers', 'কর্মজীবন'),
+                'introduction' => $localizedCopyField('Page introduction', 'Explore current opportunities to work with Ignite Global Foundation.', 'ইগনাইট গ্লোবাল ফাউন্ডেশনের সঙ্গে কাজ করার বর্তমান সুযোগগুলো দেখুন।', 'textarea'),
+                'search_description' => $localizedCopyField('Search description', 'Explore current opportunities to work with Ignite Global Foundation and apply online.', 'ইগনাইট গ্লোবাল ফাউন্ডেশনের বর্তমান চাকরির সুযোগ দেখুন এবং অনলাইনে আবেদন করুন।', 'textarea', 'Shown to search engines when this system page has no page-specific Search & Sharing record.'),
+                'listing_title' => $localizedCopyField('Listing heading', 'Current opportunities', 'বর্তমান চাকরির সুযোগ'),
+                'listing_introduction' => $localizedCopyField('Listing introduction (optional)', '', '', 'textarea'),
+                'empty_title' => $localizedCopyField('No-open-roles heading', 'No open positions right now', 'এই মুহূর্তে কোনো পদ খালি নেই'),
+                'empty_message' => $localizedCopyField('No-open-roles message', 'Please check again for future opportunities.', 'নতুন সুযোগের জন্য পরে আবার দেখুন।', 'textarea'),
+                'pagination_label' => $localizedCopyField('Pagination accessible label', 'Career listing pages', 'চাকরির তালিকার পৃষ্ঠা'),
+                'back_label' => $localizedCopyField('Back-to-listing link', 'Back to careers', 'চাকরির তালিকায় ফিরুন'),
+                'card_link_label' => $localizedCopyField('Role-card link label', 'View job and apply', 'বিস্তারিত দেখুন ও আবেদন করুন'),
+            ],
+        ],
+        'workshop_page' => [
+            'label' => 'Workshops page',
+            'description' => 'Public Workshops introduction, listing headings, empty state, and navigation wording. Individual workshops and registration forms are managed under Workshops.',
+            'fields' => [
+                'eyebrow' => $localizedCopyField('Small heading', 'Learn together', 'একসঙ্গে শিখি'),
+                'title' => $localizedCopyField('Page title', 'Workshops', 'কর্মশালা'),
+                'introduction' => $localizedCopyField('Page introduction', 'Register for workshops led by Ignite Global Foundation.', 'ইগনাইট গ্লোবাল ফাউন্ডেশনের কর্মশালায় নিবন্ধন করুন।', 'textarea'),
+                'search_description' => $localizedCopyField('Search description', 'Explore workshops from Ignite Global Foundation and register online.', 'ইগনাইট গ্লোবাল ফাউন্ডেশনের কর্মশালাগুলো দেখুন এবং অনলাইনে নিবন্ধন করুন।', 'textarea', 'Shown to search engines when this system page has no page-specific Search & Sharing record.'),
+                'listing_title' => $localizedCopyField('Listing heading', 'Upcoming workshops', 'আসন্ন কর্মশালা'),
+                'listing_introduction' => $localizedCopyField('Listing introduction (optional)', '', '', 'textarea'),
+                'empty_title' => $localizedCopyField('No-open-workshops heading', 'No workshops are open right now', 'এই মুহূর্তে কোনো কর্মশালা খোলা নেই'),
+                'empty_message' => $localizedCopyField('No-open-workshops message', 'Please check again for upcoming sessions.', 'আসন্ন সেশনের জন্য পরে আবার দেখুন।', 'textarea'),
+                'pagination_label' => $localizedCopyField('Pagination accessible label', 'Workshop listing pages', 'কর্মশালার তালিকার পৃষ্ঠা'),
+                'back_label' => $localizedCopyField('Back-to-listing link', 'Back to workshops', 'কর্মশালার তালিকায় ফিরুন'),
+                'card_link_label' => $localizedCopyField('Workshop-card link label', 'View workshop and register', 'বিস্তারিত দেখুন ও নিবন্ধন করুন'),
             ],
         ],
         'contact_page' => [
@@ -327,9 +383,7 @@ return [
                 'card_style' => ['label' => 'Form card style', 'type' => 'select', 'default' => 'soft', 'options' => ['soft' => 'Soft', 'outlined' => 'Outlined', 'elevated' => 'Elevated'], 'localized' => false, 'public' => true],
                 'amount_button_count' => ['label' => 'Suggested amount buttons', 'type' => 'select', 'default' => '5', 'options' => ['2' => 'Two', '3' => 'Three', '4' => 'Four', '5' => 'Five'], 'localized' => false, 'public' => true, 'help' => 'Choose how many of the suggested amounts below visitors can see.'],
                 'show_hero' => ['label' => 'Show page introduction', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
-                'show_cause_gallery' => ['label' => 'Legacy cause-card visibility (deprecated)', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true, 'help' => 'Retained for compatibility with saved settings. The donation catalog always stays visible so visitors can reach a checkout.'],
                 'show_assurances' => ['label' => 'Show trust assurances', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
-                'show_intro_panel' => ['label' => 'Show impact introduction', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
                 'show_reports_link' => ['label' => 'Show annual reports link', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
                 'show_help_card' => ['label' => 'Show contact help', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
                 'show_form_badge' => ['label' => 'Show secure-donation label', 'type' => 'boolean', 'default' => true, 'localized' => false, 'public' => true],
@@ -347,18 +401,17 @@ return [
                 'cause_gallery_eyebrow' => ['label' => 'Cause-gallery small heading', 'type' => 'text', 'default' => 'Choose your impact', 'localized' => true, 'public' => true],
                 'cause_gallery_title' => ['label' => 'Cause-gallery title', 'type' => 'text', 'default' => 'Support the cause closest to your heart.', 'localized' => true, 'public' => true],
                 'cause_gallery_introduction' => ['label' => 'Cause-gallery introduction', 'type' => 'textarea', 'default' => 'Select an active cause, then choose your gift amount and complete payment securely.', 'localized' => true, 'public' => true],
+                'cause_tabs_accessible_label' => ['label' => 'Cause-tab accessible label', 'type' => 'text', 'default' => 'Donation cause categories', 'localized' => true, 'public' => true],
+                'cause_tabs_all_label' => ['label' => 'All-causes tab label', 'type' => 'text', 'default' => 'All causes', 'localized' => true, 'public' => true],
                 'cause_card_cta_label' => ['label' => 'Cause-card button label', 'type' => 'text', 'default' => 'Donate to this cause', 'localized' => true, 'public' => true],
-                'cause_card_selected_label' => ['label' => 'Selected-cause badge', 'type' => 'text', 'default' => 'Selected', 'localized' => true, 'public' => true],
-                'cause_card_selected_cta_label' => ['label' => 'Selected-cause button label', 'type' => 'text', 'default' => 'Selected — continue below', 'localized' => true, 'public' => true],
+                'cause_catalog_back_label' => ['label' => 'Back-to-causes link label', 'type' => 'text', 'default' => 'All donation causes', 'localized' => true, 'public' => true],
+                'selected_cause_eyebrow' => ['label' => 'Selected-cause small heading', 'type' => 'text', 'default' => 'Your selected cause', 'localized' => true, 'public' => true],
                 'secure_title' => ['label' => 'Secure payment title', 'type' => 'text', 'default' => 'Secure payment', 'localized' => true, 'public' => true],
                 'secure_body' => ['label' => 'Secure payment description', 'type' => 'text', 'default' => 'Processed by our verified payment partner', 'localized' => true, 'public' => true],
                 'confirmation_title' => ['label' => 'Confirmation title', 'type' => 'text', 'default' => 'Clear confirmation', 'localized' => true, 'public' => true],
                 'confirmation_body' => ['label' => 'Confirmation description', 'type' => 'text', 'default' => 'Receive a transaction reference after payment', 'localized' => true, 'public' => true],
                 'impact_title' => ['label' => 'Accountability title', 'type' => 'text', 'default' => 'Accountable impact', 'localized' => true, 'public' => true],
                 'impact_body' => ['label' => 'Accountability description', 'type' => 'text', 'default' => 'Transparent reporting on how support is used', 'localized' => true, 'public' => true],
-                'aside_eyebrow' => ['label' => 'Form introduction small heading', 'type' => 'text', 'default' => 'Every gift matters', 'localized' => true, 'public' => true],
-                'aside_title' => ['label' => 'Form introduction title', 'type' => 'text', 'default' => 'Choose the impact you want to support.', 'localized' => true, 'public' => true],
-                'aside_body' => ['label' => 'Form introduction text', 'type' => 'textarea', 'default' => 'Your contribution goes to the active cause you select. Our team records every transaction for financial oversight and reporting.', 'localized' => true, 'public' => true],
                 'reports_label' => ['label' => 'Annual reports link text', 'type' => 'text', 'default' => 'Read our annual reports', 'localized' => true, 'public' => true],
                 'reports_url' => ['label' => 'Annual reports link destination', 'type' => 'url_or_path', 'default' => '/annual-report', 'localized' => false, 'public' => true],
                 'help_title' => ['label' => 'Contact-help heading', 'type' => 'text', 'default' => 'Need help?', 'localized' => true, 'public' => true],
@@ -829,6 +882,7 @@ return [
                 'newsletter_body' => ['label' => 'Newsletter description', 'type' => 'textarea', 'default' => 'Receive stories and field updates from Ignite.', 'localized' => true, 'public' => true],
                 'copyright' => ['label' => 'Copyright line', 'type' => 'text', 'default' => '© Ignite Global Foundation. All rights reserved.', 'localized' => true, 'public' => true],
                 'trust_badge' => ['label' => 'Footer trust statement', 'type' => 'text', 'default' => 'Community-led nonprofit in Bangladesh', 'localized' => true, 'public' => true],
+                'navigation_label' => ['label' => 'Footer-navigation accessible label', 'type' => 'text', 'default' => 'Footer navigation', 'localized' => true, 'public' => true],
             ],
         ],
         'legal_status' => [

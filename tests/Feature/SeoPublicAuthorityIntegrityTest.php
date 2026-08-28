@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Page;
+use App\Models\DonationType;
 use App\Models\SeoMetadata;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,11 +56,37 @@ class SeoPublicAuthorityIntegrityTest extends TestCase
         );
     }
 
-    public function test_curated_fixed_parameter_route_seo_overrides_donate_controller_metadata_in_raw_and_inertia_heads(): void
+    public function test_each_donation_cause_owns_its_metadata_and_a_stale_wildcard_route_record_cannot_bleed(): void
     {
+        DonationType::query()->forceDelete();
+        $zakat = DonationType::create([
+            'name' => 'Donate Your Zakat',
+            'description' => 'Direct eligible Zakat to reviewed community programs.',
+            'purpose_key' => 'zakat',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Zakat Fund',
+            'status' => 1,
+        ]);
+        $education = DonationType::create([
+            'name' => 'Education',
+            'description' => 'Help children access learning materials and school support.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Education Fund',
+            'status' => 1,
+        ]);
         SeoMetadata::create([
             'route_name' => 'frontend.donate.cause',
             'route_path' => '/donate/zakat',
+            'locale' => 'en',
+            'title' => 'Stale shared donation title',
+            'description' => 'This retired shared record must never own a cause page.',
+            'canonical_url' => url('/stale-shared-donation'),
+            'robots_index' => false,
+            'robots_follow' => true,
+        ]);
+        SeoMetadata::create([
+            'seoable_type' => DonationType::class,
+            'seoable_id' => $zakat->id,
             'locale' => 'en',
             'title' => 'Give Zakat through Ignite',
             'description' => 'A curated Zakat donation search description.',
@@ -74,14 +101,22 @@ class SeoPublicAuthorityIntegrityTest extends TestCase
         $this->assertStringContainsString('<title inertia>Give Zakat through Ignite</title>', $head);
         $this->assertStringContainsString('content="A curated Zakat donation search description."', $head);
         $this->assertStringContainsString('name="robots" content="noindex,follow"', $head);
-        $this->assertStringNotContainsString('<title inertia>Donate Securely | Ignite Global Foundation</title>', $head);
+        $this->assertStringNotContainsString('Stale shared donation title', $head);
 
         $response->assertInertia(fn (Assert $page) => $page
-            ->where('meta_tag.meta_title', 'Donate Securely | Ignite Global Foundation')
-            ->where('routeSeo.meta_title', 'Give Zakat through Ignite')
-            ->where('routeSeo.meta_description', 'A curated Zakat donation search description.')
-            ->where('routeSeo.canonical_url', url('/donate/zakat'))
+            ->where('meta_tag.meta_title', 'Donate to Donate Your Zakat | Ignite Global Foundation')
+            ->where('routeSeo', [])
+            ->where('contentSeo.meta_title', 'Give Zakat through Ignite')
+            ->where('contentSeo.meta_description', 'A curated Zakat donation search description.')
+            ->where('contentSeo.canonical_url', url('/donate/zakat'))
         );
+
+        $educationResponse = $this->get(route('frontend.donate.cause', ['cause' => $education->slug]))->assertOk();
+        $educationHead = Str::before($educationResponse->getContent(), '</head>');
+        $this->assertStringContainsString('<title inertia>Donate to Education | Ignite Global Foundation</title>', $educationHead);
+        $this->assertStringContainsString('href="' . route('frontend.donate.cause', ['cause' => $education->slug]) . '"', $educationHead);
+        $this->assertStringNotContainsString('Stale shared donation title', $educationHead);
+        $this->assertStringNotContainsString('stale-shared-donation', $educationHead);
     }
 
     public function test_curated_listing_seo_is_not_applied_to_an_arbitrary_parameterized_project_path(): void

@@ -225,7 +225,7 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             type: 'get',
-            url: "{{ route('page.menu.index') }}/" + type + "/type/" + lang,
+            url: "{{ route('page.menu.index') }}/" + type + "/type/" + lang + "?exclude_uuid=" + encodeURIComponent(@json($id)),
             success: function(res) {
                 if (res.data) {
                     parent_link.append(new Option(@json($Lang->Common->Form->Select . ' ' . $Lang->Common->Form->Parent), ''));
@@ -261,7 +261,7 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             type: 'get',
-            url: "{{ route('page.menu.index') }}/" + type + "/type/" + lang,
+            url: "{{ route('page.menu.index') }}/" + type + "/type/" + lang + "?exclude_uuid=" + encodeURIComponent(@json($id)),
             success: function(res) {
                 parent_link.append(new Option('Select Parent', ''));
                 if (res.data) {

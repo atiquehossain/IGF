@@ -166,14 +166,29 @@ class ContentSanitizer
         $url = trim(html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         $url = preg_replace('/[\x00-\x1F\x7F\s]+/u', '', $url) ?? '';
 
-        if ($url === '' || str_starts_with($url, '#') || str_starts_with($url, '/')) {
+        // Backslashes are interpreted as path separators by browsers in URL
+        // contexts. Reject both literal and encoded forms so a value such as
+        // `\\\\attacker.test` cannot masquerade as a local navigation path.
+        if ($url === '' || str_contains($url, '\\') || preg_match('/%5c/i', $url) === 1) {
+            return '';
+        }
+
+        if (str_starts_with($url, '#')) {
+            return $url;
+        }
+
+        if (str_starts_with($url, '//')) {
+            return 'https:' . $url;
+        }
+
+        if (str_starts_with($url, '/')) {
             return $url;
         }
 
         $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
 
         if ($scheme === '') {
-            return str_starts_with($url, '//') ? 'https:' . $url : $url;
+            return $url;
         }
 
         return in_array($scheme, ['http', 'https', 'mailto', 'tel'], true) ? $url : '';

@@ -60,6 +60,18 @@ The password prompt is hidden, requires a strong temporary password, and the new
 
 Production content must be created through the Content Hub/page builder or imported from a reviewed, sanitized source using a deployment-specific importer. Never run `LocalDevelopmentSeeder` in production and never import a production database dump into source control. Before launch, publish the required home/about/zakat/legal pages, navigation, donation causes and site settings, then review every item in the SEO manager.
 
+### Git-safe CMS content snapshot
+
+Use `php artisan cms:snapshot --force` to refresh the reviewable snapshot at `database/seeders/seed-data/cms-content.snapshot.json`. It contains public editorial content only and replaces numeric relationships with stable UUID references. Administrators, members, credentials, donations, payment transactions, enquiries, applications, volunteers, audit trails, IP addresses, click analytics, private files and non-public settings are deliberately excluded.
+
+After migrations, restore or reconcile the snapshot with:
+
+```bash
+php artisan db:seed --class=CmsContentSnapshotSeeder --force
+```
+
+The snapshot is not a substitute for an access-controlled production recovery backup. Continue backing up and verifying the real database together with the complete `storage/app` tree; never commit either raw artifact to Git.
+
 ## SEO 3.0 and production indexing
 
 Administrators use one **Search & Sharing** workspace for readiness checks, per-content search fields, live Google and social previews, a searchable Media Library picker, search visibility, localized permalink changes with automatic `301` redirects, generated Schema templates, expert JSON-LD, English/Bangla completion, review and approval, bulk editing/CSV export, revision differences, and permission-controlled restore. Page Builder links to this workspace instead of maintaining a second SEO form. Annual reports are first-class SEO content with a public HTML landing page at `/annual-report/{slug}` before the visitor opens the document.

@@ -146,6 +146,81 @@ class DonationPageIntegrityTest extends TestCase
         $this->assertSame('no-cache', $response->headers->get('Pragma'));
     }
 
+    public function test_make_a_donation_route_uses_the_admin_designated_direct_cause_without_a_catalog(): void
+    {
+        DonationType::query()->forceDelete();
+        DonationType::create([
+            'name' => 'Education catalog option',
+            'description' => 'A separate active cause that must not appear on the direct page.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Education Fund',
+            'status' => 1,
+        ]);
+        $direct = DonationType::create([
+            'name' => 'Flexible community support',
+            'description' => 'The administrator-managed direct donation destination.',
+            'purpose_key' => 'direct',
+            'destination_type' => 'unrestricted',
+            'status' => 1,
+        ]);
+        SeoMetadata::create([
+            'seoable_type' => DonationType::class,
+            'seoable_id' => $direct->id,
+            'locale' => 'en',
+            'canonical_url' => route('frontend.donate.cause', ['cause' => $direct->slug]),
+        ]);
+
+        $response = $this->get(route('frontend.donate.direct'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('donate')
+                ->where('data.pageMode', 'detail')
+                ->has('data.donationTypes', 1)
+                ->has('data.donationGroups', 0)
+                ->where('data.donationTypes.0.uuid', $direct->uuid)
+                ->where('data.donationTypes.0.url', route('frontend.donate.direct'))
+                ->where('data.selectedUUID', $direct->uuid)
+                ->where('data.selectedCauseSlug', $direct->slug)
+                ->where('data.selectedDestination.type', 'unrestricted')
+                ->where('data.selectedDestination.name', 'Where it is needed most')
+                ->has('data.paymentMethods')
+                ->where('data.checkout_key', fn ($value) => is_string($value) && $value !== '')
+                ->where('title', 'Donate to Flexible community support')
+                ->where('contentSeo.canonical_url', route('frontend.donate.direct'))
+            );
+
+        $this->assertSame('/make-a-donation', route('frontend.donate.direct', absolute: false));
+        $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
+        $this->assertSame('no-cache', $response->headers->get('Pragma'));
+
+        $this->get(route('frontend.donate.cause', ['cause' => $direct->slug]) . '?amount=2500')
+            ->assertRedirect(route('frontend.donate.direct') . '?amount=2500')
+            ->assertStatus(301);
+        $this->get(route('frontend.donate.index') . '?cause=' . $direct->slug . '&amount=2500')
+            ->assertRedirect(route('frontend.donate.direct') . '?amount=2500');
+    }
+
+    public function test_make_a_donation_route_fails_closed_without_an_active_operational_direct_cause(): void
+    {
+        DonationType::query()->forceDelete();
+        DonationType::create([
+            'name' => 'Inactive direct destination',
+            'description' => 'This cause must not issue a checkout while unpublished.',
+            'purpose_key' => 'direct',
+            'destination_type' => 'unrestricted',
+            'status' => 0,
+        ]);
+        DonationType::create([
+            'name' => 'Unrelated active cause',
+            'description' => 'The route must not silently fall back to another cause.',
+            'destination_type' => 'restricted_fund',
+            'destination_name' => 'Other Fund',
+            'status' => 1,
+        ]);
+
+        $this->get(route('frontend.donate.direct'))->assertStatus(503);
+    }
+
     public function test_legacy_cause_queries_redirect_to_the_canonical_slug_and_preserve_checkout_options(): void
     {
         DonationType::query()->forceDelete();

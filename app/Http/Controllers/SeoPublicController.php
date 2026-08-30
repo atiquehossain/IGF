@@ -244,8 +244,10 @@ class SeoPublicController extends Controller
             ->filter(fn (DonationType $cause) => $this->isIndexable($cause->seo))
             ->map(fn (DonationType $cause) => [
                 'loc' => $this->sitemapLocation(
-                    $cause->seo?->canonical_url,
-                    route('frontend.donate.cause', ['cause' => $cause->slug]),
+                    $cause->purpose_key === 'direct' ? null : $cause->seo?->canonical_url,
+                    $cause->purpose_key === 'direct'
+                        ? route('frontend.donate.direct')
+                        : route('frontend.donate.cause', ['cause' => $cause->slug]),
                     $locale
                 ),
                 'lastmod' => $this->lastModified($cause, $cause->seo),

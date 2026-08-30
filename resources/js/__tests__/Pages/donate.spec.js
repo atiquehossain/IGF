@@ -633,6 +633,9 @@ describe('donation payment methods', () => {
     await nextTick();
 
     expect(wrapper.get('.igf-donate').classes()).toContain('is-cause-page');
+    expect(wrapper.get('.igf-donate').classes()).toContain('is-layout-centered');
+    expect(donateSource).toContain('.is-layout-centered.is-cause-page .igf-checkout-grid { grid-template-columns:1fr; }');
+    expect(donateSource).toContain('@media (max-width:420px) { .igf-amount-options { grid-template-columns:1fr; } }');
     expect(wrapper.find('.igf-donate-causes').exists()).toBe(false);
     expect(wrapper.find('[data-test="donation-cause-card"]').exists()).toBe(false);
     expect(wrapper.get('.igf-donate__hero--cause h1').text()).toBe('School rebuild');

@@ -88,7 +88,7 @@ const fallbackNavigation = [
     { name: 'Events & News', href: '/events' },
   ] },
   { name: 'Donate', href: '#', children: [
-    { name: 'Make a Donation', href: '/donate' },
+    { name: 'Make a Donation', href: '/make-a-donation' },
     { name: 'Give Zakat', href: '/zakat' },
   ] },
 ];

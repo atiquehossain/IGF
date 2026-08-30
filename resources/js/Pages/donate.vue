@@ -989,6 +989,7 @@ function acceptReplacementCheckoutKey(value) {
 .igf-card-intro { margin:10px 0 24px; color:var(--muted); font-size:13px; }
 .igf-checkout-grid { display:grid; gap:28px; }
 .is-layout-centered .igf-checkout-grid { grid-template-columns:minmax(0,1fr) minmax(245px,.43fr); align-items:start; }
+.is-layout-centered.is-cause-page .igf-checkout-grid { grid-template-columns:1fr; }
 .igf-checkout-main { min-width:0; }
 .igf-checkout-steps { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:18px 0 22px; padding:0; list-style:none; }
 .igf-checkout-steps a { display:flex; min-height:48px; align-items:center; gap:9px; border:1px solid #dfd5cd; border-radius:11px; padding:8px 11px; background:#f7f3ef; color:#68635f; font-size:11px; font-weight:800; line-height:1.2; text-decoration:none; }
@@ -1023,10 +1024,10 @@ function acceptReplacementCheckoutKey(value) {
 .igf-fieldset { min-width:0; margin:0 0 30px; border:0; border-top:1px solid var(--line); padding:26px 0 0; }
 .igf-fieldset legend { width:auto; margin:0 0 16px; padding:0; color:var(--ink); font-size:14px; font-weight:800; }
 .igf-amount-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; margin-bottom:15px; }
-.igf-amount-options button { position:relative; display:grid; min-height:98px; align-content:center; gap:5px; border:1.5px solid #ddd1c8; border-radius:14px; padding:15px 42px 15px 16px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s; }
+.igf-amount-options button { position:relative; display:grid; min-width:0; min-height:98px; align-content:center; gap:5px; border:1.5px solid #ddd1c8; border-radius:14px; padding:15px 42px 15px 16px; background:#fff; color:var(--ink); text-align:left; cursor:pointer; transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s; }
 .igf-amount-options button:hover { border-color:#cf8652; transform:translateY(-1px); }
 .igf-amount-options button>span { color:var(--brown); font-family:'Literata',Georgia,serif; font-size:24px; font-weight:650; letter-spacing:-.02em; line-height:1.1; }
-.igf-amount-options button>small { color:var(--muted); font:500 11px/1.35 'Hanken Grotesk',Arial,sans-serif; }
+.igf-amount-options button>small { color:var(--muted); font:500 11px/1.35 'Hanken Grotesk',Arial,sans-serif; overflow-wrap:anywhere; }
 .igf-amount-options button>i { position:absolute; top:13px; right:13px; display:grid; width:22px; height:22px; place-items:center; border:1px solid #d8cec6; border-radius:50%; background:#fff; color:transparent; font-size:10px; }
 .igf-amount-options button.is-featured { background:#fff7f0; }
 .igf-amount-options button.is-selected { border-color:var(--orange); background:#ffe3cf; box-shadow:inset 0 0 0 1px var(--orange); }
@@ -1105,5 +1106,6 @@ function acceptReplacementCheckoutKey(value) {
 @media (max-width:620px) { .igf-payment-method { grid-template-columns:132px minmax(0,1fr) 22px; gap:11px; padding-inline:14px; } .igf-payment-method.is-unavailable { grid-template-columns:132px minmax(0,1fr); } }
 @media (max-width:640px) { .igf-shell,.is-layout-centered .igf-donate__layout,.is-cause-page .igf-donate__layout { width:min(calc(100% - 28px),1200px); } .igf-details-grid { grid-template-columns:1fr; } .igf-donate__hero { min-height:auto; padding:58px 0; } .igf-donate-causes { padding:54px 0; } .igf-donation-cause-card__body { padding:21px; } .igf-donation-card { border-radius:17px; padding:24px 20px; } .igf-checkout-steps a { min-height:44px; padding-inline:8px; } .igf-cause-story { border-radius:17px; } }
 @media (max-width:480px) { .igf-payment-method { grid-template-columns:96px minmax(0,1fr) 22px; gap:9px; padding:13px 11px; } .igf-payment-method.is-unavailable { grid-template-columns:96px minmax(0,1fr); } .igf-payment-method__logos { width:96px; padding-inline:2px; } .igf-payment-method__logos img { max-width:92px; } .igf-payment-method__logos.has-multiple { gap:4px; } .igf-payment-method__logos.has-multiple img { max-width:41px; } .igf-payment-method__copy strong { font-size:14px; } .igf-payment-method__copy small { font-size:11px; } .igf-amount-options { gap:8px; } .igf-amount-options button { min-height:84px; padding:12px 34px 12px 12px; } .igf-amount-options button>span { font-size:20px; } .igf-amount-options button>small { font-size:10px; } .igf-checkout-grid { gap:20px; } .igf-donation-review { padding:17px; } }
+@media (max-width:420px) { .igf-amount-options { grid-template-columns:1fr; } }
 @media (prefers-reduced-motion:reduce) { .igf-donation-cause-card,.igf-donation-cause-card__media>img,.igf-donation-cause-card__body>a { transition:none; } .igf-donation-cause-card:hover { transform:none; } .igf-donation-cause-card:hover .igf-donation-cause-card__media>img { transform:none; } }
 </style>

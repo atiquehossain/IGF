@@ -115,11 +115,14 @@ class IgniteParityContentTest extends TestCase
         $ourWorkMenu = PageMenu::where('uuid', '67000000-0000-4000-8000-000000000003')->firstOrFail();
         $youthDevelopmentMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000004')->firstOrFail();
         $workshopMenu = PageMenu::where('link', 'frontend.workshops.index')->firstOrFail();
+        $directDonationMenu = PageMenu::where('uuid', '68000000-0006-4000-8000-000000000001')->firstOrFail();
         $this->assertSame($ourWorkMenu->id, $youthDevelopmentMenu->parent_id);
         $this->assertSame($youthDevelopmentMenu->id, $workshopMenu->parent_id);
         $this->assertSame('68000000-0304-4000-8000-000000000001', $workshopMenu->uuid);
         $this->assertSame('Workshop', $workshopMenu->name);
         $this->assertSame(0, $workshopMenu->order_by);
+        $this->assertSame('frontend.donate.direct', $directDonationMenu->link);
+        $this->assertNull($directDonationMenu->slug);
 
         $this->get(route('frontend.home'))
             ->assertOk()

@@ -117,9 +117,9 @@ class DonationTypeController extends Controller
             ...$this->presentationRules(),
             ...$this->destinationRules(),
         ]);
-        if (($validated['purpose_key'] ?? null) === 'zakat') {
+        if ($this->isProtectedPurpose($validated['purpose_key'] ?? null)) {
             throw ValidationException::withMessages([
-                'purpose_key' => 'Save this cause as a regular draft first. After an authorized administrator publishes it, edit it again to assign the Zakat page role.',
+                'purpose_key' => 'Save this cause as a regular draft first. After an authorized administrator publishes it, edit it again to assign the ' . $this->purposeRoleLabel($validated['purpose_key']) . ' role.',
             ]);
         }
         $attributes = $this->normalizedDestinationAttributes($validated);
@@ -212,9 +212,10 @@ class DonationTypeController extends Controller
             }
             
             $purpose = $validated['purpose_key'] ?: null;
-            if ($donationType->purpose_key === 'zakat' && $purpose !== 'zakat') {
+            $currentPurpose = (string) ($donationType->purpose_key ?? '');
+            if ($this->isProtectedPurpose($currentPurpose) && $purpose !== $currentPurpose) {
                 return back()->withErrors([
-                    'purpose_key' => 'The Zakat page must always have an active donation cause. To change it, edit the replacement cause and choose “Use for the Zakat donation page”.',
+                    'purpose_key' => 'The ' . $this->purposeRoleLabel($currentPurpose) . ' must always have an active donation cause. To change it, edit the published replacement cause and assign that role there.',
                 ]);
             }
 
@@ -226,9 +227,9 @@ class DonationTypeController extends Controller
                 ...$attributes,
                 ...$presentation,
             ]);
-            if ($purpose === 'zakat' && (!$candidate->status || !$this->destinations->isReadyForPublication($candidate))) {
+            if ($this->isProtectedPurpose($purpose) && (!$candidate->status || !$this->destinations->isReadyForPublication($candidate))) {
                 return back()->withErrors([
-                    'purpose_key' => 'Publish this fully reviewed cause first. Then assign it to the Zakat page; editing alone cannot publish a draft.',
+                    'purpose_key' => 'Publish this fully reviewed cause first. Then assign it to the ' . $this->purposeRoleLabel($purpose) . '; editing alone cannot publish a draft.',
                 ]);
             }
 
@@ -245,7 +246,7 @@ class DonationTypeController extends Controller
                 $this->destinations->lockDestinationRows($requestedCandidate);
 
                 $lockedQuery = DonationType::query()->orderBy('id')->lockForUpdate();
-                $lockedRows = $purpose === 'zakat'
+                $lockedRows = $this->isProtectedPurpose($purpose)
                     ? $lockedQuery->get()
                     : $lockedQuery->whereKey($donationType->getKey())->get();
                 $locked = $lockedRows->firstWhere('id', $donationType->getKey());
@@ -254,9 +255,10 @@ class DonationTypeController extends Controller
                         'id' => 'This donation cause no longer exists.',
                     ]);
                 }
-                if ($locked->purpose_key === 'zakat' && $purpose !== 'zakat') {
+                $lockedPurpose = (string) ($locked->purpose_key ?? '');
+                if ($this->isProtectedPurpose($lockedPurpose) && $purpose !== $lockedPurpose) {
                     throw ValidationException::withMessages([
-                        'purpose_key' => 'Assign the Zakat purpose to a published replacement cause instead of removing it directly.',
+                        'purpose_key' => 'Assign the ' . $this->purposeRoleLabel($lockedPurpose) . ' role to a published replacement cause instead of removing it directly.',
                     ]);
                 }
 
@@ -274,9 +276,9 @@ class DonationTypeController extends Controller
                     ]);
                 }
 
-                if ($purpose === 'zakat') {
+                if ($this->isProtectedPurpose($purpose)) {
                     DonationType::query()
-                        ->where('purpose_key', 'zakat')
+                        ->where('purpose_key', $purpose)
                         ->whereKeyNot($locked->getKey())
                         ->update(['purpose_key' => null]);
                 }
@@ -333,9 +335,9 @@ class DonationTypeController extends Controller
                             if ($this->destinationLockIdentity($data) !== $this->destinationLockIdentity($snapshot)) {
                                 throw new RuntimeException('donation_destination_changed_during_lock');
                             }
-                            if ($data->purpose_key === 'zakat' && (bool) $data->status) {
+                            if ($this->isProtectedPurpose($data->purpose_key) && (bool) $data->status) {
                                 return response([
-                                    'message' => 'The active Zakat cause cannot be unpublished. Assign the Zakat purpose to another cause first.',
+                                    'message' => 'The cause assigned to the ' . $this->purposeRoleLabel($data->purpose_key) . ' cannot be unpublished. Assign that role to another published cause first.',
                                 ], 422);
                             }
                             if (!$data->status) {
@@ -378,9 +380,9 @@ class DonationTypeController extends Controller
                 if (!$donation) {
                     return response(['message' => $request->Lang->Common->Form->NotFound], 404);
                 }
-                if ($donation->purpose_key === 'zakat') {
+                if ($this->isProtectedPurpose($donation->purpose_key)) {
                     return response([
-                        'message' => 'The Zakat cause cannot be deleted. Assign the Zakat purpose to another cause first.',
+                        'message' => 'The cause assigned to the ' . $this->purposeRoleLabel($donation->purpose_key) . ' cannot be deleted. Assign that role to another published cause first.',
                     ], 422);
                 }
                 $donation->delete();
@@ -403,6 +405,21 @@ class DonationTypeController extends Controller
                 Rule::exists('donation_cause_groups', 'id'),
             ],
         ];
+    }
+
+    private function isProtectedPurpose(mixed $purpose): bool
+    {
+        return is_string($purpose)
+            && in_array($purpose, DonationType::PROTECTED_PURPOSE_KEYS, true);
+    }
+
+    private function purposeRoleLabel(mixed $purpose): string
+    {
+        return match ($purpose) {
+            'direct' => 'direct Make a Donation page',
+            'zakat' => 'Zakat donation page',
+            default => 'protected donation page',
+        };
     }
 
     private function normalizedPresentationAttributes(array $validated, bool $withDefaultOrder = false): array

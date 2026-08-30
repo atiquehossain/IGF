@@ -28,7 +28,7 @@ class SeoSchemaTemplateService
             $routeName === 'frontend.home' => 'ngo',
             $routeName === 'frontend.about' => 'about',
             $routeName === 'frontend.contactUs' => 'contact',
-            $routeName === 'frontend.donate.index' => 'donate',
+            in_array($routeName, ['frontend.donate.index', 'frontend.donate.direct'], true) => 'donate',
             $kind === 'donation_cause' => 'donate',
             in_array($routeName, ['frontend.events', 'frontend.project', 'frontend.gallery', 'frontend.annual_report.index'], true) => 'collection',
             $kind === 'category' => 'collection',

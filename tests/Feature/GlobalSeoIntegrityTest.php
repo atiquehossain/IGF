@@ -106,6 +106,13 @@ class GlobalSeoIntegrityTest extends TestCase
             'destination_name' => 'Emergency Relief Fund',
             'status' => 1,
         ]);
+        $direct = DonationType::create([
+            'name' => 'Direct community support',
+            'description' => 'Reviewed direct donation support.',
+            'purpose_key' => 'direct',
+            'destination_type' => 'unrestricted',
+            'status' => 1,
+        ]);
         $excluded = DonationType::create([
             'name' => 'Private Campaign',
             'description' => 'Reviewed private campaign.',
@@ -146,6 +153,8 @@ class GlobalSeoIntegrityTest extends TestCase
 
         $this->assertStringContainsString('<loc>' . route('frontend.donate.cause', ['cause' => $education->slug]) . '</loc>', $content);
         $this->assertStringContainsString('<loc>' . route('frontend.donate.cause', ['cause' => $relief->slug]) . '</loc>', $content);
+        $this->assertStringContainsString('<loc>' . route('frontend.donate.direct') . '</loc>', $content);
+        $this->assertStringNotContainsString('/donate/' . $direct->slug, $content);
         $this->assertStringNotContainsString('/donate/' . $excluded->slug, $content);
         $this->assertStringNotContainsString('/donate/' . $draft->slug, $content);
         $this->assertStringNotContainsString('/donate/' . $broken->slug, $content);

@@ -170,7 +170,7 @@
 
                                     <div class="form-group">
                                         <input id="new_purpose_key" type="hidden" name="purpose_key" value="">
-                                        <div class="alert alert-info small mb-0"><strong>New causes start as regular drafts.</strong> Review the visitor wording, managed image, and funding destination; ask a publisher to publish it; then edit the published cause if it should become the Zakat page cause.</div>
+                                        <div class="alert alert-info small mb-0"><strong>New causes start as regular drafts.</strong> Review the visitor wording, managed image, and funding destination; ask a publisher to publish it; then edit the published cause if it should power the Make a Donation or Zakat page.</div>
                                         @error('purpose_key')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                                     </div>
 
@@ -309,7 +309,7 @@
                                 <option value="{{ $value }}" @selected(old('purpose_key', '') === $value)>{{ $label }}</option>
                             @endforeach
                         </select>
-                        <small class="form-text text-muted">Only one cause can be assigned to the Zakat donation page.</small>
+                        <small class="form-text text-muted">Assign one published cause to each special page role: Make a Donation or Zakat. Reassigning a role safely replaces its current cause.</small>
                         @error('purpose_key')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                     </div>
 

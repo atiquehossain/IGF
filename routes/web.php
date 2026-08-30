@@ -613,6 +613,7 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     Route::post('volunteer/register', 'Vue\VolunteerRegistrationController@registration')->middleware('throttle:10,1')->name('frontend.volunteer_registration.store');
 
     // Donate Section
+    Route::get('make-a-donation', 'Vue\DonateController@direct')->name('frontend.donate.direct');
     Route::get('donate', 'Vue\DonateController@index')->name('frontend.donate.index');
     Route::get('donate/checkout-key', 'Vue\DonateController@checkoutKey')
         ->middleware('throttle:30,1')

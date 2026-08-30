@@ -18,7 +18,17 @@ class DonationType extends Model
 
     public const PURPOSE_OPTIONS = [
         '' => 'Regular donation cause',
+        'direct' => 'Use for the direct Make a Donation page',
         'zakat' => 'Use for the Zakat donation page',
+    ];
+
+    /**
+     * These roles each own a stable public checkout entry point. They may only
+     * be moved to another published, operational cause—not removed in place.
+     */
+    public const PROTECTED_PURPOSE_KEYS = [
+        'direct',
+        'zakat',
     ];
 
     public const DESTINATION_OPTIONS = [

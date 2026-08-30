@@ -781,7 +781,7 @@ class IgniteParityContentSeeder extends Seeder
                 ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events & News', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
             ]],
             ['uuid' => '67000000-0000-4000-8000-000000000006', 'name' => 'Donate', 'link' => 'custom', 'slug' => '#', 'order' => 5, 'children' => [
-                ['uuid' => '68000000-0006-4000-8000-000000000001', 'name' => 'Make a Donation', 'link' => 'frontend.donate.index', 'slug' => null, 'order' => 0],
+                ['uuid' => '68000000-0006-4000-8000-000000000001', 'name' => 'Make a Donation', 'link' => 'frontend.donate.direct', 'slug' => null, 'order' => 0],
                 ['uuid' => '68000000-0006-4000-8000-000000000002', 'name' => 'Give Zakat', 'link' => 'frontend.zakat', 'slug' => null, 'order' => 1],
             ]],
         ];

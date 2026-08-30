@@ -326,6 +326,7 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(youth.element.contains(workshop.element)).toBe(true);
     expect(getInvolved.find('a[href="/workshops"]').exists()).toBe(false);
     expect(desktop.findAll('a[href="/workshops"]')).toHaveLength(1);
+    expect(desktop.get('a[href="/make-a-donation"]').text()).toBe('Make a Donation');
     expect(desktop.text()).not.toContain('Opportunities');
     expect(desktop.text()).not.toContain("Founder's Letter");
 

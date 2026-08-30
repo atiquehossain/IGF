@@ -21,6 +21,9 @@ describe('public donation catalog', () => {
     'youth-development',
     'street-children-education',
   ];
+  const causeLinks = causeSlugs.map(slug => (
+    slug === 'where-it-is-needed-most' ? '/make-a-donation' : `/donate/${slug}`
+  ));
   const lastCause = {
     name: 'Street Children Education',
     slug: 'street-children-education',
@@ -36,6 +39,19 @@ describe('public donation catalog', () => {
     cy.get('#app').should(($app) => {
       const page = JSON.parse($app.attr('data-page'));
       expect(page.props.data.pageMode).to.eq(expectedMode);
+    });
+  };
+
+  const assertAmountCardsReadable = () => {
+    cy.get('.igf-amount-options button').each(($button) => {
+      const button = $button[0];
+      const amount = button.querySelector('span');
+      const icon = button.querySelector('i').getBoundingClientRect();
+      const amountText = button.ownerDocument.createRange();
+
+      amountText.selectNodeContents(amount);
+      expect(button.scrollWidth).to.be.at.most(button.clientWidth + 1);
+      expect(amountText.getBoundingClientRect().right).to.be.at.most(icon.left - 4);
     });
   };
 
@@ -99,7 +115,7 @@ describe('public donation catalog', () => {
       .should('have.length', 17)
       .then((links) => {
         expect([...links].map(link => link.getAttribute('href')))
-          .to.deep.equal(causeSlugs.map(slug => `/donate/${slug}`));
+          .to.deep.equal(causeLinks);
       });
     cy.get('#donation-form-title').should('not.exist');
     cy.get('#donation-cause').should('not.exist');
@@ -133,6 +149,7 @@ describe('public donation catalog', () => {
     cy.get('.igf-cause-back-link')
       .should('have.attr', 'href')
       .and('match', /\/donate$/);
+    assertAmountCardsReadable();
     assertNoHorizontalOverflow();
   };
 
@@ -148,6 +165,20 @@ describe('public donation catalog', () => {
     cy.visit('/donate');
 
     assertCatalogAndOpenLastCause();
+  });
+
+  it('keeps direct-donation amount cards readable at the reported viewport', () => {
+    cy.viewport(1033, 912);
+    cy.visit('/make-a-donation');
+
+    assertPageMode('detail');
+    cy.get('.igf-donate').should('have.class', 'is-cause-page');
+    cy.get('.igf-checkout-grid').should(($grid) => {
+      const columns = getComputedStyle($grid[0]).gridTemplateColumns.trim().split(/\s+/);
+      expect(columns).to.have.length(1);
+    });
+    assertAmountCardsReadable();
+    assertNoHorizontalOverflow();
   });
 
   it('redirects a legacy cause query to its canonical cause page', () => {

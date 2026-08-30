@@ -42,7 +42,9 @@ class DonateController extends Controller
             if ($cause) {
                 $query = $request->query();
                 unset($query['cause']);
-                $url = route('frontend.donate.cause', ['cause' => $cause->slug]);
+                $url = $cause->purpose_key === 'direct'
+                    ? route('frontend.donate.direct')
+                    : route('frontend.donate.cause', ['cause' => $cause->slug]);
                 if ($query !== []) {
                     $url .= '?' . http_build_query($query);
                 }
@@ -55,10 +57,43 @@ class DonateController extends Controller
     }
 
     /**
+     * GET /make-a-donation
+     *
+     * Render the admin-designated direct donation cause without exposing the
+     * cause catalog. The protected role keeps this stable URL independent of
+     * an individual cause slug while the visible content and destination stay
+     * editable in the donation-cause manager.
+     */
+    public function direct(Request $request)
+    {
+        $cause = $this->destinations
+            ->activeCauses(app()->getLocale())
+            ->firstWhere('purpose_key', 'direct');
+
+        abort_unless(
+            $cause,
+            503,
+            'Direct donations are temporarily unavailable. Please contact Ignite Global Foundation for assistance.'
+        );
+
+        return $this->renderPage($request, (string) $cause->slug);
+    }
+
+    /**
      * GET /donate/{cause}
      */
     public function cause(Request $request, string $cause)
     {
+        $selectedCause = $this->destinations->resolveActiveCause($cause, app()->getLocale());
+        if ($selectedCause?->purpose_key === 'direct') {
+            $url = route('frontend.donate.direct');
+            if ($request->query() !== []) {
+                $url .= '?' . http_build_query($request->query());
+            }
+
+            return redirect()->to($url, 301);
+        }
+
         return $this->renderPage($request, $cause);
     }
 
@@ -123,10 +158,13 @@ class DonateController extends Controller
             $localizedFallbacks,
             $locale
         );
+        $directCauseUuid = (string) ($causes->firstWhere('purpose_key', 'direct')?->uuid ?? '');
         $donationTypes = $this->destinations
             ->publicOptions($causes, $locale, $localizedByUuid)
-            ->map(function (array $option): array {
-                $option['url'] = route('frontend.donate.cause', ['cause' => $option['slug']]);
+            ->map(function (array $option) use ($directCauseUuid): array {
+                $option['url'] = $directCauseUuid !== '' && hash_equals($directCauseUuid, (string) $option['uuid'])
+                    ? route('frontend.donate.direct')
+                    : route('frontend.donate.cause', ['cause' => $option['slug']]);
 
                 return $option;
             })
@@ -203,6 +241,12 @@ class DonateController extends Controller
         $contentSeo = $selectedCause
             ? $this->seo->metaForModel($selectedCause, $metaTag, $request->url(), $locale)
             : [];
+        if ($selectedCause?->purpose_key === 'direct' && $request->routeIs('frontend.donate.direct')) {
+            $contentSeo['canonical_url'] = (string) $this->seo->localizedUrl(
+                route('frontend.donate.direct'),
+                $locale
+            );
+        }
         if (empty($contentSeo['schema_markup']) && empty($routeSeo['schema_markup'])) {
             $pageUrl = (string) $this->seo->localizedUrl($request->url(), $locale);
             $breadcrumbs = [

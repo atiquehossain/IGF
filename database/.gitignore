@@ -1,2 +1,5 @@
 *.sqlite
+!seeders/seed-data/igf-public-content.sqlite
 *.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm

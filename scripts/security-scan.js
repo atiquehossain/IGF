@@ -7,6 +7,10 @@ const MAX_CONTENT_SIZE = 5 * 1024 * 1024;
 const alwaysExcludedDirectories = new Set(['.git', 'vendor', 'node_modules']);
 const localRuntimeDirectories = new Set(['.codex', 'storage']);
 const excludedFiles = new Set([path.resolve(__filename), path.join(root, 'package-lock.json')]);
+const approvedSanitizedDatabaseArtifacts = new Set([
+  'database/seeders/seed-data/igf-public-content.sqlite',
+  'database/seeders/seed-data/igf-public-content.sqlite.sha256',
+]);
 
 const knownCredentialPatterns = [
   { name: 'Google API key', pattern: /AIza[0-9A-Za-z_-]{30,}/ },
@@ -19,6 +23,10 @@ const knownCredentialPatterns = [
 ];
 
 const normalizeRelative = filePath => path.relative(root, filePath).replaceAll('\\', '/');
+
+function isApprovedSanitizedDatabaseArtifact(relativePath) {
+  return approvedSanitizedDatabaseArtifacts.has(relativePath.replaceAll('\\', '/'));
+}
 
 function isPlaceholder(rawValue) {
   const value = String(rawValue ?? '').trim().replace(/^(['"])(.*)\1$/, '$2').trim();
@@ -53,6 +61,7 @@ function findCredentialAssignments(content, includeStructured = true) {
 function sensitiveArtifactReason(relativePath) {
   const normalized = relativePath.replaceAll('\\', '/');
   const basename = path.posix.basename(normalized);
+  if (isApprovedSanitizedDatabaseArtifact(normalized)) return null;
   if (normalized === '.rnd') return 'runtime entropy artifact';
   if (/^[^/]+\.log$/i.test(normalized)) return 'root runtime log artifact';
   if (/^service-account.*\.json$/i.test(basename)) return 'service-account credential artifact';
@@ -106,12 +115,18 @@ function inspectContent(relativePath, content) {
 }
 
 function gitTrackedFiles() {
-  const result = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8', windowsHide: true });
+  const safeRoot = root.replaceAll('\\', '/');
+  const result = spawnSync('git', ['-c', `safe.directory=${safeRoot}`, 'ls-files', '-z'], {
+    cwd: root,
+    encoding: 'utf8',
+    windowsHide: true,
+  });
   if (result.status !== 0 || !result.stdout) return null;
   return result.stdout.split('\0').filter(Boolean).map(file => path.join(root, file));
 }
 
 function isLocalRuntimeFile(relativePath) {
+  if (isApprovedSanitizedDatabaseArtifact(relativePath)) return false;
   if (localRuntimeDirectories.has(relativePath.split('/')[0])) return true;
   if (relativePath === '.rnd' || /^[^/]+\.log$/i.test(relativePath)) return true;
   if (/^database\/.*\.(?:sql|sqlite|sqlite3)(?:$|[-._])/i.test(relativePath)) return true;
@@ -167,4 +182,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { containsSensitiveDebugCapture, containsSensitiveSeedData, findCredentialAssignments, inspectContent, isPlaceholder, scanFiles, sensitiveArtifactReason };
+module.exports = { containsSensitiveDebugCapture, containsSensitiveSeedData, findCredentialAssignments, inspectContent, isApprovedSanitizedDatabaseArtifact, isPlaceholder, scanFiles, sensitiveArtifactReason };

@@ -267,6 +267,281 @@ final class CmsContentSnapshotCommandTest extends TestCase
         }
     }
 
+    public function test_seeder_preserves_localized_pages_that_share_a_uuid(): void
+    {
+        $uuid = '93000000-0000-4000-8000-000000000001';
+        $categoryUuid = '93000000-0000-4000-8000-000000000002';
+        $englishBlockUuid = '93000000-0000-4000-8000-000000000003';
+        $banglaBlockUuid = '93000000-0000-4000-8000-000000000004';
+
+        $englishCategoryId = DB::table('categories')->insertGetId([
+            'uuid' => $categoryUuid,
+            'name' => 'Localized category',
+            'slug' => 'localized-category',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $banglaCategoryId = DB::table('categories')->insertGetId([
+            'uuid' => $categoryUuid,
+            'name' => 'স্থানীয় বিভাগ',
+            'slug' => 'localized-category',
+            'language' => 'bn',
+            'status' => 1,
+        ]);
+
+        $englishPageId = DB::table('pages')->insertGetId(
+            [
+                'uuid' => $uuid,
+                'category_id' => $englishCategoryId,
+                'name' => 'Localized snapshot page',
+                'sub_title' => 'Localized snapshot page subtitle',
+                'slug' => 'localized-snapshot-page',
+                'language' => 'en',
+                'status' => 1,
+                'publication_status' => 'published',
+                'visibility' => 'public',
+            ]
+        );
+        $banglaPageId = DB::table('pages')->insertGetId(
+            [
+                'uuid' => $uuid,
+                'category_id' => $banglaCategoryId,
+                'name' => 'স্থানীয় স্ন্যাপশট পৃষ্ঠা',
+                'sub_title' => 'স্থানীয় স্ন্যাপশট পৃষ্ঠার উপশিরোনাম',
+                'slug' => 'localized-snapshot-page-bn',
+                'language' => 'bn',
+                'status' => 1,
+                'publication_status' => 'published',
+                'visibility' => 'public',
+            ]
+        );
+        DB::table('page_blocks')->insert([
+            [
+                'uuid' => $englishBlockUuid,
+                'page_id' => $englishPageId,
+                'type' => 'rich-text',
+                'label' => 'English localized block',
+                'content' => json_encode(['html' => '<p>English block</p>'], JSON_THROW_ON_ERROR),
+                'sort_order' => 1,
+                'is_enabled' => 1,
+            ],
+            [
+                'uuid' => $banglaBlockUuid,
+                'page_id' => $banglaPageId,
+                'type' => 'rich-text',
+                'label' => 'Bangla localized block',
+                'content' => json_encode(['html' => '<p>বাংলা ব্লক</p>'], JSON_THROW_ON_ERROR),
+                'sort_order' => 1,
+                'is_enabled' => 1,
+            ],
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+
+        DB::table('page_blocks')->whereIn('uuid', [$englishBlockUuid, $banglaBlockUuid])->delete();
+        DB::table('pages')->where('uuid', $uuid)->delete();
+        DB::table('categories')->where('uuid', $categoryUuid)->delete();
+
+        $this->mockSeederSnapshot($json, reads: 2);
+        $seeder = $this->app->make(CmsContentSnapshotSeeder::class);
+        $seeder->run();
+        $seeder->run();
+
+        $this->assertSame(2, DB::table('pages')->where('uuid', $uuid)->count());
+        $this->assertSame(
+            ['bn', 'en'],
+            DB::table('pages')->where('uuid', $uuid)->orderBy('language')->pluck('language')->all()
+        );
+        $this->assertSame(
+            ['bn' => 'bn', 'en' => 'en'],
+            DB::table('pages as pages')
+                ->join('categories as categories', 'categories.id', '=', 'pages.category_id')
+                ->where('pages.uuid', $uuid)
+                ->orderBy('pages.language')
+                ->pluck('categories.language', 'pages.language')
+                ->all()
+        );
+        $this->assertSame(
+            ['Bangla localized block' => 'bn', 'English localized block' => 'en'],
+            DB::table('page_blocks as blocks')
+                ->join('pages as pages', 'pages.id', '=', 'blocks.page_id')
+                ->whereIn('blocks.uuid', [$englishBlockUuid, $banglaBlockUuid])
+                ->orderBy('blocks.label')
+                ->pluck('pages.language', 'blocks.label')
+                ->all()
+        );
+    }
+
+    public function test_seeder_preserves_other_localized_records_that_share_a_uuid(): void
+    {
+        $albumUuid = '93500000-0000-4000-8000-000000000001';
+        $bannerUuid = '93500000-0000-4000-8000-000000000002';
+        $galleryUuid = '93500000-0000-4000-8000-000000000003';
+        $splashUuid = '93500000-0000-4000-8000-000000000004';
+
+        $englishAlbumId = DB::table('albums')->insertGetId([
+            'uuid' => $albumUuid,
+            'name' => 'Localized album',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $banglaAlbumId = DB::table('albums')->insertGetId([
+            'uuid' => $albumUuid,
+            'name' => 'স্থানীয় অ্যালবাম',
+            'language' => 'bn',
+            'status' => 1,
+        ]);
+
+        foreach ([
+            ['en', 'Localized banner', $englishAlbumId],
+            ['bn', 'স্থানীয় ব্যানার', $banglaAlbumId],
+        ] as [$language, $name, $albumId]) {
+            DB::table('banners')->insert([
+                'uuid' => $bannerUuid,
+                'album_id' => $albumId,
+                'name' => $name,
+                'language' => $language,
+                'status' => 1,
+            ]);
+        }
+
+        foreach ([
+            ['en', 'Localized gallery', $englishAlbumId],
+            ['bn', 'স্থানীয় গ্যালারি', $banglaAlbumId],
+        ] as [$language, $name, $albumId]) {
+            DB::table('galleries')->insert([
+                'uuid' => $galleryUuid,
+                'album_id' => $albumId,
+                'name' => $name,
+                'language' => $language,
+                'status' => 1,
+            ]);
+        }
+
+        DB::table('splash_screens')->insert([
+            [
+                'uuid' => $splashUuid,
+                'title' => 'Localized splash screen',
+                'language' => 'en',
+                'status' => 1,
+            ],
+            [
+                'uuid' => $splashUuid,
+                'title' => 'স্থানীয় স্প্ল্যাশ স্ক্রিন',
+                'language' => 'bn',
+                'status' => 1,
+            ],
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+
+        DB::table('banners')->where('uuid', $bannerUuid)->delete();
+        DB::table('galleries')->where('uuid', $galleryUuid)->delete();
+        DB::table('splash_screens')->where('uuid', $splashUuid)->delete();
+        DB::table('albums')->where('uuid', $albumUuid)->delete();
+
+        $this->mockSeederSnapshot($json, reads: 2);
+        $seeder = $this->app->make(CmsContentSnapshotSeeder::class);
+        $seeder->run();
+        $seeder->run();
+
+        foreach ([
+            ['albums', $albumUuid],
+            ['banners', $bannerUuid],
+            ['galleries', $galleryUuid],
+            ['splash_screens', $splashUuid],
+        ] as [$table, $uuid]) {
+            $this->assertSame(2, DB::table($table)->where('uuid', $uuid)->count());
+            $this->assertSame(
+                ['bn', 'en'],
+                DB::table($table)->where('uuid', $uuid)->orderBy('language')->pluck('language')->all()
+            );
+        }
+
+        foreach (['banners', 'galleries'] as $table) {
+            $this->assertSame(
+                ['bn' => 'bn', 'en' => 'en'],
+                DB::table($table.' as localized')
+                    ->join('albums as albums', 'albums.id', '=', 'localized.album_id')
+                    ->where('localized.uuid', $table === 'banners' ? $bannerUuid : $galleryUuid)
+                    ->orderBy('localized.language')
+                    ->pluck('albums.language', 'localized.language')
+                    ->all()
+            );
+        }
+    }
+
+    public function test_seeder_preserves_localized_navigation_parent_relationships(): void
+    {
+        $parentUuid = '94000000-0000-4000-8000-000000000001';
+        $childUuid = '94000000-0000-4000-8000-000000000002';
+
+        $englishParentId = DB::table('page_menus')->insertGetId([
+            'uuid' => $parentUuid,
+            'name' => 'Localized parent',
+            'slug' => 'localized-parent',
+            'type' => 'header',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $banglaParentId = DB::table('page_menus')->insertGetId([
+            'uuid' => $parentUuid,
+            'name' => 'স্থানীয় অভিভাবক',
+            'slug' => 'localized-parent',
+            'type' => 'header',
+            'language' => 'bn',
+            'status' => 1,
+        ]);
+        DB::table('page_menus')->insert([
+            [
+                'uuid' => $childUuid,
+                'parent_id' => $englishParentId,
+                'name' => 'Localized child',
+                'slug' => 'localized-child',
+                'type' => 'header',
+                'language' => 'en',
+                'status' => 1,
+            ],
+            [
+                'uuid' => $childUuid,
+                'parent_id' => $banglaParentId,
+                'name' => 'স্থানীয় শিশু',
+                'slug' => 'localized-child',
+                'type' => 'header',
+                'language' => 'bn',
+                'status' => 1,
+            ],
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+
+        DB::table('page_menus')->where('uuid', $childUuid)->delete();
+        DB::table('page_menus')->where('uuid', $parentUuid)->delete();
+
+        $this->mockSeederSnapshot($json, reads: 2);
+        $seeder = $this->app->make(CmsContentSnapshotSeeder::class);
+        $seeder->run();
+        $seeder->run();
+
+        $this->assertSame(2, DB::table('page_menus')->where('uuid', $parentUuid)->count());
+        $this->assertSame(2, DB::table('page_menus')->where('uuid', $childUuid)->count());
+        $this->assertSame(
+            ['bn' => 'bn', 'en' => 'en'],
+            DB::table('page_menus as children')
+                ->join('page_menus as parents', 'parents.id', '=', 'children.parent_id')
+                ->where('children.uuid', $childUuid)
+                ->orderBy('children.language')
+                ->pluck('parents.language', 'children.language')
+                ->all()
+        );
+    }
+
     public function test_seeder_rejects_tampered_records_when_the_checksum_does_not_match(): void
     {
         $ids = $this->seedContentAndSensitiveCanaries();

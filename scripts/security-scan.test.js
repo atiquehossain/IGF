@@ -6,6 +6,7 @@ const {
   containsSensitiveSeedData,
   findCredentialAssignments,
   inspectContent,
+  isApprovedSanitizedDatabaseArtifact,
   isPlaceholder,
   sensitiveArtifactReason,
 } = require('./security-scan');
@@ -35,6 +36,26 @@ test('detects database, Debugbar, and framework runtime artifacts by path', () =
   assert.equal(sensitiveArtifactReason('storage/framework/cache/data/.gitignore'), null);
   assert.match(sensitiveArtifactReason('.rnd'), /entropy/);
   assert.match(sensitiveArtifactReason('phpunit-events.log'), /runtime log/);
+});
+
+test('allows only the reviewed sanitized database artifact and its checksum', () => {
+  const artifact = 'database/seeders/seed-data/igf-public-content.sqlite';
+  const checksum = `${artifact}.sha256`;
+
+  assert.equal(isApprovedSanitizedDatabaseArtifact(artifact), true);
+  assert.equal(isApprovedSanitizedDatabaseArtifact(checksum), true);
+  assert.equal(sensitiveArtifactReason(artifact), null);
+  assert.equal(sensitiveArtifactReason(checksum), null);
+
+  for (const unsafePath of [
+    'database/seeders/seed-data/igf-public-content-copy.sqlite',
+    'database/seeders/seed-data/igf-public-content.sqlite.candidate',
+    'database/seeders/seed-data/igf-public-content.sqlite-wal',
+    'database/database.sqlite',
+  ]) {
+    assert.equal(isApprovedSanitizedDatabaseArtifact(unsafePath), false);
+    assert.match(sensitiveArtifactReason(unsafePath), /database artifact/);
+  }
 });
 
 test('detects credential-bearing administrator seed JSON', () => {

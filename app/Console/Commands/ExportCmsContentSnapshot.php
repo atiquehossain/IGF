@@ -63,6 +63,15 @@ class ExportCmsContentSnapshot extends Command
         'click_count',
     ];
 
+    private const LOCALIZED_RELATION_TABLES = [
+        'albums',
+        'banners',
+        'categories',
+        'page_menus',
+        'pages',
+        'team_groups',
+    ];
+
     protected $signature = 'cms:snapshot
         {--output= : Repository-relative JSON destination under database/seeders/seed-data}
         {--force : Replace an existing snapshot}';
@@ -195,7 +204,12 @@ class ExportCmsContentSnapshot extends Command
             $maps[$table] = [];
             foreach ($tables[$table] ?? [] as $record) {
                 if (isset($record['id'], $record['uuid']) && trim((string) $record['uuid']) !== '') {
-                    $maps[$table][(string) $record['id']] = (string) $record['uuid'];
+                    $maps[$table][(string) $record['id']] = [
+                        'uuid' => (string) $record['uuid'],
+                        'language' => isset($record['language']) && trim((string) $record['language']) !== ''
+                            ? (string) $record['language']
+                            : null,
+                    ];
                 }
             }
         }
@@ -219,7 +233,12 @@ class ExportCmsContentSnapshot extends Command
         foreach ($this->relationMap($table) as $column => [$targetTable, $snapshotColumn]) {
             $value = $record[$column] ?? null;
             unset($record[$column]);
-            $record[$snapshotColumn] = $this->resolveRelation($table, $column, $value, $targetTable, $maps);
+            $identity = $this->resolveRelation($table, $column, $value, $targetTable, $maps);
+            $record[$snapshotColumn] = $identity['uuid'] ?? null;
+
+            if (in_array($targetTable, self::LOCALIZED_RELATION_TABLES, true)) {
+                $record[$this->relationLanguageColumn($snapshotColumn)] = $identity['language'] ?? null;
+            }
         }
 
         if ($table === 'seo_metadata') {
@@ -235,9 +254,11 @@ class ExportCmsContentSnapshot extends Command
             if ($seoableId !== null && $targetTable === null) {
                 throw new RuntimeException("Unsupported SEO relation type [{$seoableType}].");
             }
-            $record['seoable_uuid'] = $targetTable === null
+            $identity = $targetTable === null
                 ? null
                 : $this->resolveRelation($table, 'seoable_id', $seoableId, $targetTable, $maps);
+            $record['seoable_uuid'] = $identity['uuid'] ?? null;
+            $record['seoable_language'] = $identity['language'] ?? null;
         }
 
         return $this->sortRecursively($record);
@@ -285,7 +306,7 @@ class ExportCmsContentSnapshot extends Command
         mixed $value,
         string $targetTable,
         array $maps
-    ): ?string {
+    ): ?array {
         if ($value === null || trim((string) $value) === '') {
             return null;
         }
@@ -298,6 +319,13 @@ class ExportCmsContentSnapshot extends Command
         }
 
         return $maps[$targetTable][$key];
+    }
+
+    private function relationLanguageColumn(string $uuidColumn): string
+    {
+        return str_ends_with($uuidColumn, '_uuid')
+            ? substr($uuidColumn, 0, -5).'_language'
+            : $uuidColumn.'_language';
     }
 
     private function sortRecursively(array $value): array

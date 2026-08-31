@@ -60,6 +60,17 @@ class CmsContentSnapshotSeeder extends Seeder
         'testimonials',
     ];
 
+    /** @var list<string> */
+    private const LOCALIZED_UUID_TABLES = [
+        'albums',
+        'banners',
+        'categories',
+        'galleries',
+        'page_menus',
+        'pages',
+        'splash_screens',
+    ];
+
     public function run(): void
     {
         $snapshot = $this->readAndValidateSnapshot();
@@ -75,9 +86,13 @@ class CmsContentSnapshotSeeder extends Seeder
                 foreach ($snapshot['tables'][$table] as $sourceRecord) {
                     $record = $sourceRecord;
                     $parentUuid = null;
+                    $parentLanguage = null;
                     if ($table === 'page_menus') {
                         $parentUuid = $record['parent_uuid'] ?? null;
-                        unset($record['parent_uuid']);
+                        $parentLanguage = array_key_exists('parent_language', $record)
+                            ? $record['parent_language']
+                            : ($record['language'] ?? null);
+                        unset($record['parent_uuid'], $record['parent_language']);
                         $record['parent_id'] = null;
                     }
 
@@ -88,18 +103,26 @@ class CmsContentSnapshotSeeder extends Seeder
                     if ($table === 'page_menus' && $parentUuid !== null) {
                         $deferredParents[] = [
                             'uuid' => $record['uuid'],
+                            'language' => $record['language'] ?? null,
                             'parent_uuid' => $parentUuid,
+                            'parent_language' => $parentLanguage,
                         ];
                     }
                 }
 
                 if ($table === 'page_menus') {
                     foreach ($deferredParents as $relation) {
-                        DB::table('page_menus')
-                            ->where('uuid', $relation['uuid'])
-                            ->update([
-                                'parent_id' => $this->idForUuid('page_menus', $relation['parent_uuid']),
-                            ]);
+                        $query = DB::table('page_menus')->where('uuid', $relation['uuid']);
+                        if ($relation['language'] !== null && $relation['language'] !== '') {
+                            $query->where('language', $relation['language']);
+                        }
+                        $query->update([
+                            'parent_id' => $this->idForUuid(
+                                'page_menus',
+                                $relation['parent_uuid'],
+                                $relation['parent_language']
+                            ),
+                        ]);
                     }
                 }
             }
@@ -179,15 +202,24 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private function restoreRelations(string $table, array $record): array
     {
-        foreach ($this->relationMap($table) as $snapshotColumn => [$targetTable, $databaseColumn]) {
+        foreach ($this->relationMap($table) as $snapshotColumn => [$targetTable, $databaseColumn, $languageColumn]) {
             $uuid = $record[$snapshotColumn] ?? null;
+            $language = $languageColumn === null ? null : ($record[$languageColumn] ?? null);
             unset($record[$snapshotColumn]);
-            $record[$databaseColumn] = $uuid === null ? null : $this->idForUuid($targetTable, (string) $uuid);
+            if ($languageColumn !== null) {
+                unset($record[$languageColumn]);
+            }
+            $record[$databaseColumn] = $uuid === null
+                ? null
+                : $this->idForUuid($targetTable, (string) $uuid, $language);
         }
 
         if ($table === 'seo_metadata') {
             $uuid = $record['seoable_uuid'] ?? null;
-            unset($record['seoable_uuid']);
+            $language = array_key_exists('seoable_language', $record)
+                ? $record['seoable_language']
+                : ($record['locale'] ?? null);
+            unset($record['seoable_uuid'], $record['seoable_language']);
             if ($uuid === null) {
                 $record['seoable_id'] = null;
             } else {
@@ -196,7 +228,7 @@ class CmsContentSnapshotSeeder extends Seeder
                     'App\\Models\\Category' => 'categories',
                     default => throw new RuntimeException('The CMS content snapshot contains an unsupported SEO relation.'),
                 };
-                $record['seoable_id'] = $this->idForUuid($target, (string) $uuid);
+                $record['seoable_id'] = $this->idForUuid($target, (string) $uuid, $language);
             }
         }
 
@@ -207,32 +239,32 @@ class CmsContentSnapshotSeeder extends Seeder
     {
         return match ($table) {
             'banners', 'galleries' => [
-                'album_uuid' => ['albums', 'album_id'],
+                'album_uuid' => ['albums', 'album_id', 'album_language'],
             ],
             'categories', 'tags' => [
-                'banner_uuid' => ['banners', 'banner_id'],
+                'banner_uuid' => ['banners', 'banner_id', 'banner_language'],
             ],
             'donation_types' => [
-                'donation_cause_group_uuid' => ['donation_cause_groups', 'donation_cause_group_id'],
+                'donation_cause_group_uuid' => ['donation_cause_groups', 'donation_cause_group_id', null],
             ],
             'latest_news' => [
-                'category_uuid' => ['categories', 'category_id'],
-                'team_group_uuid' => ['team_groups', 'team_group_id'],
+                'category_uuid' => ['categories', 'category_id', 'category_language'],
+                'team_group_uuid' => ['team_groups', 'team_group_id', 'team_group_language'],
             ],
             'page_blocks' => [
-                'page_uuid' => ['pages', 'page_id'],
-                'reusable_block_uuid' => ['reusable_blocks', 'reusable_block_id'],
+                'page_uuid' => ['pages', 'page_id', 'page_language'],
+                'reusable_block_uuid' => ['reusable_blocks', 'reusable_block_id', null],
             ],
             'page_tag_modules' => [
-                'page_uuid' => ['pages', 'page_id'],
-                'tag_uuid' => ['tags', 'tag_id'],
+                'page_uuid' => ['pages', 'page_id', 'page_language'],
+                'tag_uuid' => ['tags', 'tag_id', null],
             ],
             'page_menus' => [
-                'banner_uuid' => ['banners', 'banner_id'],
+                'banner_uuid' => ['banners', 'banner_id', 'banner_language'],
             ],
             'pages' => [
-                'category_uuid' => ['categories', 'category_id'],
-                'banner_uuid' => ['banners', 'banner_id'],
+                'category_uuid' => ['categories', 'category_id', 'category_language'],
+                'banner_uuid' => ['banners', 'banner_id', 'banner_language'],
             ],
             default => [],
         };
@@ -240,6 +272,17 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private function identityFor(string $table, array $record): array
     {
+        // Localized records intentionally share a UUID across locales. Treating
+        // UUID alone as the identity would collapse one locale during restore.
+        if (
+            in_array($table, self::LOCALIZED_UUID_TABLES, true)
+            && array_key_exists('language', $record)
+            && $record['language'] !== null
+            && $record['language'] !== ''
+        ) {
+            return $this->onlyIdentity($table, $record, ['uuid', 'language']);
+        }
+
         if (in_array($table, self::UUID_TABLES, true)) {
             return $this->onlyIdentity($table, $record, ['uuid']);
         }
@@ -273,14 +316,28 @@ class CmsContentSnapshotSeeder extends Seeder
         return $identity;
     }
 
-    private function idForUuid(string $table, string $uuid): int
+    private function idForUuid(string $table, string $uuid, mixed $language = null): int
     {
-        $id = DB::table($table)->where('uuid', $uuid)->value('id');
-        if ($id === null) {
-            throw new RuntimeException("Cannot restore CMS snapshot: [{$table}] UUID [{$uuid}] is missing.");
+        $query = DB::table($table)->where('uuid', $uuid);
+        if (
+            $language !== null
+            && $language !== ''
+            && Schema::hasColumn($table, 'language')
+        ) {
+            $query->where('language', (string) $language);
         }
 
-        return (int) $id;
+        $ids = $query->limit(2)->pluck('id');
+        if ($ids->isEmpty()) {
+            throw new RuntimeException("Cannot restore CMS snapshot: [{$table}] UUID [{$uuid}] is missing.");
+        }
+        if ($ids->count() > 1) {
+            throw new RuntimeException(
+                "Cannot restore CMS snapshot: [{$table}] UUID [{$uuid}] is ambiguous without a language."
+            );
+        }
+
+        return (int) $ids->first();
     }
 
     private function canonicalJson(array $value): string

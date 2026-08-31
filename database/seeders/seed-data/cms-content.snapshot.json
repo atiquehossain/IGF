@@ -54,6 +54,7 @@
         "banners": [],
         "categories": [
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Current and completed community-led projects across Bangladesh.",
                 "display_mode": "archive",
@@ -73,6 +74,7 @@
                 "uuid": "61000000-0000-4000-8000-000000000005"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Editable public homepage sections.",
                 "display_mode": "archive",
@@ -92,6 +94,7 @@
                 "uuid": "11111111-1111-4111-8111-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Education, youth leadership, livelihoods, healthcare, and disaster resilience programs designed with communities.",
                 "display_mode": "archive",
@@ -111,6 +114,7 @@
                 "uuid": "11111111-1111-4111-8111-000000000012"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Employment, internships, and volunteer opportunities with Ignite Global Foundation.",
                 "display_mode": "archive",
@@ -130,6 +134,7 @@
                 "uuid": "61000000-0000-4000-8000-000000000004"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Free, inclusive education from playgroup through Class Five at Ignite School in Bawnia, Dhaka.",
                 "display_mode": "landing_page",
@@ -149,6 +154,7 @@
                 "uuid": "61000000-0000-4000-8000-000000000006"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Impact stories from the field.",
                 "display_mode": "archive",
@@ -168,6 +174,7 @@
                 "uuid": "11111111-1111-4111-8111-111111111111"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Organization, governance, careers, and public policies.",
                 "display_mode": "archive",
@@ -187,6 +194,7 @@
                 "uuid": "11111111-1111-4111-8111-000000000010"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Recognition of Ignite Global Foundation leadership, service, education, and community impact.",
                 "display_mode": "archive",
@@ -206,6 +214,7 @@
                 "uuid": "61000000-0000-4000-8000-000000000003"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Ways to give.",
                 "display_mode": "archive",
@@ -626,6 +635,7 @@
         ],
         "galleries": [
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Building brighter futures together",
                 "grid_column": 1,
@@ -641,6 +651,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000016"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Children learning together",
                 "grid_column": 1,
@@ -656,6 +667,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000001"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Children participating in Ignite School",
                 "grid_column": 1,
@@ -671,6 +683,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000013"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Community support gathering",
                 "grid_column": 1,
@@ -686,6 +699,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000004"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Community volunteer orientation",
                 "grid_column": 1,
@@ -701,6 +715,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000002"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Disaster resilience in action",
                 "grid_column": 1,
@@ -716,6 +731,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000005"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Education for every learner",
                 "grid_column": 1,
@@ -731,6 +747,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000015"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Emergency response with local volunteers",
                 "grid_column": 1,
@@ -746,6 +763,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000012"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Food support prepared by volunteers",
                 "grid_column": 1,
@@ -761,6 +779,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000007"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Healthcare outreach through Project Niramoy",
                 "grid_column": 1,
@@ -776,6 +795,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000008"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Inclusive education program",
                 "grid_column": 1,
@@ -791,6 +811,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000006"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Livelihood support through Project Shabolombi",
                 "grid_column": 1,
@@ -806,6 +827,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000010"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Safe water access through Project Tripty",
                 "grid_column": 1,
@@ -821,6 +843,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000009"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Volunteer-led community service",
                 "grid_column": 1,
@@ -836,6 +859,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000014"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Young people planting for a healthier future",
                 "grid_column": 1,
@@ -851,6 +875,7 @@
                 "uuid": "66000000-0000-4000-8000-000000000011"
             },
             {
+                "album_language": "en",
                 "album_uuid": "65000000-0000-4000-8000-000000000001",
                 "description": "Youth innovation program",
                 "grid_column": 1,
@@ -869,6 +894,7 @@
         "latest_news": [
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Executive Member",
                 "image": "",
@@ -879,12 +905,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Executive Member",
                 "image": "",
@@ -895,12 +923,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Executive Member",
                 "image": "",
@@ -911,12 +941,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Founder - Chairman",
                 "image": "/storage/media/ignite-live/founder-ea5ae7f8a69f.png",
@@ -927,12 +959,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "General Secretary",
                 "image": "",
@@ -943,12 +977,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Treasurer",
                 "image": "",
@@ -959,12 +995,14 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
             },
             {
                 "biography": null,
+                "category_language": null,
                 "category_uuid": null,
                 "description": "Vice Chairman",
                 "image": "",
@@ -975,6 +1013,7 @@
                 "qualification": null,
                 "social_links": null,
                 "status": 1,
+                "team_group_language": "en",
                 "team_group_uuid": "a030fecb-fa90-4052-b077-1dd4989e1932",
                 "type": "our-members",
                 "url": ""
@@ -1177,6 +1216,7 @@
                 "content": "{\"eyebrow\":\"A connected response\",\"heading\":\"From immediate safety to lasting resilience\",\"items\":[{\"heading\":\"Prepare\",\"body\":\"<p>Work with communities on awareness, volunteer readiness, risk mapping, and practical preparedness.<\\/p>\"},{\"heading\":\"Respond\",\"body\":\"<p>Mobilize emergency food, shelter, safe water, health support, and essential supplies.<\\/p>\"},{\"heading\":\"Recover\",\"body\":\"<p>Restore homes, livelihoods, learning, and essential services in ways that reduce future risk.<\\/p>\"},{\"heading\":\"Strengthen\",\"body\":\"<p>Invest in local leadership, safer infrastructure, and lessons that improve the next response.<\\/p>\"}]}",
                 "is_enabled": 1,
                 "label": "How We Respond",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000003",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1193,6 +1233,7 @@
                 "content": "{\"eyebrow\":\"A growing network\",\"heading\":\"Young people connected by purpose\",\"items\":[{\"value\":\"105+\",\"label\":\"Campus ambassadors\",\"icon\":\"school\"},{\"value\":\"23,000+\",\"label\":\"National volunteers\",\"icon\":\"people\"},{\"value\":\"200+\",\"label\":\"International volunteers\",\"icon\":\"map\"},{\"value\":\"6\",\"label\":\"Divisions active\",\"icon\":\"heart\"}]}",
                 "is_enabled": 1,
                 "label": "Youth Network",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000002",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1209,6 +1250,7 @@
                 "content": "{\"eyebrow\":\"A message from our founder\",\"heading\":\"Dignity, trust, and responsibility guide every step.\",\"body\":\"<p>Ignite began because children showed us exactly what opportunity meant to them. Our role has always been to stand beside people, respect their leadership, and turn shared concern into practical, accountable action.<\\/p><p>Every volunteer, donor, partner, and community member carries a part of that responsibility. Together, we can make sure hope is followed by the support people need to shape their own futures.<\\/p>\",\"image\":\"\\/storage\\/media\\/ignite-live\\/founder-ea5ae7f8a69f.png\",\"image_alt\":\"Muhammad Jahirul Islam, founder and chairman of Ignite Global Foundation\",\"image_position\":\"left\",\"link_label\":\"Read the founder\\u2019s letter\",\"link_url\":\"\\/page\\/founder's-letter\"}",
                 "is_enabled": 1,
                 "label": "Founder's Message",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1225,6 +1267,7 @@
                 "content": "{\"eyebrow\":\"Before, during, and after crisis\",\"heading\":\"Response that protects dignity and strengthens recovery\",\"body\":\"<p>Ignite combines preparedness, rapid relief, safe water and sanitation, health support, housing recovery, and community-led risk reduction.<\\/p><p>Local volunteers and partners help assistance arrive quickly while recovery decisions remain grounded in what affected families need most.<\\/p>\",\"image\":\"\\/storage\\/media\\/ignite-live\\/thfdurayx9wml9cgtcxn0fsrfotkts3wjr5z7rha-ed3e83810510.jpg\",\"image_alt\":\"Local volunteers supporting a flood response\",\"image_position\":\"left\"}",
                 "is_enabled": 1,
                 "label": "Disaster Resilience Overview",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000003",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1241,6 +1284,7 @@
                 "content": "{\"eyebrow\":\"Built through service\",\"heading\":\"Ignite at a glance\",\"items\":[{\"value\":\"2016\",\"label\":\"Year founded\",\"icon\":\"heart\"},{\"value\":\"23,000+\",\"label\":\"Volunteers\",\"icon\":\"people\"},{\"value\":\"7\",\"label\":\"Board members\",\"icon\":\"security\"},{\"value\":\"3461\",\"label\":\"NGO registration\",\"icon\":\"report\"}]}",
                 "is_enabled": 1,
                 "label": "Organization at a Glance",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1257,6 +1301,7 @@
                 "content": "{\"eyebrow\":\"Choose your next step\",\"heading\":\"Turn care into practical action\",\"body\":\"There is more than one way to stand beside a community.\",\"items\":[{\"icon\":\"people\",\"heading\":\"Volunteer\",\"body\":\"Bring your time, skills, and energy to a program or community campaign.\",\"url\":\"\\/volunteer\\/register\",\"link_label\":\"Join the team\"},{\"icon\":\"child\",\"heading\":\"Sponsor a child\",\"body\":\"Help make education, nutrition, health support, and essentials dependable.\",\"url\":\"\\/sponsor-child\",\"link_label\":\"Start sponsoring\"},{\"icon\":\"heart\",\"heading\":\"Make a donation\",\"body\":\"Choose a secure one-time or monthly contribution to support urgent priorities.\",\"url\":\"\\/donate\",\"link_label\":\"Give securely\"}]}",
                 "is_enabled": 1,
                 "label": "Ways to Help",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1273,6 +1318,7 @@
                 "content": "{\"eyebrow\":\"Choose your pathway\",\"heading\":\"Find the right way to contribute\",\"items\":[{\"heading\":\"Campus ambassador\",\"body\":\"Represent Ignite at your institution and organize purposeful student engagement.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/campus-ambassador-dc89c80bb3fa.png\",\"url\":\"\\/volunteer\\/register\"},{\"heading\":\"National volunteer\",\"body\":\"Support programs, campaigns, events, and emergency responses across Bangladesh.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/national-volunteer-f1504a89e719.png\",\"url\":\"\\/volunteer\\/register\"},{\"heading\":\"International volunteer\",\"body\":\"Contribute professional skills, ideas, mentoring, or remote support from abroad.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/international-volunteer-a8b6b5899e1d.png\",\"url\":\"\\/volunteer\\/register\"}]}",
                 "is_enabled": 1,
                 "label": "Ways to Volunteer",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000002",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1289,6 +1335,7 @@
                 "content": "{\"eyebrow\":\"Education for every learner\",\"heading\":\"A safe place to learn, belong, and grow\",\"body\":\"<p>Ignite School supports around 120 children, including learners with additional needs, through free education, nutritious meals, health support, and practical life skills.<\\/p><p>The program works to remove financial, social, and accessibility barriers so every child can participate with dignity.<\\/p>\",\"image\":\"\\/storage\\/media\\/ignite-live\\/fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg\",\"image_alt\":\"Children learning together at Ignite School\",\"image_position\":\"left\"}",
                 "is_enabled": 1,
                 "label": "Inclusive Education Overview",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000020",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1305,6 +1352,7 @@
                 "content": "{\"eyebrow\":\"Governance\",\"heading\":\"Board of directors\",\"body\":\"The board provides mission stewardship, oversight, and accountability.\",\"limit\":12}",
                 "is_enabled": 1,
                 "label": "Board of Directors",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1321,6 +1369,7 @@
                 "content": "{\"eyebrow\":\"Ignite School — education for all\",\"heading\":\"Partner with Ignite School to shape bright futures\",\"body\":\"<p><strong>Ignite School, Bawnia Campus</strong> began in <strong>2016 with 35 children</strong>. Today it supports <strong>nearly 120 learners</strong>, including children with additional needs, through free inclusive education, learning materials, uniforms, nutritious meals, healthcare, creative activities, and practical life skills.</p>\",\"image\":\"/storage/media/ignite-live/p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg\",\"image_alt\":\"Ignite School learners holding their books in a classroom\",\"image_position\":\"left\",\"variant\":\"campus-intro\"}",
                 "is_enabled": 1,
                 "label": "Ignite School Introduction",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1337,6 +1386,7 @@
                 "content": "{\"eyebrow\":\"Igniting change\",\"heading\":\"Empowering lives.\",\"body\":\"From classrooms to communities, our programs help people build a stronger future.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/category\\/our-causes\",\"image\":\"\\/storage\\/media\\/ignite-live\\/ywuogg10l98ly4qdoa3ujrb2bzr9218wp43dqcka-0d6907c3637e.webp\",\"overlay_opacity\":62,\"autoplay\":true,\"interval\":6500,\"pause_on_hover\":true,\"slides\":[{\"eyebrow\":\"Igniting change\",\"heading\":\"Empowering lives.\",\"body\":\"From classrooms to communities, our programs help people build a stronger future.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/category\\/our-causes\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/ywuogg10l98ly4qdoa3ujrb2bzr9218wp43dqcka-0d6907c3637e.webp\",\"overlay_opacity\":62},{\"eyebrow\":\"Empowering through education\",\"heading\":\"Every child deserves a chance to learn.\",\"body\":\"Join us in breaking barriers through free, inclusive, quality education.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/education\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/9me3alpg8medhhf0jbids6pkbcuva3wqauewpza9-4ec17f01da4a.webp\",\"overlay_opacity\":62},{\"eyebrow\":\"Youth leading change\",\"heading\":\"From volunteers to visionaries.\",\"body\":\"Ignite is building a generation of leaders who serve with purpose.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/youth-development\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/xzz5dafv1xrvdkoj2xlr9lzuprmkljgzw2dpoo1y-f7a315ee992f.webp\",\"overlay_opacity\":62},{\"eyebrow\":\"Standing strong in crisis\",\"heading\":\"Rapid relief. Sustainable recovery.\",\"body\":\"From floods to fires, community-led humanitarian action helps no one get left behind.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/disaster-response-and-resilience\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/oj97m6tfjvumxrbtgdokbtqxrnumxcioewcjpbnj-e949aa78b452.webp\",\"overlay_opacity\":62},{\"eyebrow\":\"Inclusive education\",\"heading\":\"Learning spaces where every child thrives.\",\"body\":\"Every learner deserves equal opportunity regardless of ability, background, or need.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/education\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg\",\"overlay_opacity\":62},{\"eyebrow\":\"Youth development\",\"heading\":\"Empowering youth, igniting change.\",\"body\":\"Young leaders gain the skills and opportunities to create meaningful impact.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/youth-development\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/dms2sp0pfxgane9lzjpco3enlkyd4xjeygndfbym-24b5036254cd.jpg\",\"overlay_opacity\":62},{\"eyebrow\":\"Disaster resilience\",\"heading\":\"Standing strong, rebuilding lives.\",\"body\":\"Preparedness, response, recovery, and support help communities rebuild with dignity.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/page\\/disaster-response-and-resilience\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/e4nfvn5wvxl5vi5fj4p40uwcia7yl3qu11hdzn2t-e37f5490f23c.jpg\",\"overlay_opacity\":62},{\"eyebrow\":\"Ignite School\",\"heading\":\"Education for all.\",\"body\":\"Partner with Ignite School to help shape brighter futures.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"Learn more\",\"secondary_url\":\"\\/sponsor-child\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"overlay_opacity\":62}]}",
                 "is_enabled": 1,
                 "label": "Homepage Hero",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1353,6 +1403,7 @@
                 "content": "{\"eyebrow\":\"In the field\",\"heading\":\"Communities standing strong together\",\"items\":[{\"heading\":\"Flood response\",\"body\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/thfdurayx9wml9cgtcxn0fsrfotkts3wjr5z7rha-ed3e83810510.jpg\",\"url\":\"\"},{\"heading\":\"Emergency food support\",\"body\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/rsz-edited-size-630-e2949cd0a7-398-px-e13-1-f7f7e3a09ec6.jpg\",\"url\":\"\"},{\"heading\":\"Safe water access\",\"body\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/rsz-img-20220519-wa0018-63c5d60ed3f2.jpg\",\"url\":\"\"},{\"heading\":\"Community recovery\",\"body\":\"\",\"image\":\"\\/storage\\/media\\/ignite-live\\/rsz-1630x398-px-disaster-resilience-section-ca5ad2a7568b.jpg\",\"url\":\"\"}]}",
                 "is_enabled": 1,
                 "label": "Response in Pictures",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000003",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1369,6 +1420,7 @@
                 "content": "{\"eyebrow\":\"Learning impact\",\"heading\":\"Support that reaches the whole child\",\"items\":[{\"value\":\"120\",\"label\":\"Children supported\",\"icon\":\"child\"},{\"value\":\"74+\",\"label\":\"Learners enrolled\",\"icon\":\"school\"},{\"value\":\"49+\",\"label\":\"Graduates\",\"icon\":\"report\"},{\"value\":\"9+\",\"label\":\"Children with additional needs\",\"icon\":\"heart\"}]}",
                 "is_enabled": 1,
                 "label": "Education Impact",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000020",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1385,6 +1437,7 @@
                 "content": "{\"eyebrow\":\"Learning that keeps growing\",\"heading\":\"Ignite School, Bawnia Campus — At a Glance\",\"animation_enabled\":false,\"items\":[{\"value\":\"Nearly 120\",\"label\":\"Learners supported\",\"icon\":\"child\"},{\"value\":\"35\",\"label\":\"Children at launch\",\"icon\":\"child\"},{\"value\":\"2016\",\"label\":\"School founded\",\"icon\":\"school\"}],\"variant\":\"campus-stats\"}",
                 "is_enabled": 1,
                 "label": "Ignite School Impact",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1401,6 +1454,7 @@
                 "content": "{\"eyebrow\":\"Legal and accountable\",\"heading\":\"Registered to serve responsibly\",\"body\":\"<p>Ignite Global Foundation is registered under Bangladesh\\u2019s Foreign Donations (Voluntary Activities) Regulation Act, 2016. NGO Affairs Bureau registration number: <strong>3461<\\/strong>.<\\/p><p>Our public policies, annual reports, safeguarding commitments, and contact channels are available throughout this website.<\\/p>\"}",
                 "is_enabled": 1,
                 "label": "Legal Status",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1417,6 +1471,7 @@
                 "content": "{\"eyebrow\":\"Open by design\",\"heading\":\"Our commitment to accountability\",\"body\":\"<p>Responsible stewardship, transparent reporting, safeguarding, and clear ways to raise concerns are central to our work.<\\/p>\",\"items\":[{\"icon\":\"report\",\"heading\":\"Annual reports\",\"url\":\"\\/annual-report\"},{\"icon\":\"financials\",\"heading\":\"Financials\",\"url\":\"\\/annual-report\"},{\"icon\":\"security\",\"heading\":\"Safeguarding\",\"url\":\"\\/page\\/safeguarding\"},{\"icon\":\"policy\",\"heading\":\"Policies\",\"url\":\"\\/page\\/privacy-policy\"}]}",
                 "is_enabled": 1,
                 "label": "Accountability",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1433,6 +1488,7 @@
                 "content": "{\"eyebrow\":\"Our causes\",\"heading\":\"Programs designed with communities\",\"limit\":3,\"content_source\":\"category\",\"selection_mode\":\"automatic\",\"sort\":\"featured\",\"selected_items\":[],\"presentation\":\"focus_areas\"}",
                 "is_enabled": 1,
                 "label": "Our Programs",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1449,6 +1505,7 @@
                 "content": "{\"eyebrow\":\"Our story\",\"heading\":\"From one shared promise to a national movement\",\"body\":\"Ignite grew by listening first, taking practical action, and inviting more people to serve.\",\"items\":[{\"heading\":\"2 February 2016\",\"body\":\"<p>Young volunteers began teaching 32 children in a park after hearing how strongly they wanted the chance to learn.<\\/p>\"},{\"heading\":\"2017\",\"body\":\"<p>The learning initiative became Ignite School, creating a stable and inclusive place for education, nutrition, health support, and childhood development.<\\/p>\"},{\"heading\":\"Today\",\"body\":\"<p>Education now connects with health, food security, livelihoods, safe water, disaster response, and a volunteer network reaching communities across Bangladesh.<\\/p>\"}]}",
                 "is_enabled": 1,
                 "label": "Our Story",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1465,6 +1522,7 @@
                 "content": "{\"eyebrow\":\"Stand beside a learner\",\"heading\":\"Help make inclusive education dependable\",\"body\":\"Sponsor a child or contribute to the education program so learning can continue without interruption.\",\"primary_label\":\"Sponsor a child\",\"primary_url\":\"\\/sponsor-child\",\"secondary_label\":\"Donate to education\",\"secondary_url\":\"\\/donate\"}",
                 "is_enabled": 1,
                 "label": "Support Ignite School",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000020",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1481,6 +1539,7 @@
                 "content": "{\"eyebrow\":\"Stand with affected families\",\"heading\":\"Help relief arrive and recovery last\",\"body\":\"Your contribution supports urgent essentials and longer-term community recovery.\",\"primary_label\":\"Support disaster response\",\"primary_url\":\"\\/donate\"}",
                 "is_enabled": 1,
                 "label": "Support Disaster Response",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000003",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1497,6 +1556,7 @@
                 "content": "{\"eyebrow\":\"Stay involved\",\"heading\":\"Events & latest news\",\"limit\":3}",
                 "is_enabled": 1,
                 "label": "Events and News",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1513,6 +1573,7 @@
                 "content": "{\"eyebrow\":\"Urgent initiative\",\"heading\":\"Empowering the Future, Block by Block.\",\"body\":\"Join our latest campaign to build sustainable opportunities in rural communities.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"\",\"secondary_url\":\"\",\"image\":\"\\/image\\/banner\\/slider-1.png\",\"overlay_opacity\":64,\"autoplay\":true,\"interval\":6000,\"pause_on_hover\":true,\"slides\":[{\"eyebrow\":\"Urgent initiative\",\"heading\":\"Empowering the Future, Block by Block.\",\"body\":\"Join our latest campaign to build sustainable opportunities in rural communities.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\",\"secondary_label\":\"\",\"secondary_url\":\"\",\"report_label\":\"\",\"report_url\":\"\",\"image\":\"\\/image\\/banner\\/slider-1.png\",\"overlay_opacity\":64}]}",
                 "is_enabled": 1,
                 "label": "Hero Banner",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000001",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1529,6 +1590,7 @@
                 "content": "{\"eyebrow\":\"Voices from our community\",\"heading\":\"Stories of change\",\"limit\":5}",
                 "is_enabled": 1,
                 "label": "Community Stories",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1545,6 +1607,7 @@
                 "content": "{\"eyebrow\":\"Welcome to our charity\",\"heading\":\"Change lasts when communities lead it.\",\"body\":\"<p>Ignite Global Foundation works alongside marginalized communities through education, youth development, livelihoods, healthcare, nutrition, and humanitarian action.<\\/p>\",\"image\":\"\\/storage\\/media\\/ignite-live\\/welcome-bg-f7b67abb8b86.webp\",\"image_alt\":\"Children taking part in an Ignite learning program\",\"image_position\":\"left\",\"link_label\":\"About us\",\"link_url\":\"\\/about-us\"}",
                 "is_enabled": 1,
                 "label": "Who We Are",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1561,6 +1624,7 @@
                 "content": "{\"eyebrow\":\"What children receive\",\"heading\":\"More than lessons\",\"body\":\"Each part of the program helps a child learn consistently and participate fully.\",\"items\":[{\"heading\":\"Educational materials\",\"body\":\"Books, supplies, school bags, and resources needed for daily learning.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/lecture-01f5d264a6d4.png\",\"url\":\"\\/sponsor-child\"},{\"heading\":\"Health and nutrition\",\"body\":\"Nutritious food, routine health attention, and practical wellbeing support.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/fruit-75cb59ffcdbf.png\",\"url\":\"\\/sponsor-child\"},{\"heading\":\"Uniforms and essentials\",\"body\":\"Clothing and school essentials that help every learner take part with dignity.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/bag-8876f072e015.png\",\"url\":\"\\/sponsor-child\"},{\"heading\":\"Extracurricular activities\",\"body\":\"Creative play, leadership, sports, and confidence-building beyond the classroom.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/cap-587195905e8a.png\",\"url\":\"\\/sponsor-child\"}]}",
                 "is_enabled": 1,
                 "label": "Education Services",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000020",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1577,6 +1641,7 @@
                 "content": "{\"eyebrow\":\"Your next step\",\"heading\":\"Turn your skills into meaningful action\",\"body\":\"Tell us what you care about and where you would like to contribute.\",\"primary_label\":\"Register to volunteer\",\"primary_url\":\"\\/volunteer\\/register\"}",
                 "is_enabled": 1,
                 "label": "Volunteer Registration",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000002",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1593,6 +1658,7 @@
                 "content": "{\"eyebrow\":\"Youth leading change\",\"heading\":\"Skills become service when young people have room to lead\",\"body\":\"<p>Ignite supports young people in six divisions with leadership, communication, critical thinking, advocacy, digital skills, project management, and guided community service.<\\/p><p>Participants work across education, the environment, disaster resilience, and social inclusion while receiving mentoring and practical experience.<\\/p>\",\"image\":\"\\/storage\\/media\\/ignite-live\\/ignite-volunteer-ba9879f082a3.png\",\"image_alt\":\"Ignite youth volunteers serving their community\",\"image_position\":\"right\"}",
                 "is_enabled": 1,
                 "label": "Youth Development Overview",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000002",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1609,6 +1675,7 @@
                 "content": "{\"eyebrow\":\"\",\"heading\":\"Partner Organizations\",\"body\":\"\",\"items\":[{\"heading\":\"Bangladesh Brand Forum\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/01-bangladesh-brand-forum.png\",\"image_alt\":\"Bangladesh Brand Forum\",\"url\":\"\"},{\"heading\":\"TechHub Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/02-techhub-bangladesh.jpeg\",\"image_alt\":\"TechHub Bangladesh\",\"url\":\"\"},{\"heading\":\"Daraz Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/03-daraz.png\",\"image_alt\":\"Daraz Bangladesh\",\"url\":\"\"},{\"heading\":\"ICT Division\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/04-ict-division.png\",\"image_alt\":\"ICT Division, Government of Bangladesh\",\"url\":\"\"},{\"heading\":\"It’s Humanity Foundation\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/05-its-humanity-foundation.png\",\"image_alt\":\"It’s Humanity Foundation\",\"url\":\"\"},{\"heading\":\"Rtv\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/06-rtv.jpg\",\"image_alt\":\"Rtv\",\"url\":\"\"},{\"heading\":\"Prothom Alo\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/07-prothom-alo.png\",\"image_alt\":\"Prothom Alo\",\"url\":\"\"},{\"heading\":\"ATN News\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/08-atn-news.png\",\"image_alt\":\"ATN News\",\"url\":\"\"},{\"heading\":\"The Daily Star\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/09-the-daily-star.png\",\"image_alt\":\"The Daily Star\",\"url\":\"\"},{\"heading\":\"Incepta Pharmaceuticals\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/10-incepta.png\",\"image_alt\":\"Incepta Pharmaceuticals\",\"url\":\"\"},{\"heading\":\"JCI Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/11-jci-bangladesh.jpeg\",\"image_alt\":\"JCI Bangladesh\",\"url\":\"\"},{\"heading\":\"JCI Dhaka West\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/12-jci-dhaka-west.png\",\"image_alt\":\"JCI Dhaka West\",\"url\":\"\"},{\"heading\":\"Matribhumi Group\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/13-matribhumi-group.jpeg\",\"image_alt\":\"Matribhumi Group\",\"url\":\"\"},{\"heading\":\"PriyoShop\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/14-priyoshop.png\",\"image_alt\":\"PriyoShop\",\"url\":\"\"},{\"heading\":\"Technohaven\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/15-technohaven.png\",\"image_alt\":\"Technohaven Company Limited\",\"url\":\"\"},{\"heading\":\"The Business Standard\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/16-the-business-standard.png\",\"image_alt\":\"The Business Standard\",\"url\":\"\"},{\"heading\":\"Maasranga Television\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/17-maasranga-tv.png\",\"image_alt\":\"Maasranga Television\",\"url\":\"\"},{\"heading\":\"Loop\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/18-loop.png\",\"image_alt\":\"Loop\",\"url\":\"\"},{\"heading\":\"Rotary Club of Banani Model Town\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/19-rotary-club-banani-model-town.jpeg\",\"image_alt\":\"Rotary Club of Banani Model Town\",\"url\":\"\"},{\"heading\":\"What’s On Guide\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/20-whatson-guide.svg\",\"image_alt\":\"What’s On Guide\",\"url\":\"\"}]}",
                 "is_enabled": 1,
                 "label": "Partner Organizations",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "{\"_migration_20260819_partner_wall\":{\"content.eyebrow\":{\"before\":\"Working together\",\"after\":\"\"},\"content.heading\":{\"before\":\"Partners and supporters\",\"after\":\"Partner Organizations\"},\"content.body\":{\"before\":\"Institutions and media organizations that have supported, amplified, or collaborated with Ignite’s work.\",\"after\":\"\"},\"content.items\":{\"before\":[{\"heading\":\"United Nations Volunteers\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/fqthotp3p7srjq59so0jecobmmmhuif24frsllzp-92b2557443a9.jpg\",\"url\":\"https://www.unv.org/\"},{\"heading\":\"VSO\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/ha6xd1dnjmyv6xrnjky8zbmsfie8dnua1bymyvf1-f1eca1f67ab1.jpg\",\"url\":\"https://www.vsointernational.org/\"},{\"heading\":\"The Daily Star\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/rsz-the-daily-star-6c6ad841ef79.jpg\",\"url\":\"https://www.thedailystar.net/\"},{\"heading\":\"Samakal\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/rsz-samakal-2-copy-f270ee643492.jpg\",\"url\":\"https://samakal.com/\"},{\"heading\":\"Banik Barta\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/rsz-1bonik-barta-720357589356.jpg\",\"url\":\"https://bonikbarta.net/\"}],\"after\":[{\"heading\":\"Bangladesh Brand Forum\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/01-bangladesh-brand-forum.png\",\"image_alt\":\"Bangladesh Brand Forum\",\"url\":\"\"},{\"heading\":\"TechHub Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/02-techhub-bangladesh.jpeg\",\"image_alt\":\"TechHub Bangladesh\",\"url\":\"\"},{\"heading\":\"Daraz Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/03-daraz.png\",\"image_alt\":\"Daraz Bangladesh\",\"url\":\"\"},{\"heading\":\"ICT Division\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/04-ict-division.png\",\"image_alt\":\"ICT Division, Government of Bangladesh\",\"url\":\"\"},{\"heading\":\"It’s Humanity Foundation\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/05-its-humanity-foundation.png\",\"image_alt\":\"It’s Humanity Foundation\",\"url\":\"\"},{\"heading\":\"Rtv\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/06-rtv.jpg\",\"image_alt\":\"Rtv\",\"url\":\"\"},{\"heading\":\"Prothom Alo\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/07-prothom-alo.png\",\"image_alt\":\"Prothom Alo\",\"url\":\"\"},{\"heading\":\"ATN News\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/08-atn-news.png\",\"image_alt\":\"ATN News\",\"url\":\"\"},{\"heading\":\"The Daily Star\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/09-the-daily-star.png\",\"image_alt\":\"The Daily Star\",\"url\":\"\"},{\"heading\":\"Incepta Pharmaceuticals\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/10-incepta.png\",\"image_alt\":\"Incepta Pharmaceuticals\",\"url\":\"\"},{\"heading\":\"JCI Bangladesh\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/11-jci-bangladesh.jpeg\",\"image_alt\":\"JCI Bangladesh\",\"url\":\"\"},{\"heading\":\"JCI Dhaka West\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/12-jci-dhaka-west.png\",\"image_alt\":\"JCI Dhaka West\",\"url\":\"\"},{\"heading\":\"Matribhumi Group\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/13-matribhumi-group.jpeg\",\"image_alt\":\"Matribhumi Group\",\"url\":\"\"},{\"heading\":\"PriyoShop\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/14-priyoshop.png\",\"image_alt\":\"PriyoShop\",\"url\":\"\"},{\"heading\":\"Technohaven\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/15-technohaven.png\",\"image_alt\":\"Technohaven Company Limited\",\"url\":\"\"},{\"heading\":\"The Business Standard\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/16-the-business-standard.png\",\"image_alt\":\"The Business Standard\",\"url\":\"\"},{\"heading\":\"Maasranga Television\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/17-maasranga-tv.png\",\"image_alt\":\"Maasranga Television\",\"url\":\"\"},{\"heading\":\"Loop\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/18-loop.png\",\"image_alt\":\"Loop\",\"url\":\"\"},{\"heading\":\"Rotary Club of Banani Model Town\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/19-rotary-club-banani-model-town.jpeg\",\"image_alt\":\"Rotary Club of Banani Model Town\",\"url\":\"\"},{\"heading\":\"What’s On Guide\",\"body\":\"\",\"image\":\"/storage/media/ignite-live/partners/20-whatson-guide.svg\",\"image_alt\":\"What’s On Guide\",\"url\":\"\"}]},\"label\":{\"before\":\"Partners and Supporters\",\"after\":\"Partner Organizations\"}}}",
@@ -1625,6 +1692,7 @@
                 "content": "{\"heading\":\"Impact made visible\",\"items\":[{\"value\":\"2.4M\",\"label\":\"Lives impacted\"},{\"value\":\"150+\",\"label\":\"Active projects\"},{\"value\":\"98%\",\"label\":\"Funds to field\"}]}",
                 "is_enabled": 1,
                 "label": "Impact Grid",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000001",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1641,6 +1709,7 @@
                 "content": "{\"heading\":\"Stay informed\",\"body\":\"Receive field updates, upcoming events, and thoughtful ways to help.\",\"button_label\":\"Subscribe\"}",
                 "is_enabled": 1,
                 "label": "Newsletter",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1657,6 +1726,7 @@
                 "content": "{\"heading\":\"\",\"items\":[{\"value\":\"23,000+\",\"label\":\"Volunteers\",\"icon\":\"people\"},{\"value\":\"8\",\"label\":\"Divisions covered\",\"icon\":\"map\"},{\"value\":\"850,820+\",\"label\":\"People helped\",\"icon\":\"heart\"},{\"value\":\"400+\",\"label\":\"Children served\",\"icon\":\"school\"}]}",
                 "is_enabled": 1,
                 "label": "Verified Impact Metrics",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1673,6 +1743,7 @@
                 "content": "{\"variant\":\"about-pillars\",\"eyebrow\":\"What guides us\",\"heading\":\"Purpose that turns care into action\",\"body\":\"Our mission and vision keep every program focused on dignity, opportunity, and accountable service.\",\"items\":[{\"eyebrow\":\"Our mission\",\"heading\":\"Turn compassion into practical opportunity\",\"body\":\"Mobilize volunteers and work alongside communities to expand inclusive education, youth development, women’s empowerment, health, livelihoods, and humanitarian support.\",\"icon\":\"heart\",\"url\":\"/page/our-mission\",\"link_label\":\"Read more\"},{\"eyebrow\":\"Our vision\",\"heading\":\"A more equitable and compassionate society\",\"body\":\"A future where every person can learn, grow, and shape a dignified life, supported by resilient communities and young people prepared to lead.\",\"icon\":\"map\",\"url\":\"/page/our-vision\",\"link_label\":\"Read more\"}]}",
                 "is_enabled": 1,
                 "label": "Mission and Vision",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000010",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1689,6 +1760,7 @@
                 "content": "{\"variant\":\"awards\",\"eyebrow\":\"Recognition\",\"heading\":\"Awards & recognition\",\"view_all_label\":\"View all\",\"view_all_url\":\"\\/category\\/awards-&-recognition\",\"content_source\":\"category\",\"category_slug\":\"awards-&-recognition\",\"selection_mode\":\"automatic\",\"selected_items\":[],\"sort\":\"featured\",\"limit\":3,\"item_link_label\":\"Learn more\",\"empty_state\":\"Published awards will appear here automatically.\",\"items\":[{\"heading\":\"The Diana Award\",\"body\":\"Recognition for youth development and education.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/350-x-200-the-diana-award-7f5b12c77802.jpg\",\"image_alt\":\"The Diana Award\",\"url\":\"\\/page\\/the-diana-award\"},{\"heading\":\"UN Best Volunteer Award\",\"body\":\"Recognition for volunteer-led community development.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/un-award-350-x-200-4818229de147.jpg\",\"image_alt\":\"UN Best Volunteer Award\",\"url\":\"\\/page\\/youth-development-award\"},{\"heading\":\"ILA Global 30 Under 30\",\"body\":\"Recognition for education and community empowerment.\",\"image\":\"\\/storage\\/media\\/ignite-live\\/ila350-x-200-a509373e4740.jpg\",\"image_alt\":\"ILA Global 30 Under 30 recognition\",\"url\":\"\\/page\\/best-volunteer-award\"}]}",
                 "is_enabled": 1,
                 "label": "Awards and Recognition",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1705,6 +1777,7 @@
                 "content": "{\"variant\":\"campaign\",\"eyebrow\":\"Take action\",\"heading\":\"Help communities build lasting opportunity\",\"body\":\"Choose a secure one-time contribution and direct your support where it is needed most.\",\"primary_label\":\"Donate now\",\"primary_url\":\"\\/donate\"}",
                 "is_enabled": 1,
                 "label": "Featured Campaign",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1721,6 +1794,7 @@
                 "content": "{\"variant\":\"campus-actions\",\"eyebrow\":\"Help a child learn consistently\",\"heading\":\"Got any other plans?\",\"body\":\"Contact us to arrange a visit or discuss a partnership. You can also make a direct contribution to Ignite’s education work.\",\"primary_label\":\"Contact us to arrange a visit\",\"primary_url\":\"/contact-us\",\"secondary_label\":\"Donate to education\",\"secondary_url\":\"/donate\"}",
                 "is_enabled": 1,
                 "label": "Support Ignite School",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1737,6 +1811,7 @@
                 "content": "{\"variant\":\"campus-gallery\",\"content_source\":\"manual\",\"eyebrow\":\"Inside the school\",\"heading\":\"Gallery\",\"body\":\"A glimpse of the children and learning community at Ignite School in Bawnia.\",\"items\":[{\"heading\":\"Learning together at Ignite School\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"image_alt\":\"Four Ignite School learners seated together in their classroom\",\"url\":\"\"},{\"heading\":\"Books open new possibilities\",\"image\":\"/storage/media/ignite-live/p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg\",\"image_alt\":\"Ignite School learners holding colourful books\",\"url\":\"\"},{\"heading\":\"A welcoming classroom\",\"image\":\"/storage/media/ignite-live/welcome-child-68f3788c7174.jpg\",\"image_alt\":\"Four Ignite School learners standing together in a classroom\",\"url\":\"\"},{\"heading\":\"Growing with confidence\",\"image\":\"/storage/media/ignite-live/fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg\",\"image_alt\":\"Four Ignite School boys standing together in their classroom\",\"url\":\"\"}]}",
                 "is_enabled": 1,
                 "label": "Ignite School Gallery",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1753,6 +1828,7 @@
                 "content": "{\"variant\":\"campus\",\"eyebrow\":\"Visit Ignite School\",\"heading\":\"Ignite School, Bawnia Campus\",\"body\":\"Bawnia, Dhaka\",\"primary_label\":\"Sponsor a child\",\"primary_url\":\"/sponsor-child\",\"secondary_label\":\"Arrange a visit\",\"secondary_url\":\"/contact-us\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"overlay_opacity\":50,\"autoplay\":false,\"pause_on_hover\":true}",
                 "is_enabled": 1,
                 "label": "Ignite School Campus Hero",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1769,6 +1845,7 @@
                 "content": "{\"variant\":\"contributions\",\"content_source\":\"manual\",\"eyebrow\":\"How you can help\",\"heading\":\"How Can You Contribute?\",\"body\":\"Support can take many forms. Choose the path that best matches your time, resources, or partnership goals.\",\"item_link_label\":\"Take the next step\",\"items\":[{\"heading\":\"Sponsor a child\",\"body\":\"Inclusive education\\nNutritious meals\\nLearning materials\\nHealthcare support\",\"icon\":\"child\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"image_alt\":\"Ignite School learners supported through child sponsorship\",\"url\":\"/sponsor-child\",\"link_label\":\"View sponsorship\"},{\"heading\":\"Donate to education\",\"body\":\"One-time contribution\\nSupport the education cause\\nSecure donor form\",\"icon\":\"heart\",\"image\":\"/storage/media/ignite-live/p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg\",\"image_alt\":\"Ignite School learners reading their books\",\"url\":\"/donate\",\"link_label\":\"Make a donation\"},{\"heading\":\"Volunteer with Ignite\",\"body\":\"Share time and skills\\nManaged registration\\nTeam follow-up\",\"icon\":\"people\",\"image\":\"/storage/media/ignite-live/welcome-child-68f3788c7174.jpg\",\"image_alt\":\"Ignite School learners welcoming community support\",\"url\":\"/volunteer/register\",\"link_label\":\"Register to volunteer\"},{\"heading\":\"Visit Ignite School\",\"body\":\"Contact the Ignite team\\nArrange a suitable visit\\nLearn about the campus\",\"icon\":\"map\",\"image\":\"/storage/media/ignite-live/fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg\",\"image_alt\":\"Ignite School students at the Bawnia campus\",\"url\":\"/contact-us\",\"link_label\":\"Arrange a visit\"},{\"heading\":\"Partner with the school\",\"body\":\"Institutional support\\nSchool supplies\\nDiscuss a tailored plan\",\"icon\":\"school\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"image_alt\":\"Ignite School learners who benefit from school partnerships\",\"url\":\"/contact-us\",\"link_label\":\"Discuss a partnership\"}]}",
                 "is_enabled": 1,
                 "label": "Ways to Contribute",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1785,6 +1862,7 @@
                 "content": "{\"variant\":\"initiatives\",\"content_source\":\"manual\",\"eyebrow\":\"Learning beyond the classroom\",\"heading\":\"Our Initiatives\",\"body\":\"The school removes practical barriers so children can attend, participate, and thrive.\",\"items\":[{\"heading\":\"Inclusive education\",\"body\":\"Free, structured learning from Playgroup through Class Five in a welcoming classroom.\",\"icon\":\"school\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"image_alt\":\"Ignite School learners studying together\",\"url\":\"\"},{\"heading\":\"Books and materials\",\"body\":\"Books, school supplies, and learning materials help every child participate consistently.\",\"icon\":\"report\",\"image\":\"/storage/media/ignite-live/p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg\",\"image_alt\":\"Ignite School learners holding colourful books\",\"url\":\"\"},{\"heading\":\"Nutrition support\",\"body\":\"Nutritious meals help learners stay healthy, focused, and ready for the school day.\",\"icon\":\"heart\",\"image\":\"/storage/media/ignite-live/welcome-child-68f3788c7174.jpg\",\"image_alt\":\"Ignite School learners together in their classroom\",\"url\":\"\"},{\"heading\":\"Healthcare support\",\"body\":\"Preventive care, referrals, and practical wellbeing support protect each learner.\",\"icon\":\"health\",\"image\":\"/storage/media/ignite-live/fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg\",\"image_alt\":\"Ignite School students in their classroom\",\"url\":\"\"},{\"heading\":\"Uniforms and essentials\",\"body\":\"Uniforms, bags, and daily essentials help children attend and learn with dignity.\",\"icon\":\"report\",\"image\":\"/storage/media/ignite-live/53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg\",\"image_alt\":\"Ignite School learners with their school bags\",\"url\":\"\"},{\"heading\":\"Creative development\",\"body\":\"Play, sports, arts, leadership, and life skills build confidence beyond the classroom.\",\"icon\":\"people\",\"image\":\"/storage/media/ignite-live/welcome-child-68f3788c7174.jpg\",\"image_alt\":\"Ignite School learners growing together with confidence\",\"url\":\"\"}]}",
                 "is_enabled": 1,
                 "label": "School Initiatives",
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000016",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1801,6 +1879,7 @@
                 "content": "{\"variant\":\"partners\",\"eyebrow\":\"Supported by\",\"heading\":\"Partnership makes progress possible\",\"items\":[{\"heading\":\"Community partners\",\"image\":\"\\/image\\/award\\/award-1.png\",\"image_alt\":\"Community partner mark\"},{\"heading\":\"Program partners\",\"image\":\"\\/image\\/award\\/award-2.png\",\"image_alt\":\"Program partner mark\"},{\"heading\":\"Learning partners\",\"image\":\"\\/image\\/award\\/award-3.png\",\"image_alt\":\"Learning partner mark\"}]}",
                 "is_enabled": 0,
                 "label": "Partners",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1817,6 +1896,7 @@
                 "content": "{\"variant\":\"projects\",\"eyebrow\":\"Field work\",\"heading\":\"Featured projects\",\"body\":\"Current initiatives with measurable, community-owned outcomes.\",\"view_all_label\":\"View all projects\",\"view_all_url\":\"/projects\",\"content_source\":\"projects\",\"tag_slug\":\"current-project\",\"selection_mode\":\"automatic\",\"selected_items\":[],\"sort\":\"featured\",\"limit\":3,\"item_link_label\":\"Read more\",\"empty_state\":\"Published projects will appear here automatically.\",\"items\":[{\"status\":\"Current\",\"location\":\"Tangail\",\"heading\":\"Project ANKUR\",\"body\":\"Climate-resilient ginger farming for vulnerable rural families.\",\"image\":\"/storage/media/ignite-live/rsz-edited-size-629-e2949cd0a7-404-px-embark-e11-40844d8249fb.jpg\",\"image_alt\":\"Climate-resilient community agriculture\",\"url\":\"/page/project-ankur\"},{\"status\":\"Current\",\"location\":\"Bangladesh\",\"heading\":\"Project Niramoy\",\"body\":\"Preventive care, health education, medicine, and referrals.\",\"image\":\"/storage/media/ignite-live/rsz-1niramoy-9351aa6a8d80.jpg\",\"image_alt\":\"Project Niramoy community health outreach\",\"url\":\"/page/project-niramoy\"},{\"status\":\"Current\",\"location\":\"Bangladesh\",\"heading\":\"Project ONNO\",\"body\":\"Food security and emergency meals for families facing hardship.\",\"image\":\"/storage/media/ignite-live/rsz-edited-size-630-e2949cd0a7-398-px-e13-1-f7f7e3a09ec6.jpg\",\"image_alt\":\"Volunteers preparing food assistance\",\"url\":\"/page/project-onno\"}]}",
                 "is_enabled": 1,
                 "label": "Featured Projects",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1833,6 +1913,7 @@
                 "content": "{\"variant\":\"updates\",\"eyebrow\":\"Stay involved\",\"heading\":\"Events & latest news\",\"items\":[{\"eyebrow\":\"Upcoming event\",\"heading\":\"Community volunteer orientation\",\"body\":\"Meet the team and learn how to support upcoming field activities.\",\"url\":\"\\/events\"},{\"eyebrow\":\"Upcoming event\",\"heading\":\"Youth learning workshop\",\"body\":\"A practical session for students, educators, and local volunteers.\",\"url\":\"\\/events\"},{\"eyebrow\":\"Latest news\",\"heading\":\"Clean water initiative reaches its next community\",\"body\":\"An update from our locally led water and sanitation work.\",\"image\":\"\\/image\\/banner\\/slider-2.png\",\"image_alt\":\"Community water initiative\",\"url\":\"\\/events\"},{\"eyebrow\":\"Latest news\",\"heading\":\"New livelihood cohort begins training\",\"body\":\"Participants start the next phase of skills and market-readiness support.\",\"image\":\"\\/image\\/news.png\",\"image_alt\":\"Livelihood program update\",\"url\":\"\\/events\"}]}",
                 "is_enabled": 0,
                 "label": "Events and News",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1849,6 +1930,7 @@
                 "content": "{\"variant\":\"volunteer\",\"eyebrow\":\"Take part\",\"heading\":\"Join our mission\",\"body\":\"Volunteer your time, sponsor a child, support a program, or partner with our team.\",\"primary_label\":\"Become a volunteer\",\"primary_url\":\"\\/volunteer\\/register\",\"secondary_label\":\"Sponsor a child\",\"secondary_url\":\"\\/sponsor-child\"}",
                 "is_enabled": 1,
                 "label": "Volunteer Call to Action",
+                "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
                 "settings": "[]",
@@ -1862,6 +1944,7 @@
         ],
         "page_menus": [
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Footer column: Donor support",
                 "icon": null,
@@ -1869,6 +1952,7 @@
                 "link": "custom",
                 "name": "Donor support",
                 "order_by": 2,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -1876,6 +1960,7 @@
                 "uuid": "7f030000-0000-4000-8000-000000000300"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Footer column: Explore",
                 "icon": null,
@@ -1883,6 +1968,7 @@
                 "link": "custom",
                 "name": "Explore",
                 "order_by": 0,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -1890,6 +1976,7 @@
                 "uuid": "7f010000-0000-4000-8000-000000000100"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Footer column: Legal & contact",
                 "icon": null,
@@ -1897,6 +1984,7 @@
                 "link": "custom",
                 "name": "Legal & contact",
                 "order_by": 3,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -1904,6 +1992,7 @@
                 "uuid": "7f040000-0000-4000-8000-000000000400"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": "Footer column: Programs",
                 "icon": null,
@@ -1911,6 +2000,7 @@
                 "link": "custom",
                 "name": "Programs",
                 "order_by": 1,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -1918,6 +2008,7 @@
                 "uuid": "7f020000-0000-4000-8000-000000000200"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1925,6 +2016,7 @@
                 "link": "custom",
                 "name": "About Us",
                 "order_by": 1,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -1932,6 +2024,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1939,6 +2032,7 @@
                 "link": "custom",
                 "name": "About us",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "7f010000-0000-4000-8000-000000000100",
                 "slug": "/about-us",
                 "status": 1,
@@ -1946,6 +2040,7 @@
                 "uuid": "7f010100-0000-4000-8000-000000000101"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1953,6 +2048,7 @@
                 "link": "custom",
                 "name": "Annual reports",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "7f030000-0000-4000-8000-000000000300",
                 "slug": "/annual-report",
                 "status": 1,
@@ -1960,6 +2056,7 @@
                 "uuid": "7f030300-0000-4000-8000-000000000303"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1967,6 +2064,7 @@
                 "link": "custom",
                 "name": "Clean water",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "7f020000-0000-4000-8000-000000000200",
                 "slug": "/category/our-causes",
                 "status": 1,
@@ -1974,6 +2072,7 @@
                 "uuid": "7f020300-0000-4000-8000-000000000203"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1981,6 +2080,7 @@
                 "link": "custom",
                 "name": "Contact us",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "7f040000-0000-4000-8000-000000000400",
                 "slug": "/contact-us",
                 "status": 1,
@@ -1988,6 +2088,7 @@
                 "uuid": "7f040100-0000-4000-8000-000000000401"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -1995,6 +2096,7 @@
                 "link": "custom",
                 "name": "Donate",
                 "order_by": 5,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -2002,6 +2104,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000006"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2009,6 +2112,7 @@
                 "link": "custom",
                 "name": "Education",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "7f020000-0000-4000-8000-000000000200",
                 "slug": "/category/our-causes",
                 "status": 1,
@@ -2016,6 +2120,7 @@
                 "uuid": "7f020100-0000-4000-8000-000000000201"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2023,6 +2128,7 @@
                 "link": "custom",
                 "name": "Gallery",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "7f010000-0000-4000-8000-000000000100",
                 "slug": "/gallery",
                 "status": 1,
@@ -2030,6 +2136,7 @@
                 "uuid": "7f010400-0000-4000-8000-000000000104"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2037,6 +2144,7 @@
                 "link": "custom",
                 "name": "Get Involved",
                 "order_by": 3,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -2044,6 +2152,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000004"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2051,6 +2160,7 @@
                 "link": "custom",
                 "name": "Healthcare",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "7f020000-0000-4000-8000-000000000200",
                 "slug": "/category/our-causes",
                 "status": 1,
@@ -2058,6 +2168,7 @@
                 "uuid": "7f020200-0000-4000-8000-000000000202"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2065,6 +2176,7 @@
                 "link": "custom",
                 "name": "Livelihoods",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "7f020000-0000-4000-8000-000000000200",
                 "slug": "/category/our-causes",
                 "status": 1,
@@ -2072,6 +2184,7 @@
                 "uuid": "7f020400-0000-4000-8000-000000000204"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2079,6 +2192,7 @@
                 "link": "custom",
                 "name": "News & Stories",
                 "order_by": 4,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -2086,6 +2200,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000005"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2093,6 +2208,7 @@
                 "link": "custom",
                 "name": "News & blog",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "7f010000-0000-4000-8000-000000000100",
                 "slug": "/events",
                 "status": 1,
@@ -2100,6 +2216,7 @@
                 "uuid": "7f010300-0000-4000-8000-000000000103"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2107,6 +2224,7 @@
                 "link": "custom",
                 "name": "Our Work",
                 "order_by": 2,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": "#",
                 "status": 1,
@@ -2114,6 +2232,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000003"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2121,6 +2240,7 @@
                 "link": "custom",
                 "name": "Our impact",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "7f010000-0000-4000-8000-000000000100",
                 "slug": "/category/our-causes",
                 "status": 1,
@@ -2128,6 +2248,7 @@
                 "uuid": "7f010200-0000-4000-8000-000000000102"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2135,6 +2256,7 @@
                 "link": "custom",
                 "name": "Privacy policy",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "7f040000-0000-4000-8000-000000000400",
                 "slug": "/page/privacy-policy",
                 "status": 1,
@@ -2142,6 +2264,7 @@
                 "uuid": "7f040200-0000-4000-8000-000000000402"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2149,6 +2272,7 @@
                 "link": "custom",
                 "name": "Refund policy",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "7f040000-0000-4000-8000-000000000400",
                 "slug": "/page/refund-policy",
                 "status": 1,
@@ -2156,6 +2280,7 @@
                 "uuid": "7f040300-0000-4000-8000-000000000403"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2163,6 +2288,7 @@
                 "link": "custom",
                 "name": "Safeguarding",
                 "order_by": 4,
+                "parent_language": "en",
                 "parent_uuid": "7f040000-0000-4000-8000-000000000400",
                 "slug": "/page/safeguarding",
                 "status": 1,
@@ -2170,6 +2296,7 @@
                 "uuid": "7f040500-0000-4000-8000-000000000405"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2177,6 +2304,7 @@
                 "link": "custom",
                 "name": "Sponsor a child",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "7f030000-0000-4000-8000-000000000300",
                 "slug": "/sponsor-child",
                 "status": 1,
@@ -2184,6 +2312,7 @@
                 "uuid": "7f030200-0000-4000-8000-000000000302"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2191,6 +2320,7 @@
                 "link": "custom",
                 "name": "Terms of service",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "7f040000-0000-4000-8000-000000000400",
                 "slug": "/page/terms-conditions",
                 "status": 1,
@@ -2198,6 +2328,7 @@
                 "uuid": "7f040400-0000-4000-8000-000000000404"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2205,6 +2336,7 @@
                 "link": "custom",
                 "name": "Volunteer",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "7f030000-0000-4000-8000-000000000300",
                 "slug": "/volunteer/register",
                 "status": 1,
@@ -2212,6 +2344,7 @@
                 "uuid": "7f030400-0000-4000-8000-000000000304"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2219,6 +2352,7 @@
                 "link": "custom",
                 "name": "Ways to give",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "7f030000-0000-4000-8000-000000000300",
                 "slug": "/donate",
                 "status": 1,
@@ -2226,6 +2360,7 @@
                 "uuid": "7f030100-0000-4000-8000-000000000301"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2233,6 +2368,7 @@
                 "link": "frontend.about",
                 "name": "Who We Are",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": null,
                 "status": 1,
@@ -2240,6 +2376,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2247,6 +2384,7 @@
                 "link": "frontend.annual_report.index",
                 "name": "Annual Reports",
                 "order_by": 4,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": null,
                 "status": 1,
@@ -2254,6 +2392,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000005"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2261,6 +2400,7 @@
                 "link": "frontend.category",
                 "name": "Awards & Recognition",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": "awards-&-recognition",
                 "status": 1,
@@ -2268,6 +2408,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000003"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2275,6 +2416,7 @@
                 "link": "frontend.category",
                 "name": "Careers",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000004",
                 "slug": "career",
                 "status": 1,
@@ -2282,6 +2424,7 @@
                 "uuid": "68000000-0004-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2289,6 +2432,7 @@
                 "link": "frontend.category",
                 "name": "Program Overview",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "our-causes",
                 "status": 1,
@@ -2296,6 +2440,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2303,6 +2448,7 @@
                 "link": "frontend.category",
                 "name": "Stories",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000005",
                 "slug": "stories",
                 "status": 1,
@@ -2310,6 +2456,7 @@
                 "uuid": "68000000-0005-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2317,6 +2464,7 @@
                 "link": "frontend.category",
                 "name": "Visit Ignite School",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "visit-ignite-school",
                 "status": 1,
@@ -2324,6 +2472,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000003"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2331,6 +2480,7 @@
                 "link": "frontend.contactUs",
                 "name": "Contact Us",
                 "order_by": 5,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": null,
                 "status": 1,
@@ -2338,6 +2488,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000006"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2345,6 +2496,7 @@
                 "link": "frontend.donate.direct",
                 "name": "Make a Donation",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000006",
                 "slug": null,
                 "status": 1,
@@ -2352,6 +2504,7 @@
                 "uuid": "68000000-0006-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2359,6 +2512,7 @@
                 "link": "frontend.events",
                 "name": "Events & News",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000005",
                 "slug": null,
                 "status": 1,
@@ -2366,6 +2520,7 @@
                 "uuid": "68000000-0005-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2373,6 +2528,7 @@
                 "link": "frontend.gallery",
                 "name": "Photo Gallery",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": null,
                 "status": 1,
@@ -2380,6 +2536,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000004"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2387,6 +2544,7 @@
                 "link": "frontend.home",
                 "name": "Home",
                 "order_by": 0,
+                "parent_language": null,
                 "parent_uuid": null,
                 "slug": null,
                 "status": 1,
@@ -2394,6 +2552,7 @@
                 "uuid": "67000000-0000-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2401,6 +2560,7 @@
                 "link": "frontend.page",
                 "name": "Disaster Resilience",
                 "order_by": 4,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "disaster-response-and-resilience",
                 "status": 1,
@@ -2408,6 +2568,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000005"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2415,6 +2576,7 @@
                 "link": "frontend.page",
                 "name": "Founder's Letter",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000002",
                 "slug": "founder's-letter",
                 "status": 0,
@@ -2422,6 +2584,7 @@
                 "uuid": "68000000-0002-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2429,6 +2592,7 @@
                 "link": "frontend.page",
                 "name": "Inclusive Education",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "education",
                 "status": 1,
@@ -2436,6 +2600,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2443,6 +2608,7 @@
                 "link": "frontend.page",
                 "name": "Youth Development",
                 "order_by": 3,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "youth-development",
                 "status": 1,
@@ -2450,6 +2616,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000004"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2457,6 +2624,7 @@
                 "link": "frontend.project",
                 "name": "Completed Projects",
                 "order_by": 6,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "completed-project",
                 "status": 1,
@@ -2464,6 +2632,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000007"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2471,6 +2640,7 @@
                 "link": "frontend.project",
                 "name": "Current Projects",
                 "order_by": 5,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000003",
                 "slug": "current-project",
                 "status": 1,
@@ -2478,6 +2648,7 @@
                 "uuid": "68000000-0003-4000-8000-000000000006"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2485,6 +2656,7 @@
                 "link": "frontend.sponsor_child",
                 "name": "Sponsor a Child",
                 "order_by": 2,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000004",
                 "slug": null,
                 "status": 1,
@@ -2492,6 +2664,7 @@
                 "uuid": "68000000-0004-4000-8000-000000000003"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2499,6 +2672,7 @@
                 "link": "frontend.volunteer_registration.index",
                 "name": "Volunteer",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000004",
                 "slug": null,
                 "status": 1,
@@ -2506,6 +2680,7 @@
                 "uuid": "68000000-0004-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2513,6 +2688,7 @@
                 "link": "frontend.workshops.index",
                 "name": "Workshop",
                 "order_by": 0,
+                "parent_language": "en",
                 "parent_uuid": "68000000-0003-4000-8000-000000000004",
                 "slug": null,
                 "status": 1,
@@ -2520,6 +2696,7 @@
                 "uuid": "68000000-0304-4000-8000-000000000001"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
@@ -2527,6 +2704,7 @@
                 "link": "frontend.zakat",
                 "name": "Give Zakat",
                 "order_by": 1,
+                "parent_language": "en",
                 "parent_uuid": "67000000-0000-4000-8000-000000000006",
                 "slug": null,
                 "status": 1,
@@ -2536,36 +2714,43 @@
         ],
         "page_tag_modules": [
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000009",
                 "tag_uuid": "63000000-0000-4000-8000-000000000001",
                 "uuid": "64000000-0000-4000-8000-000000000024"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000010",
                 "tag_uuid": "63000000-0000-4000-8000-000000000001",
                 "uuid": "64000000-0000-4000-8000-000000000025"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000011",
                 "tag_uuid": "63000000-0000-4000-8000-000000000001",
                 "uuid": "64000000-0000-4000-8000-000000000026"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000012",
                 "tag_uuid": "63000000-0000-4000-8000-000000000001",
                 "uuid": "64000000-0000-4000-8000-000000000027"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000013",
                 "tag_uuid": "63000000-0000-4000-8000-000000000001",
                 "uuid": "64000000-0000-4000-8000-000000000028"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000014",
                 "tag_uuid": "63000000-0000-4000-8000-000000000002",
                 "uuid": "64000000-0000-4000-8000-000000000029"
             },
             {
+                "page_language": "en",
                 "page_uuid": "62000000-0000-4000-8000-000000000015",
                 "tag_uuid": "63000000-0000-4000-8000-000000000002",
                 "uuid": "64000000-0000-4000-8000-000000000030"
@@ -2573,7 +2758,9 @@
         ],
         "pages": [
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000001",
                 "description": "",
                 "editor_version": 1,
@@ -2602,7 +2789,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>A more equitable and compassionate society</h2><p>Ignite envisions a future where every person can learn, grow, and shape a dignified life.</p><h2>What that future looks like</h2><p>Children can access inclusive education, families can strengthen their health and livelihoods, and young people can lead practical change. Resilient communities have the confidence, opportunity, and support to shape their own futures.</p>",
                 "editor_version": 0,
@@ -2631,7 +2820,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>Information we collect</h2><p>Ignite Global Foundation collects the information you choose to provide when you contact us, donate, register to volunteer, subscribe for updates, or request sponsorship information.</p><h2>How information is used</h2><p>We use this information to respond to you, administer the service you requested, maintain required financial and safeguarding records, and improve our programs. Card details are handled by the payment provider and are not stored on this website.</p><h2>Your choices</h2><p>You may ask to access, correct, or delete eligible personal information by contacting info@ignite.org.bd. We restrict access to authorized personnel and retain information only for operational, legal, and safeguarding needs.</p>",
                 "editor_version": 0,
@@ -2660,7 +2851,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>Our commitment</h2><p>Ignite Global Foundation is committed to protecting children, adults at risk, community members, volunteers, and staff from abuse, exploitation, harassment, and neglect.</p><h2>How we work</h2><p>People representing Ignite are expected to follow safeguarding standards, treat every person with dignity, minimize risk, and report concerns promptly. Concerns are handled confidentially and shared only with people responsible for responding safely.</p><h2>Report a concern</h2><p>To raise a safeguarding concern, contact info@ignite.org.bd or +880 1972016221. If someone is in immediate danger, contact the appropriate local emergency or protection service first. Retaliation against a person who reports a concern in good faith is not accepted.</p>",
                 "editor_version": 0,
@@ -2689,7 +2882,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>Refund requests</h2><p>For refunds, contact <a href=\"mailto:info@ignite.org.bd\">info@ignite.org.bd</a> within 7 days of making the payment. Once a refund is initiated, it will be adjusted to the customer’s account within 7 working days.</p><h2>Chargebacks</h2><p>For a chargeback, contact the issuer bank of the card used to complete the payment. Once the bank issues the chargeback request, the requested amount will be disbursed within 14 working days.</p>",
                 "editor_version": 0,
@@ -2718,7 +2913,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>Turn compassion into practical opportunity</h2><p>Ignite Global Foundation mobilizes volunteers and works alongside communities to expand inclusive education, youth development, women’s empowerment, healthcare, livelihoods, safe water, food security, and humanitarian support.</p><h2>How we work</h2><p>We listen first, respect community leadership, and connect responsible support with practical action. Programs are designed around dignity, accountability, and outcomes that communities can sustain.</p>",
                 "editor_version": 0,
@@ -2747,7 +2944,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<h2>Using this website</h2><p>You may use this website for lawful, personal purposes. Do not attempt to disrupt the service, access another person's account, upload harmful material, or misuse Ignite Global Foundation content.</p><h2>Information and donations</h2><p>Program information is provided for general awareness and may change as community needs evolve. Donations are processed by an independent payment provider. Contact info@ignite.org.bd promptly if you believe a transaction was made in error.</p><h2>Content</h2><p>Unless otherwise stated, website text, photographs, and visual materials belong to Ignite Global Foundation or are used with permission. Please request written permission before reproducing them.</p>",
                 "editor_version": 0,
@@ -2776,7 +2975,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<p>Ignite Global Foundation began on 2 February 2016 when a small group of young volunteers started listening to children who wanted an education. What began with 32 learners in an open park grew into an inclusive school and a nationwide community of service.</p>",
                 "editor_version": 0,
@@ -2805,7 +3006,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000010",
                 "description": "<p>Real progress grows from dignity, trust, and the determination of people closest to each challenge. Our responsibility is to stand beside those leaders with practical support and lasting partnership.</p>",
                 "editor_version": 0,
@@ -2834,7 +3037,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000011",
                 "description": "<h2>Turn your Zakat into practical opportunity.</h2><p>Use the calculator below for an estimate, then choose Zakat on the secure donation page. Ignite applies designated funds only to eligible programs.</p>",
                 "editor_version": 0,
@@ -2863,7 +3068,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<h2>Education that includes every learner</h2><p>Ignite Global Foundation supports inclusive learning spaces, educational materials, nutritious meals, healthcare support, and life-skills development for children from marginalized communities, including children with additional needs.</p><h2>What the program provides</h2><p>Children receive learning resources, school support, opportunities for creativity and play, and a safe environment designed around dignity and belonging.</p>",
                 "editor_version": 0,
@@ -2892,7 +3099,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<h2>Standing with communities before and after crisis</h2><p>The Disaster Response and Resilience program combines preparedness, rapid response, safe water and sanitation, health support, housing recovery, and community-led risk reduction.</p><h2>Rebuilding stronger</h2><p>Ignite works with local volunteers and partners so that emergency assistance protects dignity while recovery investments help families prepare for future hazards.</p><p><a href=\"/donate\">Support disaster response</a></p>",
                 "editor_version": 0,
@@ -2921,7 +3130,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<h2>Young people leading change</h2><p>Ignite equips young people with leadership, communication, critical-thinking, project-management, advocacy, and digital skills. Volunteers work alongside communities on education, environmental sustainability, disaster resilience, and social inclusion.</p><h2>Ways to participate</h2><p>Young people can contribute as campus ambassadors, national volunteers, or international volunteers and receive mentorship while supporting practical community initiatives.</p><p><a href=\"/volunteer/register\">Register to volunteer</a></p>",
                 "editor_version": 0,
@@ -2950,7 +3161,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<p>Community health outreach and essential care. Ignite works with local leaders to design practical support around community priorities and long-term resilience.</p>",
                 "editor_version": 0,
@@ -2979,7 +3192,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<p>Safe water access and community-owned infrastructure. Ignite works with local leaders to design practical support around community priorities and long-term resilience.</p>",
                 "editor_version": 0,
@@ -3008,7 +3223,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-000000000012",
                 "description": "<p>Skills, enterprise, and pathways to reliable income. Ignite works with local leaders to design practical support around community priorities and long-term resilience.</p>",
                 "editor_version": 0,
@@ -3037,7 +3254,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-111111111111",
                 "description": "<p>Editorial content is being prepared for review.</p>",
                 "editor_version": 0,
@@ -3066,7 +3285,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-111111111111",
                 "description": "<p>Editorial content is being prepared for review.</p>",
                 "editor_version": 0,
@@ -3095,7 +3316,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-111111111111",
                 "description": "<p>Women artisans in rural Sylhet are strengthening their skills, connecting with new markets, and building more reliable livelihoods through community-led enterprise support.</p>",
                 "editor_version": 0,
@@ -3124,7 +3347,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "11111111-1111-4111-8111-111111111111",
                 "description": "<p>স্থানীয় ভিজ্যুয়াল গুণমান যাচাইয়ের নমুনা কনটেন্ট।</p>",
                 "editor_version": 0,
@@ -3153,7 +3378,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000003",
                 "description": "<h2>ILA Global 30 Under 30</h2><p>This international recognition celebrates young leaders whose work expands learning opportunities, promotes inclusive education, and inspires grassroots change.</p>",
                 "editor_version": 0,
@@ -3182,7 +3409,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000003",
                 "description": "<h2>The Diana Award</h2><p>Ignite Global Foundation received The Diana Award in 2020 in recognition of its contribution to youth development and education. The recognition celebrates young people and organizations creating positive social impact.</p>",
                 "editor_version": 0,
@@ -3211,7 +3440,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000003",
                 "description": "<h2>The Hero Award</h2><p>The Arvi Foundation honoured Ignite Global Foundation with The Hero Award in 2021 for its response during COVID-19. Ignite supported marginalized communities with nutritious food for almost 5,000 families and additional financial assistance.</p>",
                 "editor_version": 0,
@@ -3240,7 +3471,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000003",
                 "description": "<h2>UN Best Volunteer Award</h2><p>Ignite volunteers were recognized for advancing inclusive community development through education, youth leadership, livelihoods, health, hygiene, and humanitarian action.</p>",
                 "editor_version": 0,
@@ -3269,7 +3502,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000003",
                 "description": "<h2>VSO National Volunteer Award</h2><p>In 2023, VSO Bangladesh gave Ignite Global Foundation the National Volunteer Award in recognition of its volunteer-led community service. The award celebrates the dedication, compassion, and practical impact of IGF volunteers.</p>",
                 "editor_version": 0,
@@ -3298,7 +3533,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000004",
                 "description": "<h2>Join the team</h2><p>Employment, internship, consultancy, and volunteer opportunities are published here when they become available.</p><p>For volunteer roles, complete the registration form so the team can match your interests and availability with an appropriate program.</p><p><a href=\"/volunteer/register\">Register to volunteer</a> or <a href=\"/contact-us\">contact our team</a>.</p>",
                 "editor_version": 0,
@@ -3327,7 +3564,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>A path from vulnerability to self-reliance</h2><p>Project Shabolombi works with families earning below BDT 7,000 per month. Participants receive livelihood training, productive assets, and eligible Zakat assistance shaped around a realistic household business plan.</p><p>So far, 158 families have started income-generating activities through the project.</p>",
                 "editor_version": 0,
@@ -3356,7 +3595,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Community care and prevention</h2><p>A team of 12 volunteer doctors supports health screenings, checkups, medicine, and practical health education. Weekly care at Ignite School helps children receive timely attention while outreach takes services to communities with limited access.</p><p>More than 4,500 people have been reached through the program.</p>",
                 "editor_version": 0,
@@ -3385,7 +3626,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Food support when it matters most</h2><p>Project ONNO has reached more than 44,000 families through emergency food packs, cooked meals, Ramadan support, and school nutrition. During the COVID-19 emergency, approximately 2,500 food packs helped families through sudden income loss.</p><p>The program connects immediate relief with the dignity, health, and stability families need to recover.</p>",
                 "editor_version": 0,
@@ -3414,7 +3657,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Health information with practical support</h2><p>Project Prerona combined menstrual-health education with distribution of 750 reusable sanitary-pad packs to 750 marginalized women and girls in Baunia and Uttara. The project promoted dignity, safer health practices, and progress toward gender equality.</p>",
                 "editor_version": 0,
@@ -3443,7 +3688,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Resilient agriculture, rooted locally</h2><p>Project ANKUR began in Ishapasha, Tangail with eight families receiving hands-on training, inputs, and 15 grow bags each for climate-resilient ginger production.</p><h2>From skills to market</h2><p>The project combines practical capacity building, inclusive participation, production support, and market connections so small farmers can turn a manageable crop into a lasting source of income.</p>",
                 "editor_version": 0,
@@ -3472,7 +3719,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Safe water closer to home</h2><p>Project Tripty installed deep tube wells and supported practical water purification in places where safe drinking water was difficult to reach. The completed project improved access for more than 150,000 people across rural and disaster-prone communities.</p>",
                 "editor_version": 0,
@@ -3501,7 +3750,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000005",
                 "description": "<h2>Small hives, growing opportunity</h2><p>Fifteen rural households received training and beekeeping support, growing from three to four hives each and managing 60 hives together.</p><p>Early harvests produced 104 kilograms of honey, followed by 120 kilograms, creating new earning opportunities for women, small farmers, and young people while supporting local biodiversity.</p>",
                 "editor_version": 0,
@@ -3530,7 +3781,9 @@
                 "visibility": "public"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
+                "category_language": "en",
                 "category_uuid": "61000000-0000-4000-8000-000000000006",
                 "description": "<h2>Partner with Ignite School to shape bright futures</h2><p>Ignite School began in 2016 with 35 children and now supports nearly 120 learners at its Bawnia campus, including children with additional needs.</p><p>Students receive free education from Playgroup through Class Five together with learning materials, uniforms, nutritious meals, healthcare support, creative activities, and practical life skills.</p>",
                 "editor_version": 0,
@@ -3578,6 +3831,7 @@
                 "route_name": null,
                 "route_path": null,
                 "schema_markup": null,
+                "seoable_language": "en",
                 "seoable_type": "App\\Models\\Page",
                 "seoable_uuid": "22222222-2222-4222-8222-000000000100",
                 "sitemap_change_frequency": "monthly",
@@ -3606,6 +3860,7 @@
                 "route_name": null,
                 "route_path": null,
                 "schema_markup": null,
+                "seoable_language": "en",
                 "seoable_type": "App\\Models\\Category",
                 "seoable_uuid": "11111111-1111-4111-8111-000000000001",
                 "sitemap_change_frequency": "monthly",
@@ -3735,6 +3990,7 @@
         "splash_screens": [],
         "tags": [
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "name": "Completed Projects",
                 "slug": "completed-project",
@@ -3742,6 +3998,7 @@
                 "uuid": "63000000-0000-4000-8000-000000000002"
             },
             {
+                "banner_language": null,
                 "banner_uuid": null,
                 "name": "Current Projects",
                 "slug": "current-project",
@@ -3822,24 +4079,24 @@
         "albums": "b11b68f7ca2f38d5a01d42f6c2d0fbf73a4b007763fe08e0ff6337b70e1053cb",
         "annual_reports": "179aa4fa5df07ac6c38f7372e554210988d8f2ac3f7db79a5b56bcd10899d2f4",
         "banners": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-        "categories": "24cf622c594db385278ea65892775a5a9a11f62dfde89f0d597a0043d8e7c179",
+        "categories": "7e153aa6dde65b826b6b6d830d3085b68b07699101f8c31c426f9d2efecb4fde",
         "chat_faqs": "367e441bc9d55ac0d2562e4f07e42209ca085c24d6d216f89b3814392911eaa0",
         "chat_settings": "547b09199ecd2ee4a53f2cbdc7fd06292cbe197c5db31f38fbac9c9564a93166",
         "donation_cause_groups": "feab6ce22b0acad49070a8cba06f438627bed9cbac2fc65c5d4332c24d386edc",
         "donation_types": "51a0d3a3061d19016d027b897357ef40cbd31f9a34efd0a0692123193c540bd5",
-        "galleries": "7829ba05784a2e77f4bca2ed01f4f628db23b2dad298b6b8aa33abba050a5923",
-        "latest_news": "b1ab3b279b7cb2d541d3aa862aa65e8d3fc42bd18029819bae43785ca2094936",
+        "galleries": "c00b76de1188f2c63bed29edf3f5cf12d4cea2475a7e254716bda65652055957",
+        "latest_news": "fbc450010e657da2ccf98dbc1630f7ab52f71970b9d5a00c30b9d69922eafabe",
         "media_assets": "4d94fe41029e08d62c951bc140a2f1929fdaaed26712e158ddac4b9c10c7b97b",
         "notice_boards": "545d8a185b951b69a46207a06b41cad17af36dc906d56c178cfb8ca4f35be45e",
-        "page_blocks": "52928cbe1718e30f87685169a245dd811638f5ad699b7f8381a1ec812f9cd5a1",
-        "page_menus": "d65c46fbc47e8a097b479686e23f72e4ea1f940647601c9f566d057d90307e90",
-        "page_tag_modules": "c2f0e859971f98c54a1831f3b7fcf90433ef97e3af8f2aaa3b9220355c55f99a",
-        "pages": "c0e8746f70bfecb3869e6502f19c0a87cb598f30f5903386070d481d7c987607",
+        "page_blocks": "500a8e2c9cbba2e4416249c4b4fc0961913daf3edb2f945bed18fdb9518e2029",
+        "page_menus": "5a9f9316eed36b387fdf8c220dfc4254d178da78df9cdca33a05ff9026b169b0",
+        "page_tag_modules": "f574ee3f59e88784e8be46979b7ffceb95c1f58ed0d3950ebdd0b32e3f62756a",
+        "pages": "f0e48325b43e8c8392c9acfac4f2c8079236f1ffcc9a25cbb58f63ae4e959057",
         "reusable_blocks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-        "seo_metadata": "c078c3233108ecacbc6921072c28c9803ae146cf6d8ac76ff0f471a2ed7caeec",
+        "seo_metadata": "4cff43c7e737122a9c08d63ada23d44290a07786dae2232bcc012d03d9482cf5",
         "site_settings": "b66b491f47e23e40979e1450c41d3ab2acd99895586b8c27072a97e9c18c0c1b",
         "splash_screens": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-        "tags": "9f566cf8137f33579d2cb5ff7dea2dd11c2314383a90f83b89dea6bc57a10968",
+        "tags": "1b9352937ec177abdd5996d9c5d9068077a548b96028306c69c5cdbea6632644",
         "team_groups": "d14b3842eded34f91007eea9cfa38eb61121e0c868025e2a706b3849aa29eefc",
         "testimonials": "d7137c3a4b601df54e359740b6a197b00ab4b1eff3e3361a96ce351344c8cc0b",
         "translation_locales": "93ab9b3fe0e400cb7378e4951d3eaf64c531d4cdc1351dcc47142f841b23941b",

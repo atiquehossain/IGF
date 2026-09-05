@@ -34,6 +34,7 @@
 /storage/app/release-audit/
 /cypress/videos
 /cypress/screenshots
+/cypress/downloads
 /.env
 /.env.*
 !/.env.example

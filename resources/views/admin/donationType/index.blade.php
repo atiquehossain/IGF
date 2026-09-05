@@ -228,7 +228,7 @@
                             <tr id="{{ @$donationType->id }}">
                                 <td> #{{@$donationType->id}} </td>
                                 <td><span class="name"><strong>{{ $donationType->name }}</strong></span><br><small class="text-muted">/donate/{{ $donationType->slug }}</small></td>
-                                <td><strong>Order {{ $donationType->display_order ?? '—' }}</strong><br><small>{{ $iconOptions[$donationType->icon_key] ?? 'Automatic icon' }}</small><br><small>Tab: {{ $donationType->causeGroup?->name ?? 'All causes only' }}</small></td>
+                                <td><strong>Order {{ $donationType->display_order ?? '—' }}</strong><br><small>{{ $iconOptions[$donationType->icon_key] ?? 'Automatic icon' }}</small><br><small>Tab: {{ $donationType->causeGroup?->name ?? 'All causes only' }}</small><br><small>{{ $donationType->amount_cards_count }} custom {{ Str::plural('amount', $donationType->amount_cards_count) }} · {{ $donationType->landing_sections_count }} story {{ Str::plural('section', $donationType->landing_sections_count) }}</small></td>
                                 <td>{{ $purposeOptions[$donationType->purpose_key ?? ''] ?? 'Regular donation cause' }}</td>
                                 <td><strong>{{ $destinationOptions[$donationType->destination_type] ?? 'Needs review' }}</strong><br><small>{{ $donationType->destination_label }}</small></td>
                                 <td>
@@ -240,6 +240,7 @@
                                 <td>
                                     @if($canEditDonationTypes)
                                         <a href="javascript:void(0)" class="edit btn igf-btn igf-btn-secondary igf-btn-compact" data-id="{{ $donationType->id }}" aria-label="Edit donation cause" title="Edit donation cause"><i class="fa fa-edit" aria-hidden="true"></i> Edit</a>
+                                        <a href="{{ route('donationType.content.edit', $donationType) }}" class="btn igf-btn igf-btn-secondary igf-btn-compact" aria-label="Edit donation amounts and landing content for {{ $donationType->name }}" title="Edit donation amounts and landing content"><i class="fa fa-file-text-o" aria-hidden="true"></i> Amounts &amp; story</a>
                                     @endif
                                     @if($canPublishDonationTypes)
                                         <button type="button" class="btn igf-btn igf-btn-secondary igf-btn-compact status" data-id="{{ $donationType->id }}" data-url="{{ route('donationType.status', $donationType->id) }}" data-token="{{ csrf_token() }}" aria-label="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause {{ $donationType->name }}" title="{{ $donationType->status ? 'Unpublish' : 'Publish' }} donation cause" aria-pressed="{{ $donationType->status ? 'true' : 'false' }}"><i class="fa {{ $donationType->status ? 'fa-check-square' : 'fa-square' }}" aria-hidden="true"></i> {{ $donationType->status ? 'Unpublish' : 'Publish' }}</button>

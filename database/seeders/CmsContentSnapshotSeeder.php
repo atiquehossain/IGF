@@ -15,6 +15,7 @@ class CmsContentSnapshotSeeder extends Seeder
     private const TABLE_ORDER = [
         'translation_locales',
         'translation_strings',
+        'transactional_email_templates',
         'albums',
         'banners',
         'categories',
@@ -28,6 +29,8 @@ class CmsContentSnapshotSeeder extends Seeder
         'media_assets',
         'donation_cause_groups',
         'donation_types',
+        'donation_cause_amounts',
+        'donation_cause_sections',
         'galleries',
         'latest_news',
         'testimonials',
@@ -47,6 +50,8 @@ class CmsContentSnapshotSeeder extends Seeder
         'categories',
         'chat_faqs',
         'donation_cause_groups',
+        'donation_cause_amounts',
+        'donation_cause_sections',
         'donation_types',
         'galleries',
         'media_assets',
@@ -249,6 +254,9 @@ class CmsContentSnapshotSeeder extends Seeder
             'donation_types' => [
                 'donation_cause_group_uuid' => ['donation_cause_groups', 'donation_cause_group_id', null],
             ],
+            'donation_cause_amounts', 'donation_cause_sections' => [
+                'donation_type_uuid' => ['donation_types', 'donation_type_id', null],
+            ],
             'latest_news' => [
                 'category_uuid' => ['categories', 'category_id', 'category_language'],
                 'team_group_uuid' => ['team_groups', 'team_group_id', 'team_group_language'],
@@ -305,6 +313,7 @@ class CmsContentSnapshotSeeder extends Seeder
             'site_settings' => $this->onlyIdentity($table, $record, ['group', 'key', 'locale']),
             'translation_locales' => $this->onlyIdentity($table, $record, ['locale']),
             'translation_strings' => $this->onlyIdentity($table, $record, ['key', 'locale']),
+            'transactional_email_templates' => $this->onlyIdentity($table, $record, ['template_key', 'locale']),
             'volunteer_causes' => $this->onlyIdentity($table, $record, ['name']),
             default => throw new RuntimeException("No CMS snapshot identity is configured for [{$table}]."),
         };

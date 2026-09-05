@@ -27,6 +27,12 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
         $this->assertSame('Published stories', $values['content_archives']['category_listing_label']);
         $this->assertSame('Events and news', $values['content_archives']['events_listing_label']);
         $this->assertSame('Published projects', $values['content_archives']['project_listing_label']);
+        $this->assertSame('About this donation cause', $values['donation_page']['cause_content_accessible_label']);
+        $this->assertSame('Language', $values['header']['language_switcher_accessible_label']);
+        $this->assertSame('The supplied credentials are invalid.', $values['member_area']['invalid_credentials_message']);
+        $this->assertSame('You are signed out.', $values['member_area']['logout_success_message']);
+        $this->assertSame('If this address can receive updates, a confirmation link has been sent.', $values['shared_blocks']['newsletter_request_message']);
+        $this->assertSame('Your email subscription is confirmed.', $values['shared_blocks']['newsletter_confirmation_message']);
         $this->assertSame('000000', $values['member_area']['verification_code_placeholder']);
         $this->assertTrue($values['member_area']['registration_enabled']);
         $this->assertSame('Apply for member access', $values['member_area']['registration_title']);
@@ -43,6 +49,12 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
 
         $localized = app(SiteSettingService::class)->values('bn', true);
         $this->assertSame('পরবর্তী গল্প', $localized['shared_blocks']['hero_next_label']);
+        $this->assertSame('এই অনুদানের কারণ সম্পর্কে', $localized['donation_page']['cause_content_accessible_label']);
+        $this->assertSame('ভাষা', $localized['header']['language_switcher_accessible_label']);
+        $this->assertSame('দেওয়া পরিচয়পত্র সঠিক নয়।', $localized['member_area']['invalid_credentials_message']);
+        $this->assertSame('আপনি সফলভাবে সাইন আউট করেছেন।', $localized['member_area']['logout_success_message']);
+        $this->assertSame('এই ঠিকানায় হালনাগাদ পাঠানো সম্ভব হলে একটি নিশ্চিতকরণ লিংক পাঠানো হয়েছে।', $localized['shared_blocks']['newsletter_request_message']);
+        $this->assertSame('আপনার ইমেইল সাবস্ক্রিপশন নিশ্চিত হয়েছে।', $localized['shared_blocks']['newsletter_confirmation_message']);
     }
 
     public function test_public_templates_bind_accessible_copy_and_custom_amount_visibility_to_settings(): void

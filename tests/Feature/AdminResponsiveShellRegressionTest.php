@@ -34,13 +34,13 @@ class AdminResponsiveShellRegressionTest extends TestCase
         $this->assertStringContainsString('$activeNavRoute = collect($navGroups)', $sidebar);
         $this->assertStringContainsString('->sortByDesc(function (array $item): int', $sidebar);
         $this->assertStringContainsString('$item[\'route\'] === $activeNavRoute', $sidebar);
-        $this->assertStringContainsString('aria-label="Dashboard" title="Dashboard"', $sidebar);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'sidebar.dashboard\') }}" title="{{ $ui(\'sidebar.dashboard\') }}"', $sidebar);
         $this->assertStringContainsString('aria-label="{{ $group[\'label\'] }} navigation"', $sidebar);
         $this->assertStringContainsString('aria-label="{{ $item[\'label\'] }}"', $sidebar);
-        $this->assertStringContainsString('aria-label="Advanced and legacy tools navigation"', $sidebar);
-        $this->assertStringContainsString('aria-label="Visit public website"', $sidebar);
-        $this->assertStringContainsString('aria-label="Website Customizer"', $sidebar);
-        $this->assertStringContainsString('aria-label="Log out"', $sidebar);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'sidebar.advanced_navigation\') }}"', $sidebar);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'sidebar.visit_public_site\') }}"', $sidebar);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'sidebar.website_customizer\') }}"', $sidebar);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'sidebar.logout\') }}"', $sidebar);
     }
 
     public function test_navigation_translation_and_chat_actions_have_44_pixel_targets_and_mobile_containment(): void
@@ -71,7 +71,7 @@ class AdminResponsiveShellRegressionTest extends TestCase
 
         $this->assertStringContainsString('for="navigation-trash-search"', $navigationTrash);
         $this->assertStringContainsString('id="navigation-trash-search" type="search"', $navigationTrash);
-        $this->assertStringContainsString('aria-label="Scrollable trashed navigation records" tabindex="0"', $navigationTrash);
+        $this->assertStringContainsString('aria-label="{{ $ui(\'navigation.scrollable_trash\') }}" tabindex="0"', $navigationTrash);
         $this->assertStringContainsString('.igf-table-wrap{max-width:100%;overflow-x:auto', $navigationTrash);
         $this->assertStringContainsString('class="igf-table-wrap table-responsive"', $navigationTrash);
 

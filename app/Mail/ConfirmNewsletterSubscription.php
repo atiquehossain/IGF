@@ -2,31 +2,25 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
+use App\Services\TransactionalEmailTemplateService;
+use App\Support\TransactionalEmailTemplateCatalog;
 
-class ConfirmNewsletterSubscription extends Mailable
+class ConfirmNewsletterSubscription extends TransactionalEmail
 {
-    use Queueable, SerializesModels;
-
-    public function __construct(private readonly string $confirmationUrl)
+    public function __construct(
+        private readonly string $confirmationUrl,
+        ?string $messageLocale = null,
+    )
     {
-    }
-
-    public function envelope(): Envelope
-    {
-        return new Envelope(subject: 'Confirm your Ignite email subscription');
-    }
-
-    public function content(): Content
-    {
-        return new Content(
-            view: 'emails.newsletter-confirmation',
-            with: ['confirmationUrl' => $this->confirmationUrl],
-        );
+        $ttlMinutes = max(1, (int) config('privacy.newsletter.confirmation_ttl_minutes', 1440));
+        parent::__construct(app(TransactionalEmailTemplateService::class)->render(
+            TransactionalEmailTemplateCatalog::NEWSLETTER_CONFIRMATION,
+            $messageLocale ?: app()->getLocale(),
+            [
+                'confirmation_url' => $confirmationUrl,
+                'expiry_hours' => (string) max(1, (int) ceil($ttlMinutes / 60)),
+            ]
+        ));
     }
 
     public function confirmationUrl(): string
@@ -34,8 +28,4 @@ class ConfirmNewsletterSubscription extends Mailable
         return $this->confirmationUrl;
     }
 
-    public function attachments(): array
-    {
-        return [];
-    }
 }

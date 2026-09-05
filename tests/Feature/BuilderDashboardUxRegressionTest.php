@@ -32,7 +32,7 @@ class BuilderDashboardUxRegressionTest extends TestCase
             $source,
             'Save must only become available for an editable, dirty, idle state.'
         );
-        $this->assertStringContainsString("if(!hasDirty())return notify('Everything is already saved.');", $source);
+        $this->assertStringContainsString('if(!hasDirty())return notify(ui.everything_saved);', $source);
         $this->assertStringContainsString('finally{state.busy=false;updateSaveState()}', $source);
     }
 
@@ -42,9 +42,9 @@ class BuilderDashboardUxRegressionTest extends TestCase
 
         $this->assertIsString($source);
         $this->assertStringContainsString('<details class="simple-more">', $source);
-        $this->assertStringContainsString('Preview page</a>', $source);
-        $this->assertStringContainsString('Search &amp; Sharing</a>', $source);
-        $this->assertStringContainsString('Advanced editor</a>', $source);
+        $this->assertStringContainsString("\$ui('builder.preview_page')", $source);
+        $this->assertStringContainsString("\$ui('builder.search_sharing')", $source);
+        $this->assertStringContainsString("\$ui('builder.advanced_editor')", $source);
         $this->assertStringContainsString('.simple-more__menu{position:fixed;top:78px;right:12px}', $source);
         $this->assertStringContainsString('.simple-actions{width:100%;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}', $source);
         $this->assertStringContainsString('.simple-viewport{order:4;width:100%;justify-content:center}', $source);
@@ -78,8 +78,8 @@ class BuilderDashboardUxRegressionTest extends TestCase
         $source = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
 
         $this->assertIsString($source);
-        $this->assertStringContainsString('aria-label="View previous slide"', $source);
-        $this->assertStringContainsString('aria-label="View next slide"', $source);
+        $this->assertStringContainsString('aria-label="${escapeHtml(ui.view_previous_slide)}"', $source);
+        $this->assertStringContainsString('aria-label="${escapeHtml(ui.view_next_slide)}"', $source);
         $this->assertStringContainsString('data-hero-move="earlier"', $source);
         $this->assertStringContainsString('data-hero-move="later"', $source);
         $this->assertStringContainsString("button.dataset.heroMove === 'earlier' ? state.heroSlide - 1 : state.heroSlide + 1", $source);
@@ -127,7 +127,8 @@ class BuilderDashboardUxRegressionTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('dashboard.index'))
             ->assertOk()
-            ->assertSee('Ask an authorised teammate to open the enquiry inbox.')
+            ->assertDontSee('Ask an authorised teammate to open the enquiry inbox.')
+            ->assertDontSee('aria-label="New public enquiries"', false)
             ->assertDontSee('<a href="' . route('sponsorships.index') . '"><strong>', false)
             ->assertDontSee('<a href="' . route('volunteer.index') . '"><strong>', false)
             ->assertDontSee('<a href="' . route('contact-message.index') . '"><strong>', false);

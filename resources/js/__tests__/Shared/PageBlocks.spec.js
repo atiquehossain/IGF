@@ -940,6 +940,59 @@ describe('PageBlocks regional event dates', () => {
   });
 });
 
+describe('PageBlocks event and news columns', () => {
+  test('uses the stable item kind instead of editable or translated eyebrow copy', () => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: true });
+    setPageSettings({
+      shared: {
+        updates_events_title: 'Events',
+        updates_events_url: '/events',
+        updates_events_link_label: 'All events',
+        updates_events_date_fallback: 'Soon',
+        updates_news_title: 'News',
+        updates_news_url: '/news',
+        updates_news_link_label: 'All news',
+      },
+    });
+    const block = {
+      uuid: 'stable-update-kind',
+      type: 'cards',
+      is_enabled: true,
+      show_on_desktop: true,
+      show_on_mobile: true,
+      content: {
+        variant: 'updates',
+        heading: 'Latest updates',
+        items: [
+          {
+            kind: 'event',
+            eyebrow: 'Latest news',
+            heading: 'Event remains in the event column',
+            body: 'The editable label deliberately says news.',
+            url: '/events/community-day',
+          },
+          {
+            kind: 'news',
+            eyebrow: 'Upcoming event',
+            heading: 'News remains in the news column',
+            url: '/news/field-update',
+          },
+        ],
+      },
+    };
+    const wrapper = mount(PageBlocks, { props: { blocks: [block] } });
+
+    expect(wrapper.get('.igf-event-row').text()).toContain('Event remains in the event column');
+    expect(wrapper.get('.igf-event-row').text()).not.toContain('News remains in the news column');
+    expect(wrapper.get('.igf-news-row').text()).toContain('News remains in the news column');
+    expect(wrapper.get('.igf-news-row').text()).not.toContain('Event remains in the event column');
+    expect(pageBlocksSource).toContain("item?.kind === 'event'");
+    expect(pageBlocksSource).not.toContain("String(item.eyebrow || '').toLowerCase().includes('event')");
+
+    wrapper.unmount();
+  });
+});
+
 describe('PageBlocks editorial links', () => {
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });

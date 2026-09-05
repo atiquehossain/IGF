@@ -27,8 +27,8 @@ class NavigationEditorIntegrityTest extends TestCase
             ->assertSee('Build your website menus without route names or order numbers.')
             ->assertSee('Add a menu item')
             ->assertSee('Parent item (optional)')
-            ->assertDontSee('Save menu')
-            ->assertDontSee('Open navigation trash')
+            ->assertDontSee('id="save-menu-order"', false)
+            ->assertDontSee(route('page.menu.trash'), false)
             ->assertSee('data-menu-list', false)
             ->assertDontSee('Order By');
 
@@ -45,8 +45,8 @@ class NavigationEditorIntegrityTest extends TestCase
             ->assertOk()
             ->assertSee('Read-only access')
             ->assertSee($item->name)
-            ->assertDontSee('Add to menu')
-            ->assertDontSee('Save menu')
+            ->assertDontSee('id="add-menu-item"', false)
+            ->assertDontSee('id="save-menu-order"', false)
             ->assertDontSee('data-menu-action="', false)
             ->assertDontSee('title="Edit item"', false)
             ->assertDontSee('data-url="'.route('page.menu.item.update', $item->uuid).'"', false)

@@ -29,6 +29,39 @@ class ProductionPreflightService
     /** @var list<string> */
     private const PRODUCTION_DATABASE_DRIVERS = ['mysql', 'pgsql', 'sqlsrv'];
 
+    /**
+     * Runtime extensions required by the locked production dependency graph.
+     * Keep this list aligned with `composer check-platform-reqs --no-dev`.
+     *
+     * @var list<string>
+     */
+    private const REQUIRED_PHP_EXTENSIONS = [
+        'ctype',
+        'dom',
+        'exif',
+        'fileinfo',
+        'filter',
+        'hash',
+        'iconv',
+        'json',
+        'libxml',
+        'mbstring',
+        'openssl',
+        'pcre',
+        'pdo',
+        'session',
+        'sodium',
+        'tokenizer',
+        'zlib',
+    ];
+
+    /** @var array<string,string> */
+    private const DATABASE_DRIVER_EXTENSIONS = [
+        'mysql' => 'pdo_mysql',
+        'pgsql' => 'pdo_pgsql',
+        'sqlsrv' => 'pdo_sqlsrv',
+    ];
+
     public function __construct(private Application $app, private Router $router)
     {
     }
@@ -37,7 +70,11 @@ class ProductionPreflightService
      * @param  iterable<Route|string>|null  $routes
      * @return list<array{key:string,label:string,passed:bool,message:string}>
      */
-    public function evaluate(?iterable $routes = null, ?string $phpVersion = null): array
+    public function evaluate(
+        ?iterable $routes = null,
+        ?string $phpVersion = null,
+        ?iterable $loadedExtensions = null,
+    ): array
     {
         $environment = (string) $this->app->environment();
         $debug = config('app.debug');
@@ -46,6 +83,10 @@ class ProductionPreflightService
         $databaseDriver = (string) config("database.connections.{$databaseConnection}.driver", '');
         $developerRoutes = $this->developerRoutes($routes ?? $this->router->getRoutes());
         $phpVersion ??= PHP_VERSION;
+        $missingExtensions = $this->missingRequiredExtensions(
+            $loadedExtensions ?? get_loaded_extensions(),
+            $databaseDriver
+        );
 
         $checks = [];
         $checks[] = $this->check(
@@ -135,6 +176,15 @@ class ProductionPreflightService
                 : "PHP must be a stable release on a supported 8.2-8.5 branch at or above that branch's security baseline; current version is {$phpVersion}."
         );
 
+        $checks[] = $this->check(
+            'php_extensions',
+            'Required PHP extensions',
+            $missingExtensions === [],
+            $missingExtensions === []
+                ? 'All required production PHP extensions are loaded.'
+                : 'Missing required production PHP extension(s): '.implode(', ', $missingExtensions).'.'
+        );
+
         return $checks;
     }
 
@@ -217,6 +267,26 @@ class ProductionPreflightService
         $minimum = self::MINIMUM_PHP_VERSIONS[$branch] ?? null;
 
         return $minimum !== null && version_compare($version, $minimum, '>=');
+    }
+
+    /**
+     * @param  iterable<string>  $loadedExtensions
+     * @return list<string>
+     */
+    private function missingRequiredExtensions(iterable $loadedExtensions, string $databaseDriver): array
+    {
+        $loaded = [];
+        foreach ($loadedExtensions as $extension) {
+            $loaded[] = strtolower(trim((string) $extension));
+        }
+
+        $required = self::REQUIRED_PHP_EXTENSIONS;
+        $driverExtension = self::DATABASE_DRIVER_EXTENSIONS[$databaseDriver] ?? null;
+        if ($driverExtension !== null) {
+            $required[] = $driverExtension;
+        }
+
+        return array_values(array_diff($required, array_unique($loaded)));
     }
 
     /** @return array{key:string,label:string,passed:bool,message:string} */

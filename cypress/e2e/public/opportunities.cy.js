@@ -267,8 +267,17 @@ describe('anonymous public jobs and workshops', () => {
       .find('button[aria-expanded="true"]')
       .should('have.length', 2);
     cy.get('.mobile-nav__group.is-active > .mobile-nav__parent')
-      .should('have.css', 'background-color', 'rgb(255, 243, 232)')
-      .and('not.have.css', 'box-shadow', 'none');
+      .should(($active) => {
+        const activeStyle = getComputedStyle($active[0]);
+        const inactiveParent = document.querySelector('.mobile-nav__group:not(.is-active) > .mobile-nav__parent');
+
+        expect(activeStyle.backgroundColor).not.to.equal('rgba(0, 0, 0, 0)');
+        expect(activeStyle.backgroundColor).not.to.equal('transparent');
+        expect(activeStyle.boxShadow).not.to.equal('none');
+        if (inactiveParent) {
+          expect(activeStyle.backgroundColor).not.to.equal(getComputedStyle(inactiveParent).backgroundColor);
+        }
+      });
     cy.get('.menu-button').click();
     assertSinglePageHeading('Workshops');
     cy.get('.igf-opportunity-card').should('have.length', 1).and('contain.text', 'Community Leadership Workshop');
@@ -361,7 +370,7 @@ describe('anonymous public jobs and workshops', () => {
     cy.get('.igf-schema-form__submit').click();
     cy.get('[data-test="form-error-summary"]')
       .should('be.focused')
-      .and('contain.text', 'Upload a PDF file.');
+      .and('contain.text', 'Upload a supported PDF file.');
 
     cy.get('#field-cypress-cv').selectFile({
       contents: Cypress.Buffer.alloc((5 * 1024 * 1024) + 1),

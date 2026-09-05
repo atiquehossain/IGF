@@ -158,7 +158,7 @@ class AdminFinalQaRegressionTest extends TestCase
         $this->assertIsString($simple);
         $this->assertStringContainsString('role="textbox" aria-multiline="true" aria-labelledby=', $simple);
         $this->assertStringContainsString('<label for="${escapeHtml(id)}">${escapeHtml(label)}</label>', $simple);
-        $this->assertStringContainsString('aria-label="Choose ${escapeHtml(label)} from existing pages"', $simple);
+        $this->assertStringContainsString('aria-label="${escapeHtml(text(\'choose_existing_page\',{label}))}"', $simple);
         $this->assertStringContainsString('.simple-page-settings summary,.simple-options summary{display:flex;min-height:44px;align-items:center}', $simple);
 
         $this->assertIsString($bulkSeo);

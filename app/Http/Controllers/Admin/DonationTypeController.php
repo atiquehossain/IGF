@@ -31,6 +31,7 @@ class DonationTypeController extends Controller
         $search = $request->search;
         $donationTypes = DonationType::query()
             ->with(['imageAsset', 'causeGroup'])
+            ->withCount(['amountCards', 'landingSections'])
             ->when($search, fn ($query) => $query->where(function ($builder) use ($search): void {
                 $builder->where('name', 'like', '%' . $search . '%')
                     ->orWhere('slug', 'like', '%' . $search . '%')

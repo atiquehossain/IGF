@@ -21,6 +21,8 @@ class ExportCmsContentSnapshot extends Command
         'chat_settings',
         'donation_cause_groups',
         'donation_types',
+        'donation_cause_amounts',
+        'donation_cause_sections',
         'galleries',
         'latest_news',
         'media_assets',
@@ -38,6 +40,7 @@ class ExportCmsContentSnapshot extends Command
         'testimonials',
         'translation_locales',
         'translation_strings',
+        'transactional_email_templates',
         'volunteer_causes',
     ];
 
@@ -196,6 +199,7 @@ class ExportCmsContentSnapshot extends Command
             'banners',
             'categories',
             'donation_cause_groups',
+            'donation_types',
             'page_menus',
             'pages',
             'reusable_blocks',
@@ -276,6 +280,9 @@ class ExportCmsContentSnapshot extends Command
             ],
             'donation_types' => [
                 'donation_cause_group_id' => ['donation_cause_groups', 'donation_cause_group_uuid'],
+            ],
+            'donation_cause_amounts', 'donation_cause_sections' => [
+                'donation_type_id' => ['donation_types', 'donation_type_uuid'],
             ],
             'latest_news' => [
                 'category_id' => ['categories', 'category_uuid'],

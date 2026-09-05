@@ -7,6 +7,7 @@ use App\Models\ApplicationForm;
 use App\Models\ApplicationFormCondition;
 use App\Models\ApplicationFormField;
 use App\Models\ApplicationFormVersion;
+use App\Support\AdminUi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -29,7 +30,7 @@ final class ApplicationFormSchemaService
         $purpose = trim($purpose);
         $name = trim($name);
         if (!in_array($purpose, ApplicationForm::PURPOSES, true) || $name === '' || mb_strlen($name) > 150) {
-            throw ValidationException::withMessages(['form' => 'Choose a supported form purpose and a name no longer than 150 characters.']);
+            throw ValidationException::withMessages(['form' => $this->validationMessage('unsupported_form')]);
         }
 
         return DB::transaction(function () use ($purpose, $name, $actor, $template): ApplicationForm {
@@ -61,7 +62,7 @@ final class ApplicationFormSchemaService
         return DB::transaction(function () use ($form, $expectedEditorVersion, $normalized, $actor): ApplicationFormVersion {
             $locked = ApplicationForm::query()->lockForUpdate()->findOrFail($form->id);
             if ((int) $locked->editor_version !== $expectedEditorVersion) {
-                abort(409, 'This form changed after you opened it. Reload before saving.');
+                abort(409, $this->validationMessage('changed_save'));
             }
             $draft = $locked->versions()->where('state', ApplicationFormVersion::STATE_DRAFT)->lockForUpdate()->latest('version')->first();
             if (!$draft) {
@@ -89,7 +90,7 @@ final class ApplicationFormSchemaService
         return DB::transaction(function () use ($form, $expectedEditorVersion, $actor): ApplicationFormVersion {
             $locked = ApplicationForm::query()->lockForUpdate()->findOrFail($form->id);
             if ((int) $locked->editor_version !== $expectedEditorVersion) {
-                abort(409, 'This form changed after you opened it. Reload before publishing.');
+                abort(409, $this->validationMessage('changed_publish'));
             }
             $draft = $locked->versions()->where('state', ApplicationFormVersion::STATE_DRAFT)->lockForUpdate()->latest('version')->firstOrFail();
             $schema = $this->schemaArray($draft);
@@ -130,6 +131,152 @@ final class ApplicationFormSchemaService
         $this->replaceDraft($copy, (int) $copy->editor_version, $this->schemaArray($version), $actor);
 
         return $copy->fresh(['versions.fields.translations', 'versions.fields.options.translations']);
+    }
+
+    public function updateMetadata(
+        ApplicationForm $form,
+        int $expectedEditorVersion,
+        string $name,
+        bool $template,
+        ?Admin $actor,
+    ): ApplicationForm {
+        $name = trim($name);
+        if ($name === '' || mb_strlen($name) > 150) {
+            throw ValidationException::withMessages(['name' => $this->validationMessage('name')]);
+        }
+
+        return DB::transaction(function () use ($form, $expectedEditorVersion, $name, $template, $actor): ApplicationForm {
+            $locked = ApplicationForm::query()->lockForUpdate()->findOrFail($form->id);
+            $this->assertEditorVersion($locked, $expectedEditorVersion, 'changed_details');
+            $oldName = (string) $locked->name;
+            $oldTemplate = (bool) $locked->is_template;
+            $locked->update([
+                'name' => $name,
+                'is_template' => $template,
+                'editor_version' => $expectedEditorVersion + 1,
+                'updated_by_admin_id' => $actor?->id,
+            ]);
+            $this->audit->record($actor, 'application_form.metadata_updated', $locked, changes: [
+                'name' => ['from' => $oldName, 'to' => $name],
+                'is_template' => ['from' => $oldTemplate, 'to' => $template],
+                'editor_version' => ['from' => $expectedEditorVersion, 'to' => $expectedEditorVersion + 1],
+            ]);
+
+            return $locked->fresh();
+        });
+    }
+
+    public function archive(ApplicationForm $form, int $expectedEditorVersion, ?Admin $actor): void
+    {
+        DB::transaction(function () use ($form, $expectedEditorVersion, $actor): void {
+            $locked = ApplicationForm::query()->lockForUpdate()->findOrFail($form->id);
+            $this->assertEditorVersion($locked, $expectedEditorVersion, 'changed_archive');
+            if ($this->liveOpportunityReferences($locked) > 0) {
+                throw ValidationException::withMessages([
+                    'form' => $this->validationMessage('assigned'),
+                ]);
+            }
+
+            $locked->update([
+                'editor_version' => $expectedEditorVersion + 1,
+                'updated_by_admin_id' => $actor?->id,
+            ]);
+            $this->audit->record($actor, 'application_form.archived', $locked, context: [
+                'purpose' => $locked->purpose,
+                'editor_version' => $expectedEditorVersion + 1,
+            ]);
+            $locked->delete();
+        });
+    }
+
+    public function restore(ApplicationForm $form, int $expectedEditorVersion, ?Admin $actor): ApplicationForm
+    {
+        return DB::transaction(function () use ($form, $expectedEditorVersion, $actor): ApplicationForm {
+            $locked = ApplicationForm::withTrashed()->whereKey($form->id)->lockForUpdate()->firstOrFail();
+            if (!$locked->trashed()) {
+                throw ValidationException::withMessages(['form' => $this->validationMessage('already_restored')]);
+            }
+            $this->assertEditorVersion($locked, $expectedEditorVersion, 'changed_restore');
+            $locked->forceFill([
+                'editor_version' => $expectedEditorVersion + 1,
+                'updated_by_admin_id' => $actor?->id,
+            ])->save();
+            $locked->restore();
+            $this->audit->record($actor, 'application_form.restored', $locked, context: [
+                'purpose' => $locked->purpose,
+                'editor_version' => $expectedEditorVersion + 1,
+            ]);
+
+            return $locked->fresh();
+        });
+    }
+
+    public function permanentlyDelete(ApplicationForm $form, int $expectedEditorVersion, ?Admin $actor): void
+    {
+        DB::transaction(function () use ($form, $expectedEditorVersion, $actor): void {
+            $locked = ApplicationForm::withTrashed()->whereKey($form->id)->lockForUpdate()->firstOrFail();
+            if (!$locked->trashed()) {
+                throw ValidationException::withMessages(['form' => $this->validationMessage('trash_first')]);
+            }
+            $this->assertEditorVersion($locked, $expectedEditorVersion, 'changed_delete');
+            if ($this->allOpportunityReferences($locked) > 0) {
+                throw ValidationException::withMessages([
+                    'form' => $this->validationMessage('opportunity_history'),
+                ]);
+            }
+
+            $versions = $locked->versions()->lockForUpdate()->get();
+            if ($versions->contains(fn (ApplicationFormVersion $version): bool => $version->state !== ApplicationFormVersion::STATE_DRAFT)) {
+                throw ValidationException::withMessages([
+                    'form' => $this->validationMessage('published_history'),
+                ]);
+            }
+            $versionIds = $versions->pluck('id');
+            if ($versionIds->isNotEmpty() && (
+                DB::table('job_applications')->whereIn('application_form_version_id', $versionIds)->exists()
+                || DB::table('workshop_registrations')->whereIn('application_form_version_id', $versionIds)->exists()
+                || DB::table('application_import_batches')->whereIn('application_form_version_id', $versionIds)->exists()
+            )) {
+                throw ValidationException::withMessages([
+                    'form' => $this->validationMessage('submission_history'),
+                ]);
+            }
+
+            $this->audit->record($actor, 'application_form.permanently_deleted', $locked, context: [
+                'purpose' => $locked->purpose,
+                'version_count' => $versions->count(),
+            ]);
+            foreach ($versions as $version) {
+                $this->clearDraft($version);
+                $version->delete();
+            }
+            $locked->forceDelete();
+        });
+    }
+
+    private function assertEditorVersion(ApplicationForm $form, int $expected, string $messageKey): void
+    {
+        if ((int) $form->editor_version !== $expected) {
+            abort(409, $this->validationMessage($messageKey));
+        }
+    }
+
+    /** @param array<string, scalar|\Stringable> $replace */
+    private function validationMessage(string $key, array $replace = []): string
+    {
+        return AdminUi::text("application_forms.validation.{$key}", $replace);
+    }
+
+    private function liveOpportunityReferences(ApplicationForm $form): int
+    {
+        return DB::table('job_postings')->where('application_form_id', $form->id)->whereNull('deleted_at')->count()
+            + DB::table('workshops')->where('application_form_id', $form->id)->whereNull('deleted_at')->count();
+    }
+
+    private function allOpportunityReferences(ApplicationForm $form): int
+    {
+        return DB::table('job_postings')->where('application_form_id', $form->id)->count()
+            + DB::table('workshops')->where('application_form_id', $form->id)->count();
     }
 
     /** @return array{uuid:string,version:int,schema_hash:?string,fields:list<array<string,mixed>>} */
@@ -234,23 +381,25 @@ final class ApplicationFormSchemaService
     private function normalizeAndValidate(string $purpose, array $fields): array
     {
         if (count($fields) < 2 || count($fields) > self::MAX_FIELDS) {
-            throw ValidationException::withMessages(['schema' => 'A form must contain between 2 and 100 fields.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('field_count')]);
         }
 
         $normalized = [];
         $seen = [];
         foreach (array_values($fields) as $index => $input) {
             if (!is_array($input)) {
-                throw ValidationException::withMessages(['schema' => 'Every form field must be a structured object.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('field_object')]);
             }
             $key = trim((string) ($input['key'] ?? '')) ?: (string) Str::uuid();
             $type = trim((string) ($input['type'] ?? ''));
             $systemKey = ($input['system_key'] ?? null) ?: null;
             if (!preg_match('/\A[A-Za-z0-9_-]{1,64}\z/D', $key) || isset($seen[$key])) {
-                throw ValidationException::withMessages(['schema' => 'Form field keys must be unique stable identifiers.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('field_keys')]);
             }
             if (!in_array($type, ApplicationFormField::TYPES, true)) {
-                throw ValidationException::withMessages(['schema' => "Unsupported field type at position " . ($index + 1) . '.']);
+                throw ValidationException::withMessages([
+                    'schema' => $this->validationMessage('unsupported_type', ['position' => $index + 1]),
+                ]);
             }
             $seen[$key] = $index;
 
@@ -259,7 +408,11 @@ final class ApplicationFormSchemaService
                 $copy = (array) data_get($input, "translations.{$locale}", []);
                 $label = trim((string) ($copy['label'] ?? ''));
                 if ($label === '' || mb_strlen($label) > 255) {
-                    throw ValidationException::withMessages(['schema' => "Every field requires a bounded {$locale} label."]);
+                    throw ValidationException::withMessages([
+                        'schema' => $this->validationMessage('field_label', [
+                            'language' => AdminUi::text("application_forms.languages.{$locale}"),
+                        ]),
+                    ]);
                 }
                 $translations[$locale] = [
                     'label' => $label,
@@ -273,7 +426,7 @@ final class ApplicationFormSchemaService
             $conditions = $this->normalizeConditions((array) ($input['conditions'] ?? []), $seen, $key);
             if ($systemKey !== null && $conditions !== []) {
                 throw ValidationException::withMessages([
-                    'schema' => 'Protected identity and CV fields must always remain visible.',
+                    'schema' => $this->validationMessage('protected_visibility'),
                 ]);
             }
             $normalized[] = [
@@ -298,7 +451,7 @@ final class ApplicationFormSchemaService
     {
         if ($type === ApplicationFormField::TYPE_FILE) {
             if (array_diff(array_keys($rules), ['max_kb', 'extensions']) !== []) {
-                throw ValidationException::withMessages(['schema' => 'File fields only support the protected PDF upload policy.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('file_policy')]);
             }
 
             return ['max_kb' => 5120, 'extensions' => ['pdf']];
@@ -317,14 +470,14 @@ final class ApplicationFormSchemaService
             default => [],
         };
         if (array_diff(array_keys($rules), $allowed) !== []) {
-            throw ValidationException::withMessages(['schema' => 'A form field contains an unsupported validation setting.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('unsupported_rule')]);
         }
         $normalized = [];
         foreach (['min_length', 'max_length'] as $key) {
             if (array_key_exists($key, $rules) && $rules[$key] !== null && $rules[$key] !== '') {
                 $value = filter_var($rules[$key], FILTER_VALIDATE_INT);
                 if ($value === false || $value < 0 || $value > 20_000) {
-                    throw ValidationException::withMessages(['schema' => 'Text length limits must be integers between 0 and 20,000.']);
+                    throw ValidationException::withMessages(['schema' => $this->validationMessage('text_limit')]);
                 }
                 $normalized[$key] = $value;
             }
@@ -332,16 +485,16 @@ final class ApplicationFormSchemaService
         foreach (['min', 'max'] as $key) {
             if (array_key_exists($key, $rules) && $rules[$key] !== null && $rules[$key] !== '') {
                 if (!is_numeric($rules[$key]) || abs((float) $rules[$key]) > 1_000_000_000) {
-                    throw ValidationException::withMessages(['schema' => 'Numeric limits must be within the supported range.']);
+                    throw ValidationException::withMessages(['schema' => $this->validationMessage('numeric_limit')]);
                 }
                 $normalized[$key] = (float) $rules[$key];
             }
         }
         if (isset($normalized['min_length'], $normalized['max_length']) && $normalized['min_length'] > $normalized['max_length']) {
-            throw ValidationException::withMessages(['schema' => 'Minimum text length cannot exceed maximum text length.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('min_text')]);
         }
         if (isset($normalized['min'], $normalized['max']) && $normalized['min'] > $normalized['max']) {
-            throw ValidationException::withMessages(['schema' => 'Minimum number cannot exceed maximum number.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('min_number')]);
         }
         return $normalized;
     }
@@ -354,21 +507,25 @@ final class ApplicationFormSchemaService
             return [];
         }
         if (count($options) < 2 || count($options) > self::MAX_OPTIONS) {
-            throw ValidationException::withMessages(['schema' => 'Choice fields require between 2 and 50 options.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('option_count')]);
         }
         $seen = [];
         return array_map(function (mixed $option) use (&$seen): array {
             $option = (array) $option;
             $key = trim((string) ($option['key'] ?? '')) ?: Str::lower(Str::random(12));
             if (!preg_match('/\A[A-Za-z0-9_-]{1,64}\z/D', $key) || isset($seen[$key])) {
-                throw ValidationException::withMessages(['schema' => 'Choice option keys must be unique stable identifiers.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('option_keys')]);
             }
             $seen[$key] = true;
             $translations = [];
             foreach (['en', 'bn'] as $locale) {
                 $label = trim((string) data_get($option, "translations.{$locale}.label", ''));
                 if ($label === '' || mb_strlen($label) > 255) {
-                    throw ValidationException::withMessages(['schema' => "Every option requires a bounded {$locale} label."]);
+                    throw ValidationException::withMessages([
+                        'schema' => $this->validationMessage('option_label', [
+                            'language' => AdminUi::text("application_forms.languages.{$locale}"),
+                        ]),
+                    ]);
                 }
                 $translations[$locale] = ['label' => $label];
             }
@@ -383,7 +540,7 @@ final class ApplicationFormSchemaService
     private function normalizeConditions(array $conditions, array $seen, string $targetKey): array
     {
         if (count($conditions) > 20) {
-            throw ValidationException::withMessages(['schema' => 'A field cannot contain more than 20 conditions.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('condition_count')]);
         }
         $normalized = [];
         foreach (array_values($conditions) as $index => $condition) {
@@ -391,15 +548,15 @@ final class ApplicationFormSchemaService
             $source = trim((string) ($condition['source_key'] ?? ''));
             $operator = trim((string) ($condition['operator'] ?? ''));
             if ($source === $targetKey || !isset($seen[$source]) || !in_array($operator, self::OPERATORS, true)) {
-                throw ValidationException::withMessages(['schema' => 'Conditions must reference an earlier field and use a supported operator.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('condition_reference')]);
             }
             $connector = strtolower((string) ($condition['connector'] ?? 'and'));
             if (!in_array($connector, ['and', 'or'], true)) {
-                throw ValidationException::withMessages(['schema' => 'Condition connectors must be and/or.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('condition_connector')]);
             }
             $group = filter_var($condition['group'] ?? 1, FILTER_VALIDATE_INT);
             if ($group === false || $group < 1 || $group > 20) {
-                throw ValidationException::withMessages(['schema' => 'Condition groups must be between 1 and 20.']);
+                throw ValidationException::withMessages(['schema' => $this->validationMessage('condition_group')]);
             }
             $normalized[] = [
                 'source_key' => $source,
@@ -428,12 +585,16 @@ final class ApplicationFormSchemaService
 
         $systemFields = collect($fields)->filter(fn (array $field): bool => $field['system_key'] !== null)->keyBy('system_key');
         if ($systemFields->keys()->sort()->values()->all() !== collect(array_keys($expected))->sort()->values()->all()) {
-            throw ValidationException::withMessages(['schema' => 'Required identity fields cannot be removed or added.']);
+            throw ValidationException::withMessages(['schema' => $this->validationMessage('system_fields')]);
         }
         foreach ($expected as $key => [$type, $required]) {
             $field = $systemFields->get($key);
             if ($field['type'] !== $type || (bool) $field['required'] !== $required) {
-                throw ValidationException::withMessages(['schema' => "The {$key} system field cannot change type or requirement."]);
+                throw ValidationException::withMessages([
+                    'schema' => $this->validationMessage('system_field_locked', [
+                        'field' => AdminUi::text("application_forms.system_fields.{$key}"),
+                    ]),
+                ]);
             }
         }
     }

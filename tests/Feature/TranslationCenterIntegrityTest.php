@@ -360,6 +360,55 @@ class TranslationCenterIntegrityTest extends TestCase
         $this->assertSame('contrast', $translatedBlock->content['section_presentation']);
     }
 
+    public function test_updates_item_kind_remains_machine_data_while_its_eyebrow_is_translatable(): void
+    {
+        [$page] = $this->makeEnglishPage();
+        $block = PageBlock::create([
+            'page_id' => $page->id,
+            'uuid' => (string) Str::uuid(),
+            'translation_key' => (string) Str::uuid(),
+            'type' => 'cards',
+            'label' => 'Events and news',
+            'content' => [
+                'variant' => 'updates',
+                'heading' => 'Updates',
+                'items' => [[
+                    'kind' => 'event',
+                    'eyebrow' => 'Upcoming gathering',
+                    'heading' => 'Community day',
+                ]],
+            ],
+            'sort_order' => 5,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+        ]);
+        $service = app(TranslationCenterService::class);
+        $prepared = $service->prepareBlockTranslationContent($block->content);
+
+        $this->assertSame('event', $prepared['items'][0]['kind']);
+        $this->assertSame('', $prepared['items'][0]['eyebrow']);
+
+        $rows = $service->rows('en', 'bn')->filter(fn (array $row) =>
+            ($row['identity']['type'] ?? null) === 'block'
+            && ($row['identity']['source_block_id'] ?? null) === $block->id
+        );
+        $this->assertFalse($rows->pluck('identity.path')->contains('items.0.kind'));
+        $eyebrow = $rows->firstWhere('identity.path', 'items.0.eyebrow');
+        $this->assertNotNull($eyebrow);
+
+        $service->save('en', 'bn', [[
+            'key' => $eyebrow['key'],
+            'precondition' => $eyebrow['precondition'],
+            'value' => 'আসন্ন কমিউনিটি সমাবেশ',
+        ]], null);
+
+        $translatedPage = Page::where('uuid', $page->uuid)->where('language', 'bn')->firstOrFail();
+        $translatedBlock = $translatedPage->blocks()->where('translation_key', $block->translation_key)->firstOrFail();
+        $this->assertSame('event', $translatedBlock->content['items'][0]['kind']);
+        $this->assertSame('আসন্ন কমিউনিটি সমাবেশ', $translatedBlock->content['items'][0]['eyebrow']);
+    }
+
     public function test_media_choice_and_sources_are_machine_fields_while_the_caption_is_translatable(): void
     {
         [$page] = $this->makeEnglishPage();

@@ -4,34 +4,44 @@ namespace App\Http\Controllers\Vue;
 
 use App\Helper\StaticUtil;
 use App\Http\Controllers\Controller;
+use App\Mail\TransactionalEmail;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Models\Page;
 use App\Models\Sponsorship;
+use App\Services\PublicSystemPageMetaService;
+use App\Services\PublicFormFieldLayoutService;
 use App\Services\SeoMetadataService;
 use App\Services\SiteSettingService;
+use App\Services\TransactionalEmailTemplateService;
+use App\Support\TransactionalEmailTemplateCatalog;
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 use Exception;
+use RuntimeException;
 use Throwable;
 
 class SponsorController extends Controller
 {
-    public function __construct(private SeoMetadataService $seo)
-    {
+    public function __construct(
+        private SeoMetadataService $seo,
+        private TransactionalEmailTemplateService $emailTemplates,
+        private PublicSystemPageMetaService $systemMeta,
+        private SiteSettingService $siteSettings,
+        private PublicFormFieldLayoutService $formLayouts,
+    ) {
     }
 
     /**
      * Show the sponsor page.
      */
-    public function index()
+    public function index(Request $request)
     {
         $page = Page::with('banner')
             ->publiclyAvailable()
@@ -39,14 +49,28 @@ class SponsorController extends Controller
             ->where('slug', 'sponsor-a-child')
             ->first();
 
-        $fallbackMeta = [
-            'meta_keyword' => 'sponsor a child, education support, child sponsorship Bangladesh',
-            'meta_title' => 'Sponsor a Child | Ignite Global Foundation',
-            'meta_description' => 'Support a child with dependable access to education, learning materials, nutrition, and essential care through Ignite Global Foundation.',
-            'canonical_url' => url()->current(),
-        ];
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'sponsor_page.eyebrow',
+            'sponsor_page.introduction',
+            [
+                'title' => 'Sponsor a Child',
+                'meta_title' => 'Sponsor a Child',
+                'description' => 'Support a child with dependable access to education, learning materials, nutrition, and essential care through Ignite Global Foundation.',
+            ],
+        );
+        $fallbackMeta = array_merge(['canonical_url' => url()->current()], $pageMeta['meta_tag']);
         $metaTag = $page
-            ? $this->seo->metaForPage($page)
+            ? $this->seo->metaForModel(
+                $page,
+                $this->systemMeta->forPage(
+                    $page,
+                    $request,
+                    (string) $pageMeta['meta_tag']['meta_description'],
+                ),
+                url()->current(),
+                (string) $page->language,
+            )
             : $fallbackMeta;
         $metaTag['meta_title'] = $metaTag['meta_title'] ?: $fallbackMeta['meta_title'];
         $metaTag['meta_description'] = $metaTag['meta_description'] ?: $fallbackMeta['meta_description'];
@@ -59,7 +83,7 @@ class SponsorController extends Controller
 
         return Inertia::render('sponsor_child')->with([
             'status' => true,
-            'title' => 'Sponsor a Child',
+            'title' => $page?->name ?: $pageMeta['title'],
             'meta_tag' => $metaTag,
             'contentSeo' => $contentSeo,
             'data' => [
@@ -74,11 +98,19 @@ class SponsorController extends Controller
      */
     public function store(Request $request)
     {
+        $settings = $this->siteSettings->values(app()->getLocale(), true);
+        $layout = (array) data_get($settings, 'sponsor_page.form_fields', []);
+        $phone = $this->formLayouts->state($layout, 'phone');
+        $address = $this->formLayouts->state($layout, 'address');
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'phone' => $phone['enabled']
+                ? [$phone['required'] ? 'required' : 'nullable', 'string', 'max:20']
+                : ['exclude'],
+            'address' => $address['enabled']
+                ? [$address['required'] ? 'required' : 'nullable', 'string', 'max:255']
+                : ['exclude'],
             'number_of_children' => 'required|integer|min:1|max:100',
             'contribution_interval' => ['required', Rule::in(['monthly', 'quarterly', 'semi_annually', 'annually'])],
             'sponsorshipAmount' => 'required|numeric|min:1|max:10000000',
@@ -90,7 +122,6 @@ class SponsorController extends Controller
             'semi_annually' => 6,
             'annually' => 12,
         ];
-        $settings = app(SiteSettingService::class)->values(app()->getLocale(), true);
         $monthlyAmount = max(1, (int) data_get($settings, 'sponsor_page.monthly_amount', 1500));
         $sponsorshipAmount = $validated['number_of_children']
             * $monthlyAmount
@@ -105,8 +136,8 @@ class SponsorController extends Controller
             $sponsorship = Sponsorship::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? null,
-                'address' => $validated['address'] ?? null,
+                'phone' => $phone['enabled'] ? ($validated['phone'] ?? null) : null,
+                'address' => $address['enabled'] ? ($validated['address'] ?? null) : null,
                 'number_of_children' => $validated['number_of_children'],
                 'contribution_interval' => $validated['contribution_interval'],
                 'sponsorship_amount' => $sponsorshipAmount,
@@ -135,30 +166,23 @@ class SponsorController extends Controller
     public function sendAdminNotificationEmail(array $data): void
     {
         try {
-            $toEmail = Config::get('mail.from.address');
-            $subject = 'Sponsor A Child - New Sponsorship Request';
+            $toEmail = $this->adminNotificationAddress();
+            $rendered = $this->emailTemplates->render(
+                TransactionalEmailTemplateCatalog::SPONSORSHIP_ADMIN_NOTIFICATION,
+                (string) config('transactional-mail.admin_locale', 'en'),
+                [
+                    'sponsor_name' => $data['name'] ?? '',
+                    'sponsor_email' => $data['email'] ?? '',
+                    'sponsor_phone' => $data['phone'] ?? '',
+                    'sponsor_address' => $data['address'] ?? '',
+                    'children_count' => $data['number_of_children'] ?? '',
+                    'contribution_interval' => $data['contribution_interval'] ?? '',
+                    'sponsorship_amount' => number_format((float) ($data['sponsorship_amount'] ?? 0), 2).' BDT',
+                    'request_reference' => $data['transaction_id'] ?? ('SPONSOR-'.($data['id'] ?? 'NEW')),
+                ]
+            );
 
-            $message = <<<EOT
-                A new sponsorship request has been received.
-
-                Details:
-                ------------------------------------------------------------
-                Name: {$data['name']}
-                Email: {$data['email']}
-                Phone: {$data['phone']}
-                Address: {$data['address']}
-
-                Number of Children: {$data['number_of_children']}
-                Contribution Interval: {$data['contribution_interval']}
-                Sponsorship Amount: {$data['sponsorship_amount']}
-                ------------------------------------------------------------
-
-                This notification was sent automatically by the Sponsor A Child system.
-                EOT;
-
-            Mail::raw($message, function ($mail) use ($toEmail, $subject) {
-                $mail->to($toEmail)->subject($subject);
-            });
+            Mail::to($toEmail)->send(new TransactionalEmail($rendered));
 
             Log::info('Sponsorship admin notification sent.', [
                 'sponsorship_id' => $data['id'] ?? null,
@@ -178,28 +202,21 @@ class SponsorController extends Controller
     public function sendSponsorConfirmationEmail(array $data): void
     {
         try {
-            $configEmail = Config::get('mail.from.address');
-            $toEmail = $data['email'];
-            $subject = 'Thank You for Your Sponsorship Request';
-            $siteUrl = $this->publicSiteUrl();
+            $toEmail = trim((string) ($data['email'] ?? ''));
+            if (filter_var($toEmail, FILTER_VALIDATE_EMAIL) === false) {
+                throw new RuntimeException('The sponsorship recipient address is invalid.');
+            }
+            $rendered = $this->emailTemplates->render(
+                TransactionalEmailTemplateCatalog::SPONSORSHIP_CONFIRMATION,
+                app()->getLocale(),
+                [
+                    'sponsor_name' => $data['name'] ?? '',
+                    'response_hours' => '72',
+                    'request_reference' => $data['transaction_id'] ?? ('SPONSOR-'.($data['id'] ?? 'NEW')),
+                ]
+            );
 
-            $message = <<<EOT
-                Dear {$data['name']},
-
-                We’re thrilled to have you as part of the Ignite Global Foundation family! Your support is
-                helping children from marginalized communities in Bangladesh access hope, opportunities, and a brighter future.
-                Thank you for taking this meaningful step-your generosity truly makes a difference. One of our team members will
-                connect with you within the next 72 hours.
-
-                Warm regards,
-                The Ignite Global Foundation Team
-                Email: {$configEmail}
-                Website: {$siteUrl}
-                EOT;
-
-            Mail::raw($message, function ($mail) use ($toEmail, $subject) {
-                $mail->to($toEmail)->subject($subject);
-            });
+            Mail::to($toEmail)->send(new TransactionalEmail($rendered));
 
             Log::info('Sponsorship confirmation sent.', [
                 'sponsorship_id' => $data['id'] ?? null,
@@ -213,8 +230,13 @@ class SponsorController extends Controller
         }
     }
 
-    private function publicSiteUrl(): string
+    private function adminNotificationAddress(): string
     {
-        return rtrim((string) config('app.url'), '/');
+        $address = trim((string) config('transactional-mail.admin_to'));
+        if (filter_var($address, FILTER_VALIDATE_EMAIL) === false) {
+            throw new RuntimeException('The transactional admin recipient is not configured.');
+        }
+
+        return $address;
     }
 }

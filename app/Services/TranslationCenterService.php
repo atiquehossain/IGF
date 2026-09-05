@@ -83,7 +83,7 @@ class TranslationCenterService
         'image', 'photo', 'poster', 'background_image', 'icon', 'value', 'limit',
         'animation_type', 'media_type', 'image_position', 'overlay_opacity', 'interval', 'size',
         'content_source', 'category_slug', 'tag_slug', 'sort', 'selection_mode',
-        'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type',
+        'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type', 'kind', 'content_kind',
         'locale', 'language', 'platform', 'variant', 'layout', 'presentation', 'section_presentation', 'target', 'rel',
     ];
 

@@ -12,6 +12,8 @@ use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\Subscriber;
 use App\Services\ContentSanitizer;
+use App\Services\PublicSystemPageMetaService;
+use App\Services\SiteSettingService;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,8 +25,13 @@ use Throwable;
 class HomeController extends Controller
 {
     private const GENERIC_SUBSCRIPTION_MESSAGE = 'If this address can receive updates, a confirmation link has been sent.';
-    public function __construct(private ContentSanitizer $sanitizer)
-    {
+    private const CONFIRMED_SUBSCRIPTION_MESSAGE = 'Your email subscription is confirmed.';
+
+    public function __construct(
+        private ContentSanitizer $sanitizer,
+        private PublicSystemPageMetaService $systemMeta,
+        private SiteSettingService $siteSettings,
+    ) {
     }
 
     private $meta_tag = [
@@ -35,15 +42,21 @@ class HomeController extends Controller
 
     public function contact(Request $request, $slug = null)
     {
-        $title = 'Contact Us';
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'header.contact_label',
+            'contact_page.introduction',
+            [
+                'title' => 'Contact',
+                'meta_title' => 'Contact Us',
+                'description' => 'Contact Ignite Global Foundation about programs, partnerships, donations, volunteering, and community-led work in Bangladesh.',
+            ],
+        );
+
         return Inertia::render('contactUs')->with([
             'status' => true,
-            'title' => $title,
-            'meta_tag' => [
-                'meta_keyword' => 'contact Ignite Global Foundation, nonprofit Bangladesh',
-                'meta_title' => 'Contact Us | Ignite Global Foundation',
-                'meta_description' => 'Contact Ignite Global Foundation about programs, partnerships, donations, volunteering, and community-led work in Bangladesh.',
-            ],
+            'title' => $pageMeta['title'],
+            'meta_tag' => $pageMeta['meta_tag'],
             'data' => [],
         ]);
     }
@@ -289,7 +302,10 @@ class HomeController extends Controller
                 $confirmationUrl = URL::temporarySignedRoute(
                     'frontend.subscribe.confirm',
                     now()->addMinutes(max(1, (int) config('privacy.newsletter.confirmation_ttl_minutes', 1440))),
-                    ['subscriber' => $subscriber->uuid]
+                    [
+                        'subscriber' => $subscriber->uuid,
+                        'lang' => app()->getLocale(),
+                    ]
                 );
 
                 try {
@@ -309,7 +325,10 @@ class HomeController extends Controller
 
         return back()->with('message', [
             'type' => 'success',
-            'text' => self::GENERIC_SUBSCRIPTION_MESSAGE,
+            'text' => $this->newsletterMessage(
+                'newsletter_request_message',
+                self::GENERIC_SUBSCRIPTION_MESSAGE
+            ),
         ]);
     }
 
@@ -328,7 +347,21 @@ class HomeController extends Controller
 
         return redirect()->route('frontend.home')->with('message', [
             'type' => 'success',
-            'text' => 'Your email subscription is confirmed.',
+            'text' => $this->newsletterMessage(
+                'newsletter_confirmation_message',
+                self::CONFIRMED_SUBSCRIPTION_MESSAGE
+            ),
         ]);
+    }
+
+    private function newsletterMessage(string $key, string $fallback): string
+    {
+        $settings = $this->siteSettings->values(app()->getLocale(), true)['shared_blocks'] ?? [];
+        $value = is_scalar($settings[$key] ?? null) ? (string) $settings[$key] : $fallback;
+        $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '';
+        $value = preg_replace('/\s+/u', ' ', trim($value)) ?? '';
+
+        return $value !== '' ? mb_substr($value, 0, 500) : $fallback;
     }
 }

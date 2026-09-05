@@ -6,6 +6,7 @@ use App\Models\DonationType;
 use App\Models\MediaAsset;
 use App\Models\SeoMetadata;
 use App\Models\SiteSetting;
+use App\Models\TranslationLocale;
 use App\Services\DonationDestinationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -198,6 +199,40 @@ class DonationPageIntegrityTest extends TestCase
             ->assertStatus(301);
         $this->get(route('frontend.donate.index') . '?cause=' . $direct->slug . '&amount=2500')
             ->assertRedirect(route('frontend.donate.direct') . '?amount=2500');
+    }
+
+    public function test_bangla_donation_titles_and_schema_breadcrumbs_use_localized_admin_templates(): void
+    {
+        TranslationLocale::query()->where('locale', 'bn')->update([
+            'is_enabled' => true,
+            'enabled_at' => now(),
+        ]);
+        DonationType::query()->forceDelete();
+        $direct = DonationType::create([
+            'name' => 'শিক্ষা সহায়তা',
+            'description' => '',
+            'purpose_key' => 'direct',
+            'destination_type' => 'unrestricted',
+            'status' => 1,
+        ]);
+
+        $this->withSession(['locale' => 'bn'])
+            ->get(route('frontend.donate.direct') . '?lang=bn')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('title', 'অনুদান দিন — শিক্ষা সহায়তা')
+                ->where('meta_tag.meta_title', 'অনুদান দিন — শিক্ষা সহায়তা | ইগনাইট গ্লোবাল ফাউন্ডেশন')
+                ->where('meta_tag.meta_keyword', 'শিক্ষা সহায়তা, বাংলাদেশে দান, ইগনাইট গ্লোবাল ফাউন্ডেশন')
+                ->where('meta_tag.meta_description', 'ইগনাইট গ্লোবাল ফাউন্ডেশনের মাধ্যমে শিক্ষা সহায়তা খাতে নিরাপদে অনুদান দিন।')
+                ->where('contentSeo.schema_markup', function ($schema): bool {
+                    $breadcrumbs = collect($schema['@graph'] ?? [])->firstWhere('@type', 'BreadcrumbList');
+                    $items = $breadcrumbs['itemListElement'] ?? [];
+
+                    return data_get($items, '0.name') === 'হোম'
+                        && data_get($items, '1.name') === 'দান করুন';
+                })
+                ->where('data.selectedUUID', $direct->uuid)
+            );
     }
 
     public function test_make_a_donation_route_fails_closed_without_an_active_operational_direct_cause(): void

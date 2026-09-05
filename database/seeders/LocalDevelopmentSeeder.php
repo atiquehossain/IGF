@@ -69,7 +69,7 @@ class LocalDevelopmentSeeder extends Seeder
         $this->seedHomePage();
 
         foreach ([
-            ['uuid' => '55555555-5555-4555-8555-000000000001', 'slug' => 'where-it-is-needed-most', 'name' => 'Where it is needed most', 'description' => 'Flexible support for active community priorities.', 'destination_type' => 'unrestricted', 'destination_name' => null],
+            ['uuid' => '55555555-5555-4555-8555-000000000001', 'slug' => 'where-it-is-needed-most', 'name' => 'Where it is needed most', 'description' => 'Flexible support for active community priorities.', 'purpose_key' => 'direct', 'destination_type' => 'unrestricted', 'destination_name' => null],
             ['uuid' => '55555555-5555-4555-8555-000000000002', 'slug' => 'education', 'name' => 'Education', 'description' => 'Learning access, materials, and school support.', 'destination_type' => 'restricted_fund', 'destination_name' => 'Education Fund'],
             ['uuid' => '84ae0875-0656-494a-b3a2-9c9477397465', 'slug' => 'zakat', 'name' => 'Donate Your Zakat', 'description' => 'Direct eligible Zakat to approved programs in line with the foundation’s Zakat policy.', 'purpose_key' => 'zakat', 'destination_type' => 'restricted_fund', 'destination_name' => 'Zakat Fund'],
         ] as $donationType) {
@@ -597,10 +597,10 @@ class LocalDevelopmentSeeder extends Seeder
                     'eyebrow' => 'Stay involved',
                     'heading' => 'Events & latest news',
                     'items' => [
-                        ['eyebrow' => 'Upcoming event', 'heading' => 'Community volunteer orientation', 'body' => 'Meet the team and learn how to support upcoming field activities.', 'url' => '/events'],
-                        ['eyebrow' => 'Upcoming event', 'heading' => 'Youth learning workshop', 'body' => 'A practical session for students, educators, and local volunteers.', 'url' => '/events'],
-                        ['eyebrow' => 'Latest news', 'heading' => 'Clean water initiative reaches its next community', 'body' => 'An update from our locally led water and sanitation work.', 'image' => '/image/banner/slider-2-1588.webp', 'image_alt' => 'Community water initiative', 'url' => '/events'],
-                        ['eyebrow' => 'Latest news', 'heading' => 'New livelihood cohort begins training', 'body' => 'Participants start the next phase of skills and market-readiness support.', 'image' => '/image/news.png', 'image_alt' => 'Livelihood program update', 'url' => '/events'],
+                        ['kind' => 'event', 'eyebrow' => 'Upcoming event', 'heading' => 'Community volunteer orientation', 'body' => 'Meet the team and learn how to support upcoming field activities.', 'url' => '/events'],
+                        ['kind' => 'event', 'eyebrow' => 'Upcoming event', 'heading' => 'Youth learning workshop', 'body' => 'A practical session for students, educators, and local volunteers.', 'url' => '/events'],
+                        ['kind' => 'news', 'eyebrow' => 'Latest news', 'heading' => 'Clean water initiative reaches its next community', 'body' => 'An update from our locally led water and sanitation work.', 'image' => '/image/banner/slider-2-1588.webp', 'image_alt' => 'Community water initiative', 'url' => '/events'],
+                        ['kind' => 'news', 'eyebrow' => 'Latest news', 'heading' => 'New livelihood cohort begins training', 'body' => 'Participants start the next phase of skills and market-readiness support.', 'image' => '/image/news.png', 'image_alt' => 'Livelihood program update', 'url' => '/events'],
                     ],
                 ],
             ],

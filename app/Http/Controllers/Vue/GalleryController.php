@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Services\PublicArchiveSeoService;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\PublicStructuredDataService;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class GalleryController extends Controller
 {
     public function __construct(
         private PublicArchiveSeoService $archiveSeo,
+        private PublicSystemPageMetaService $systemMeta,
         private PublicStructuredDataService $structuredData,
         private SeoMetadataService $seo,
     ) {
@@ -25,6 +27,17 @@ class GalleryController extends Controller
         $search = trim((string) $request->query('search', ''));
         $albumId = $request->integer('album_id') ?: null;
         $locale = app()->getLocale();
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'gallery_page.title',
+            'gallery_page.introduction',
+            [
+                'title' => 'Photo gallery',
+                'meta_title' => 'Photo Gallery',
+                'description' => 'See people, partnerships, and community-led programs in the Ignite Global Foundation photo gallery.',
+            ],
+        );
+        $title = $pageMeta['title'];
 
         $albums = Album::select('id', 'name')
             ->where('status', 1)
@@ -62,27 +75,31 @@ class GalleryController extends Controller
             return $item;
         });
 
-        $metaTag = $this->archiveSeo->apply(array_merge([
-            'meta_keyword' => 'Ignite Global Foundation gallery, community programs Bangladesh',
-            'meta_title' => 'Photo Gallery | Ignite Global Foundation',
-            'meta_description' => 'See people, partnerships, and community-led programs in the Ignite Global Foundation photo gallery.',
-        ], (array) $request->attributes->get('route_seo', [])), $request, $results, route('frontend.gallery'));
+        $metaTag = $this->archiveSeo->apply(
+            array_merge(
+                $pageMeta['meta_tag'],
+                (array) $request->attributes->get('route_seo', []),
+            ),
+            $request,
+            $results,
+            route('frontend.gallery'),
+        );
         if (empty($metaTag['schema_markup']) || $results->currentPage() > 1) {
             $canonical = (string) $metaTag['canonical_url'];
             $metaTag['schema_markup'] = $this->structuredData->collection(
-                'Photo Gallery',
+                $title,
                 (string) $metaTag['meta_description'],
                 $canonical,
                 [
                     ['name' => 'Home', 'url' => (string) $this->seo->localizedUrl(url('/'), $locale)],
-                    ['name' => 'Photo Gallery', 'url' => $canonical],
+                    ['name' => $title, 'url' => $canonical],
                 ]
             );
         }
 
         return Inertia::render('gallery')->with([
             'status' => true,
-            'title' => 'Photo Gallery',
+            'title' => $title,
             'meta_tag' => $metaTag,
             'contentSeo' => $metaTag,
             'seoAlternates' => $this->archiveSeo->alternateUrls((string) $metaTag['canonical_url']),

@@ -570,6 +570,7 @@
         ],
         "donation_types": [
             {
+                "content_editor_version": 1,
                 "description": "Eligible Zakat-supported programs.",
                 "destination_category_uuid": null,
                 "destination_name": "Zakat Fund",
@@ -587,6 +588,7 @@
                 "uuid": "84ae0875-0656-494a-b3a2-9c9477397465"
             },
             {
+                "content_editor_version": 1,
                 "description": "Equip young people with education, leadership and employability skills.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -604,6 +606,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000009"
             },
             {
+                "content_editor_version": 1,
                 "description": "Flexible support for active community priorities.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -621,6 +624,7 @@
                 "uuid": "55555555-5555-4555-8555-000000000001"
             },
             {
+                "content_editor_version": 1,
                 "description": "Give voluntary charity toward approved community needs.",
                 "destination_category_uuid": null,
                 "destination_name": "Sadaqah Fund",
@@ -638,6 +642,7 @@
                 "uuid": "6e3c1d7a-8b01-4f01-8a01-000000000001"
             },
             {
+                "content_editor_version": 1,
                 "description": "Help women build skills, livelihoods and long-term financial resilience.",
                 "destination_category_uuid": null,
                 "destination_name": "Women Empowerment Fund",
@@ -655,6 +660,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000008"
             },
             {
+                "content_editor_version": 1,
                 "description": "Learning access, materials, and school support.",
                 "destination_category_uuid": null,
                 "destination_name": "Education",
@@ -672,6 +678,7 @@
                 "uuid": "55555555-5555-4555-8555-000000000002"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide Iftar meals to families and communities during Ramadan.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -689,6 +696,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000005"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide a complete uniform so a learner can attend school with confidence.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -706,6 +714,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000002"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide essential food packages to families facing hardship or emergencies.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -723,6 +732,7 @@
                 "uuid": "6e3c1d7a-8b01-4f01-8a01-000000000002"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide notebooks, pens and essential learning materials.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -740,6 +750,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000001"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide nutritious school-day meals that help children learn and thrive.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -757,6 +768,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000003"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide safe, accessible learning and support for street-connected children.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -774,6 +786,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000010"
             },
             {
+                "content_editor_version": 1,
                 "description": "Provide urgent essentials to communities affected by disasters and emergencies.",
                 "destination_category_uuid": null,
                 "destination_name": "Emergency Relief Fund",
@@ -791,6 +804,7 @@
                 "uuid": "6e3c1d7a-8b01-4f01-8a01-000000000003"
             },
             {
+                "content_editor_version": 1,
                 "description": "Strengthen a school with learning materials, essential facilities and classroom support.",
                 "destination_category_uuid": null,
                 "destination_name": "Adopt a School Fund",
@@ -808,6 +822,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000004"
             },
             {
+                "content_editor_version": 1,
                 "description": "Support Qurbani and meat distribution for eligible families.",
                 "destination_category_uuid": null,
                 "destination_name": "Qurbani Fund",
@@ -825,6 +840,7 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000006"
             },
             {
+                "content_editor_version": 1,
                 "description": "Support safe shelter, education, nutrition and wellbeing for children without parental care.",
                 "destination_category_uuid": null,
                 "destination_name": "Orphan Shelter & Support Fund",
@@ -842,6 +858,7 @@
                 "uuid": "6e3c1d7a-8b01-4f01-8a01-000000000004"
             },
             {
+                "content_editor_version": 1,
                 "description": "Support safe water, sanitation facilities and hygiene education.",
                 "destination_category_uuid": null,
                 "destination_name": null,
@@ -859,6 +876,8 @@
                 "uuid": "7a4c2d8e-8b01-4f01-8a01-000000000007"
             }
         ],
+        "donation_cause_amounts": [],
+        "donation_cause_sections": [],
         "galleries": [
             {
                 "album_language": "en",
@@ -3233,13 +3252,13 @@
             {
                 "available_from": null,
                 "available_until": null,
-                "content": "{\"variant\":\"updates\",\"eyebrow\":\"Stay involved\",\"heading\":\"Events & latest news\",\"items\":[{\"eyebrow\":\"Upcoming event\",\"heading\":\"Community volunteer orientation\",\"body\":\"Meet the team and learn how to support upcoming field activities.\",\"url\":\"\\/events\"},{\"eyebrow\":\"Upcoming event\",\"heading\":\"Youth learning workshop\",\"body\":\"A practical session for students, educators, and local volunteers.\",\"url\":\"\\/events\"},{\"eyebrow\":\"Latest news\",\"heading\":\"Clean water initiative reaches its next community\",\"body\":\"An update from our locally led water and sanitation work.\",\"image\":\"\\/image\\/banner\\/slider-2.png\",\"image_alt\":\"Community water initiative\",\"url\":\"\\/events\"},{\"eyebrow\":\"Latest news\",\"heading\":\"New livelihood cohort begins training\",\"body\":\"Participants start the next phase of skills and market-readiness support.\",\"image\":\"\\/image\\/news.png\",\"image_alt\":\"Livelihood program update\",\"url\":\"\\/events\"}]}",
+                "content": "{\"variant\":\"updates\",\"eyebrow\":\"Stay involved\",\"heading\":\"Events & latest news\",\"items\":[{\"eyebrow\":\"Upcoming event\",\"heading\":\"Community volunteer orientation\",\"body\":\"Meet the team and learn how to support upcoming field activities.\",\"url\":\"/events\",\"kind\":\"event\"},{\"eyebrow\":\"Upcoming event\",\"heading\":\"Youth learning workshop\",\"body\":\"A practical session for students, educators, and local volunteers.\",\"url\":\"/events\",\"kind\":\"event\"},{\"eyebrow\":\"Latest news\",\"heading\":\"Clean water initiative reaches its next community\",\"body\":\"An update from our locally led water and sanitation work.\",\"image\":\"/image/banner/slider-2.png\",\"image_alt\":\"Community water initiative\",\"url\":\"/events\",\"kind\":\"news\"},{\"eyebrow\":\"Latest news\",\"heading\":\"New livelihood cohort begins training\",\"body\":\"Participants start the next phase of skills and market-readiness support.\",\"image\":\"/image/news.png\",\"image_alt\":\"Livelihood program update\",\"url\":\"/events\",\"kind\":\"news\"}]}",
                 "is_enabled": 0,
                 "label": "Events and News",
                 "page_language": "en",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
-                "settings": "[]",
+                "settings": "{\"_migration_updates_item_kind_v1\":[\"event\",\"event\",\"news\",\"news\"]}",
                 "show_on_desktop": 1,
                 "show_on_mobile": 1,
                 "sort_order": 8,
@@ -3250,13 +3269,13 @@
             {
                 "available_from": null,
                 "available_until": null,
-                "content": "{\"variant\":\"updates\",\"eyebrow\":\"\\u099c\\u09a1\\u09bc\\u09bf\\u09a4 \\u09a5\\u09be\\u0995\\u09c1\\u09a8\",\"heading\":\"\\u0987\\u09ad\\u09c7\\u09a8\\u09cd\\u099f \\u0993 \\u09b8\\u09b0\\u09cd\\u09ac\\u09b6\\u09c7\\u09b7 \\u09b8\\u0982\\u09ac\\u09be\\u09a6\",\"items\":[{\"eyebrow\":\"\\u0986\\u09b8\\u09a8\\u09cd\\u09a8 \\u0985\\u09a8\\u09c1\\u09b7\\u09cd\\u09a0\\u09be\\u09a8\",\"heading\":\"\\u0995\\u09ae\\u09bf\\u0989\\u09a8\\u09bf\\u099f\\u09bf \\u09b8\\u09cd\\u09ac\\u09c7\\u099a\\u09cd\\u099b\\u09be\\u09b8\\u09c7\\u09ac\\u0995 \\u0993\\u09b0\\u09bf\\u09af\\u09bc\\u09c7\\u09a8\\u09cd\\u099f\\u09c7\\u09b6\\u09a8\",\"body\":\"\\u09a6\\u09b2\\u09c7\\u09b0 \\u09b8\\u09a6\\u09b8\\u09cd\\u09af\\u09a6\\u09c7\\u09b0 \\u09b8\\u0999\\u09cd\\u0997\\u09c7 \\u09aa\\u09b0\\u09bf\\u099a\\u09bf\\u09a4 \\u09b9\\u09cb\\u09a8 \\u098f\\u09ac\\u0982 \\u0986\\u09b8\\u09a8\\u09cd\\u09a8 \\u09ae\\u09be\\u09a0\\u09aa\\u09b0\\u09cd\\u09af\\u09be\\u09af\\u09bc\\u09c7\\u09b0 \\u0995\\u09be\\u09b0\\u09cd\\u09af\\u0995\\u09cd\\u09b0\\u09ae\\u09c7 \\u0995\\u09c0\\u09ad\\u09be\\u09ac\\u09c7 \\u09b8\\u09b9\\u09be\\u09af\\u09bc\\u09a4\\u09be \\u0995\\u09b0\\u09be \\u09af\\u09be\\u09af\\u09bc \\u09a4\\u09be \\u099c\\u09be\\u09a8\\u09c1\\u09a8\\u0964\",\"url\":\"\\/events\"},{\"eyebrow\":\"\\u0986\\u09b8\\u09a8\\u09cd\\u09a8 \\u0985\\u09a8\\u09c1\\u09b7\\u09cd\\u09a0\\u09be\\u09a8\",\"heading\":\"\\u09af\\u09c1\\u09ac \\u09b6\\u09bf\\u0995\\u09cd\\u09b7\\u09be\\u09b0 \\u0995\\u09b0\\u09cd\\u09ae\\u09b6\\u09be\\u09b2\\u09be\",\"body\":\"\\u09b6\\u09bf\\u0995\\u09cd\\u09b7\\u09be\\u09b0\\u09cd\\u09a5\\u09c0, \\u09b6\\u09bf\\u0995\\u09cd\\u09b7\\u09be\\u09ac\\u09bf\\u09a6 \\u098f\\u09ac\\u0982 \\u09b8\\u09cd\\u09a5\\u09be\\u09a8\\u09c0\\u09af\\u09bc \\u09b8\\u09cd\\u09ac\\u09c7\\u099a\\u09cd\\u099b\\u09be\\u09b8\\u09c7\\u09ac\\u0995\\u09a6\\u09c7\\u09b0 \\u099c\\u09a8\\u09cd\\u09af \\u098f\\u0995\\u099f\\u09bf \\u09ac\\u09cd\\u09af\\u09ac\\u09b9\\u09be\\u09b0\\u09bf\\u0995 \\u0985\\u09a7\\u09bf\\u09ac\\u09c7\\u09b6\\u09a8\\u0964\",\"url\":\"\\/events\"},{\"eyebrow\":\"\\u09b8\\u09b0\\u09cd\\u09ac\\u09b6\\u09c7\\u09b7 \\u0996\\u09ac\\u09b0\",\"heading\":\"\\u09ac\\u09bf\\u09b6\\u09c1\\u09a6\\u09cd\\u09a7 \\u09aa\\u09be\\u09a8\\u09bf\\u09b0 \\u0989\\u09a6\\u09cd\\u09af\\u09cb\\u0997 \\u09aa\\u09cc\\u0981\\u099b\\u09be\\u09b2 \\u09a8\\u09a4\\u09c1\\u09a8 \\u0995\\u09ae\\u09bf\\u0989\\u09a8\\u09bf\\u099f\\u09bf\\u09a4\\u09c7\",\"body\":\"\\u0986\\u09ae\\u09be\\u09a6\\u09c7\\u09b0 \\u09b8\\u09cd\\u09a5\\u09be\\u09a8\\u09c0\\u09af\\u09bc\\u09ad\\u09be\\u09ac\\u09c7 \\u09aa\\u09b0\\u09bf\\u099a\\u09be\\u09b2\\u09bf\\u09a4 \\u09aa\\u09be\\u09a8\\u09bf \\u0993 \\u09b8\\u09cd\\u09af\\u09be\\u09a8\\u09bf\\u099f\\u09c7\\u09b6\\u09a8 \\u0995\\u09be\\u099c \\u09a5\\u09c7\\u0995\\u09c7 \\u098f\\u0995\\u099f\\u09bf \\u0986\\u09aa\\u09a1\\u09c7\\u099f\\u0964\",\"image\":\"\\/image\\/banner\\/slider-2.png\",\"image_alt\":\"\\u0995\\u09ae\\u09bf\\u0989\\u09a8\\u09bf\\u099f\\u09bf\\u09b0 \\u09ac\\u09bf\\u09b6\\u09c1\\u09a6\\u09cd\\u09a7 \\u09aa\\u09be\\u09a8\\u09bf \\u0989\\u09a6\\u09cd\\u09af\\u09cb\\u0997\",\"url\":\"\\/events\"},{\"eyebrow\":\"\\u09b8\\u09b0\\u09cd\\u09ac\\u09b6\\u09c7\\u09b7 \\u0996\\u09ac\\u09b0\",\"heading\":\"\\u099c\\u09c0\\u09ac\\u09bf\\u0995\\u09be \\u0995\\u09b0\\u09cd\\u09ae\\u09b8\\u09c2\\u099a\\u09bf\\u09b0 \\u09a8\\u09a4\\u09c1\\u09a8 \\u09a6\\u09b2\\u09c7\\u09b0 \\u09aa\\u09cd\\u09b0\\u09b6\\u09bf\\u0995\\u09cd\\u09b7\\u09a3 \\u09b6\\u09c1\\u09b0\\u09c1\",\"body\":\"\\u0985\\u0982\\u09b6\\u0997\\u09cd\\u09b0\\u09b9\\u09a3\\u0995\\u09be\\u09b0\\u09c0\\u09b0\\u09be \\u09a6\\u0995\\u09cd\\u09b7\\u09a4\\u09be \\u0989\\u09a8\\u09cd\\u09a8\\u09af\\u09bc\\u09a8 \\u0993 \\u09ac\\u09be\\u099c\\u09be\\u09b0-\\u09aa\\u09cd\\u09b0\\u09b8\\u09cd\\u09a4\\u09c1\\u09a4\\u09bf \\u09b8\\u09b9\\u09be\\u09af\\u09bc\\u09a4\\u09be\\u09b0 \\u09aa\\u09b0\\u09ac\\u09b0\\u09cd\\u09a4\\u09c0 \\u09a7\\u09be\\u09aa \\u09b6\\u09c1\\u09b0\\u09c1 \\u0995\\u09b0\\u099b\\u09c7\\u09a8\\u0964\",\"image\":\"\\/image\\/news.png\",\"image_alt\":\"\\u099c\\u09c0\\u09ac\\u09bf\\u0995\\u09be \\u0995\\u09b0\\u09cd\\u09ae\\u09b8\\u09c2\\u099a\\u09bf \\u0986\\u09aa\\u09a1\\u09c7\\u099f\",\"url\":\"\\/events\"}]}",
+                "content": "{\"variant\":\"updates\",\"eyebrow\":\"জড়িত থাকুন\",\"heading\":\"ইভেন্ট ও সর্বশেষ সংবাদ\",\"items\":[{\"eyebrow\":\"আসন্ন অনুষ্ঠান\",\"heading\":\"কমিউনিটি স্বেচ্ছাসেবক ওরিয়েন্টেশন\",\"body\":\"দলের সদস্যদের সঙ্গে পরিচিত হোন এবং আসন্ন মাঠপর্যায়ের কার্যক্রমে কীভাবে সহায়তা করা যায় তা জানুন।\",\"url\":\"/events\",\"kind\":\"event\"},{\"eyebrow\":\"আসন্ন অনুষ্ঠান\",\"heading\":\"যুব শিক্ষার কর্মশালা\",\"body\":\"শিক্ষার্থী, শিক্ষাবিদ এবং স্থানীয় স্বেচ্ছাসেবকদের জন্য একটি ব্যবহারিক অধিবেশন।\",\"url\":\"/events\",\"kind\":\"event\"},{\"eyebrow\":\"সর্বশেষ খবর\",\"heading\":\"বিশুদ্ধ পানির উদ্যোগ পৌঁছাল নতুন কমিউনিটিতে\",\"body\":\"আমাদের স্থানীয়ভাবে পরিচালিত পানি ও স্যানিটেশন কাজ থেকে একটি আপডেট।\",\"image\":\"/image/banner/slider-2.png\",\"image_alt\":\"কমিউনিটির বিশুদ্ধ পানি উদ্যোগ\",\"url\":\"/events\",\"kind\":\"news\"},{\"eyebrow\":\"সর্বশেষ খবর\",\"heading\":\"জীবিকা কর্মসূচির নতুন দলের প্রশিক্ষণ শুরু\",\"body\":\"অংশগ্রহণকারীরা দক্ষতা উন্নয়ন ও বাজার-প্রস্তুতি সহায়তার পরবর্তী ধাপ শুরু করছেন।\",\"image\":\"/image/news.png\",\"image_alt\":\"জীবিকা কর্মসূচি আপডেট\",\"url\":\"/events\",\"kind\":\"news\"}]}",
                 "is_enabled": 0,
                 "label": "Events and News",
                 "page_language": "bn",
                 "page_uuid": "22222222-2222-4222-8222-000000000100",
                 "reusable_block_uuid": null,
-                "settings": "[]",
+                "settings": "{\"_migration_updates_item_kind_v1\":[\"event\",\"event\",\"news\",\"news\"]}",
                 "show_on_desktop": 1,
                 "show_on_mobile": 1,
                 "sort_order": 8,
@@ -4137,6 +4156,22 @@
                 "banner_uuid": null,
                 "description": null,
                 "icon": null,
+                "language": "bn",
+                "link": "custom",
+                "name": "যোগাযোগ",
+                "order_by": 0,
+                "parent_language": null,
+                "parent_uuid": null,
+                "slug": "/contact-us",
+                "status": 1,
+                "type": "utility",
+                "uuid": "79000000-0000-4000-8000-000000000001"
+            },
+            {
+                "banner_language": null,
+                "banner_uuid": null,
+                "description": null,
+                "icon": null,
                 "language": "en",
                 "link": "custom",
                 "name": "About Us",
@@ -4211,6 +4246,22 @@
                 "status": 1,
                 "type": "footer",
                 "uuid": "7f040100-0000-4000-8000-000000000401"
+            },
+            {
+                "banner_language": null,
+                "banner_uuid": null,
+                "description": null,
+                "icon": null,
+                "language": "en",
+                "link": "custom",
+                "name": "Contact",
+                "order_by": 0,
+                "parent_language": null,
+                "parent_uuid": null,
+                "slug": "/contact-us",
+                "status": 1,
+                "type": "utility",
+                "uuid": "79000000-0000-4000-8000-000000000001"
             },
             {
                 "banner_language": null,
@@ -12494,100 +12545,100 @@
             {
                 "key": "content.team_member.1.description",
                 "locale": "bn",
-                "source_hash": "c6fa916b1fb2d0d6777d0e8afb98b81cd5d0e28df883d742115ab5082afb3fe9",
+                "source_hash": "9d815711d9b6e084b1ec80d39a1f12dafe379c19b96962a001590ce3ad6871f6",
                 "status": "translated",
-                "value": "প্রতিষ্ঠাতা - সভাপতি"
+                "value": "নির্বাহী সদস্য"
             },
             {
                 "key": "content.team_member.1.name",
                 "locale": "bn",
-                "source_hash": "a9f8e9ced84eca57e3e0e0e1faaed67b86a5aa7626bf4b4ec4738a8e082284b9",
+                "source_hash": "d2dbff10b987a3dc240c61f0d7b39c22c45b3564fad6fedee2df4f1de7f02737",
                 "status": "translated",
-                "value": "মুহাম্মদ জাহিরুল ইসলাম"
+                "value": "জোসেন্টা জিনিয়া"
             },
             {
                 "key": "content.team_member.2.description",
-                "locale": "bn",
-                "source_hash": "e0cd90c0c7d36184fe8d49c6af6c5be516de9e5b3f9202a6e82a0cf8a74d5430",
-                "status": "translated",
-                "value": "উপ-সভাপতি"
-            },
-            {
-                "key": "content.team_member.2.name",
-                "locale": "bn",
-                "source_hash": "e9f309d5b7596522857af7aec7152798034025ba58f4acfc1bd4a02eb31418b0",
-                "status": "translated",
-                "value": "মনময় জাহান আলী"
-            },
-            {
-                "key": "content.team_member.3.description",
-                "locale": "bn",
-                "source_hash": "6933fe26b7af300b4c036e8a8601db453d69b18659f99258e61533ad5ab4ea6e",
-                "status": "translated",
-                "value": "সাধারণ সম্পাদক"
-            },
-            {
-                "key": "content.team_member.3.name",
-                "locale": "bn",
-                "source_hash": "2a5b77cb16e8af0bcfd444eb1adc162cc2178fb8e8fe111821791b49d553876b",
-                "status": "translated",
-                "value": "মো. রাফিউ রিয়ান"
-            },
-            {
-                "key": "content.team_member.4.description",
-                "locale": "bn",
-                "source_hash": "ef4130b978f83111e8199cd2c4daa55e79500395893a6032d9bd8f1c216e231f",
-                "status": "translated",
-                "value": "কোষাধ্যক্ষ"
-            },
-            {
-                "key": "content.team_member.4.name",
-                "locale": "bn",
-                "source_hash": "969b0cc055ab5d058a7ab3b4a281244dd3e6ed4ca3585365c56a05b926d556d7",
-                "status": "translated",
-                "value": "ইসরাত জাহান"
-            },
-            {
-                "key": "content.team_member.5.description",
                 "locale": "bn",
                 "source_hash": "9d815711d9b6e084b1ec80d39a1f12dafe379c19b96962a001590ce3ad6871f6",
                 "status": "translated",
                 "value": "নির্বাহী সদস্য"
             },
             {
-                "key": "content.team_member.5.name",
+                "key": "content.team_member.2.name",
                 "locale": "bn",
                 "source_hash": "724c34a42ef622e24edba852758f00aae07abf77573dcf71d3d9932331cbf310",
                 "status": "translated",
                 "value": "মো. ফজলে মুনিম"
             },
             {
-                "key": "content.team_member.6.description",
+                "key": "content.team_member.3.description",
                 "locale": "bn",
                 "source_hash": "9d815711d9b6e084b1ec80d39a1f12dafe379c19b96962a001590ce3ad6871f6",
                 "status": "translated",
                 "value": "নির্বাহী সদস্য"
             },
             {
-                "key": "content.team_member.6.name",
+                "key": "content.team_member.3.name",
                 "locale": "bn",
                 "source_hash": "3d0da3bde94b77e763cd2fd4a4e4254a5da9bca35285fac3a12db36ac3fa3954",
                 "status": "translated",
                 "value": "মো. তাজদিন হাসান"
             },
             {
+                "key": "content.team_member.4.description",
+                "locale": "bn",
+                "source_hash": "c6fa916b1fb2d0d6777d0e8afb98b81cd5d0e28df883d742115ab5082afb3fe9",
+                "status": "translated",
+                "value": "প্রতিষ্ঠাতা - সভাপতি"
+            },
+            {
+                "key": "content.team_member.4.name",
+                "locale": "bn",
+                "source_hash": "a9f8e9ced84eca57e3e0e0e1faaed67b86a5aa7626bf4b4ec4738a8e082284b9",
+                "status": "translated",
+                "value": "মুহাম্মদ জাহিরুল ইসলাম"
+            },
+            {
+                "key": "content.team_member.5.description",
+                "locale": "bn",
+                "source_hash": "6933fe26b7af300b4c036e8a8601db453d69b18659f99258e61533ad5ab4ea6e",
+                "status": "translated",
+                "value": "সাধারণ সম্পাদক"
+            },
+            {
+                "key": "content.team_member.5.name",
+                "locale": "bn",
+                "source_hash": "2a5b77cb16e8af0bcfd444eb1adc162cc2178fb8e8fe111821791b49d553876b",
+                "status": "translated",
+                "value": "মো. রাফিউ রিয়ান"
+            },
+            {
+                "key": "content.team_member.6.description",
+                "locale": "bn",
+                "source_hash": "ef4130b978f83111e8199cd2c4daa55e79500395893a6032d9bd8f1c216e231f",
+                "status": "translated",
+                "value": "কোষাধ্যক্ষ"
+            },
+            {
+                "key": "content.team_member.6.name",
+                "locale": "bn",
+                "source_hash": "969b0cc055ab5d058a7ab3b4a281244dd3e6ed4ca3585365c56a05b926d556d7",
+                "status": "translated",
+                "value": "ইসরাত জাহান"
+            },
+            {
                 "key": "content.team_member.7.description",
                 "locale": "bn",
-                "source_hash": "9d815711d9b6e084b1ec80d39a1f12dafe379c19b96962a001590ce3ad6871f6",
+                "source_hash": "e0cd90c0c7d36184fe8d49c6af6c5be516de9e5b3f9202a6e82a0cf8a74d5430",
                 "status": "translated",
-                "value": "নির্বাহী সদস্য"
+                "value": "উপ-সভাপতি"
             },
             {
                 "key": "content.team_member.7.name",
                 "locale": "bn",
-                "source_hash": "d2dbff10b987a3dc240c61f0d7b39c22c45b3564fad6fedee2df4f1de7f02737",
+                "source_hash": "e9f309d5b7596522857af7aec7152798034025ba58f4acfc1bd4a02eb31418b0",
                 "status": "translated",
-                "value": "জোসেন্টা জিনিয়া"
+                "value": "মনময় জাহান আলী"
             },
             {
                 "key": "content.volunteer_opportunity.1.description",
@@ -12891,6 +12942,7 @@
                 "value": "Spotlight"
             }
         ],
+        "transactional_email_templates": [],
         "volunteer_causes": [
             {
                 "description": "Local quality assurance cause.",
@@ -12907,13 +12959,15 @@
         "chat_faqs": "367e441bc9d55ac0d2562e4f07e42209ca085c24d6d216f89b3814392911eaa0",
         "chat_settings": "547b09199ecd2ee4a53f2cbdc7fd06292cbe197c5db31f38fbac9c9564a93166",
         "donation_cause_groups": "feab6ce22b0acad49070a8cba06f438627bed9cbac2fc65c5d4332c24d386edc",
-        "donation_types": "51a0d3a3061d19016d027b897357ef40cbd31f9a34efd0a0692123193c540bd5",
+        "donation_types": "3776a8daa1afe3a5729bdb0010fe90af98be517f15befc3c2d8eb759e7b8ecd7",
+        "donation_cause_amounts": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "donation_cause_sections": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "galleries": "19279b846d5ed1bc28b6fb6f6412aa3f12692dd47e62abf5ccadea3ebf6524a4",
         "latest_news": "fbc450010e657da2ccf98dbc1630f7ab52f71970b9d5a00c30b9d69922eafabe",
         "media_assets": "4d94fe41029e08d62c951bc140a2f1929fdaaed26712e158ddac4b9c10c7b97b",
         "notice_boards": "81f508ddc2ab6d871a90b29833353f1cd49361ed8fa356b6d689f512dbef49a9",
-        "page_blocks": "62a3bd7020b82658b91efd4eb61475587825a701aecff9fb33f9a9ace237ef47",
-        "page_menus": "ec99d6b730df029649b11d331e4fa2426704d30b1c60c252c16a19e29c1da4a0",
+        "page_blocks": "9f7a911127a71587fa939f7ab2e52d7b9ce76b8e11a65ac54e658e483b6e4013",
+        "page_menus": "3333aaaf963dda18b80b37941c26e063b53a0267f7eb557530c3814e048d77a2",
         "page_tag_modules": "f574ee3f59e88784e8be46979b7ffceb95c1f58ed0d3950ebdd0b32e3f62756a",
         "pages": "901b426b49648eac88d59ac86e1d15aeaf6a93d8bb233a2d9d9f9ae2856fc9ef",
         "reusable_blocks": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
@@ -12924,7 +12978,8 @@
         "team_groups": "d14b3842eded34f91007eea9cfa38eb61121e0c868025e2a706b3849aa29eefc",
         "testimonials": "0f702c63ed358c59cafcd90b4a43433a1526ee60306021ccded5188d29d5c871",
         "translation_locales": "3a3479424986ae2d9c92632a08da4507e023a3eeccfdbf08572245056b8855ff",
-        "translation_strings": "3fc8caa9f325bcfbc12b05e50dd5d0e2449a61734af04a189b69b940625b61bb",
+        "translation_strings": "54e9fc3e25e868238a7daafc65ebf6b7c321e441a3ebde4ca3c67e8a49019754",
+        "transactional_email_templates": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
         "volunteer_causes": "071c26dbfbf71d6bdf977a64133c57d89bb4cf3ee7d6eab6f2e487a2b9857594"
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NoticeBoard;
 use App\Services\ContentSanitizer;
 use App\Services\PublicArchiveSeoService;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\PublicStructuredDataService;
 use App\Services\SeoMetadataService;
 
@@ -19,6 +20,7 @@ class NoticeBoardController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PublicArchiveSeoService $archiveSeo,
+        private PublicSystemPageMetaService $systemMeta,
         private PublicStructuredDataService $structuredData,
         private SeoMetadataService $seo,
     ) {
@@ -26,7 +28,16 @@ class NoticeBoardController extends Controller
 
     public function events(Request $request)
     {
-        $title = $request->Lang->UpcomingEvents;
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'content_archives.events_default_title',
+            'content_archives.events_introduction',
+            [
+                'title' => 'Events & latest news',
+                'description' => 'Discover upcoming events and the latest community-led program news from Ignite Global Foundation.',
+            ],
+        );
+        $title = $pageMeta['title'];
 
         $events = NoticeBoard::select('notice_boards.*')
             ->publiclyReleased()
@@ -44,17 +55,21 @@ class NoticeBoardController extends Controller
             return $event;
         });
 
-        $meta_tag = $this->archiveSeo->apply(array_merge([
-            'meta_keyword' => 'Ignite events, nonprofit news, community Bangladesh',
-            'meta_title' => ($title ?: 'Events & News') . ' | Ignite Global Foundation',
-            'meta_description' => 'Discover upcoming events and the latest community-led program news from Ignite Global Foundation.',
-        ], (array) $request->attributes->get('route_seo', [])), $request, $events, route('frontend.events'));
+        $meta_tag = $this->archiveSeo->apply(
+            array_merge(
+                $pageMeta['meta_tag'],
+                (array) $request->attributes->get('route_seo', []),
+            ),
+            $request,
+            $events,
+            route('frontend.events'),
+        );
         if (empty($meta_tag['schema_markup']) || $events->currentPage() > 1) {
             $meta_tag['schema_markup'] = $this->structuredData->collection(
-                (string) ($title ?: 'Events & News'),
+                (string) $title,
                 (string) $meta_tag['meta_description'],
                 (string) $meta_tag['canonical_url'],
-                $this->breadcrumbs((string) ($title ?: 'Events & News'), (string) $meta_tag['canonical_url'])
+                $this->breadcrumbs((string) $title, (string) $meta_tag['canonical_url'])
             );
         }
 
@@ -77,6 +92,15 @@ class NoticeBoardController extends Controller
 
     public function event(Request $request, $slug = '')
     {
+        $archivePage = $this->systemMeta->resolve(
+            $request,
+            'content_archives.events_default_title',
+            'content_archives.events_introduction',
+            [
+                'title' => 'Events & latest news',
+                'description' => 'Discover upcoming events and the latest community-led program news from Ignite Global Foundation.',
+            ],
+        );
         $event = NoticeBoard::query()
             ->publiclyReleased()
             ->where('slug', $slug)
@@ -88,12 +112,16 @@ class NoticeBoardController extends Controller
         $event->setAttribute('description', $this->sanitizer->sanitizeHtml($event->description));
         $event->setAttribute('inline_css', $this->sanitizer->sanitizeCss($event->inline_css));
 
-        $meta_tag = $this->seo->metaForModel($event, [
-            'meta_keyword' => $event->title,
-            'meta_title' => $event->title . ' | Ignite Global Foundation',
-            'meta_description' => $event->sub_title ?: str($event->description)->stripTags()->limit(160)->toString(),
-            'meta_image' => $event->image_url,
-        ], route('frontend.event', ['slug' => $event->slug]));
+        $meta_tag = $this->seo->metaForModel($event, array_merge(
+            $this->systemMeta->forContent(
+                (string) $event->title,
+                (string) ($event->sub_title
+                    ?: str($event->description)->stripTags()->limit(160)->toString()
+                    ?: $archivePage['meta_tag']['meta_description']),
+                $request,
+            ),
+            ['meta_image' => $event->image_url],
+        ), route('frontend.event', ['slug' => $event->slug]));
         if (empty($meta_tag['schema_markup'])) {
             $eventUrl = (string) $this->seo->localizedUrl(
                 route('frontend.event', ['slug' => $event->slug]),
@@ -103,7 +131,7 @@ class NoticeBoardController extends Controller
                 $event,
                 $eventUrl,
                 $event->image_url,
-                $this->breadcrumbs((string) $event->title, $eventUrl, 'Events & News', route('frontend.events'))
+                $this->breadcrumbs((string) $event->title, $eventUrl, $archivePage['title'], route('frontend.events'))
             );
         }
 

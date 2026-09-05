@@ -57,6 +57,8 @@
                                                 {{ old('type.'. $lang) == 'main' ? 'selected' : '' }}>{{ $Lang->Common->Form->Main }}</option>
                                             <option value="middle"
                                                 {{ old('type.'. $lang) == 'middle' ? 'selected' : '' }}>{{ $Lang->Common->Form->Middle }}</option>
+                                            <option value="utility"
+                                                {{ old('type.'. $lang) == 'utility' ? 'selected' : '' }}>Utility bar</option>
                                             <option value="footer"
                                                 {{ old('type.'. $lang) == 'footer' ? 'selected' : '' }}>{{ $Lang->Common->Form->Footer }}</option>
 

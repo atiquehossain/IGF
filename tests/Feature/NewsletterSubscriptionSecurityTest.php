@@ -9,7 +9,9 @@ use App\Models\AdminAuditEvent;
 use App\Models\AuthMenu;
 use App\Models\MenuAction;
 use App\Models\Role;
+use App\Models\SiteSetting;
 use App\Models\Subscriber;
+use App\Models\TranslationLocale;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -77,6 +79,53 @@ class NewsletterSubscriptionSecurityTest extends TestCase
             ->assertSessionHas('message.text', self::GENERIC_MESSAGE);
 
         Mail::assertSentCount(1);
+    }
+
+    public function test_managed_localized_copy_survives_the_signed_confirmation_round_trip(): void
+    {
+        Mail::fake();
+        TranslationLocale::query()->where('locale', 'bn')->update([
+            'is_enabled' => true,
+            'enabled_at' => now(),
+        ]);
+        foreach ([
+            'newsletter_request_message' => 'নিরাপদ নিশ্চিতকরণ বার্তাটি পাঠানো হয়েছে।',
+            'newsletter_confirmation_message' => 'আপনার কমিউনিটি বার্তা নিশ্চিত হয়েছে।',
+        ] as $key => $value) {
+            SiteSetting::create([
+                'group' => 'shared_blocks',
+                'key' => $key,
+                'locale' => 'bn',
+                'value' => $value,
+                'type' => 'text',
+                'is_public' => true,
+            ]);
+        }
+
+        $this->withSession(['locale' => 'bn'])
+            ->from(route('frontend.home'))
+            ->post(route('frontend.subscribe', ['lang' => 'bn']), [
+                'email' => 'bangla-updates@example.test',
+                'consent' => true,
+            ])->assertRedirect(route('frontend.home'))
+            ->assertSessionHas('message.text', 'নিরাপদ নিশ্চিতকরণ বার্তাটি পাঠানো হয়েছে।');
+
+        $confirmationUrl = null;
+        Mail::assertSent(ConfirmNewsletterSubscription::class, function (
+            ConfirmNewsletterSubscription $mail
+        ) use (&$confirmationUrl): bool {
+            $confirmationUrl = $mail->confirmationUrl();
+
+            return true;
+        });
+        $this->assertIsString($confirmationUrl);
+        $this->assertStringContainsString('lang=bn', $confirmationUrl);
+
+        $this->flushSession();
+        $this->get($confirmationUrl)
+            ->assertRedirect(route('frontend.home'))
+            ->assertSessionHas('message.text', 'আপনার কমিউনিটি বার্তা নিশ্চিত হয়েছে।');
+        $this->assertNotNull(Subscriber::query()->sole()->confirmed_at);
     }
 
     public function test_unconfirmed_resubmissions_are_generic_rate_limited_by_cooldown_and_invalid_links_do_not_confirm(): void

@@ -3,6 +3,7 @@ import {
   conditionMatches,
   escapeHtml,
   groupedConditionsMatch,
+  translatedBuilderText,
 } from '../../../public/admin-assets/application-form-builder/form-builder.js'
 
 describe('admin application form builder helpers', () => {
@@ -32,5 +33,18 @@ describe('admin application form builder helpers', () => {
     expect(groupedConditionsMatch(conditions, { country: 'bd', experience: 4 })).toBe(true)
     expect(groupedConditionsMatch(conditions, { country: 'uk', experience: 0 })).toBe(true)
     expect(groupedConditionsMatch(conditions, { country: 'bd', experience: 1 })).toBe(false)
+  })
+
+  it('uses the trusted server dictionary with placeholder replacement', () => {
+    expect(translatedBuilderText(
+      { move_up: ':name উপরে নিন' },
+      'move_up',
+      { name: 'অভিজ্ঞতা' },
+    )).toBe('অভিজ্ঞতা উপরে নিন')
+  })
+
+  it('falls back to safe English operating copy when a dictionary entry is absent', () => {
+    expect(translatedBuilderText({}, 'publish_error')).toBe('The form could not be published.')
+    expect(translatedBuilderText(null, 'question_number', { number: 4 })).toBe('Question 4')
   })
 })

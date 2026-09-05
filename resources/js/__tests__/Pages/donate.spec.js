@@ -70,22 +70,6 @@ const fullDonationCatalog = [
   };
 });
 
-function contrastRatio(foreground, background) {
-  const luminance = (hex) => {
-    const channels = hex.match(/[a-f\d]{2}/gi).map(value => parseInt(value, 16) / 255);
-    const [red, green, blue] = channels.map(value => value <= 0.04045
-      ? value / 12.92
-      : ((value + 0.055) / 1.055) ** 2.4);
-
-    return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
-  };
-  const foregroundLuminance = luminance(foreground);
-  const backgroundLuminance = luminance(background);
-
-  return (Math.max(foregroundLuminance, backgroundLuminance) + 0.05)
-    / (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
-}
-
 function settings() {
   return {
     checkout_layout: 'centered',
@@ -653,14 +637,127 @@ describe('donation payment methods', () => {
     expect(wrapper.get('.igf-fixed-project strong').text()).toBe('School Rebuild Project');
   });
 
-  test('uses WCAG-safe dark-orange tokens behind small white interactive text', () => {
-    expect(contrastRatio('#ffffff', '#9c4500')).toBeGreaterThanOrEqual(4.5);
-    expect(contrastRatio('#ffffff', '#783300')).toBeGreaterThanOrEqual(4.5);
-    expect(donateSource).toContain('--action-orange:#9c4500');
+  test('uses ordered cause-specific amount cards and keeps global amounts as the empty-list fallback', async () => {
+    const custom = mountDonate({
+      data: {
+        donationTypes: [{
+          ...fullDonationCatalog[1],
+          amount_options: [
+            { uuid: 'amount-two', amount: 2200, impact: 'Supplies a learning space.' },
+            { uuid: 'amount-one', amount: 700, impact: 'Provides learning materials.' },
+            { uuid: 'invalid', amount: 1, impact: 'Below the provider limit.' },
+            { uuid: 'duplicate', amount: 700, impact: 'Duplicate amount.' },
+          ],
+          landing_sections: [],
+        }],
+        selectedUUID: 'education',
+      },
+      url: '/donate/education',
+    });
+    await nextTick();
+
+    const customCards = custom.findAll('[data-test="suggested-amount"]');
+    expect(customCards).toHaveLength(2);
+    expect(customCards.map(card => card.text())).toEqual([
+      expect.stringContaining('Supplies a learning space.'),
+      expect.stringContaining('Provides learning materials.'),
+    ]);
+    expect(custom.vm.suggestedAmounts).toEqual([2200, 700]);
+    expect(custom.vm.donation.amount).toBe(2200);
+
+    const fallback = mountDonate({
+      data: {
+        donationTypes: [{ ...fullDonationCatalog[1], amount_options: [], landing_sections: [] }],
+        selectedUUID: 'education',
+      },
+      url: '/donate/education',
+    });
+    await nextTick();
+
+    expect(fallback.findAll('[data-test="suggested-amount"]')).toHaveLength(5);
+    expect(fallback.vm.suggestedAmounts).toEqual([500, 1000, 2500, 5000, 10000]);
+    expect(fallback.vm.donation.amount).toBe(5000);
+  });
+
+  test('renders composable cause story sections and rejects unsafe media and CTA URLs at the client boundary', async () => {
+    const wrapper = mountDonate({
+      data: {
+        donationTypes: [{
+          ...fullDonationCatalog[1],
+          amount_options: [],
+          landing_sections: [
+            {
+              uuid: 'image-story', layout: 'media-left', title: 'Why education matters',
+              body: '<p><strong>Safe, server-sanitized</strong> long-form copy.</p>',
+              image: '/storage/donation-causes/classroom.jpg', image_alt: 'Learners in a classroom', video: null,
+              cta: { label: 'Read our results', url: '/annual-report' },
+            },
+            {
+              uuid: 'video-story', layout: 'media-right', title: 'Watch the work', body: '', image: '', image_alt: '',
+              video: {
+                type: 'embed', url: 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ',
+                title: 'Watch the education story', transcript: 'The film follows learners during a day at Ignite School.',
+              },
+              cta: null,
+            },
+            {
+              uuid: 'uploaded-story', layout: 'media-left', title: '', body: '', image: '', image_alt: '',
+              video: {
+                type: 'file', url: '/storage/donation-causes/education-story.mp4',
+                title: 'Inside the classroom', transcript: 'A teacher and learners describe how community donations support their classroom.',
+              },
+              cta: null,
+            },
+            {
+              uuid: 'unsafe-story', layout: 'highlight', title: 'Safe heading', body: '', image: 'javascript:alert(1)', image_alt: '',
+              video: { type: 'embed', url: 'https://attacker.test/embed/dQw4w9WgXcQ' },
+              cta: { label: 'Unsafe link', url: 'javascript:alert(1)' },
+            },
+          ],
+        }],
+        selectedUUID: 'education',
+      },
+      url: '/donate/education',
+    });
+    await nextTick();
+
+    const sections = wrapper.findAll('[data-test="cause-landing-section"]');
+    expect(sections).toHaveLength(4);
+    expect(sections[0].classes()).toContain('is-media-left');
+    expect(sections[0].get('img').attributes()).toMatchObject({
+      src: '/storage/donation-causes/classroom.jpg',
+      alt: 'Learners in a classroom',
+      loading: 'lazy',
+    });
+    expect(sections[0].get('.igf-cause-content__rich-text').html()).toContain('<strong>Safe, server-sanitized</strong>');
+    expect(sections[0].get('.igf-cause-content__cta').attributes('href')).toBe('/annual-report');
+    expect(sections[1].get('iframe').attributes('src')).toBe('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ');
+    expect(sections[1].get('iframe').attributes('title')).toBe('Watch the education story');
+    expect(sections[1].get('iframe').attributes('aria-describedby')).toBe('cause-video-transcript-video-story');
+    expect(sections[1].get('iframe').attributes('sandbox')).toContain('allow-scripts');
+    expect(sections[1].get('[data-test="cause-video-transcript"]').text()).toContain('The film follows learners');
+    expect(sections[2].get('video').attributes('aria-label')).toBe('Inside the classroom');
+    expect(sections[2].get('video').attributes('aria-describedby')).toBe('cause-video-transcript-uploaded-story');
+    expect(sections[2].get('[data-test="cause-video-transcript"]').text()).toContain('community donations support their classroom');
+    expect(sections[3].find('img').exists()).toBe(false);
+    expect(sections[3].find('iframe').exists()).toBe(false);
+    expect(sections[3].find('.igf-cause-content__cta').exists()).toBe(false);
+    expect(donateSource).toContain('.igf-cause-content__section.is-media-left,.igf-cause-content__section.is-media-right { grid-template-columns:minmax(260px,.9fr) minmax(0,1.1fr);');
+    expect(donateSource).toContain('@media (max-width:900px)');
+  });
+
+  test('inherits public theme tokens for donation presentation and CTA colors', () => {
+    expect(donateSource).toContain('--orange:var(--igf-primary,#ff7500)');
+    expect(donateSource).toContain('--action-orange:var(--igf-accent,#9c4500)');
+    expect(donateSource).toContain('--action-orange-hover:color-mix(in srgb,var(--igf-accent,#9c4500) 80%,#000)');
+    expect(donateSource).toContain('--brown:var(--igf-accent,#9c4500)');
+    expect(donateSource).not.toContain('--action-orange:#9c4500');
     expect(donateSource).toContain('background:var(--action-orange)!important');
     expect(donateSource).toContain('background:var(--action-orange-hover)!important');
-    expect(paymentResultSource).toContain('--action-orange:#9c4500');
-    expect(paymentResultSource).toContain('.igf-button--primary{border-color:var(--action-orange);background:var(--action-orange);color:#fff}');
+    expect(donateSource).toContain('color:var(--igf-on-accent,#fff)!important');
+    expect(paymentResultSource).toContain('--action-orange:var(--igf-accent,#9c4500)');
+    expect(paymentResultSource).toContain('--action-orange-hover:var(--igf-accent,#9c4500)');
+    expect(paymentResultSource).toContain('.igf-button--primary{border-color:var(--action-orange);background:var(--action-orange);color:var(--igf-on-accent,#fff)}');
   });
 
   test('renders enabled choices as native radios and explains provider-unavailable choices', async () => {

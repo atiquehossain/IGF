@@ -106,13 +106,14 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
 
 <style scoped lang="scss">
 .igf-reports {
-  --orange: #ff7500;
-  --brown: #9c4500;
-  --brown-dark: #783300;
-  --ink: #191c1d;
-  --muted: #5e5d66;
-  --surface: #f6f7f8;
-  --line: #dfd9d4;
+  --orange: var(--igf-primary, #ff7500);
+  --brown: var(--igf-accent, #9c4500);
+  --brown-dark: var(--brown);
+  --ink: var(--igf-ink, #191c1d);
+  --surface: var(--igf-surface, #f8f9fa);
+  --muted: color-mix(in srgb, var(--ink) 68%, var(--surface));
+  --line: color-mix(in srgb, var(--ink) 14%, var(--surface));
+  --brand-on-dark: color-mix(in srgb, var(--orange) 42%, #fff);
   color: var(--ink);
   font-family: 'Hanken Grotesk', Arial, sans-serif;
 }
@@ -131,7 +132,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
 .igf-reports__hero p,
 .igf-reports__heading p {
   margin: 0 0 14px;
-  color: #ffad72;
+  color: var(--brand-on-dark);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .1em;
@@ -231,7 +232,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
   border-radius: 8px;
   padding: 0 18px;
   background: var(--brown);
-  color: #fff;
+  color: var(--igf-on-accent, #fff);
   font-weight: 800;
   cursor: pointer;
 }
@@ -294,7 +295,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
   overflow: hidden;
   padding: clamp(24px, 4vw, 42px);
   background:
-    radial-gradient(circle at 83% 14%, rgba(255, 117, 0, .38), transparent 31%),
+    radial-gradient(circle at 83% 14%, color-mix(in srgb, var(--orange) 38%, transparent), transparent 31%),
     linear-gradient(145deg, #181b1d 4%, #35251c 100%);
   color: #fff;
 }
@@ -303,7 +304,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
 .igf-report-card__fallback::after {
   position: absolute;
   z-index: -1;
-  border: 1px solid rgba(255, 174, 112, .28);
+  border: 1px solid color-mix(in srgb, var(--brand-on-dark) 28%, transparent);
   border-radius: 50%;
   content: '';
 }
@@ -324,8 +325,8 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
 
 .igf-report-grid > li:nth-child(even) .igf-report-card__fallback {
   background:
-    radial-gradient(circle at 15% 18%, rgba(255, 202, 162, .25), transparent 30%),
-    linear-gradient(140deg, #5e2905 0%, #b65308 100%);
+    radial-gradient(circle at 15% 18%, color-mix(in srgb, var(--brand-on-dark) 25%, transparent), transparent 30%),
+    linear-gradient(140deg, color-mix(in srgb, var(--brown) 58%, #000) 0%, color-mix(in srgb, var(--orange) 68%, var(--brown)) 100%);
 }
 
 .igf-report-card__brand {
@@ -333,7 +334,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
   top: clamp(22px, 3vw, 34px);
   left: clamp(24px, 4vw, 42px);
   max-width: 72%;
-  color: #ffd1af;
+  color: color-mix(in srgb, var(--orange) 28%, #fff);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .09em;
@@ -346,7 +347,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
   margin-bottom: 18px;
   border: 1px solid rgba(255, 255, 255, .28);
   border-radius: 50%;
-  color: #ff9c55;
+  color: color-mix(in srgb, var(--orange) 66%, #fff);
   font-size: 18px;
   line-height: 40px;
   text-align: center;
@@ -362,7 +363,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
   position: absolute;
   right: clamp(24px, 4vw, 42px);
   bottom: clamp(24px, 4vw, 40px);
-  color: #ffb27b;
+  color: color-mix(in srgb, var(--orange) 52%, #fff);
   font: 700 clamp(23px, 3vw, 34px)/1 'Literata', Georgia, serif;
 }
 
@@ -440,7 +441,7 @@ function onPageChange(pageNumber) { visit({page:pageNumber,search:search.value,p
 .igf-report-card__primary {
   flex: 1 1 170px;
   background: var(--brown);
-  color: #fff;
+  color: var(--igf-on-accent, #fff);
 }
 
 .igf-report-card__secondary {

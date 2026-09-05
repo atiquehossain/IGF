@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Helper\StaticUtil;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\SeoMetadataService;
 use App\Services\SeoRouteRegistry;
 use Closure;
@@ -14,6 +15,7 @@ class SetRouteSeo
     public function __construct(
         private SeoMetadataService $seo,
         private SeoRouteRegistry $routes,
+        private PublicSystemPageMetaService $systemMeta,
     ) {
     }
 
@@ -24,7 +26,8 @@ class SetRouteSeo
         $locale = (string) app()->getLocale();
         $defaultLocale = (string) config('app.fallback_locale', 'en');
         if ($locale !== $defaultLocale
-            && $this->seo->hasPublishedSpecialPage($routeName, $locale) === false) {
+            && $this->seo->hasPublishedSpecialPage($routeName, $locale) === false
+            && !$this->systemMeta->supportsLocalizedRouteFallback($routeName, $locale)) {
             // Do not return a 200/indexable fallback for a locale that has no
             // real Page translation behind this special route.
             abort(404);

@@ -9,21 +9,36 @@ use App\Models\Gallery;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Services\ContentSanitizer;
+use App\Services\PublicSystemPageMetaService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
 
 class SearchController extends Controller
 {
-    public function __construct(private ContentSanitizer $sanitizer)
-    {
+    public function __construct(
+        private ContentSanitizer $sanitizer,
+        private PublicSystemPageMetaService $systemMeta,
+    ) {
     }
 
     public function index(Request $request)
     {
-        $title = $request->Lang->Common->Search;
         $search = trim((string) $request->query('search', $request->query('q', '')));
         $locale = app()->getLocale();
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'search_page.title',
+            'search_page.introduction',
+            [
+                'title' => 'Search the site',
+                'meta_title' => 'Search',
+                'description' => 'Search published Ignite Global Foundation programs, projects, stories, reports, and pages.',
+            ],
+        );
+        $title = $pageMeta['title'];
+        $metaTag = $pageMeta['meta_tag'];
+        $metaTag['robots'] = 'noindex,follow';
         $results = collect();
 
         $results = $results->concat(Page::query()
@@ -93,11 +108,7 @@ class SearchController extends Controller
         return Inertia::render('search')->with([
             'status' => true,
             'title' => $title,
-            'meta_tag' => [
-                'meta_title' => $search === '' ? 'Search' : 'Search results for ' . $search,
-                'meta_description' => 'Search published Ignite Global Foundation programs, projects, stories, reports, and pages.',
-                'robots' => 'noindex,follow',
-            ],
+            'meta_tag' => $metaTag,
             'properties' => [
                 'page' => $page->currentPage(),
                 'total_page' => $page->lastPage(),

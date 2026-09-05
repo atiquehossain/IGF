@@ -230,9 +230,10 @@ class PublicSeoEnrichmentIntegrityTest extends TestCase
         $this->assertStringContainsString('name="event_status"', $form);
         $this->assertStringContainsString('name="event_attendance_mode"', $form);
 
-        $this->assertStringContainsString('--action:#9c4500', $detail);
-        $this->assertStringContainsString('--action-hover:#783300', $detail);
+        $this->assertStringContainsString('--action:var(--brown)', $detail);
+        $this->assertStringContainsString('--action-hover:var(--brown)', $detail);
         $this->assertStringContainsString('background:var(--action)', $detail);
+        $this->assertStringContainsString('color:var(--igf-on-accent,#fff)', $detail);
         $this->assertStringContainsString('.igf-download:focus-visible', $detail);
         $this->assertStringContainsString('class="igf-report-card__primary"', $listing);
         $this->assertStringContainsString(':aria-label="actionLabel(settings.view_label, item.title)"', $listing);

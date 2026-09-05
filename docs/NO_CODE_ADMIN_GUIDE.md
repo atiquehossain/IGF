@@ -26,6 +26,12 @@ Open **Website → Brand & Appearance**. This is the central place for branding,
 4. Choose images from the Media Library; image paths are hidden under an advanced option.
 5. Save changes, then refresh the preview.
 
+The **Design & layout** controls use safe presets rather than code. An authorized editor can change the public font pairing, corner style, shadow depth, header color and density, sticky-header behavior, footer color and layout, and the presentation of every Page Builder section. The preview updates before saving, and unsupported values are rejected so an editor cannot accidentally inject CSS or break responsive layouts.
+
+Most public system screens—including Contact, Reports, Gallery, Search, Projects, Events, About, Sponsorship, Volunteer, Careers, Workshops, Zakat, donation catalog/detail/checkout, payment results, header, footer, forms, empty states, and confirmation receipts—take their labels and supporting copy from these localized settings. Use the page or content manager for record-specific copy and **Brand & Appearance** for shared interface copy.
+
+The Contact, Sponsorship, and Volunteer groups also include a guided **Form layout** list. Drag the optional fields into the preferred order, hide fields that are not needed, and choose which optional fields are required. Core identity and contact fields stay visible and required so submissions remain usable and secure. The public form updates from the saved order without editing Vue or validation code.
+
 ## Edit a page
 
 Open **Pages & sections**, choose a page, and select **Edit page**. The Simple Editor lets you:
@@ -44,7 +50,33 @@ Automatic sections such as Programs, Projects, Events, Team, Stories, and Galler
 
 ## Change menus and submenus
 
-Open **Website → Header & Footer** and choose the menu location. Add a built-in page, CMS page, or safe custom link. Give submenu items a short optional description, choose a parent while adding, or use the right-arrow control to make an existing item a submenu. Drag or use the arrow controls to reorder, then select **Save menu**.
+Open **Website → Header & Footer** and choose **Header & mobile**, **Utility bar**, or **Footer**. The utility bar controls the small ordered links beside the social profiles at the top of the public website; social profile addresses remain under **Website → Brand & Appearance**. Add a built-in page, CMS page, or safe custom link. Give submenu items a short optional description, choose a parent while adding, or use the right-arrow control to make an existing item a submenu. Drag or use the arrow controls to reorder, then select **Save menu**.
+
+All three public locations support three visible levels: menu, submenu, and submenu child. The footer keeps the same hierarchy on desktop and in its mobile accordion instead of flattening submenu children. The editor prevents a fourth level, circular parents, cross-location parents, and unsafe URLs. Switch **Language** between English and Bangla to edit each public tree. Creating, editing, arranging, publishing, restoring, and permanently deleting navigation remain separate permission-controlled actions.
+
+## Translate and publish Bangla
+
+Use the language switch in the admin header to work in English or Bangla. The Dashboard, sign-in screen, navigation editor, Website Customizer, Translation Center, and transactional email editor use localized administration copy.
+
+Open **Search & Languages → Translation Center** to search the public English inventory and enter Bangla in the adjacent cell. Required public rows must be complete before a user with language-publishing permission can enable Bangla. Copying English is only a drafting aid; review and translate it before saving. Presentation choices, URLs, identifiers, and other machine fields are deliberately kept out of the translation spreadsheet.
+
+## Edit automatic emails
+
+Open **Get Involved → Email Templates** to manage the localized subject, heading, introduction, main message, closing, and—where the email needs one—button label and destination used for newsletter confirmation, sponsorship alerts, and volunteer alerts. Every field accepts ordinary text; administrators never edit HTML or maintain a second plain-text copy. The live preview shows both the visual email and the automatically generated plain-text version, while the screen lists the placeholders accepted by each template. Older customized templates continue to send unchanged and are mapped into these guided fields for review; they are converted only after an administrator explicitly saves. Reset restores the reviewed default.
+
+Choose **Customize email appearance**, or open the **Transactional email appearance** group in **Website → Brand & Appearance**, to select the reviewed color presentation, content width, corner style, optional brand heading, and localized footer. These settings update every managed HTML and plain-text transactional email while keeping contrast, structure, and responsive behavior within tested presets.
+
+Delivery recipients, sender identity, mail transport, attachments, credentials, and raw headers are not editor fields. They remain server-controlled so public content editors cannot redirect mail, expose secrets, or add executable markup.
+
+## Manage donation causes and landing content
+
+Open **Get Involved → Donation causes**. Create or edit the cause card as usual, then choose **Amounts & story** for that cause. You can add, remove, and reorder localized suggested-amount cards and landing-page story sections. Each amount may have its own short impact statement. A story section can use formatted text, a Media Library image or uploaded video, an approved HTTPS YouTube/Vimeo link, and an optional safe button.
+
+The public cause page and checkout read these records directly, so each cause can tell a different story without a code change. Uploaded media remains subject to the Media Library rules; arbitrary embeds, scripts, unsafe URLs, and unsupported video hosts are rejected.
+
+## Manage application and registration forms
+
+Open the relevant form list under **Get Involved**, then open its visual form builder. Renaming a form or changing whether it accepts responses is saved separately from editing a draft form version. A form can be moved to trash and restored without losing its schema. Permanent deletion is deliberately available only for an archived form that has no live or historical submissions and no published version; referenced forms remain protected.
 
 ## Images and files
 

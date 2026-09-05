@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\Permission;
 use App\Models\ApplicationForm;
 use App\Models\ApplicationFormField;
 use App\Models\ApplicationFormVersion;
 use App\Services\ApplicationFormSchemaService;
+use App\Support\AdminUi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,36 +22,21 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 final class ApplicationFormController extends Controller
 {
-    private const TYPE_LABELS = [
-        ApplicationFormField::TYPE_SHORT_TEXT => 'Short text',
-        ApplicationFormField::TYPE_LONG_TEXT => 'Long text',
-        ApplicationFormField::TYPE_EMAIL => 'Email',
-        ApplicationFormField::TYPE_PHONE => 'Phone',
-        ApplicationFormField::TYPE_NUMBER => 'Number',
-        ApplicationFormField::TYPE_DATE => 'Date',
-        ApplicationFormField::TYPE_DROPDOWN => 'Dropdown',
-        ApplicationFormField::TYPE_RADIO => 'Multiple choice',
-        ApplicationFormField::TYPE_CHECKBOXES => 'Checkboxes',
-        ApplicationFormField::TYPE_YES_NO => 'Yes / No',
-        ApplicationFormField::TYPE_FILE => 'Protected PDF upload',
-    ];
-
-    private const OPERATOR_LABELS = [
-        'equals' => 'Equals',
-        'not_equals' => 'Does not equal',
-        'contains' => 'Contains',
-        'not_contains' => 'Does not contain',
-        'is_empty' => 'Is empty',
-        'is_not_empty' => 'Is not empty',
-        'greater_than' => 'Is greater than',
-        'less_than' => 'Is less than',
-    ];
-
     public function __construct(private readonly ApplicationFormSchemaService $schemas)
     {
     }
 
     public function index(Request $request): View
+    {
+        return $this->formList($request, false);
+    }
+
+    public function trash(Request $request): View
+    {
+        return $this->formList($request, true);
+    }
+
+    private function formList(Request $request, bool $trashed): View
     {
         $purpose = $this->purpose($request);
         $filters = $request->validate([
@@ -62,8 +49,15 @@ final class ApplicationFormController extends Controller
         $state = (string) ($filters['state'] ?? 'all');
 
         $forms = ApplicationForm::query()
+            ->when($trashed, fn ($query) => $query->onlyTrashed())
             ->where('purpose', $purpose)
             ->with('versions')
+            ->withCount([
+                'jobPostings as active_job_postings_count',
+                'workshops as active_workshops_count',
+                'jobPostings as total_job_postings_count' => fn ($query) => $query->withTrashed(),
+                'workshops as total_workshops_count' => fn ($query) => $query->withTrashed(),
+            ])
             ->when($search !== '', fn ($query) => $query->where('name', 'like', '%' . $search . '%'))
             ->when($kind === 'forms', fn ($query) => $query->where('is_template', false))
             ->when($kind === 'templates', fn ($query) => $query->where('is_template', true))
@@ -76,12 +70,17 @@ final class ApplicationFormController extends Controller
             ->withQueryString();
 
         return view($this->viewName($purpose, 'index'), [
-            'title' => $this->sectionLabel($purpose) . ' form templates',
+            'title' => $this->ui('page_titles.index', ['area' => $this->sectionLabel($purpose)]),
             'sectionLabel' => $this->sectionLabel($purpose),
             'purpose' => $purpose,
             'forms' => $forms,
             'filters' => compact('search', 'kind', 'state'),
             'routeNames' => $this->routeNames($purpose),
+            'isTrash' => $trashed,
+            'canManage' => app(Permission::class)->allows(
+                Auth::guard('admin')->user(),
+                $this->routeNames($purpose)['update']
+            ),
         ]);
     }
 
@@ -90,7 +89,7 @@ final class ApplicationFormController extends Controller
         $purpose = $this->purpose($request);
 
         return view($this->viewName($purpose, 'create'), [
-            'title' => 'Create ' . strtolower($this->sectionLabel($purpose)) . ' form',
+            'title' => $this->ui('page_titles.create', ['area' => $this->sectionLabel($purpose)]),
             'sectionLabel' => $this->sectionLabel($purpose),
             'purpose' => $purpose,
             'routeNames' => $this->routeNames($purpose),
@@ -121,7 +120,7 @@ final class ApplicationFormController extends Controller
                 ->first();
             if (!$template) {
                 throw ValidationException::withMessages([
-                    'template_uuid' => 'Choose a template that belongs to this form area.',
+                    'template_uuid' => $this->ui('messages.choose_area_template'),
                 ]);
             }
             $form = $this->schemas->duplicate($template, $data['name'], $actor, $purpose, $isTemplate);
@@ -130,7 +129,7 @@ final class ApplicationFormController extends Controller
         }
 
         return redirect()->route($this->routeNames($purpose)['edit'], $form)->with([
-            'message' => $isTemplate ? 'Form template created.' : 'Draft form created.',
+            'message' => $this->ui($isTemplate ? 'messages.template_created' : 'messages.draft_created'),
             'alert-type' => 'success',
         ]);
     }
@@ -143,7 +142,7 @@ final class ApplicationFormController extends Controller
         $schema = $this->schemas->schemaArray($version);
 
         return view($this->viewName($purpose, 'edit'), [
-            'title' => 'Form builder — ' . $form->name,
+            'title' => $this->ui('page_titles.edit', ['name' => $form->name]),
             'sectionLabel' => $this->sectionLabel($purpose),
             'purpose' => $purpose,
             'form' => $form,
@@ -151,14 +150,22 @@ final class ApplicationFormController extends Controller
             'hasDraft' => $version->state === ApplicationFormVersion::STATE_DRAFT,
             'schemaJson' => $this->encodeForHtmlControl($schema),
             'configJson' => $this->encodeForHtmlControl([
-                'types' => collect(self::TYPE_LABELS)
-                    ->map(fn (string $label, string $value): array => compact('value', 'label'))
+                'types' => collect(ApplicationFormField::TYPES)
+                    ->map(fn (string $value): array => [
+                        'value' => $value,
+                        'label' => $this->ui("types.{$value}"),
+                    ])
                     ->values()
                     ->all(),
-                'operators' => collect(self::OPERATOR_LABELS)
-                    ->map(fn (string $label, string $value): array => compact('value', 'label'))
+                'operators' => collect(ApplicationFormSchemaService::OPERATORS)
+                    ->map(fn (string $value): array => [
+                        'value' => $value,
+                        'label' => $this->ui("operators.{$value}"),
+                    ])
                     ->values()
                     ->all(),
+                'ui' => AdminUi::section('application_forms.builder_ui'),
+                'system_fields' => AdminUi::section('application_forms.system_fields'),
                 'choice_types' => [
                     ApplicationFormField::TYPE_DROPDOWN,
                     ApplicationFormField::TYPE_RADIO,
@@ -193,14 +200,42 @@ final class ApplicationFormController extends Controller
         $editorVersion = (int) $form->fresh()->editor_version;
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Draft saved.',
+                'message' => $this->ui('messages.draft_saved'),
                 'editor_version' => $editorVersion,
                 'form_version' => (int) $draft->version,
             ]);
         }
 
         return redirect()->route($this->routeNames($purpose)['edit'], $form)->with([
-            'message' => 'Draft saved.',
+            'message' => $this->ui('messages.draft_saved'),
+            'alert-type' => 'success',
+        ]);
+    }
+
+    public function updateMetadata(Request $request, ApplicationForm $form): RedirectResponse
+    {
+        $purpose = $this->purpose($request);
+        $this->assertPurpose($form, $purpose);
+        $data = $request->validate([
+            'editor_version' => ['required', 'integer', 'min:1'],
+            'name' => ['required', 'string', 'max:150'],
+            'is_template' => ['sometimes', 'boolean'],
+        ]);
+
+        try {
+            $updated = $this->schemas->updateMetadata(
+                $form,
+                (int) $data['editor_version'],
+                $data['name'],
+                $request->boolean('is_template'),
+                Auth::guard('admin')->user(),
+            );
+        } catch (HttpExceptionInterface $exception) {
+            return $this->lifecycleConflict($request, $exception);
+        }
+
+        return redirect()->route($this->routeNames($purpose)['edit'], $updated)->with([
+            'message' => $this->ui('messages.details_saved'),
             'alert-type' => 'success',
         ]);
     }
@@ -226,14 +261,14 @@ final class ApplicationFormController extends Controller
         $editorVersion = (int) $form->fresh()->editor_version;
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Form published.',
+                'message' => $this->ui('messages.published'),
                 'editor_version' => $editorVersion,
                 'form_version' => (int) $published->version,
             ]);
         }
 
         return redirect()->route($this->routeNames($purpose)['edit'], $form)->with([
-            'message' => 'Form published.',
+            'message' => $this->ui('messages.published'),
             'alert-type' => 'success',
         ]);
     }
@@ -255,7 +290,61 @@ final class ApplicationFormController extends Controller
         );
 
         return redirect()->route($this->routeNames($purpose)['edit'], $copy)->with([
-            'message' => 'Form duplicated as a new draft.',
+            'message' => $this->ui('messages.duplicated'),
+            'alert-type' => 'success',
+        ]);
+    }
+
+    public function destroy(Request $request, ApplicationForm $form): RedirectResponse
+    {
+        $purpose = $this->purpose($request);
+        $this->assertPurpose($form, $purpose);
+        $data = $request->validate(['editor_version' => ['required', 'integer', 'min:1']]);
+
+        try {
+            $this->schemas->archive($form, (int) $data['editor_version'], Auth::guard('admin')->user());
+        } catch (HttpExceptionInterface $exception) {
+            return $this->lifecycleConflict($request, $exception);
+        }
+
+        return redirect()->route($this->routeNames($purpose)['index'])->with([
+            'message' => $this->ui('messages.archived'),
+            'alert-type' => 'success',
+        ]);
+    }
+
+    public function restore(Request $request, string $form): RedirectResponse
+    {
+        $purpose = $this->purpose($request);
+        $trashed = $this->trashedForm($form, $purpose);
+        $data = $request->validate(['editor_version' => ['required', 'integer', 'min:1']]);
+
+        try {
+            $restored = $this->schemas->restore($trashed, (int) $data['editor_version'], Auth::guard('admin')->user());
+        } catch (HttpExceptionInterface $exception) {
+            return $this->lifecycleConflict($request, $exception);
+        }
+
+        return redirect()->route($this->routeNames($purpose)['edit'], $restored)->with([
+            'message' => $this->ui('messages.restored'),
+            'alert-type' => 'success',
+        ]);
+    }
+
+    public function forceDestroy(Request $request, string $form): RedirectResponse
+    {
+        $purpose = $this->purpose($request);
+        $trashed = $this->trashedForm($form, $purpose);
+        $data = $request->validate(['editor_version' => ['required', 'integer', 'min:1']]);
+
+        try {
+            $this->schemas->permanentlyDelete($trashed, (int) $data['editor_version'], Auth::guard('admin')->user());
+        } catch (HttpExceptionInterface $exception) {
+            return $this->lifecycleConflict($request, $exception);
+        }
+
+        return redirect()->route($this->routeNames($purpose)['trash'])->with([
+            'message' => $this->ui('messages.deleted'),
             'alert-type' => 'success',
         ]);
     }
@@ -278,7 +367,7 @@ final class ApplicationFormController extends Controller
         $previewSchema = $this->schemas->publicSchema($version, $locale);
 
         return response()->view($this->viewName($purpose, 'preview'), [
-            'title' => 'Preview — ' . $form->name,
+            'title' => $this->ui('page_titles.preview', ['name' => $form->name]),
             'sectionLabel' => $this->sectionLabel($purpose),
             'purpose' => $purpose,
             'form' => $form,
@@ -304,10 +393,10 @@ final class ApplicationFormController extends Controller
         try {
             $fields = json_decode($data['schema'], true, 64, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
-            throw ValidationException::withMessages(['schema' => 'The form schema is not valid JSON.']);
+            throw ValidationException::withMessages(['schema' => $this->ui('messages.invalid_json')]);
         }
         if (!is_array($fields) || !array_is_list($fields)) {
-            throw ValidationException::withMessages(['schema' => 'The form schema must be an ordered field list.']);
+            throw ValidationException::withMessages(['schema' => $this->ui('messages.ordered_list')]);
         }
 
         return [(int) $data['editor_version'], $fields];
@@ -342,9 +431,20 @@ final class ApplicationFormController extends Controller
     {
         $prefix = $purpose === ApplicationForm::PURPOSE_JOB ? 'recruitment.forms.' : 'workshop.forms.';
 
-        return collect(['index', 'create', 'store', 'edit', 'update', 'publish', 'duplicate', 'preview'])
+        return collect([
+            'index', 'trash', 'create', 'store', 'edit', 'update', 'metadata', 'publish',
+            'duplicate', 'preview', 'destroy', 'restore', 'force-destroy',
+        ])
             ->mapWithKeys(fn (string $action): array => [$action => $prefix . $action])
             ->all();
+    }
+
+    private function trashedForm(string $uuid, string $purpose): ApplicationForm
+    {
+        return ApplicationForm::onlyTrashed()
+            ->where('uuid', $uuid)
+            ->where('purpose', $purpose)
+            ->firstOrFail();
     }
 
     private function viewName(string $purpose, string $view): string
@@ -356,7 +456,13 @@ final class ApplicationFormController extends Controller
 
     private function sectionLabel(string $purpose): string
     {
-        return $purpose === ApplicationForm::PURPOSE_JOB ? 'Recruitment' : 'Workshop';
+        return $this->ui('areas.' . ($purpose === ApplicationForm::PURPOSE_JOB ? 'job' : 'workshop'));
+    }
+
+    /** @param array<string, scalar|\Stringable> $replace */
+    private function ui(string $key, array $replace = []): string
+    {
+        return AdminUi::text("application_forms.{$key}", $replace);
     }
 
     private function encodeForHtmlControl(array $value): string
@@ -376,7 +482,7 @@ final class ApplicationFormController extends Controller
         if ($exception->getStatusCode() !== 409) {
             throw $exception;
         }
-        $message = $exception->getMessage() ?: 'This form changed after you opened it. Reload before continuing.';
+        $message = $exception->getMessage() ?: $this->ui('messages.changed');
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => $message,
@@ -387,5 +493,16 @@ final class ApplicationFormController extends Controller
         return redirect()->route($this->routeNames($this->purpose($request))['edit'], $form)
             ->withInput()
             ->withErrors(['editor_version' => $message]);
+    }
+
+    private function lifecycleConflict(Request $request, HttpExceptionInterface $exception): RedirectResponse
+    {
+        if ($exception->getStatusCode() !== 409) {
+            throw $exception;
+        }
+
+        return back()
+            ->withInput()
+            ->withErrors(['editor_version' => $exception->getMessage() ?: $this->ui('messages.changed')]);
     }
 }

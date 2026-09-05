@@ -8,8 +8,15 @@ class SiteSettingVersionService
 {
     public function current(bool $lockForUpdate = false): string
     {
+        return $this->currentForLocale((string) app()->getLocale(), $lockForUpdate);
+    }
+
+    public function currentForLocale(string $locale, bool $lockForUpdate = false): string
+    {
+        $locale = trim($locale) !== '' ? trim($locale) : (string) app()->getLocale();
         $query = SiteSetting::withTrashed()
-            ->where('locale', '*')
+            ->whereIn('locale', ['*', $locale])
+            ->orderBy('locale')
             ->orderBy('group')
             ->orderBy('key');
 
@@ -18,17 +25,14 @@ class SiteSettingVersionService
         }
 
         $stored = $query->get()->keyBy(
-            fn (SiteSetting $setting): string => $setting->group . '.' . $setting->key
+            fn (SiteSetting $setting): string => $setting->locale . '.' . $setting->group . '.' . $setting->key
         );
         $state = [];
 
         foreach (config('site-settings.groups', []) as $groupKey => $group) {
             foreach ($group['fields'] ?? [] as $key => $field) {
-                if (($field['localized'] ?? false) === true) {
-                    continue;
-                }
-
-                $setting = $stored->get($groupKey . '.' . $key);
+                $settingLocale = ($field['localized'] ?? false) === true ? $locale : '*';
+                $setting = $stored->get($settingLocale . '.' . $groupKey . '.' . $key);
                 $state[$groupKey][$key] = $setting && !$setting->trashed()
                     ? (string) $setting->value
                     : $this->serializeDefault($field['default'] ?? null, (string) ($field['type'] ?? 'text'));
@@ -36,7 +40,7 @@ class SiteSettingVersionService
         }
 
         $payload = json_encode(
-            $state,
+            ['locale' => $locale, 'settings' => $state],
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
         $secret = (string) config('app.key', '');

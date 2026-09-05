@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Mattiverse\Userstamps\Traits\Userstamps;
@@ -72,11 +73,13 @@ class DonationType extends Model
         'display_order',
         'icon_key',
         'donation_cause_group_id',
+        'content_editor_version',
         'status',
     ];
 
     protected $casts = [
         'display_order' => 'integer',
+        'content_editor_version' => 'integer',
         'status' => 'boolean',
     ];
 
@@ -125,6 +128,20 @@ class DonationType extends Model
     public function causeGroup(): BelongsTo
     {
         return $this->belongsTo(DonationCauseGroup::class, 'donation_cause_group_id');
+    }
+
+    public function amountCards(): HasMany
+    {
+        return $this->hasMany(DonationCauseAmount::class)
+            ->orderBy('display_order')
+            ->orderBy('id');
+    }
+
+    public function landingSections(): HasMany
+    {
+        return $this->hasMany(DonationCauseSection::class)
+            ->orderBy('display_order')
+            ->orderBy('id');
     }
 
     public function seo(): MorphOne

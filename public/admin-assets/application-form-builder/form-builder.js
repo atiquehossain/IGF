@@ -1,4 +1,89 @@
+/* global document, requestAnimationFrame, fetch, FormData */
+
 const EMPTY_OPERATORS = new Set(['is_empty', 'is_not_empty']);
+
+const BUILDER_UI_FALLBACKS = Object.freeze({
+    untitled: 'Untitled question',
+    option: 'Option :number',
+    reload: 'Reload current version',
+    reload_required: 'Reload required',
+    saving: 'Saving…',
+    unsaved: 'Unsaved changes',
+    all_saved: 'All changes saved',
+    label: 'Label *',
+    help_text: 'Help text',
+    placeholder: 'Placeholder',
+    protected_upload: 'Protected uploads are fixed to PDF only, maximum 5 MB.',
+    minimum_length: 'Minimum length',
+    maximum_length: 'Maximum length',
+    minimum_value: 'Minimum value',
+    maximum_value: 'Maximum value',
+    minimum_selections: 'Minimum selections',
+    maximum_selections: 'Maximum selections',
+    english: 'English',
+    bangla: 'Bangla',
+    move_option_up: 'Move option :number up',
+    move_option_down: 'Move option :number down',
+    remove_option: 'Remove option :number',
+    answer_options: 'Answer options',
+    answer_options_help: 'Every option needs an English and Bangla label.',
+    add_option: 'Add option',
+    conditional_display: 'Conditional display',
+    protected_always_shown: 'Protected identity and CV fields are always shown.',
+    group: 'Group',
+    join: 'Join',
+    and: 'AND',
+    or: 'OR',
+    earlier_question: 'Earlier question',
+    rule: 'Rule',
+    comparison: 'Comparison',
+    remove_condition: 'Remove condition :number',
+    conditions_help: 'Groups are alternatives; rules inside a group follow their AND / OR setting.',
+    add_condition: 'Add condition',
+    always_shown: 'Always shown.',
+    drag_named: 'Drag to reorder :name',
+    drag: 'Drag to reorder',
+    question_number: 'Question :number',
+    move_up: 'Move :name up',
+    move_down: 'Move :name down',
+    duplicate: 'Duplicate :name',
+    delete: 'Delete :name',
+    question_type: 'Question type',
+    protected_type: 'Protected system field type.',
+    required: 'Required',
+    english_heading: 'English',
+    bangla_heading: 'বাংলা (Bangla)',
+    no_questions: 'No questions',
+    no_questions_help: 'Add a question to continue.',
+    delete_confirm: 'Delete “:name”?',
+    this_question: 'this question',
+    copy_suffix: '(copy)',
+    copy_suffix_bn: '(অনুলিপি)',
+    saved: 'Saved.',
+    unexpected_response: 'The server returned an unexpected response.',
+    changed_save: 'This form changed in another editor. Reload before saving.',
+    save_error: 'The draft could not be saved.',
+    save_connection_error: 'The draft could not be saved. Check your connection and try again.',
+    publish_confirm: 'Publish this form version? Existing published submissions remain attached to their original immutable version.',
+    changed_publish: 'This form changed in another editor. Reload before publishing.',
+    publish_error: 'The form could not be published.',
+    publish_connection_error: 'The form could not be published. Check your connection and try again.',
+    yes: 'Yes',
+    no: 'No',
+});
+
+export function translatedBuilderText(dictionary, key, replacements = {}) {
+    const candidate = dictionary && typeof dictionary[key] === 'string' ? dictionary[key].trim() : '';
+    let value = candidate || BUILDER_UI_FALLBACKS[key] || String(key).replaceAll('_', ' ');
+
+    Object.entries(replacements).forEach(([name, replacement]) => {
+        value = value
+            .replaceAll(`:${name}`, String(replacement ?? ''))
+            .replaceAll(`{${name}}`, String(replacement ?? ''));
+    });
+
+    return value;
+}
 
 export function escapeHtml(value) {
     return String(value ?? '')
@@ -119,6 +204,9 @@ function renderBuilder(root) {
     const schemaInput = document.getElementById('afb-schema-input');
     const versionInput = document.getElementById('afb-editor-version');
     const config = readJsonControl('afb-builder-config', {});
+    const ui = config.ui && typeof config.ui === 'object' ? config.ui : {};
+    const text = (key, replacements = {}) => translatedBuilderText(ui, key, replacements);
+    const htmlText = (key, replacements = {}) => escapeHtml(text(key, replacements));
     const parsedFields = readJsonControl('afb-schema-input', []);
     const state = {
         fields: Array.isArray(parsedFields) ? parsedFields : [],
@@ -145,7 +233,7 @@ function renderBuilder(root) {
             const link = document.createElement('a');
             link.className = 'btn igf-btn igf-btn-secondary ml-2';
             link.href = root.dataset.editUrl;
-            link.textContent = 'Reload current version';
+            link.textContent = text('reload');
             alert.append(link);
         }
         alert.focus();
@@ -153,16 +241,16 @@ function renderBuilder(root) {
 
     function updateStateLabel() {
         if (state.conflict) {
-            status.textContent = 'Reload required';
+            status.textContent = text('reload_required');
             status.className = 'afb-save-state is-dirty';
         } else if (state.busy) {
-            status.textContent = 'Saving…';
+            status.textContent = text('saving');
             status.className = 'afb-save-state is-saving';
         } else if (state.dirty) {
-            status.textContent = 'Unsaved changes';
+            status.textContent = text('unsaved');
             status.className = 'afb-save-state is-dirty';
         } else {
-            status.textContent = 'All changes saved';
+            status.textContent = text('all_saved');
             status.className = 'afb-save-state';
         }
         root.querySelectorAll('[data-save-draft], [data-add-field]').forEach(control => {
@@ -185,25 +273,25 @@ function renderBuilder(root) {
     function languagePanel(field, fieldIndex, locale, heading) {
         const copy = field.translations?.[locale] || { label: '', help: '', placeholder: '' };
         return `<section class="afb-language-panel" lang="${locale}">
-            <h3>${heading}</h3>
-            <label><span>Label *</span><input class="form-control" maxlength="255" required value="${escapeHtml(copy.label)}" data-copy-locale="${locale}" data-copy-key="label"></label>
-            <label><span>Help text</span><textarea class="form-control" maxlength="2000" data-copy-locale="${locale}" data-copy-key="help">${escapeHtml(copy.help)}</textarea></label>
-            <label><span>Placeholder</span><input class="form-control" maxlength="255" value="${escapeHtml(copy.placeholder)}" data-copy-locale="${locale}" data-copy-key="placeholder"></label>
+            <h3>${escapeHtml(heading)}</h3>
+            <label><span>${htmlText('label')}</span><input class="form-control" maxlength="255" required value="${escapeHtml(copy.label)}" data-copy-locale="${locale}" data-copy-key="label"></label>
+            <label><span>${htmlText('help_text')}</span><textarea class="form-control" maxlength="2000" data-copy-locale="${locale}" data-copy-key="help">${escapeHtml(copy.help)}</textarea></label>
+            <label><span>${htmlText('placeholder')}</span><input class="form-control" maxlength="255" value="${escapeHtml(copy.placeholder)}" data-copy-locale="${locale}" data-copy-key="placeholder"></label>
         </section>`;
     }
 
     function validationMarkup(field) {
-        if (field.type === 'file') return '<div class="afb-fixed-file-note"><i class="fa fa-lock" aria-hidden="true"></i> Protected uploads are fixed to PDF only, maximum 5 MB.</div>';
+        if (field.type === 'file') return `<div class="afb-fixed-file-note"><i class="fa fa-lock" aria-hidden="true"></i> ${htmlText('protected_upload')}</div>`;
         if (textTypes.has(field.type)) {
             return `<div class="afb-validation-grid">
-                <label class="afb-input-group"><span>Minimum length</span><input class="form-control" type="number" min="0" max="20000" value="${escapeHtml(field.validation?.min_length ?? '')}" data-validation-key="min_length"></label>
-                <label class="afb-input-group"><span>Maximum length</span><input class="form-control" type="number" min="0" max="20000" value="${escapeHtml(field.validation?.max_length ?? '')}" data-validation-key="max_length"></label>
+                <label class="afb-input-group"><span>${htmlText('minimum_length')}</span><input class="form-control" type="number" min="0" max="20000" value="${escapeHtml(field.validation?.min_length ?? '')}" data-validation-key="min_length"></label>
+                <label class="afb-input-group"><span>${htmlText('maximum_length')}</span><input class="form-control" type="number" min="0" max="20000" value="${escapeHtml(field.validation?.max_length ?? '')}" data-validation-key="max_length"></label>
             </div>`;
         }
         if (numberTypes.has(field.type) || field.type === 'checkboxes') {
             return `<div class="afb-validation-grid">
-                <label class="afb-input-group"><span>Minimum ${field.type === 'checkboxes' ? 'selections' : 'value'}</span><input class="form-control" type="number" value="${escapeHtml(field.validation?.min ?? '')}" data-validation-key="min"></label>
-                <label class="afb-input-group"><span>Maximum ${field.type === 'checkboxes' ? 'selections' : 'value'}</span><input class="form-control" type="number" value="${escapeHtml(field.validation?.max ?? '')}" data-validation-key="max"></label>
+                <label class="afb-input-group"><span>${htmlText(field.type === 'checkboxes' ? 'minimum_selections' : 'minimum_value')}</span><input class="form-control" type="number" value="${escapeHtml(field.validation?.min ?? '')}" data-validation-key="min"></label>
+                <label class="afb-input-group"><span>${htmlText(field.type === 'checkboxes' ? 'maximum_selections' : 'maximum_value')}</span><input class="form-control" type="number" value="${escapeHtml(field.validation?.max ?? '')}" data-validation-key="max"></label>
             </div>`;
         }
         return '';
@@ -213,20 +301,20 @@ function renderBuilder(root) {
         if (!choiceTypes.has(field.type)) return '';
         const rows = (field.options || []).map((option, optionIndex) => `<div class="afb-option-row" data-option-index="${optionIndex}">
             <span class="afb-row-number">${optionIndex + 1}</span>
-            <label><span>English</span><input class="form-control" maxlength="255" required value="${escapeHtml(option.translations?.en?.label)}" data-option-locale="en"></label>
-            <label lang="bn"><span>Bangla</span><input class="form-control" maxlength="255" required value="${escapeHtml(option.translations?.bn?.label)}" data-option-locale="bn"></label>
+            <label><span>${htmlText('english')}</span><input class="form-control" maxlength="255" required value="${escapeHtml(option.translations?.en?.label)}" data-option-locale="en"></label>
+            <label lang="bn"><span>${htmlText('bangla')}</span><input class="form-control" maxlength="255" required value="${escapeHtml(option.translations?.bn?.label)}" data-option-locale="bn"></label>
             <div class="afb-option-actions">
-                ${button('fa-arrow-up', `Move option ${optionIndex + 1} up`, 'data-move-option="up"', optionIndex === 0)}
-                ${button('fa-arrow-down', `Move option ${optionIndex + 1} down`, 'data-move-option="down"', optionIndex === field.options.length - 1)}
-                ${button('fa-trash-o', `Remove option ${optionIndex + 1}`, 'data-remove-option', field.options.length <= 2, true)}
+                ${button('fa-arrow-up', text('move_option_up', { number: optionIndex + 1 }), 'data-move-option="up"', optionIndex === 0)}
+                ${button('fa-arrow-down', text('move_option_down', { number: optionIndex + 1 }), 'data-move-option="down"', optionIndex === field.options.length - 1)}
+                ${button('fa-trash-o', text('remove_option', { number: optionIndex + 1 }), 'data-remove-option', field.options.length <= 2, true)}
             </div>
         </div>`).join('');
-        return `<section class="afb-options"><div class="afb-subsection-header"><div><h3>Answer options</h3><p>Every option needs an English and Bangla label.</p></div><button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="button" data-add-option${field.options.length >= maxOptions ? ' disabled' : ''}><i class="fa fa-plus" aria-hidden="true"></i> Add option</button></div><div class="afb-option-list">${rows}</div></section>`;
+        return `<section class="afb-options"><div class="afb-subsection-header"><div><h3>${htmlText('answer_options')}</h3><p>${htmlText('answer_options_help')}</p></div><button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="button" data-add-option${field.options.length >= maxOptions ? ' disabled' : ''}><i class="fa fa-plus" aria-hidden="true"></i> ${htmlText('add_option')}</button></div><div class="afb-option-list">${rows}</div></section>`;
     }
 
     function conditionsMarkup(field, fieldIndex) {
         if (field.system_key) {
-            return '<section class="afb-conditions"><div class="afb-subsection-header"><div><h3>Conditional display</h3><p>Protected identity and CV fields are always shown.</p></div></div></section>';
+            return `<section class="afb-conditions"><div class="afb-subsection-header"><div><h3>${htmlText('conditional_display')}</h3><p>${htmlText('protected_always_shown')}</p></div></div></section>`;
         }
         const earlierFields = state.fields.slice(0, fieldIndex);
         const sourceOptions = earlierFields.map(source => ({
@@ -241,41 +329,42 @@ function renderBuilder(root) {
                 return `<select class="form-control" data-condition-key="value">${optionMarkup(choices, condition.value)}</select>`;
             }
             if (source?.type === 'yes_no') {
-                return `<select class="form-control" data-condition-key="value">${optionMarkup([{ value: 'yes', label: 'Yes' }, { value: 'no', label: 'No' }], condition.value)}</select>`;
+                return `<select class="form-control" data-condition-key="value">${optionMarkup([{ value: 'yes', label: text('yes') }, { value: 'no', label: text('no') }], condition.value)}</select>`;
             }
             return `<input class="form-control" value="${escapeHtml(condition.value ?? '')}" data-condition-key="value">`;
         };
         const rows = (field.conditions || []).map((condition, conditionIndex) => `<div class="afb-condition-row" data-condition-index="${conditionIndex}">
-            <label><span>Group</span><input class="form-control" type="number" min="1" max="20" value="${escapeHtml(condition.group || 1)}" data-condition-key="group"></label>
-            <label><span>Join</span><select class="form-control" data-condition-key="connector"><option value="and"${condition.connector !== 'or' ? ' selected' : ''}>AND</option><option value="or"${condition.connector === 'or' ? ' selected' : ''}>OR</option></select></label>
-            <label><span>Earlier question</span><select class="form-control" data-condition-key="source_key">${optionMarkup(sourceOptions, condition.source_key)}</select></label>
-            <label><span>Rule</span><select class="form-control" data-condition-key="operator">${optionMarkup(config.operators || [], condition.operator)}</select></label>
-            <label><span>Comparison</span>${comparisonMarkup(condition)}</label>
-            ${button('fa-trash-o', `Remove condition ${conditionIndex + 1}`, 'data-remove-condition', false, true)}
+            <label><span>${htmlText('group')}</span><input class="form-control" type="number" min="1" max="20" value="${escapeHtml(condition.group || 1)}" data-condition-key="group"></label>
+            <label><span>${htmlText('join')}</span><select class="form-control" data-condition-key="connector"><option value="and"${condition.connector !== 'or' ? ' selected' : ''}>${htmlText('and')}</option><option value="or"${condition.connector === 'or' ? ' selected' : ''}>${htmlText('or')}</option></select></label>
+            <label><span>${htmlText('earlier_question')}</span><select class="form-control" data-condition-key="source_key">${optionMarkup(sourceOptions, condition.source_key)}</select></label>
+            <label><span>${htmlText('rule')}</span><select class="form-control" data-condition-key="operator">${optionMarkup(config.operators || [], condition.operator)}</select></label>
+            <label><span>${htmlText('comparison')}</span>${comparisonMarkup(condition)}</label>
+            ${button('fa-trash-o', text('remove_condition', { number: conditionIndex + 1 }), 'data-remove-condition', false, true)}
         </div>`).join('');
-        return `<section class="afb-conditions"><div class="afb-subsection-header"><div><h3>Conditional display</h3><p>Groups are alternatives; rules inside a group follow their AND / OR setting.</p></div><button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="button" data-add-condition${fieldIndex === 0 || field.conditions.length >= 20 ? ' disabled' : ''}><i class="fa fa-random" aria-hidden="true"></i> Add condition</button></div>${rows ? `<div class="afb-condition-list">${rows}</div>` : '<p class="text-muted mb-0">Always shown.</p>'}</section>`;
+        return `<section class="afb-conditions"><div class="afb-subsection-header"><div><h3>${htmlText('conditional_display')}</h3><p>${htmlText('conditions_help')}</p></div><button class="btn igf-btn igf-btn-secondary igf-btn-compact" type="button" data-add-condition${fieldIndex === 0 || field.conditions.length >= 20 ? ' disabled' : ''}><i class="fa fa-random" aria-hidden="true"></i> ${htmlText('add_condition')}</button></div>${rows ? `<div class="afb-condition-list">${rows}</div>` : `<p class="text-muted mb-0">${htmlText('always_shown')}</p>`}</section>`;
     }
 
     function fieldMarkup(field, fieldIndex) {
         const system = Boolean(field.system_key);
-        const label = field.translations?.en?.label || 'Untitled question';
+        const label = field.translations?.en?.label || text('untitled');
+        const systemLabel = config.system_fields?.[field.system_key] || field.system_key?.replaceAll('_', ' ');
         return `<article class="afb-field-card${system ? ' is-system' : ''}" data-field-index="${fieldIndex}">
             <header class="afb-field-card-header">
-                <button class="afb-drag-handle" type="button" draggable="true" data-drag-field aria-label="Drag to reorder ${escapeHtml(label)}" title="Drag to reorder"><i class="fa fa-bars" aria-hidden="true"></i></button>
-                <div class="afb-field-summary"><strong data-summary-label>${escapeHtml(label)}</strong><small>${escapeHtml(config.types?.find(type => type.value === field.type)?.label || field.type)} · Question ${fieldIndex + 1}</small>${system ? `<span class="afb-system-badge"><i class="fa fa-lock" aria-hidden="true"></i> ${escapeHtml(field.system_key.replaceAll('_', ' '))}</span>` : ''}</div>
+                <button class="afb-drag-handle" type="button" draggable="true" data-drag-field aria-label="${htmlText('drag_named', { name: label })}" title="${htmlText('drag')}"><i class="fa fa-bars" aria-hidden="true"></i></button>
+                <div class="afb-field-summary"><strong data-summary-label>${escapeHtml(label)}</strong><small>${escapeHtml(config.types?.find(type => type.value === field.type)?.label || field.type)} · ${htmlText('question_number', { number: fieldIndex + 1 })}</small>${system ? `<span class="afb-system-badge"><i class="fa fa-lock" aria-hidden="true"></i> ${escapeHtml(systemLabel)}</span>` : ''}</div>
                 <div class="afb-field-header-actions">
-                    ${button('fa-arrow-up', `Move ${label} up`, 'data-move-field="up"', fieldIndex === 0)}
-                    ${button('fa-arrow-down', `Move ${label} down`, 'data-move-field="down"', fieldIndex === state.fields.length - 1)}
-                    ${button('fa-copy', `Duplicate ${label}`, 'data-duplicate-field', system || state.fields.length >= maxFields)}
-                    ${button('fa-trash-o', `Delete ${label}`, 'data-delete-field', system, true)}
+                    ${button('fa-arrow-up', text('move_up', { name: label }), 'data-move-field="up"', fieldIndex === 0)}
+                    ${button('fa-arrow-down', text('move_down', { name: label }), 'data-move-field="down"', fieldIndex === state.fields.length - 1)}
+                    ${button('fa-copy', text('duplicate', { name: label }), 'data-duplicate-field', system || state.fields.length >= maxFields)}
+                    ${button('fa-trash-o', text('delete', { name: label }), 'data-delete-field', system, true)}
                 </div>
             </header>
             <div class="afb-field-card-body">
                 <div class="afb-field-settings-grid">
-                    <label class="afb-input-group"><span>Question type</span><select class="form-control" data-field-type${system ? ' disabled aria-disabled="true"' : ''}>${optionMarkup(config.types || [], field.type)}</select>${system ? '<small>Protected system field type.</small>' : ''}</label>
-                    <div class="afb-field-flags"><label class="afb-check"><input type="checkbox" data-required${field.required ? ' checked' : ''}${system ? ' disabled aria-disabled="true"' : ''}> Required</label></div>
+                    <label class="afb-input-group"><span>${htmlText('question_type')}</span><select class="form-control" data-field-type${system ? ' disabled aria-disabled="true"' : ''}>${optionMarkup(config.types || [], field.type)}</select>${system ? `<small>${htmlText('protected_type')}</small>` : ''}</label>
+                    <div class="afb-field-flags"><label class="afb-check"><input type="checkbox" data-required${field.required ? ' checked' : ''}${system ? ' disabled aria-disabled="true"' : ''}> ${htmlText('required')}</label></div>
                 </div>
-                <div class="afb-language-grid">${languagePanel(field, fieldIndex, 'en', 'English')}${languagePanel(field, fieldIndex, 'bn', 'বাংলা (Bangla)')}</div>
+                <div class="afb-language-grid">${languagePanel(field, fieldIndex, 'en', text('english_heading'))}${languagePanel(field, fieldIndex, 'bn', text('bangla_heading'))}</div>
                 ${validationMarkup(field)}
                 ${optionsMarkup(field)}
                 ${conditionsMarkup(field, fieldIndex)}
@@ -286,7 +375,7 @@ function renderBuilder(root) {
     function render(focusIndex = null) {
         list.innerHTML = state.fields.length
             ? state.fields.map(fieldMarkup).join('')
-            : '<div class="afb-builder-empty"><h2>No questions</h2><p>Add a question to continue.</p></div>';
+            : `<div class="afb-builder-empty"><h2>${htmlText('no_questions')}</h2><p>${htmlText('no_questions_help')}</p></div>`;
         syncSchema();
         updateStateLabel();
         if (focusIndex !== null) {
@@ -331,7 +420,7 @@ function renderBuilder(root) {
         const conditionRow = event.target.closest('[data-condition-index]');
         if (event.target.dataset.copyLocale) {
             field.translations[event.target.dataset.copyLocale][event.target.dataset.copyKey] = event.target.value;
-            if (event.target.dataset.copyLocale === 'en' && event.target.dataset.copyKey === 'label') card.querySelector('[data-summary-label]').textContent = event.target.value || 'Untitled question';
+            if (event.target.dataset.copyLocale === 'en' && event.target.dataset.copyKey === 'label') card.querySelector('[data-summary-label]').textContent = event.target.value || text('untitled');
         } else if (event.target.dataset.validationKey) {
             const key = event.target.dataset.validationKey;
             if (event.target.value === '') delete field.validation[key];
@@ -394,7 +483,7 @@ function renderBuilder(root) {
         if (control.dataset.moveField) {
             moveField(fieldIndex, fieldIndex + (control.dataset.moveField === 'up' ? -1 : 1));
         } else if (control.hasAttribute('data-delete-field') && !field.system_key) {
-            if (!globalThis.confirm(`Delete “${field.translations?.en?.label || 'this question'}”?`)) return;
+            if (!globalThis.confirm(text('delete_confirm', { name: field.translations?.en?.label || text('this_question') }))) return;
             state.fields.splice(fieldIndex, 1);
             sanitizeConditions();
             markDirty();
@@ -402,8 +491,8 @@ function renderBuilder(root) {
         } else if (control.hasAttribute('data-duplicate-field') && !field.system_key && state.fields.length < maxFields) {
             const copy = deepCopy(field);
             copy.key = stableKey('field');
-            copy.translations.en.label = `${copy.translations.en.label} (copy)`;
-            copy.translations.bn.label = `${copy.translations.bn.label} (অনুলিপি)`;
+            copy.translations.en.label = `${copy.translations.en.label} ${text('copy_suffix')}`;
+            copy.translations.bn.label = `${copy.translations.bn.label} ${text('copy_suffix_bn')}`;
             copy.options = (copy.options || []).map(option => ({ ...option, key: stableKey('option') }));
             state.fields.splice(fieldIndex + 1, 0, copy);
             markDirty();
@@ -485,7 +574,7 @@ function renderBuilder(root) {
 
     async function responsePayload(response) {
         const type = response.headers.get('content-type') || '';
-        if (!type.includes('application/json')) return { message: response.ok ? 'Saved.' : 'The server returned an unexpected response.' };
+        if (!type.includes('application/json')) return { message: response.ok ? text('saved') : text('unexpected_response') };
         return response.json();
     }
 
@@ -512,11 +601,11 @@ function renderBuilder(root) {
             const payload = await responsePayload(response);
             if (response.status === 409) {
                 state.conflict = true;
-                announce(errorMessage(payload, 'This form changed in another editor. Reload before saving.'), 'conflict');
+                announce(errorMessage(payload, text('changed_save')), 'conflict');
                 return false;
             }
             if (!response.ok) {
-                announce(errorMessage(payload, 'The draft could not be saved.'), 'error');
+                announce(errorMessage(payload, text('save_error')), 'error');
                 return false;
             }
             versionInput.value = String(payload.editor_version);
@@ -524,10 +613,10 @@ function renderBuilder(root) {
             if (versionLabel) versionLabel.textContent = String(payload.editor_version);
             state.dirty = false;
             state.hasDraft = true;
-            if (!quiet) announce(payload.message || 'Draft saved.');
+            if (!quiet) announce(payload.message || text('saved'));
             return true;
         } catch {
-            announce('The draft could not be saved. Check your connection and try again.', 'error');
+            announce(text('save_connection_error'), 'error');
             return false;
         } finally {
             state.busy = false;
@@ -538,7 +627,7 @@ function renderBuilder(root) {
     async function publishForm() {
         if (state.busy || state.conflict || (!state.hasDraft && !state.dirty)) return;
         if (state.dirty && !await saveDraft({ quiet: true })) return;
-        if (!globalThis.confirm('Publish this form version? Existing published submissions remain attached to their original immutable version.')) return;
+        if (!globalThis.confirm(text('publish_confirm'))) return;
         state.busy = true;
         updateStateLabel();
         const data = new FormData();
@@ -554,17 +643,17 @@ function renderBuilder(root) {
             const payload = await responsePayload(response);
             if (response.status === 409) {
                 state.conflict = true;
-                announce(errorMessage(payload, 'This form changed in another editor. Reload before publishing.'), 'conflict');
+                announce(errorMessage(payload, text('changed_publish')), 'conflict');
                 return;
             }
             if (!response.ok) {
-                announce(errorMessage(payload, 'The form could not be published.'), 'error');
+                announce(errorMessage(payload, text('publish_error')), 'error');
                 return;
             }
             state.dirty = false;
             globalThis.location.assign(root.dataset.editUrl);
         } catch {
-            announce('The form could not be published. Check your connection and try again.', 'error');
+            announce(text('publish_connection_error'), 'error');
         } finally {
             state.busy = false;
             updateStateLabel();

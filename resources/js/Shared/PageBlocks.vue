@@ -1700,8 +1700,8 @@ onBeforeUnmount(() => {
   statAnimationFrames.forEach(frame => window.cancelAnimationFrame(frame));
   statAnimationFrames.clear();
 });
-function eventItems(block) { return (block.content?.items || []).filter(item => String(item.eyebrow || '').toLowerCase().includes('event')); }
-function newsItems(block) { return (block.content?.items || []).filter(item => !String(item.eyebrow || '').toLowerCase().includes('event')); }
+function eventItems(block) { return (block.content?.items || []).filter(item => item?.kind === 'event'); }
+function newsItems(block) { return (block.content?.items || []).filter(item => item?.kind !== 'event'); }
 function eventDay(item) {
   return formatDate(item?.published_at, regional.value, { day: '2-digit' }) || item?.day || '•';
 }

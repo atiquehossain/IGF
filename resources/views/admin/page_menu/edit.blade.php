@@ -63,6 +63,8 @@
                                                 @if ( @$menu->type == 'main') selected @endif>{{ $Lang->Common->Form->Main }}</option>
                                             <option value="middle"
                                             @if ( @$menu->type == 'middle') selected @endif>{{ $Lang->Common->Form->Middle }}</option>
+                                            <option value="utility"
+                                            @if ( @$menu->type == 'utility') selected @endif>Utility bar</option>
                                             <option value="footer"
                                             @if ( @$menu->type == 'footer') selected @endif>{{ $Lang->Common->Form->Footer }}</option>
 

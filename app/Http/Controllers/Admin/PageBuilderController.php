@@ -1006,6 +1006,8 @@ class PageBuilderController extends Controller
             'content.selected_items.*' => ['required', 'string', 'max:100', 'distinct'],
             'content.items' => ['sometimes', 'array', 'max:60'],
             'content.items.*' => ['required', 'array'],
+            'content.items.*.kind' => ['sometimes', 'string', Rule::in(PageBlock::UPDATE_ITEM_KINDS)],
+            'content.items.*.eyebrow' => ['sometimes', 'nullable', 'string', 'max:120'],
             'content.items.*.heading' => ['sometimes', 'nullable', 'string', 'max:255'],
             'content.items.*.body' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'content.items.*.image' => ['sometimes', 'nullable', 'string', 'max:2048'],

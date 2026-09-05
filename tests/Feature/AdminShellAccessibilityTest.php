@@ -28,16 +28,16 @@ class AdminShellAccessibilityTest extends TestCase
         $navbar = file_get_contents(resource_path('views/admin/layouts/navbar.blade.php'));
         $sidebar = file_get_contents(resource_path('views/admin/layouts/sidebar.blade.php'));
 
-        $this->assertStringContainsString('aria-label="Search content"', $navbar);
-        $this->assertStringContainsString('aria-label="Create a new page"', $navbar);
-        $this->assertStringContainsString('<span>New page</span>', $navbar);
+        $this->assertStringContainsString("\$ui('shell.search_content')", $navbar);
+        $this->assertStringContainsString("\$ui('shell.create_page')", $navbar);
+        $this->assertStringContainsString("\$ui('shell.new_page')", $navbar);
         $this->assertStringContainsString("['page.index', 'page.create']", $navbar);
         $this->assertStringNotContainsString('igf-top-links', $navbar);
         $this->assertStringNotContainsString('Quick Create', $navbar);
 
-        $this->assertStringContainsString("'label' => 'Content Hub'", $sidebar);
-        $this->assertStringContainsString("'label' => 'Search & Sharing'", $sidebar);
-        $this->assertStringContainsString("'label' => 'Administrators'", $sidebar);
+        $this->assertStringContainsString("'label' => \$ui('sidebar.items.content_hub')", $sidebar);
+        $this->assertStringContainsString("'label' => \$ui('sidebar.items.search_sharing')", $sidebar);
+        $this->assertStringContainsString("'label' => \$ui('sidebar.items.administrators')", $sidebar);
         $this->assertStringContainsString('aria-current="page"', $sidebar);
         $this->assertStringNotContainsString('Search & Social Preview', $sidebar);
     }
@@ -109,9 +109,11 @@ class AdminShellAccessibilityTest extends TestCase
         $login = file_get_contents(resource_path('views/auth/admin-login.blade.php'));
         $styles = file_get_contents(public_path('admin-assets/assets/css/login.style.css'));
 
-        $this->assertStringContainsString('Ignite Global Foundation administration platform', $login);
+        $this->assertStringContainsString("admin_login.meta_description", $login);
+        $this->assertStringContainsString("admin_login.heading", $login);
         $this->assertStringContainsString('class="admin-login-intro"', $login);
-        $this->assertStringContainsString('>Sign in</button>', $login);
+        $this->assertStringContainsString("admin_login.submit", $login);
+        $this->assertStringContainsString('aria-required="true"', $login);
         $this->assertStringNotContainsString('jquery.min.js', $login);
         $this->assertStringContainsString('background-image:', $styles);
         $this->assertStringContainsString('height: 88px', $styles);

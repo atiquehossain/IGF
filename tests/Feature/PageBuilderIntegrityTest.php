@@ -252,11 +252,11 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('id="simple-undo"', false)
             ->assertSee('Duplicate section')
             ->assertSee('data-delete-section', false)
-            ->assertSee('title="Move to trash"', false)
+            ->assertSee('title="${escapeHtml(ui.move_to_trash)}"', false)
             ->assertSee('A page revision will be kept so an administrator can restore it.', false)
             ->assertSee('data-link-picker', false)
             ->assertSee('options.slide ? `data-slide-key="${key}"`', false)
-            ->assertSee("textField('heading','Main heading',slide.heading,{max:180,slide:true})", false)
+            ->assertSee("textField('heading',ui.main_heading,slide.heading,{max:180,slide:true})", false)
             ->assertSee("state.heroSlide += button.dataset.heroNav === 'next' ? 1 : -1; renderInspector(); renderPreview();", false)
             ->assertSee('dirtyBlocks: new Set()', false)
             ->assertSee('sessionStorage.setItem(draftKey', false)
@@ -457,14 +457,14 @@ class PageBuilderIntegrityTest extends TestCase
     {
         $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
 
-        $this->assertStringContainsString('Use the arrow buttons or drag handle to change the visitor order.', $simpleSource);
+        $this->assertStringContainsString("'builder.sections_edit_help'", $simpleSource);
         $this->assertStringContainsString('max-width:100vw!important', $simpleSource);
         $this->assertStringContainsString("grid-template-areas:'drag select' 'actions actions'", $simpleSource);
         $this->assertStringContainsString('.simple-select{grid-area:select;width:100%;padding:0 4px}', $simpleSource);
         $this->assertStringContainsString('.simple-order{grid-area:actions;grid-template-columns:repeat(3,44px);justify-content:end}', $simpleSource);
         $this->assertStringContainsString('class="simple-drag-placeholder"', $simpleSource);
         $this->assertStringContainsString('class="simple-order" aria-hidden="true"', $simpleSource);
-        $this->assertStringContainsString('title="Select ${escapeHtml(block.label || typeLabels[block.type])}"', $simpleSource);
+        $this->assertStringContainsString('title="${escapeHtml(text(\'select_named\',{label:block.label || typeLabels[block.type]}))}"', $simpleSource);
         $this->assertStringContainsString('.simple-drag{touch-action:none;user-select:none}', $simpleSource);
         $this->assertStringContainsString("handle?.addEventListener('pointerdown', event => {", $simpleSource);
         $this->assertStringContainsString('handle.setPointerCapture?.(event.pointerId);', $simpleSource);
@@ -500,7 +500,7 @@ class PageBuilderIntegrityTest extends TestCase
         $this->assertStringContainsString('if (!permissions.delete || state.busy || !state.pendingDeleteUuid) return;', $deleteFlow[0]);
         $this->assertStringContainsString("modal.setAttribute('aria-busy', 'true');", $deleteFlow[0]);
         $this->assertStringContainsString('button.disabled = true;', $deleteFlow[0]);
-        $this->assertStringContainsString("confirmButton.querySelector('span').textContent = 'Moving to trash…';", $deleteFlow[0]);
+        $this->assertStringContainsString("confirmButton.querySelector('span').textContent = ui.moving_to_trash;", $deleteFlow[0]);
         $this->assertStringContainsString(
             "request(endpoint(routes.destroy, block.uuid), 'DELETE', {locale})",
             $deleteFlow[0]
@@ -2278,6 +2278,62 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('Open Search &amp; Sharing', false)
             ->assertSee('Only an administrator with publishing, Search &amp; Sharing, and Reusable Sections permissions can restore a full revision.', false)
             ->assertDontSee('class="igf-btn igf-btn--small restore-revision"', false);
+    }
+
+    public function test_updates_card_editor_exposes_a_stable_constrained_kind_separate_from_translatable_copy(): void
+    {
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+        $block = $this->makeBlock($page, [
+            'type' => 'cards',
+            'label' => 'Events and news',
+            'content' => [
+                'variant' => 'updates',
+                'heading' => 'Events and latest news',
+                'items' => [[
+                    'kind' => 'event',
+                    'eyebrow' => 'A translated small heading',
+                    'heading' => 'Community gathering',
+                    'body' => 'Meet the team.',
+                    'url' => '/events',
+                ]],
+            ],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('page.builder.edit', ['uuid' => $page->uuid, 'locale' => 'en']))
+            ->assertOk()
+            ->assertSee('Updates column')
+            ->assertSee("cardSelectField(index,'kind',ui.update_kind", false)
+            ->assertSee('data-card-key="eyebrow"', false);
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'content' => [
+                    'variant' => 'updates',
+                    'items' => [['kind' => 'promotion', 'heading' => 'Invalid']],
+                ],
+            ])
+        )->assertUnprocessable()->assertJsonValidationErrors('content.items.0.kind');
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'content' => [
+                    'variant' => 'updates',
+                    'items' => [[
+                        'kind' => 'news',
+                        'eyebrow' => 'Any editable wording',
+                        'heading' => 'Field update',
+                    ]],
+                ],
+            ])
+        )->assertOk()
+            ->assertJsonPath('block.content.items.0.kind', 'news')
+            ->assertJsonPath('block.content.items.0.eyebrow', 'Any editable wording');
     }
 
     private function makeCategory(string $name, array $overrides = []): Category

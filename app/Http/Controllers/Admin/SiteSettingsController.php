@@ -8,8 +8,10 @@ use App\Models\MediaAsset;
 use App\Models\SiteSetting;
 use App\Services\ContentSanitizer;
 use App\Services\DonationPaymentMethodService;
+use App\Services\PublicFormFieldLayoutService;
 use App\Services\SiteSettingVersionService;
 use App\Services\SiteSettingService;
+use App\Support\AdminUi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +25,8 @@ class SiteSettingsController extends Controller
         private SiteSettingService $settings,
         private ContentSanitizer $sanitizer,
         private DonationPaymentMethodService $paymentMethods,
-        private SiteSettingVersionService $versions
+        private SiteSettingVersionService $versions,
+        private PublicFormFieldLayoutService $formLayouts,
     ) {
     }
 
@@ -40,7 +43,7 @@ class SiteSettingsController extends Controller
             'values' => $this->settings->values($locale),
             'locales' => $locales,
             'locale' => $locale,
-            'globalSettingsVersion' => $this->versions->current(),
+            'globalSettingsVersion' => $this->versions->currentForLocale($locale),
             'paymentProviderStatuses' => $this->paymentMethods->operationalStatuses(),
             'mediaAssets' => MediaAsset::query()
                 ->where('mime_type', 'like', 'image/%')
@@ -73,6 +76,16 @@ class SiteSettingsController extends Controller
                     continue;
                 }
 
+                if (($field['type'] ?? null) === 'form_field_layout') {
+                    $allowedKeys = array_keys(is_array($field['allowed_fields'] ?? null) ? $field['allowed_fields'] : []);
+                    $rules["settings.{$groupKey}.{$key}"] = ['required', 'array', 'size:' . count($allowedKeys)];
+                    $rules["settings.{$groupKey}.{$key}.*.key"] = ['required', 'string', Rule::in($allowedKeys), 'distinct'];
+                    $rules["settings.{$groupKey}.{$key}.*.enabled"] = ['required', 'boolean'];
+                    $rules["settings.{$groupKey}.{$key}.*.required"] = ['required', 'boolean'];
+
+                    continue;
+                }
+
                 $rules["settings.{$groupKey}.{$key}"] = $this->rulesFor($field);
             }
         }
@@ -80,6 +93,11 @@ class SiteSettingsController extends Controller
         $currentSettings = $this->settings->values($locale);
         $validator = Validator::make($request->all(), $rules);
         $validator->after(function ($validator) use ($request, $currentSettings): void {
+            $this->validateThemeContrast(
+                $validator,
+                (array) data_get($request->all(), 'settings.theme', [])
+            );
+
             $goldPrice = data_get($request->all(), 'settings.zakat_calculator.gold_price_per_gram');
             $silverPrice = data_get($request->all(), 'settings.zakat_calculator.silver_price_per_gram');
             $priceDate = data_get($request->all(), 'settings.zakat_calculator.nisab_price_updated_at');
@@ -157,41 +175,43 @@ class SiteSettingsController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($schema, $validated, $locale) {
-                $currentVersion = $this->versions->current(true);
+            $nextVersion = DB::transaction(function () use ($schema, $validated, $locale): string {
+                $currentVersion = $this->versions->currentForLocale($locale, true);
                 if (!hash_equals($currentVersion, $validated['global_settings_version'])) {
                     throw ValidationException::withMessages([
                         'global_settings_version' => 'Website-wide settings changed after this form was opened. Reload the customizer, review the latest values, and save again.',
                     ]);
                 }
 
-            foreach ($schema as $groupKey => $group) {
-                foreach ($group['fields'] as $key => $field) {
-                    $value = data_get($validated, "settings.{$groupKey}.{$key}");
-                    $value = $this->normalizeValue($value, $field['type']);
-                    $settingLocale = ($field['localized'] ?? false) ? $locale : '*';
+                foreach ($schema as $groupKey => $group) {
+                    foreach ($group['fields'] as $key => $field) {
+                        $value = data_get($validated, "settings.{$groupKey}.{$key}");
+                        $value = $this->normalizeValue($value, $field);
+                        $settingLocale = ($field['localized'] ?? false) ? $locale : '*';
 
-                    $setting = SiteSetting::withTrashed()->firstOrNew([
-                        'group' => $groupKey,
-                        'key' => $key,
-                        'locale' => $settingLocale,
-                    ]);
+                        $setting = SiteSetting::withTrashed()->firstOrNew([
+                            'group' => $groupKey,
+                            'key' => $key,
+                            'locale' => $settingLocale,
+                        ]);
 
-                    if ($setting->trashed()) {
-                        $setting->restore();
+                        if ($setting->trashed()) {
+                            $setting->restore();
+                        }
+
+                        $setting->fill([
+                            'value' => $this->serializedValue($value, $field['type']),
+                            'type' => in_array($field['type'], ['faq_list', 'form_field_layout'], true)
+                                ? 'json'
+                                : (in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text'),
+                            'is_public' => (bool) ($field['public'] ?? false),
+                            'created_by' => $setting->exists ? $setting->created_by : auth('admin')->id(),
+                            'updated_by' => auth('admin')->id(),
+                        ])->save();
                     }
-
-                    $setting->fill([
-                        'value' => $this->serializedValue($value, $field['type']),
-                        'type' => $field['type'] === 'faq_list'
-                            ? 'json'
-                            : (in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text'),
-                        'is_public' => (bool) ($field['public'] ?? false),
-                        'created_by' => $setting->exists ? $setting->created_by : auth('admin')->id(),
-                        'updated_by' => auth('admin')->id(),
-                    ])->save();
                 }
-            }
+
+                return $this->versions->currentForLocale($locale, true);
             });
         } catch (ValidationException $exception) {
             $parameters = $locale === app()->getLocale() ? [] : ['locale' => $locale];
@@ -199,8 +219,17 @@ class SiteSettingsController extends Controller
             throw $exception->redirectTo(route('site.settings.index', $parameters));
         }
 
+        $message = AdminUi::text('customizer.saved');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'global_settings_version' => $nextVersion,
+            ]);
+        }
+
         return redirect()->route('site.settings.index', ['locale' => $locale])
-            ->with(['message' => 'Website changes saved. Refresh the preview to see them.', 'alert-type' => 'success']);
+            ->with(['message' => $message, 'alert-type' => 'success']);
     }
 
     public function destroy(string $group, string $key, Request $request)
@@ -224,7 +253,7 @@ class SiteSettingsController extends Controller
     {
         $type = (string) ($field['type'] ?? 'text');
 
-        return match ($type) {
+        $rules = match ($type) {
             'boolean' => ['required', 'boolean'],
             'email' => ['nullable', 'email:rfc', 'max:255'],
             'url' => ['nullable', 'url:http,https', 'max:2048'],
@@ -241,19 +270,93 @@ class SiteSettingsController extends Controller
             'textarea' => ['nullable', 'string', 'max:5000'],
             default => ['nullable', 'string', 'max:255'],
         };
+
+        $requiredPlaceholders = array_values(array_filter(
+            (array) ($field['required_placeholders'] ?? []),
+            fn ($placeholder): bool => is_string($placeholder) && $placeholder !== ''
+        ));
+        if ($requiredPlaceholders === []) {
+            return $rules;
+        }
+
+        $rules = array_values(array_filter($rules, fn ($rule): bool => $rule !== 'nullable'));
+        array_unshift($rules, 'required');
+        $rules[] = function (string $attribute, mixed $value, $fail) use ($requiredPlaceholders): void {
+            if (!is_string($value)) {
+                return;
+            }
+
+            foreach ($requiredPlaceholders as $placeholder) {
+                if (!str_contains($value, $placeholder)) {
+                    $fail("The {$attribute} field must keep the {$placeholder} placeholder.");
+                }
+            }
+        };
+
+        return $rules;
     }
 
-    private function normalizeValue(mixed $value, string $type): mixed
+    private function normalizeValue(mixed $value, array $field): mixed
     {
+        $type = (string) ($field['type'] ?? 'text');
+
         return match ($type) {
             'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             'integer' => (int) $value,
             'float' => (float) $value,
             'faq_list' => $this->normalizeFaqList($value),
+            'form_field_layout' => $this->formLayouts->normalize($field, $value),
             'date' => is_string($value) ? Carbon::createFromFormat('Y-m-d', $value)->toDateString() : $value,
             'url', 'url_or_path' => $this->sanitizer->sanitizeUrl($value),
             default => is_string($value) ? trim(strip_tags($value)) : $value,
         };
+    }
+
+    private function validateThemeContrast($validator, array $theme): void
+    {
+        $ink = (string) ($theme['ink_color'] ?? '');
+        $surface = (string) ($theme['surface_color'] ?? '');
+        $ratio = $this->contrastRatio($ink, $surface);
+
+        if ($ratio !== null && $ratio < 4.5) {
+            $message = 'Choose text and surface colors with at least 4.5:1 contrast so public content remains readable.';
+            $validator->errors()->add('settings.theme.ink_color', $message);
+            $validator->errors()->add('settings.theme.surface_color', $message);
+        }
+    }
+
+    private function contrastRatio(string $foreground, string $background): ?float
+    {
+        $foregroundLuminance = $this->relativeLuminance($foreground);
+        $backgroundLuminance = $this->relativeLuminance($background);
+        if ($foregroundLuminance === null || $backgroundLuminance === null) {
+            return null;
+        }
+
+        $lighter = max($foregroundLuminance, $backgroundLuminance);
+        $darker = min($foregroundLuminance, $backgroundLuminance);
+
+        return ($lighter + 0.05) / ($darker + 0.05);
+    }
+
+    private function relativeLuminance(string $hex): ?float
+    {
+        if (preg_match('/^#([0-9a-fA-F]{6})$/', $hex, $matches) !== 1) {
+            return null;
+        }
+
+        $channels = array_map(
+            static function (string $channel): float {
+                $value = hexdec($channel) / 255;
+
+                return $value <= 0.04045
+                    ? $value / 12.92
+                    : (($value + 0.055) / 1.055) ** 2.4;
+            },
+            str_split($matches[1], 2)
+        );
+
+        return (0.2126 * $channels[0]) + (0.7152 * $channels[1]) + (0.0722 * $channels[2]);
     }
 
     private function normalizeFaqList(mixed $value): array
@@ -276,7 +379,7 @@ class SiteSettingsController extends Controller
 
     private function serializedValue(mixed $value, string $type): string
     {
-        if ($type === 'faq_list') {
+        if (in_array($type, ['faq_list', 'form_field_layout'], true)) {
             return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
 

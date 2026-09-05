@@ -6,6 +6,7 @@ use App\Models\AnnualReport;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\DonationType;
+use App\Models\DonationCauseSection;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MediaAsset;
@@ -66,6 +67,12 @@ class MediaUsageService
                 ->where('image_media_uuid', (string) $asset->uuid)
                 ->count()
         );
+        $references['donation_cause_sections'] = DonationCauseSection::query()
+            ->where(function ($query) use ($asset): void {
+                $query->where('image_media_uuid', (string) $asset->uuid)
+                    ->orWhere('video_media_uuid', (string) $asset->uuid);
+            })
+            ->count();
 
         return array_filter($references);
     }

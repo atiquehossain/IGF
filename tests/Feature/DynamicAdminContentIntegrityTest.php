@@ -203,7 +203,7 @@ class DynamicAdminContentIntegrityTest extends TestCase
         $migration = require database_path('migrations/2026_08_19_090200_seed_editable_footer_navigation.php');
         $migration->up();
 
-        $this->assertSame(21, PageMenu::where('type', 'footer')->count());
+        $this->assertSame(21, PageMenu::where('type', 'footer')->where('language', 'en')->count());
         $this->assertDatabaseHas('page_menus', ['id' => $explore->id, 'name' => 'Discover']);
     }
 

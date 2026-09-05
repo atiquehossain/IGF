@@ -27,7 +27,7 @@ describe('administrator recruitment and workshop critical paths', () => {
   });
 
   const logout = () => {
-    cy.get('#left-panel button[aria-label="Log out"]').click({ force: true });
+    cy.get('#left-panel form[action$="/admin/logout"] button[type="submit"]').click({ force: true });
     cy.location('pathname').should('eq', '/admin/login');
   };
 

@@ -76,6 +76,8 @@ describe('AppFooter managed branding and newsletter', () => {
 
     expect(wrapper.get('.footer-brand__name img').attributes('src')).toBe('/storage/managed-footer-logo.png');
     expect(wrapper.get('.footer-brand__tagline').text()).toBe('A tagline the admin can change');
+    expect(wrapper.get('.footer-brand__about').text()).toBe('Managed footer summary');
+    expect(wrapper.get('.footer-brand__trust').text()).toBe('Managed trust statement');
     expect(wrapper.get('.footer-newsletter h2').text()).toBe('Managed newsletter title');
     expect(wrapper.get('.footer-newsletter').text()).toContain('Managed newsletter description');
 
@@ -232,7 +234,8 @@ describe('AppFooter managed branding and newsletter', () => {
     const contactLinks = wrapper.findAll('.footer-contact a');
     const socialLinks = wrapper.findAll('.footer-social a');
 
-    expect(wrapper.get('.footer-brand').text()).not.toContain('Managed footer summary');
+    expect(wrapper.get('.footer-brand').text()).toContain('Managed footer summary');
+    expect(wrapper.get('.footer-brand').text()).toContain('Managed trust statement');
     expect(wrapper.find('#footer-office-contact-heading').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('Office contact details');
     expect(contactRows.map(row => row.text())).toEqual(['Office: Dhaka', 'Mobile: +880 1000', 'Backup: +880 2000', 'Inbox: hello@example.test']);
@@ -263,6 +266,39 @@ describe('AppFooter managed branding and newsletter', () => {
     expect(wrapper.get('.footer-bottom').text()).not.toContain('Managed trust statement');
   });
 
+  test('keeps all three managed footer levels semantic, ordered, and URL-safe', () => {
+    usePage().props.appFooterMenus = [
+      footerMenu('resources-column', 'Resources', [
+        {
+          uuid: 'reports-link',
+          name: 'Reports',
+          link: 'custom',
+          slug: '/annual-report',
+          children: [
+            { uuid: 'latest-link', name: 'Latest report', link: 'custom', slug: 'https://example.test/latest', children: [] },
+            { uuid: 'unsafe-link', name: 'Unsafe legacy item', link: 'custom', slug: 'javascript:alert(1)', children: [] },
+          ],
+        },
+        { uuid: 'contact-link', name: 'Contact', link: 'custom', slug: '/contact-us', children: [] },
+      ]),
+    ];
+
+    const wrapper = mount(AppFooter);
+    const group = wrapper.get('[data-footer-column="resources-column"]');
+    const links = group.findAll('.managed-menu-tree__link');
+
+    expect(group.element.tagName).toBe('SECTION');
+    expect(group.get('[data-menu-depth="2"]').element.tagName).toBe('UL');
+    expect(group.get('[data-menu-depth="3"]').element.tagName).toBe('UL');
+    expect(links.map(link => [link.text(), link.attributes('href')])).toEqual([
+      ['Reports', '/annual-report'],
+      ['Latest report', 'https://example.test/latest'],
+      ['Contact', '/contact-us'],
+    ]);
+    expect(group.get('.managed-menu-tree__label').text()).toBe('Unsafe legacy item');
+    expect(group.html()).not.toContain('javascript:');
+  });
+
   test('renders each managed tagline sentence on its own line', () => {
     usePage().props.siteSettings.branding.tagline = 'Empowering communities. Transforming lives.';
 
@@ -287,6 +323,16 @@ describe('AppFooter managed branding and newsletter', () => {
     expect(wrapper.find('.footer-navigation').exists()).toBe(false);
     expect(wrapper.find('.footer-content').exists()).toBe(false);
     expect(wrapper.get('.footer-brand').exists()).toBe(true);
+  });
+
+  test('omits explicitly blank optional organization and trust copy', () => {
+    usePage().props.siteSettings.footer.about = '';
+    usePage().props.siteSettings.footer.trust_badge = '';
+
+    const wrapper = mount(AppFooter);
+
+    expect(wrapper.find('.footer-brand__about').exists()).toBe(false);
+    expect(wrapper.find('.footer-brand__trust').exists()).toBe(false);
   });
 
   test('restores the managed menu when Legal Status is disabled', () => {

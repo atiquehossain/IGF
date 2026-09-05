@@ -111,8 +111,8 @@ class PublicPresentationIntegrityTest extends TestCase
         $this->assertStringContainsString('data-test="locked-donation-cause"', $donateTemplate);
         $this->assertStringContainsString('role="status"', $donateTemplate);
         $this->assertStringNotContainsString('id="donation-cause"', $donateTemplate);
-        $this->assertStringContainsString(':aria-label="settings.interval_field_label"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
-        $this->assertStringContainsString(':aria-label="settings.cause_field_label"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
+        $this->assertStringContainsString(':aria-label="sponsorFieldLabel(field.key)"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
+        $this->assertStringContainsString(':aria-label="registrationFieldLabel(field.key)"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
         $this->assertStringContainsString('for="sponsorship-interval"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
         $this->assertStringContainsString('for="volunteer-cause"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
     }

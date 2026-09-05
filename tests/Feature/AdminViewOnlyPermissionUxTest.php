@@ -40,8 +40,8 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertSee('<div id="translation-form" data-read-only="true">', false)
             ->assertDontSee('<form id="translation-form"', false)
             ->assertDontSee(route('translations.toggle'), false)
-            ->assertDontSee('Save translations')
-            ->assertDontSee('Copy English into this cell');
+            ->assertDontSee('<button class="tc-save"', false)
+            ->assertDontSee('<button class="tc-copy"', false);
     }
 
     public function test_translation_edit_and_visibility_capabilities_are_independent(): void
@@ -59,7 +59,8 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertOk()
             ->assertSee('Language visibility is read only.')
             ->assertSee('<form id="translation-form" method="POST"', false)
-            ->assertSee('Save translations')
+            ->assertSee('<button class="tc-save"', false)
+            ->assertSee('<button class="tc-copy"', false)
             ->assertDontSee(route('translations.toggle'), false);
 
         $publisher = $this->makeAdmin('Translation publisher', $this->makeRole(
@@ -76,7 +77,8 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertSee('readonly', false)
             ->assertSee('<div id="translation-form" data-read-only="true">', false)
             ->assertDontSee('<form id="translation-form"', false)
-            ->assertDontSee('Save translations');
+            ->assertDontSee('<button class="tc-save"', false)
+            ->assertDontSee('<button class="tc-copy"', false);
     }
 
     public function test_enquiry_viewer_sees_workflow_details_without_update_forms(): void

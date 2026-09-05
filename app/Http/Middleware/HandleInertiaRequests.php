@@ -56,6 +56,7 @@ class HandleInertiaRequests extends Middleware
             'user' => fn () => Auth::user() ?? null,
             'language' => fn () => Translation::language(app()->getLocale())['vue'],
             'appMenus' => fn () => MyMenu::frontMenus(app()->getLocale()),
+            'appUtilityMenus' => fn () => MyMenu::frontMenus(app()->getLocale(), 'utility'),
             'appFooterMenus' => fn () => MyMenu::frontMenus(app()->getLocale(), 'footer'),
             'siteSettings' => fn () => app(SiteSettingService::class)->values(app()->getLocale(), true),
             'splashScreen' => function () {

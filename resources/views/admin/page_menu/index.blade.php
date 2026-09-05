@@ -19,6 +19,7 @@
     $canStatusMenu = $permissions->allows($admin, 'page.menu.status');
     $canDeleteMenu = $permissions->allows($admin, 'page.menu.destroy');
     $canViewMenuTrash = $permissions->allows($admin, 'page.menu.trash');
+    $ui = static fn (string $key, array $replace = []): string => \App\Support\AdminUi::text($key, $replace);
     $isNavigationViewOnly = !$canCreateMenu && !$canEditMenu && !$canStatusMenu && !$canDeleteMenu;
     $navigationParentOptions = [];
     $collectNavigationParents = function (array $items, int $depth = 0) use (&$collectNavigationParents, &$navigationParentOptions): void {
@@ -37,55 +38,55 @@
 <main class="igf-nav-editor">
     <header class="igf-nav-head">
         <div>
-            <h1>Navigation</h1>
-            <p>@if($isNavigationViewOnly)Review the links currently shown in the website header and footer. Editing controls are hidden for your role.@else Build your website menus without route names or order numbers. Add a link, then drag it into place or use the arrow controls to create a submenu.@endif</p>
+            <h1>{{ $ui('navigation.title') }}</h1>
+            <p>{{ $ui($isNavigationViewOnly ? 'navigation.intro_view' : 'navigation.intro_edit') }}</p>
         </div>
         <form id="menu-filter-form" class="igf-nav-filters" method="GET" action="{{ route('page.menu.index') }}">
-            <label class="igf-nav-field"><span>Menu location</span><select name="location" id="menu-location">@foreach($locations as $value => $label)<option value="{{ $value }}" @selected($location === $value)>{{ $label }}</option>@endforeach</select></label>
-            <label class="igf-nav-field"><span>Language</span><select name="locale" id="menu-locale">@foreach($translations as $translation)<option value="{{ $translation->id }}" @selected($locale === $translation->id)>{{ $translation->name }}</option>@endforeach</select></label>
+            <label class="igf-nav-field"><span>{{ $ui('navigation.menu_location') }}</span><select name="location" id="menu-location">@foreach($locations as $value => $label)<option value="{{ $value }}" @selected($location === $value)>{{ $label }}</option>@endforeach</select></label>
+            <label class="igf-nav-field"><span>{{ $ui('navigation.language') }}</span><select name="locale" id="menu-locale">@foreach($translations as $translation)<option value="{{ $translation->id }}" @selected($locale === $translation->id)>{{ $translation->name }}</option>@endforeach</select></label>
         </form>
     </header>
 
-    @if($isNavigationViewOnly)<div class="igf-nav-read-only" role="status"><strong>Read-only access</strong>You can review navigation items and switch between menu locations and languages, but your role cannot add, edit, publish, reorder, or remove them.</div>@endif
+    @if($isNavigationViewOnly)<div class="igf-nav-read-only" role="status"><strong>{{ $ui('navigation.readonly_title') }}</strong>{{ $ui('navigation.readonly_help') }}</div>@endif
 
     <div id="menu-notice" class="igf-nav-notice" role="status" aria-live="polite"></div>
 
     <div class="igf-nav-layout">
         <aside class="igf-nav-card igf-nav-card--add">
-            <div class="igf-nav-card__head"><h2>{{ $canCreateMenu ? 'Add a menu item' : 'Navigation access' }}</h2><p>{{ $canCreateMenu ? 'Choose the destination. The technical route and URL are handled automatically.' : 'Only the actions assigned to your role are available on this screen.' }}</p></div>
+            <div class="igf-nav-card__head"><h2>{{ $ui($canCreateMenu ? 'navigation.add_title' : 'navigation.access_title') }}</h2><p>{{ $ui($canCreateMenu ? 'navigation.add_help' : 'navigation.access_help') }}</p></div>
             <div class="igf-nav-card__body">
                 @if($canCreateMenu)
                 <form id="add-menu-item" class="igf-nav-add">
-                    <label class="igf-nav-field"><span>Link to</span><select id="destination-type"><option value="route">Built-in page</option><option value="page">CMS page</option><option value="category">Category</option><option value="project">Project</option><option value="custom">Custom URL</option><option value="label">Parent label (no link)</option></select></label>
-                    <label id="destination-select-field" class="igf-nav-field"><span>Choose destination</span><select id="destination-select"></select></label>
-                    <label id="destination-custom-field" class="igf-nav-field" hidden><span>Custom URL</span><input id="destination-custom" type="text" inputmode="url" placeholder="/contact-us or https://example.org"></label>
-                    <label class="igf-nav-field"><span>Navigation label</span><input id="navigation-label" type="text" maxlength="120" required placeholder="What visitors will see"></label>
-                    <label class="igf-nav-field"><span>Short description (optional)</span><textarea id="navigation-description" maxlength="255" placeholder="A short explanation shown below submenu links"></textarea></label>
-                    <label class="igf-nav-field"><span>Parent item (optional)</span><select id="navigation-parent"><option value="">Top level</option>@foreach($navigationParentOptions as $item)<option value="{{ $item['uuid'] }}">{{ $item['label'] }}</option>@endforeach</select></label>
-                    <label class="igf-nav-check"><input id="navigation-enabled" type="checkbox" @checked($canStatusMenu) @disabled(!$canStatusMenu)> Show this item on the website</label>
-                    @if(!$canStatusMenu)<p class="igf-nav-help">New items are hidden until someone with publication access makes them visible.</p>@endif
-                    <button id="add-menu-button" class="igf-nav-button igf-nav-button--primary" type="submit"><span class="igf-nav-spinner" aria-hidden="true">&#8635;</span><span>Add to menu</span></button>
+                    <label class="igf-nav-field"><span>{{ $ui('navigation.link_to') }}</span><select id="destination-type"><option value="route">{{ $ui('navigation.built_in_page') }}</option><option value="page">{{ $ui('navigation.cms_page') }}</option><option value="category">{{ $ui('navigation.category') }}</option><option value="project">{{ $ui('navigation.project') }}</option><option value="custom">{{ $ui('navigation.custom_url') }}</option><option value="label">{{ $ui('navigation.parent_label') }}</option></select></label>
+                    <label id="destination-select-field" class="igf-nav-field"><span>{{ $ui('navigation.choose_destination') }}</span><select id="destination-select"></select></label>
+                    <label id="destination-custom-field" class="igf-nav-field" hidden><span>{{ $ui('navigation.custom_url') }}</span><input id="destination-custom" type="text" inputmode="url" placeholder="{{ $ui('navigation.url_placeholder') }}"></label>
+                    <label class="igf-nav-field"><span>{{ $ui('navigation.navigation_label') }}</span><input id="navigation-label" type="text" maxlength="120" required placeholder="{{ $ui('navigation.label_placeholder') }}"></label>
+                    <label class="igf-nav-field"><span>{{ $ui('navigation.description') }}</span><textarea id="navigation-description" maxlength="255" placeholder="{{ $ui('navigation.description_placeholder') }}"></textarea></label>
+                    <label class="igf-nav-field"><span>{{ $ui('navigation.parent_item') }}</span><select id="navigation-parent"><option value="">{{ $ui('navigation.top_level') }}</option>@foreach($navigationParentOptions as $item)<option value="{{ $item['uuid'] }}">{{ $item['label'] }}</option>@endforeach</select></label>
+                    <label class="igf-nav-check"><input id="navigation-enabled" type="checkbox" @checked($canStatusMenu) @disabled(!$canStatusMenu)> {{ $ui('navigation.show_on_website') }}</label>
+                    @if(!$canStatusMenu)<p class="igf-nav-help">{{ $ui('navigation.hidden_until_published') }}</p>@endif
+                    <button id="add-menu-button" class="igf-nav-button igf-nav-button--primary" type="submit"><span class="igf-nav-spinner" aria-hidden="true">&#8635;</span><span>{{ $ui('navigation.add_to_menu') }}</span></button>
                 </form>
-                <p class="igf-nav-help"><strong>Submenus:</strong> navigation supports up to three levels. Choose a parent now, or use the arrow controls later.</p>
+                <p class="igf-nav-help"><strong>{{ $ui('navigation.submenu_help_title') }}</strong> {{ $ui('navigation.submenu_help') }}</p>
                 @else
-                    <p>Adding new menu items is not available for your role. You can still use any edit, visibility, or removal controls shown beside existing items.</p>
+                    <p>{{ $ui('navigation.adding_unavailable') }}</p>
                 @endif
-                @if($canViewMenuTrash)<a class="igf-nav-button" style="width:100%;margin-top:12px" href="{{ route('page.menu.trash') }}">Open navigation trash</a>@endif
+                @if($canViewMenuTrash)<a class="igf-nav-button" style="width:100%;margin-top:12px" href="{{ route('page.menu.trash') }}">{{ $ui('navigation.open_trash') }}</a>@endif
             </div>
         </aside>
 
         <section class="igf-nav-card">
             <div class="igf-nav-card__head">
                 <div class="igf-menu-toolbar">
-                    <div><h2>{{ $locations[$location] }}</h2><p>{{ $canEditMenu ? 'Drag items to reorder. Use → to make a submenu and ← to move it back out.' : 'Review the current order and visibility of each navigation item.' }}</p></div>
-                    @if($canEditMenu)<div style="display:flex;align-items:center;gap:10px"><span id="menu-dirty" class="igf-menu-dirty">Unsaved order</span><button id="save-menu-order" class="igf-nav-button igf-nav-button--primary" type="button" @disabled(empty($menuTree))>Save menu</button></div>@endif
+                    <div><h2>{{ $locations[$location] }}</h2><p>{{ $ui($canEditMenu ? 'navigation.reorder_help' : 'navigation.review_help') }}</p></div>
+                    @if($canEditMenu)<div style="display:flex;align-items:center;gap:10px"><span id="menu-dirty" class="igf-menu-dirty">{{ $ui('navigation.unsaved_order') }}</span><button id="save-menu-order" class="igf-nav-button igf-nav-button--primary" type="button" @disabled(empty($menuTree))>{{ $ui('navigation.save_menu') }}</button></div>@endif
                 </div>
             </div>
             <div class="igf-menu-tree" id="menu-tree">
                 @if($menuTree)
                     @include('admin.page_menu._tree', ['items' => $menuTree, 'parentUuid' => null, 'depth' => 0, 'canEditMenu' => $canEditMenu, 'canStatusMenu' => $canStatusMenu, 'canDeleteMenu' => $canDeleteMenu])
                 @else
-                    <div class="igf-menu-empty"><i class="fa fa-sitemap" aria-hidden="true"></i><h3>This menu is empty</h3><p>Add the first item using the simple form. Until then, this navigation area will intentionally show no links on the public website.</p></div>
+                    <div class="igf-menu-empty"><i class="fa fa-sitemap" aria-hidden="true"></i><h3>{{ $ui('navigation.empty_title') }}</h3><p>{{ $ui('navigation.empty_help') }}</p></div>
                 @endif
             </div>
         </section>
@@ -96,6 +97,7 @@
 @section('custom-js')
 <script>
 (() => {
+    const ui = @json(\App\Support\AdminUi::section('navigation'));
     const destinationGroups = @json($destinationGroups);
     const routes = {
         @if($canCreateMenu)store: @json(route('page.menu.store')),@endif
@@ -126,7 +128,7 @@
         notice.className = `igf-nav-notice is-visible${type === 'error' ? ' is-error' : type === 'warning' ? ' is-warning' : ''}`;
         notice.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
-    function errorMessage(error, fallback = 'Something went wrong. Please try again.') {
+    function errorMessage(error, fallback = ui.messages.generic_error) {
         const errors = error?.errors || {};
         return Object.values(errors).flat()[0] || error?.message || fallback;
     }
@@ -148,7 +150,7 @@
         destinationCustomField.hidden = type !== 'custom';
         destinationSelect.innerHTML = '';
         if (usesSelect) {
-            if (!items.length) destinationSelect.add(new Option('No available items', ''));
+            if (!items.length) destinationSelect.add(new Option(ui.messages.no_available_items, ''));
             items.forEach(item => destinationSelect.add(new Option(item.label, item.value)));
             destinationSelect.disabled = !items.length;
             if (!labelWasEdited || !labelInput.value.trim()) labelInput.value = items[0]?.label || '';
@@ -183,7 +185,7 @@
             }) });
             window.location.reload();
         } catch (error) {
-            showNotice(errorMessage(error, 'The menu item could not be added.'), 'error');
+            showNotice(errorMessage(error, ui.messages.add_failed), 'error');
             button.disabled = false;
             button.classList.remove('is-loading');
         }
@@ -232,13 +234,13 @@
         if (type === 'up' && index > 0) list.insertBefore(item, items[index - 1]);
         else if (type === 'down' && index < items.length - 1) list.insertBefore(items[index + 1], item);
         else if (type === 'indent') {
-            if (index < 1) return showNotice('Place this item after its intended parent first.', 'warning');
+            if (index < 1) return showNotice(ui.messages.place_after_parent, 'warning');
             const targetList = childList(items[index - 1]);
-            if (!canMoveToList(item, targetList)) return showNotice('Navigation supports at most three levels.', 'warning');
+            if (!canMoveToList(item, targetList)) return showNotice(ui.messages.depth_limit, 'warning');
             targetList.append(item);
         } else if (type === 'outdent') {
             const parentItem = list.closest('.igf-menu-item');
-            if (!parentItem) return showNotice('This item is already at the top level.', 'warning');
+            if (!parentItem) return showNotice(ui.messages.already_top_level, 'warning');
             parentItem.parentElement.insertBefore(item, parentItem.nextElementSibling);
         } else return;
         markOrderDirty();
@@ -271,7 +273,7 @@
         list.addEventListener('drop', event => {
             event.preventDefault();
             event.stopPropagation();
-            if (!canMoveToList(dragged, list)) return showNotice('That move would create a circular branch or more than three levels.', 'warning');
+            if (!canMoveToList(dragged, list)) return showNotice(ui.messages.invalid_move, 'warning');
             const target = event.target.closest('.igf-menu-item');
             if ((!target || target.parentElement !== list) && dragged.parentElement !== list) list.append(dragged);
             markOrderDirty();
@@ -292,10 +294,10 @@
             await jsonRequest(routes.reorder, { method: 'PUT', body: JSON.stringify({ locale, location: locationName, items }) });
             orderDirty = false;
             dirtyLabel.classList.remove('is-visible');
-            showNotice('Menu order saved. The public navigation is updated.');
+            showNotice(ui.messages.order_saved);
         } catch (error) {
             saveOrderButton.disabled = false;
-            showNotice(errorMessage(error, 'The menu order could not be saved.'), 'error');
+            showNotice(errorMessage(error, ui.messages.order_failed), 'error');
         }
     });
 
@@ -313,12 +315,12 @@
             }) });
             item.querySelector(':scope > .igf-menu-item__row [data-menu-title]').textContent = payload.item.name;
             const badge = item.querySelector(':scope > .igf-menu-item__row [data-menu-status]');
-            badge.textContent = payload.item.status ? 'Visible' : 'Hidden';
+            badge.textContent = payload.item.status ? ui.visible : ui.hidden;
             badge.classList.toggle('is-hidden', !payload.item.status);
             item.querySelector(':scope > .igf-menu-item__row [data-menu-destination]').textContent = payload.item.destination;
-            showNotice(payload.message);
+            showNotice(ui.messages.item_updated);
         } catch (error) {
-            showNotice(errorMessage(error, 'The menu item could not be saved.'), 'error');
+            showNotice(errorMessage(error, ui.messages.item_save_failed), 'error');
         } finally { button.disabled = false; }
     }));
 
@@ -330,32 +332,32 @@
             const payload = await jsonRequest(button.dataset.url, { method: 'PUT', body: '{}' });
             const enabled = button.dataset.currentStatus !== '1';
             button.dataset.currentStatus = enabled ? '1' : '0';
-            button.textContent = enabled ? 'Hide from website' : 'Show on website';
-            badge.textContent = enabled ? 'Visible' : 'Hidden';
+            button.textContent = enabled ? ui.hide_from_website : ui.show_on_website_short;
+            badge.textContent = enabled ? ui.visible : ui.hidden;
             badge.classList.toggle('is-hidden', !enabled);
-            showNotice(payload.message || 'Navigation visibility updated.');
+            showNotice(ui.messages.visibility_updated);
         } catch (error) {
-            showNotice(errorMessage(error, 'The menu visibility could not be updated.'), 'error');
+            showNotice(errorMessage(error, ui.messages.visibility_failed), 'error');
         } finally { button.disabled = false; }
     }));
 
     tree.querySelectorAll('[data-delete-menu-item]').forEach(button => button.addEventListener('click', async () => {
         const item = button.closest('.igf-menu-item');
-        if (itemHasChildren(item)) return showNotice('Move submenu items out before removing their parent.', 'warning');
-        if (!window.confirm('Move this menu item to navigation trash?')) return;
+        if (itemHasChildren(item)) return showNotice(ui.messages.move_children_first, 'warning');
+        if (!window.confirm(ui.messages.confirm_trash)) return;
         button.disabled = true;
         try {
             await jsonRequest(button.dataset.url, { method: 'DELETE' });
             item.remove();
-            showNotice('Menu item moved to trash.');
+            showNotice(ui.messages.item_removed);
         } catch (error) {
-            showNotice(errorMessage(error, 'The menu item could not be removed.'), 'error');
+            showNotice(errorMessage(error, ui.messages.remove_failed), 'error');
             button.disabled = false;
         }
     }));
 
     document.querySelectorAll('#menu-location,#menu-locale').forEach(select => select.addEventListener('change', () => {
-        if (orderDirty && !window.confirm('Discard the unsaved menu order?')) return;
+        if (orderDirty && !window.confirm(ui.messages.discard_order)) return;
         document.getElementById('menu-filter-form').submit();
     }));
     window.addEventListener('beforeunload', event => { if (orderDirty) { event.preventDefault(); event.returnValue = ''; } });

@@ -15,6 +15,7 @@ use App\Services\ContentSanitizer;
 use App\Services\JobApplicationSubmissionService;
 use App\Services\PublicCardImageService;
 use App\Services\PublicFormTokenService;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\SiteSettingService;
 use App\Services\WorkshopRegistrationService;
 use Carbon\CarbonInterface;
@@ -34,6 +35,7 @@ class OpportunityController extends Controller
         private ContentSanitizer $sanitizer,
         private PublicCardImageService $cardImages,
         private PublicFormTokenService $tokens,
+        private PublicSystemPageMetaService $systemMeta,
         private SiteSettingService $siteSettings,
     ) {
     }
@@ -507,11 +509,11 @@ class OpportunityController extends Controller
     /** @return array<string, string> */
     private function meta(string $title, string $description): array
     {
-        return [
-            'meta_keyword' => $title . ', Ignite Global Foundation',
-            'meta_title' => $title . ' | Ignite Global Foundation',
-            'meta_description' => mb_substr($description, 0, 160),
-        ];
+        return $this->systemMeta->forContent(
+            $title,
+            mb_substr($description, 0, 160),
+            request(),
+        );
     }
 
     private function employmentType(string $type, string $locale): string
@@ -786,11 +788,52 @@ class OpportunityController extends Controller
         $cardLinkLabel = $managed['card_link_label'] ?? null;
         unset($managed['card_link_label']);
 
+        $submission = [];
+        foreach ([
+            'submission_eyebrow' => 'eyebrow',
+            'submission_title' => 'title',
+            'submission_message' => 'message',
+            'submission_updated_message' => 'updated_message',
+            'submission_reference_label' => 'reference_label',
+        ] as $settingKey => $copyKey) {
+            if (is_string($managed[$settingKey] ?? null)) {
+                $submission[$copyKey] = $managed[$settingKey];
+            }
+
+            unset($managed[$settingKey]);
+        }
+
+        $errorSummary = [];
+        foreach ([
+            'error_summary_title' => 'title',
+            'error_summary_introduction' => 'introduction',
+            'error_summary_submission_label' => 'submission_label',
+            'error_summary_general_label' => 'general_label',
+        ] as $settingKey => $copyKey) {
+            if (is_string($managed[$settingKey] ?? null)) {
+                $errorSummary[$copyKey] = $managed[$settingKey];
+            }
+
+            unset($managed[$settingKey]);
+        }
+
         $copy = array_replace($fallback, $managed);
         if (is_string($cardLinkLabel)) {
             $copy['card'] = array_replace(
                 is_array($fallback['card'] ?? null) ? $fallback['card'] : [],
                 ['link_label' => $cardLinkLabel],
+            );
+        }
+        if ($submission !== []) {
+            $copy['submission'] = array_replace(
+                is_array($fallback['submission'] ?? null) ? $fallback['submission'] : [],
+                $submission,
+            );
+        }
+        if ($errorSummary !== []) {
+            $copy['error_summary'] = array_replace(
+                is_array($fallback['error_summary'] ?? null) ? $fallback['error_summary'] : [],
+                $errorSummary,
             );
         }
 

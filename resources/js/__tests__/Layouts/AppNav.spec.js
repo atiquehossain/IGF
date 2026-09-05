@@ -272,6 +272,157 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(document.activeElement).toBe(menuButton.element);
   });
 
+  test('restores managed utility links and verified locales in the phone drawer with nested disclosure semantics', async () => {
+    usePage().props.appUtilityMenus = [
+      {
+        uuid: 'utility-resources',
+        name: 'Resources',
+        link: null,
+        children: [
+          {
+            uuid: 'utility-reports',
+            name: 'Reports',
+            link: 'custom',
+            slug: '/annual-report',
+            children: [
+              { uuid: 'utility-latest', name: 'Latest report', link: 'custom', slug: 'https://example.test/latest', children: [] },
+              { uuid: 'utility-unsafe', name: 'Unsafe destination', link: 'custom', slug: 'javascript:alert(1)', children: [] },
+            ],
+          },
+        ],
+      },
+      { uuid: 'utility-contact', name: 'Contact us', link: 'custom', slug: '/contact-us', children: [] },
+    ];
+    Object.assign(usePage().props, {
+      publicLocaleSwitcherEnabled: true,
+      locale: 'en',
+      seoLocale: { current: 'en', default: 'en' },
+      seoAlternates: {
+        links: [
+          { locale: 'en', url: 'http://localhost/workshops' },
+          { locale: 'bn', url: 'http://localhost/bn/kormoshala?lang=bn' },
+          { locale: 'unsafe', url: 'javascript:alert(1)' },
+        ],
+      },
+    });
+    Object.assign(usePage().props.siteSettings.header, {
+      show_language_switcher: true,
+      english_language_label: 'English',
+      bangla_language_label: 'বাংলা',
+      utility_navigation_label: 'Helpful links',
+      language_switcher_accessible_label: 'Choose language',
+      open_submenu_label: 'Expand {item}',
+      close_submenu_label: 'Collapse {item}',
+    });
+
+    const wrapper = mountNav({ attachTo: document.body });
+    const menuButton = wrapper.get('.menu-button');
+    await menuButton.trigger('click');
+
+    const mobile = wrapper.get('.mobile-nav');
+    const extras = mobile.get('.mobile-nav__small-screen-extras');
+    const utility = extras.get('.mobile-nav__utility');
+    const resourcesToggle = utility.get('.managed-menu-tree__disclosure');
+    const resourcesPanel = utility.get(`#${resourcesToggle.attributes('aria-controls')}`);
+
+    expect(utility.get('.mobile-nav__extra-heading').text()).toBe('Helpful links');
+    expect(resourcesToggle.attributes('aria-expanded')).toBe('false');
+    expect(resourcesPanel.attributes()).toHaveProperty('hidden');
+    expect(resourcesPanel.attributes('aria-labelledby')).toBe(resourcesToggle.get('span').attributes('id'));
+    expect(resourcesToggle.attributes('aria-controls')).toBe(resourcesPanel.attributes('id'));
+
+    await resourcesToggle.trigger('click');
+    expect(resourcesToggle.attributes('aria-expanded')).toBe('true');
+    expect(resourcesPanel.attributes()).not.toHaveProperty('hidden');
+
+    const reportsLink = utility.get('a[href="/annual-report"]');
+    const reportsItem = reportsLink.element.closest('.managed-menu-tree__item');
+    const reportsToggle = reportsItem.querySelector('.managed-menu-tree__toggle');
+    const reportsPanel = utility.get(`#${reportsToggle.getAttribute('aria-controls')}`);
+
+    expect(reportsToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(reportsToggle.getAttribute('aria-label')).toBe('Expand Reports');
+    expect(reportsPanel.attributes('aria-labelledby')).toBe(reportsLink.attributes('id'));
+    await reportsToggle.click();
+    await wrapper.vm.$nextTick();
+    expect(reportsToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(reportsToggle.getAttribute('aria-label')).toBe('Collapse Reports');
+
+    const utilityLinks = utility.findAll('a');
+    expect(utilityLinks.map(link => [link.text(), link.attributes('href')])).toEqual([
+      ['Reports', '/annual-report'],
+      ['Latest report', 'https://example.test/latest'],
+      ['Contact us', '/contact-us'],
+    ]);
+    expect(utility.text()).toContain('Unsafe destination');
+    expect(utility.html()).not.toContain('javascript:');
+    expect(utility.findAll('[data-mobile-nav-control]')).toHaveLength(5);
+
+    const languageLinks = extras.findAll('.mobile-nav__languages a');
+    expect(extras.get('#mobile-language-navigation-heading').text()).toBe('Choose language');
+    expect(languageLinks.map(link => [link.attributes('hreflang'), link.attributes('href')])).toEqual([
+      ['en', 'http://localhost/workshops'],
+      ['bn', 'http://localhost/bn/kormoshala?lang=bn'],
+    ]);
+    expect(languageLinks[0].attributes('aria-current')).toBe('page');
+    expect(languageLinks[1].attributes('aria-current')).toBeUndefined();
+    expect(extras.html()).not.toContain('javascript:');
+
+    const latestLink = utility.get('a[href="https://example.test/latest"]');
+    latestLink.element.focus();
+    await latestLink.trigger('keydown', { key: 'Escape' });
+    await wrapper.vm.$nextTick();
+    expect(reportsToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(reportsToggle);
+    expect(resourcesToggle.attributes('aria-expanded')).toBe('true');
+
+    reportsToggle.focus();
+    reportsToggle.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wrapper.vm.$nextTick();
+    expect(resourcesToggle.attributes('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(resourcesToggle.element);
+
+    await resourcesToggle.trigger('keydown', { key: 'Escape' });
+    await wrapper.vm.$nextTick();
+    expect(mobile.attributes()).toHaveProperty('hidden');
+    expect(document.activeElement).toBe(menuButton.element);
+
+    await menuButton.trigger('click');
+    const contactLink = utility.get('a[href="/contact-us"]');
+    contactLink.element.addEventListener('click', event => event.preventDefault(), { once: true });
+    await contactLink.trigger('click');
+    expect(mobile.attributes()).toHaveProperty('hidden');
+
+    await menuButton.trigger('click');
+    const banglaLink = extras.get('.mobile-nav__languages a[hreflang="bn"]');
+    banglaLink.element.addEventListener('click', event => event.preventDefault(), { once: true });
+    await banglaLink.trigger('click');
+    expect(mobile.attributes()).toHaveProperty('hidden');
+  });
+
+  test('honors the public language-switcher gate while retaining published utility navigation', async () => {
+    usePage().props.appUtilityMenus = [
+      { uuid: 'utility-contact', name: 'Contact us', link: 'custom', slug: '/contact-us', children: [] },
+      { uuid: 'utility-empty', name: '', link: 'custom', slug: '/must-not-render', children: [] },
+    ];
+    usePage().props.publicLocaleSwitcherEnabled = false;
+    usePage().props.seoAlternates = {
+      links: [
+        { locale: 'en', url: 'http://localhost/workshops' },
+        { locale: 'bn', url: 'http://localhost/bn/kormoshala?lang=bn' },
+      ],
+    };
+    usePage().props.siteSettings.header.show_language_switcher = true;
+
+    const wrapper = mountNav();
+    await wrapper.get('.menu-button').trigger('click');
+
+    const extras = wrapper.get('.mobile-nav__small-screen-extras');
+    expect(extras.get('.mobile-nav__utility a').attributes('href')).toBe('/contact-us');
+    expect(extras.text()).not.toContain('must-not-render');
+    expect(extras.find('.mobile-nav__languages').exists()).toBe(false);
+  });
+
   test('cleans disclosure state and transfers focus to the visible navigation across breakpoints', async () => {
     const wrapper = mountNav({ attachTo: document.body });
     const ourWork = itemForLink(wrapper.get('.desktop-nav'), 'a[href="/workshops"]', '.desktop-nav__item');
@@ -419,7 +570,7 @@ describe('AppNav recursive disclosure navigation', () => {
       const desktopChild = ourWork.get('.desktop-nav__child');
 
       expect(getComputedStyle(desktopToggle.element).position).toBe('relative');
-      expect(getComputedStyle(desktopToggle.element).color).toBe('rgb(156, 69, 0)');
+      expect(getComputedStyle(desktopToggle.element).color).toBe('var(--igf-accent,#9c4500)');
       expect(getComputedStyle(desktopToggle.element).textTransform).toBe('uppercase');
       expect(getComputedStyle(desktopChild.element).display).toBe('grid');
       expect(getComputedStyle(desktopChild.element).textDecoration).toContain('none');
@@ -430,7 +581,7 @@ describe('AppNav recursive disclosure navigation', () => {
       expect(getComputedStyle(dropdown.element).position).toBe('absolute');
       expect(getComputedStyle(dropdown.element).minWidth).toBe('250px');
       expect(getComputedStyle(dropdown.element).padding).toBe('10px');
-      expect(getComputedStyle(dropdown.element).backgroundColor).toBe('rgb(255, 255, 255)');
+      expect(result.code).toContain('background:var(--igf-header-nav-bg,#fff)');
 
       const youth = itemForLink(ourWork, 'a[href="/page/youth-development"]', '.desktop-nav__entry');
       const youthToggle = youth.get('.desktop-nav__toggle');
@@ -453,7 +604,7 @@ describe('AppNav recursive disclosure navigation', () => {
       expect(getComputedStyle(mobileParent.element).minHeight).toBe('48px');
       expect(getComputedStyle(mobileParent.element).textDecoration).toContain('none');
       expect(getComputedStyle(mobileSubmenu.element).padding).toBe('5px 0px 8px');
-      expect(getComputedStyle(mobileSubmenu.element).backgroundColor).toBe('rgb(250, 248, 246)');
+      expect(result.code).toContain('background:var(--igf-header-utility-bg,#faf8f6)');
     } finally {
       style.remove();
     }
@@ -467,6 +618,9 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(appNavSource).toContain('.desktop-nav__dropdown[hidden]');
     expect(appNavSource).toContain('.mobile-nav[hidden] { display:none; }');
     expect(appNavSource).toContain('.mobile-nav__group.is-active>:is(.mobile-nav__link,.mobile-nav__parent)');
+    expect(appNavSource).toContain('.mobile-nav__small-screen-extras { display:none;');
+    expect(appNavSource).toMatch(/@media\(max-width:767px\)[^{]*\{[^}]*\.mobile-nav[^}]*\}[^}]*\.mobile-nav__small-screen-extras \{ display:grid; \}/);
+    expect(appNavSource).toContain('.mobile-nav__utility .managed-menu-tree[hidden]');
     expect(appNavSource).toContain('width:44px');
     expect(appNavSource).toContain('min-height:44px');
     expect(appNavSource).toContain('100dvh');

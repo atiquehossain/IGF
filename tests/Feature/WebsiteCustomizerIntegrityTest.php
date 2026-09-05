@@ -165,6 +165,47 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         }
     }
 
+    public function test_customizer_can_save_its_complete_payload_as_json_without_the_php_form_input_limit(): void
+    {
+        $admin = $this->makePageEditor();
+        $settings = $this->defaultSettingsPayload();
+        $settings['contact']['address'] = 'JSON customizer office address';
+        $settings['theme']['surface_color'] = '#fdfbf8';
+
+        $response = $this->actingAs($admin, 'admin')
+            ->putJson(route('site.settings.update'), $this->settingsUpdatePayload($settings));
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('message', 'Website changes saved.')
+            ->assertJsonStructure(['global_settings_version']);
+
+        $this->assertMatchesRegularExpression(
+            '/^[a-f0-9]{64}$/',
+            (string) $response->json('global_settings_version')
+        );
+        $this->assertSame(
+            app(SiteSettingVersionService::class)->currentForLocale('en'),
+            $response->json('global_settings_version')
+        );
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'contact',
+            'key' => 'address',
+            'locale' => 'en',
+            'value' => 'JSON customizer office address',
+        ]);
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'theme',
+            'key' => 'surface_color',
+            'locale' => '*',
+            'value' => '#fdfbf8',
+        ]);
+
+        $view = file_get_contents(resource_path('views/admin/site-settings/index.blade.php'));
+        $this->assertStringContainsString("'Content-Type':'application/json'", $view);
+        $this->assertStringContainsString("form?.addEventListener('submit',saveCustomizer)", $view);
+    }
+
 
     public function test_admin_can_publish_dynamic_social_profile_links(): void
     {
@@ -245,6 +286,57 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertCount(6, $public['faqs']);
         $this->assertSame('Sixth question?', $public['faqs'][5]['question']);
         $this->assertSame('', $public['faq_2_question']);
+    }
+
+    public function test_editor_can_order_safe_public_form_fields_without_unlocking_protected_requirements(): void
+    {
+        $admin = $this->makePageEditor();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Form fields and order')
+            ->assertSee('data-form-layout-editor', false)
+            ->assertSee('Show on form')
+            ->assertSee('Protected field');
+
+        $settings = $this->defaultSettingsPayload();
+        $settings['contact_page']['form_fields'] = [
+            ['key' => 'phone', 'enabled' => false, 'required' => true],
+            ['key' => 'message', 'enabled' => false, 'required' => false],
+            ['key' => 'email', 'enabled' => false, 'required' => false],
+            ['key' => 'first_name', 'enabled' => false, 'required' => false],
+        ];
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $stored = SiteSetting::query()
+            ->where('group', 'contact_page')
+            ->where('key', 'form_fields')
+            ->where('locale', '*')
+            ->firstOrFail();
+
+        $this->assertSame('json', $stored->type);
+        $this->assertSame(['phone', 'message', 'email', 'first_name'], array_column($stored->typed_value, 'key'));
+        $this->assertFalse($stored->typed_value[0]['enabled']);
+        $this->assertFalse($stored->typed_value[0]['required']);
+
+        $public = app(SiteSettingService::class)->values('en', true)['contact_page']['form_fields'];
+        $this->assertTrue($public[1]['enabled']);
+        $this->assertTrue($public[1]['required']);
+        $this->assertTrue($public[2]['enabled']);
+        $this->assertTrue($public[2]['required']);
+        $this->assertTrue($public[3]['enabled']);
+        $this->assertTrue($public[3]['required']);
+
+        $invalid = $this->defaultSettingsPayload();
+        $invalid['contact_page']['form_fields'][0]['key'] = 'payment_gateway_secret';
+        $this->from(route('site.settings.index'))
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($invalid))
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors('settings.contact_page.form_fields.0.key');
     }
 
     public function test_footer_legal_status_fields_are_editable_sanitized_and_published(): void
@@ -385,6 +477,14 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $settings['design']['heading_size'] = 'large';
         $settings['design']['image_size'] = 'large';
         $settings['design']['card_columns'] = '4';
+        $settings['design']['font_pairing'] = 'modern';
+        $settings['design']['corner_radius'] = 'rounded';
+        $settings['design']['shadow_density'] = 'strong';
+        $settings['header']['presentation'] = 'soft';
+        $settings['header']['density'] = 'compact';
+        $settings['header']['sticky'] = false;
+        $settings['footer']['presentation'] = 'light';
+        $settings['footer']['layout'] = 'stacked';
 
         $this->actingAs($admin, 'admin')
             ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
@@ -410,6 +510,23 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->where('key', 'card_columns')
             ->where('locale', '*')
             ->value('value'));
+
+        foreach ([
+            ['design', 'font_pairing', 'modern'],
+            ['design', 'corner_radius', 'rounded'],
+            ['design', 'shadow_density', 'strong'],
+            ['header', 'presentation', 'soft'],
+            ['header', 'density', 'compact'],
+            ['header', 'sticky', '0'],
+            ['footer', 'presentation', 'light'],
+            ['footer', 'layout', 'stacked'],
+        ] as [$group, $key, $expected]) {
+            $this->assertSame($expected, SiteSetting::query()
+                ->where('group', $group)
+                ->where('key', $key)
+                ->where('locale', '*')
+                ->value('value'));
+        }
     }
 
     public function test_design_presets_reject_unsafe_or_unknown_values(): void
@@ -422,17 +539,50 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             }
         }
         $settings['design']['heading_size'] = '144px;position:fixed';
+        $settings['design']['font_pairing'] = 'url(https://unsafe.example/font.woff2)';
+        $settings['design']['corner_radius'] = '9999px';
+        $settings['design']['shadow_density'] = 'drop-shadow(script)';
+        $settings['header']['presentation'] = 'transparent';
+        $settings['footer']['layout'] = 'position:fixed';
 
         $this->actingAs($admin, 'admin')
             ->from(route('site.settings.index'))
             ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
             ->assertRedirect(route('site.settings.index'))
-            ->assertSessionHasErrors('settings.design.heading_size');
+            ->assertSessionHasErrors([
+                'settings.design.heading_size',
+                'settings.design.font_pairing',
+                'settings.design.corner_radius',
+                'settings.design.shadow_density',
+                'settings.header.presentation',
+                'settings.footer.layout',
+            ]);
 
         $this->assertDatabaseMissing('site_settings', [
             'group' => 'design',
             'key' => 'heading_size',
             'value' => '144px;position:fixed',
+        ]);
+        $this->assertDatabaseMissing('site_settings', ['group' => 'design', 'key' => 'font_pairing']);
+        $this->assertDatabaseMissing('site_settings', ['group' => 'header', 'key' => 'presentation']);
+        $this->assertDatabaseMissing('site_settings', ['group' => 'footer', 'key' => 'layout']);
+    }
+
+    public function test_template_settings_cannot_drop_required_placeholders(): void
+    {
+        $admin = $this->makePageEditor();
+        $settings = $this->defaultSettingsPayload();
+        $settings['donation_page']['detail_meta_title_template'] = 'A cause title without its token';
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('site.settings.index'))
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors('settings.donation_page.detail_meta_title_template');
+
+        $this->assertDatabaseMissing('site_settings', [
+            'group' => 'donation_page',
+            'key' => 'detail_meta_title_template',
         ]);
     }
 
@@ -776,11 +926,58 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         ]);
     }
 
+    public function test_stale_editor_cannot_overwrite_newer_localized_settings(): void
+    {
+        $admin = $this->makePageEditor();
+        $initialVersion = app(SiteSettingVersionService::class)->currentForLocale('en');
+
+        $firstSettings = $this->defaultSettingsPayload();
+        $firstSettings['contact']['address'] = 'First editor localized address';
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('site.settings.update'), [
+                'locale' => 'en',
+                'global_settings_version' => $initialVersion,
+                'settings' => $firstSettings,
+            ])
+            ->assertRedirect(route('site.settings.index', ['locale' => 'en']));
+
+        $this->assertNotSame(
+            $initialVersion,
+            app(SiteSettingVersionService::class)->currentForLocale('en')
+        );
+
+        $staleSettings = $this->defaultSettingsPayload();
+        $staleSettings['contact']['address'] = 'Stale editor localized address';
+
+        $this->from(route('site.settings.index'))
+            ->put(route('site.settings.update'), [
+                'locale' => 'en',
+                'global_settings_version' => $initialVersion,
+                'settings' => $staleSettings,
+            ])
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors('global_settings_version');
+
+        $this->assertDatabaseHas('site_settings', [
+            'group' => 'contact',
+            'key' => 'address',
+            'locale' => 'en',
+            'value' => 'First editor localized address',
+        ]);
+        $this->assertDatabaseMissing('site_settings', [
+            'group' => 'contact',
+            'key' => 'address',
+            'locale' => 'en',
+            'value' => 'Stale editor localized address',
+        ]);
+    }
+
     private function settingsUpdatePayload(array $settings, string $locale = 'en'): array
     {
         return [
             'locale' => $locale,
-            'global_settings_version' => app(SiteSettingVersionService::class)->current(),
+            'global_settings_version' => app(SiteSettingVersionService::class)->currentForLocale($locale),
             'settings' => $settings,
         ];
     }
@@ -835,8 +1032,34 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
     private function customizerMarkup(string $html): string
     {
-        $this->assertSame(1, preg_match('/<main class="igf-customizer">.*?<\/main>/s', $html, $matches));
+        $start = strpos($html, '<main class="igf-customizer">');
+        $this->assertNotFalse($start);
+        $end = strpos($html, '</main>', $start);
+        $this->assertNotFalse($end);
 
-        return $matches[0];
+        return substr($html, $start, $end + strlen('</main>') - $start);
+    }
+
+    public function test_theme_text_and_surface_colors_must_remain_readable(): void
+    {
+        $admin = $this->makePageEditor();
+        $settings = $this->defaultSettingsPayload();
+        $settings['theme']['ink_color'] = '#ffffff';
+        $settings['theme']['surface_color'] = '#ffffff';
+
+        $this->actingAs($admin, 'admin')
+            ->from(route('site.settings.index'))
+            ->put(route('site.settings.update'), $this->settingsUpdatePayload($settings))
+            ->assertRedirect(route('site.settings.index'))
+            ->assertSessionHasErrors([
+                'settings.theme.ink_color',
+                'settings.theme.surface_color',
+            ]);
+
+        $this->assertDatabaseMissing('site_settings', [
+            'group' => 'theme',
+            'key' => 'ink_color',
+            'value' => '#ffffff',
+        ]);
     }
 }

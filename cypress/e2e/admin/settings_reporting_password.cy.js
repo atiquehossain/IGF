@@ -9,8 +9,25 @@ const openSettingsGroup = (selector) => {
 };
 
 describe('administrator settings and reporting workflows', () => {
+  let addressToRestore = null;
+
   beforeEach(() => {
     cy.loginWithUsername();
+  });
+
+  afterEach(() => {
+    if (addressToRestore === null) return;
+
+    cy.visit('/admin/site-settings?locale=en#settings-contact');
+    openSettingsGroup('#settings-contact');
+    cy.get('#setting-contact-address')
+      .invoke('val', addressToRestore)
+      .trigger('input');
+    cy.get('#customizer-save').should('not.be.disabled').click();
+    cy.get('#customizer-status').should('have.class', 'is-success');
+    cy.then(() => {
+      addressToRestore = null;
+    });
   });
 
   it('publishes an office-address change to the public footer and restores it', () => {
@@ -20,23 +37,17 @@ describe('administrator settings and reporting workflows', () => {
     openSettingsGroup('#settings-contact');
 
     cy.get('#setting-contact-address').invoke('val').then((originalAddress) => {
+      addressToRestore = String(originalAddress || '');
       cy.get('#setting-contact-address').clear().type(address);
       cy.get('#customizer-save').should('not.be.disabled').click();
 
       cy.location('pathname').should('eq', '/admin/site-settings');
+      cy.get('#customizer-status').should('have.class', 'is-success').and('contain.text', 'Website changes saved');
+      cy.get('#customizer-client-validation').should('not.be.visible');
       cy.get('#setting-contact-address').should('have.value', address);
 
-      cy.visit('/');
+      cy.visit('/?lang=en');
       cy.get('.footer-contact__address', { timeout: 20000 }).should('contain.text', address);
-
-      cy.visit('/admin/site-settings?locale=en#settings-contact');
-      openSettingsGroup('#settings-contact');
-      cy.get('#setting-contact-address')
-        .invoke('val', String(originalAddress || ''))
-        .trigger('input');
-      cy.get('#customizer-save').should('not.be.disabled').click();
-      cy.location('pathname').should('eq', '/admin/site-settings');
-      cy.get('#setting-contact-address').should('have.value', String(originalAddress || ''));
     });
   });
 

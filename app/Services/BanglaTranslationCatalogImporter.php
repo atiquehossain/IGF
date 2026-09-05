@@ -145,11 +145,6 @@ final class BanglaTranslationCatalogImporter
         $preservedSource = 0;
 
         foreach ($selectedRows as $row) {
-            if (!$overwrite && $row['status'] === 'translated') {
-                $alreadyTranslated++;
-                continue;
-            }
-
             $entry = $entriesByKey->get($row['key']);
             if (!is_array($entry)) {
                 throw new InvalidArgumentException(
@@ -158,6 +153,11 @@ final class BanglaTranslationCatalogImporter
             }
 
             $translation = $this->validatedTranslation($row, $entry);
+            if (!$overwrite && $row['status'] === 'translated') {
+                $alreadyTranslated++;
+                continue;
+            }
+
             if ($translation === (string) $row['target']) {
                 $unchanged++;
                 continue;

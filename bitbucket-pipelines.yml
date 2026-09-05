@@ -144,6 +144,7 @@ definitions:
               git checkout --detach "$release_sha"
               test "$(git rev-parse HEAD)" = "$release_sha"
               composer install --no-dev --prefer-dist --no-interaction --no-progress --classmap-authoritative
+              composer check-platform-reqs --no-dev
               source "$HOME/.nvm/nvm.sh"
               nvm install 22
               nvm use 22

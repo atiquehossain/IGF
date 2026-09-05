@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Models\DonationType;
 use App\Services\DonationPaymentMethodService;
+use App\Services\DonationCauseContentService;
 use App\Services\DonationDestinationService;
 use App\Services\LocalizationManager;
 use App\Services\PublicStructuredDataService;
@@ -27,6 +28,7 @@ class DonateController extends Controller
         protected TranslationCenterService $translations,
         protected DonationPaymentMethodService $paymentMethods,
         protected DonationDestinationService $destinations,
+        protected DonationCauseContentService $causeContent,
         protected LocalizationManager $localization,
         protected SiteSettingService $siteSettings,
         protected PublicStructuredDataService $structuredData,
@@ -190,6 +192,10 @@ class DonateController extends Controller
             if ($selectedCause) {
                 $donationTypes = $donationTypes
                     ->where('uuid', (string) $selectedCause->uuid)
+                    ->map(fn (array $option): array => array_merge(
+                        $option,
+                        $this->causeContent->publicPayload($selectedCause, $locale)
+                    ))
                     ->values();
             }
         }
@@ -226,17 +232,34 @@ class DonateController extends Controller
             : null;
         $causeName = trim((string) data_get($selectedCauseOption, 'name', ''));
         $causeDescription = trim((string) data_get($selectedCauseOption, 'description', ''));
+        $pageTitle = $causeName !== ''
+            ? $this->donationTemplate($donationCopy, 'detail_page_title_template', 'Donate to {cause}', $causeName)
+            : $this->donationCopy($donationCopy, 'fallback_page_title', 'Donate securely');
+        $metaTitle = $causeName !== ''
+            ? $this->donationTemplate($donationCopy, 'detail_meta_title_template', 'Donate to {cause} | Ignite Global Foundation', $causeName)
+            : $this->donationCopy($donationCopy, 'fallback_meta_title', 'Donate Securely | Ignite Global Foundation');
+        $metaKeywords = $causeName !== ''
+            ? $this->donationTemplate($donationCopy, 'detail_meta_keywords_template', '{cause}, donate Bangladesh, Ignite Global Foundation', $causeName)
+            : $this->donationCopy($donationCopy, 'fallback_meta_keywords', 'donate Bangladesh, community development, Ignite Global Foundation');
+        $metaDescription = $causeDescription !== ''
+            ? mb_substr(strip_tags($causeDescription), 0, 160)
+            : ($causeName !== ''
+                ? $this->donationTemplate(
+                    $donationCopy,
+                    'detail_meta_description_template',
+                    'Support {cause} through a secure donation to Ignite Global Foundation.',
+                    $causeName
+                )
+                : $this->donationCopy(
+                    $donationCopy,
+                    'fallback_meta_description',
+                    'Support community-led education, healthcare, livelihoods, clean water, and urgent relief in Bangladesh through a secure donation.'
+                ));
 
         $metaTag = [
-            'meta_keyword'     => $causeName !== ''
-                ? $causeName . ', donate Bangladesh, Ignite Global Foundation'
-                : 'donate Bangladesh, community development, Ignite Global Foundation',
-            'meta_title'       => $causeName !== ''
-                ? 'Donate to ' . $causeName . ' | Ignite Global Foundation'
-                : 'Donate Securely | Ignite Global Foundation',
-            'meta_description' => $causeDescription !== ''
-                ? mb_substr(strip_tags($causeDescription), 0, 160)
-                : 'Support community-led education, healthcare, livelihoods, clean water, and urgent relief in Bangladesh through a secure donation.',
+            'meta_keyword'     => $metaKeywords,
+            'meta_title'       => $metaTitle,
+            'meta_description' => $metaDescription,
             'meta_image'       => (string) data_get($selectedCauseOption, 'image', ''),
         ];
         $routeSeo = (array) $request->attributes->get('route_seo', []);
@@ -252,8 +275,14 @@ class DonateController extends Controller
         if (empty($contentSeo['schema_markup']) && empty($routeSeo['schema_markup'])) {
             $pageUrl = (string) $this->seo->localizedUrl($request->url(), $locale);
             $breadcrumbs = [
-                ['name' => 'Home', 'url' => (string) $this->seo->localizedUrl(url('/'), $locale)],
-                ['name' => 'Donate', 'url' => (string) $this->seo->localizedUrl(url('/donate'), $locale)],
+                [
+                    'name' => $this->donationCopy($donationCopy, 'home_breadcrumb_label', 'Home'),
+                    'url' => (string) $this->seo->localizedUrl(url('/'), $locale),
+                ],
+                [
+                    'name' => $this->donationCopy($donationCopy, 'donate_breadcrumb_label', 'Donate'),
+                    'url' => (string) $this->seo->localizedUrl(url('/donate'), $locale),
+                ],
             ];
             if ($causeName !== '') {
                 $breadcrumbs[] = ['name' => $causeName, 'url' => $pageUrl];
@@ -269,7 +298,7 @@ class DonateController extends Controller
 
         $response = Inertia::render('donate', [
             'status' => true,
-            'title'  => $causeName !== '' ? 'Donate to ' . $causeName : 'Donate securely',
+            'title'  => $pageTitle,
             'meta_tag' => $metaTag,
             'contentSeo' => $contentSeo,
             'data' => [
@@ -628,8 +657,11 @@ class DonateController extends Controller
             ? (string) ($settings['success_title'] ?? __('donation.result.success_title'))
             : (string) ($settings['failure_title'] ?? __('donation.result.failure_title')));
 
-        $currency = (string) (data_get($transaction, 'currency_type') ?: data_get($transaction, 'currency') ?: 'BDT');
-        $formattedAmount = $currency . ' ' . number_format((float) ($transaction->amount ?? 0), 2);
+        $currency = strtoupper((string) (data_get($transaction, 'currency_type') ?: data_get($transaction, 'currency') ?: 'BDT'));
+        $formattedAmount = $this->localizedPaymentAmount(
+            (float) data_get($transaction, 'amount', 0),
+            $currency
+        );
 
         $message = $messageOverride ?: ($success
             ? $this->paymentResultMessage(
@@ -673,11 +705,17 @@ class DonateController extends Controller
             $message = $resultCopy['message'];
         }
 
+        $siteName = trim((string) data_get(
+            $this->siteSettings->values(app()->getLocale(), true),
+            'branding.site_name',
+            config('app.name')
+        )) ?: (string) config('app.name');
+
         return Inertia::render($view, [
             'status' => $success,
             'title'  => $title,
             'meta_tag' => [
-                'meta_title'       => $title . ' | Ignite Global Foundation',
+                'meta_title'       => $title . ' | ' . $siteName,
                 'meta_description' => $message,
                 'robots' => 'noindex,nofollow,noarchive',
             ],
@@ -722,6 +760,50 @@ class DonateController extends Controller
             'system_pages',
             []
         );
+    }
+
+    private function donationCopy(array $settings, string $key, string $fallback): string
+    {
+        $value = trim(strip_tags((string) ($settings[$key] ?? '')));
+
+        return $value !== '' ? $value : $fallback;
+    }
+
+    private function donationTemplate(
+        array $settings,
+        string $key,
+        string $fallback,
+        string $causeName
+    ): string {
+        $template = $this->donationCopy($settings, $key, $fallback);
+        if (!str_contains($template, '{cause}')) {
+            $template = $fallback;
+        }
+
+        return str_replace('{cause}', $causeName, $template);
+    }
+
+    private function localizedPaymentAmount(float $amount, string $currency): string
+    {
+        $number = number_format($amount, 2, '.', ',');
+        if (app()->getLocale() !== 'bn') {
+            return $currency . ' ' . $number;
+        }
+
+        $localizedNumber = strtr($number, [
+            '0' => '০',
+            '1' => '১',
+            '2' => '২',
+            '3' => '৩',
+            '4' => '৪',
+            '5' => '৫',
+            '6' => '৬',
+            '7' => '৭',
+            '8' => '৮',
+            '9' => '৯',
+        ]);
+
+        return ($currency === 'BDT' ? '৳' : $currency . ' ') . $localizedNumber;
     }
 
     private function paymentResultMessage(

@@ -12,17 +12,13 @@
 import { computed, watch } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useGlobal } from '../Shared/composables/global'; // Adjust the path to where your composable is
+import { managedThemeTokens } from '../Shared/utils/themeColors';
 
 const inertiaPage = usePage();
 const { $toast } = useGlobal();
 const metaTag = computed(() => inertiaPage.props?.meta_tag || {});
 const seoTitle = computed(() => metaTag.value.meta_title || inertiaPage.props?.title || 'Ignite Global Foundation');
-const themeStyle = computed(() => ({
-  '--igf-primary': inertiaPage.props?.siteSettings?.theme?.primary_color || '#ff7500',
-  '--igf-accent': inertiaPage.props?.siteSettings?.theme?.accent_color || '#9c4500',
-  '--igf-ink': inertiaPage.props?.siteSettings?.theme?.ink_color || '#191c1d',
-  '--igf-surface': inertiaPage.props?.siteSettings?.theme?.surface_color || '#f8f9fa',
-}));
+const themeStyle = computed(() => managedThemeTokens(inertiaPage.props?.siteSettings?.theme));
 
 watch(
   () => inertiaPage.props.flash?.message,

@@ -97,6 +97,19 @@ class BanglaTranslationCatalogImporterTest extends TestCase
         (new BanglaTranslationCatalogImporter($service))->inspect($catalog);
     }
 
+    public function test_stale_source_is_rejected_even_when_the_database_row_is_already_translated(): void
+    {
+        $rows = collect([$this->row('one', 'Current English', target: 'বর্তমান ইংরেজি')]);
+        $service = Mockery::mock(TranslationCenterService::class);
+        $service->shouldReceive('rows')->once()->with('en', 'bn')->andReturn($rows);
+        $catalog = $this->catalogFor($rows, ['one' => 'বর্তমান ইংরেজি']);
+        $catalog['entries'][0]['source'] = 'Old English';
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('English source changed');
+        (new BanglaTranslationCatalogImporter($service))->inspect($catalog);
+    }
+
     public function test_unchanged_proper_nouns_require_an_explicit_preserve_source_decision(): void
     {
         $rows = collect([$this->row('one', 'bKash')]);

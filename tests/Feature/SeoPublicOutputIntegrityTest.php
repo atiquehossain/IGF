@@ -235,14 +235,20 @@ class SeoPublicOutputIntegrityTest extends TestCase
             ->assertSee('<loc>' . url('/?lang=bn') . '</loc>', false);
     }
 
-    public function test_missing_special_page_translation_returns_not_found_instead_of_an_indexable_fallback(): void
+    public function test_missing_special_page_translation_fails_closed_except_for_a_real_localized_system_page(): void
     {
         $this->enableBangla();
         $this->makePage('home', 'en');
         $this->makePage('sponsor-a-child', 'en');
 
         $this->get('/?lang=bn')->assertNotFound();
-        $this->get('/sponsor-child?lang=bn')->assertNotFound();
+        $this->get('/sponsor-child?lang=bn')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('sponsor_child')
+                ->where('title', 'একটি শিশুর পৃষ্ঠপোষক হোন')
+                ->where('meta_tag.meta_title', 'একটি শিশুর পৃষ্ঠপোষক হোন | ইগনাইট গ্লোবাল ফাউন্ডেশন')
+            );
     }
 
     public function test_category_hreflang_uses_shared_uuid_and_the_translated_slug(): void

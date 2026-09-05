@@ -79,6 +79,43 @@ describe('SchemaForm', () => {
     expect(document.activeElement).toBe(wrapper.get('[data-test="form-error-summary"]').element)
   })
 
+  test('uses editor-authored localized validation templates with interpolated field limits', async () => {
+    const wrapper = mount(SchemaForm, {
+      attachTo: document.body,
+      props: {
+        fields: [
+          { uuid: 'fixed-name', key: 'applicant_name', type: 'short_text', label: 'পূর্ণ নাম', required: true },
+          dynamicField('short_text', {
+            uuid: 'experience-uuid',
+            key: 'experience',
+            label: 'অভিজ্ঞতা',
+            validation: { min_length: 4 },
+          }),
+        ],
+        modelValue: { 'experience-uuid': 'দুই' },
+        copy: {
+          required_label: 'আবশ্যক তথ্য',
+          required_message: 'অনুগ্রহ করে {field} লিখুন।',
+          minimum_length_message: '{field} ঘরে অন্তত {min} অক্ষর লিখুন।',
+          error_summary: {
+            title: 'আবেদনের তথ্য দেখুন',
+            introduction: 'চিহ্নিত ঘরগুলো ঠিক করুন।',
+          },
+        },
+      },
+    })
+
+    await wrapper.get('form').trigger('submit')
+
+    const summary = wrapper.get('[data-test="form-error-summary"]')
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(summary.text()).toContain('আবেদনের তথ্য দেখুন')
+    expect(summary.text()).toContain('চিহ্নিত ঘরগুলো ঠিক করুন।')
+    expect(summary.text()).toContain('অনুগ্রহ করে পূর্ণ নাম লিখুন।')
+    expect(summary.text()).toContain('অভিজ্ঞতা ঘরে অন্তত 4 অক্ষর লিখুন।')
+    expect(wrapper.get('.sr-only').text()).toBe('আবশ্যক তথ্য')
+  })
+
   test.each([
     [dynamicField('email', { key: 'email', uuid: 'fixed-email' }), 'invalid', false],
     [dynamicField('email', { key: 'email', uuid: 'fixed-email' }), 'valid@example.test', true],

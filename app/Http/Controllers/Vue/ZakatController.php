@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +17,8 @@ class ZakatController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
+        private PublicSystemPageMetaService $systemMeta,
+        private SeoMetadataService $seo,
     ) {
     }
 
@@ -36,9 +39,12 @@ class ZakatController extends Controller
             $block->unsetRelation('reusableBlock');
         });
 
-        $metaTag = app(SeoMetadataService::class)->metaForPage($zakat);
-        $metaTag['meta_title'] = $metaTag['meta_title'] ?: 'Zakat Giving | Ignite Global Foundation';
-        $metaTag['meta_description'] = $metaTag['meta_description'] ?: 'Calculate your Zakat and support eligible education, food, and livelihood programs through Ignite Global Foundation.';
+        $metaTag = $this->seo->metaForModel(
+            $zakat,
+            $this->systemMeta->forPage($zakat, $request),
+            url()->current(),
+            (string) $zakat->language,
+        );
         $metaTag['canonical_url'] = $metaTag['canonical_url'] ?: url()->current();
         if ($zakat->visibility === 'unlisted') {
             $metaTag['robots'] = 'noindex,nofollow';
@@ -49,7 +55,7 @@ class ZakatController extends Controller
         $categoryContext = $category && $category->status && filled($category->slug)
             ? [
                 'name' => (string) $category->name,
-                'url' => app(SeoMetadataService::class)->localizedUrl(
+                'url' => $this->seo->localizedUrl(
                     route('frontend.category', ['slug' => $category->slug]),
                     (string) $zakat->language,
                 ),

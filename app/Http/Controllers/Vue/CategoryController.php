@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Page;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,6 +20,7 @@ class CategoryController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
+        private PublicSystemPageMetaService $systemMeta,
         private SeoMetadataService $seo,
     ) {
     }
@@ -47,6 +49,15 @@ class CategoryController extends Controller
         $category->setAttribute('description', $this->sanitizer->sanitizeHtml($category->description));
         $category->setAttribute('inline_css', $this->sanitizer->sanitizeCss($category->inline_css));
         $landingPage = $this->resolveLandingPage($category);
+        $archivePage = $this->systemMeta->resolve(
+            $request,
+            'content_archives.category_default_title',
+            'content_archives.category_search_description',
+            [
+                'title' => 'Community programs',
+                'description' => 'Explore community-led programs and published impact stories from Ignite Global Foundation.',
+            ],
+        );
 
         $pages = Page::select('pages.*', 'categories.name as category_name')
             ->publiclyAvailable()
@@ -79,16 +90,25 @@ class CategoryController extends Controller
         });
 
         $categoryImage = $category->path ?: $category->image ?: $landingPage?->thumbnail;
+        $fallbackMeta = $this->systemMeta->forContent(
+            (string) $category->name,
+            (string) ($category->meta_description
+                ?: trim(strip_tags((string) $category->description))
+                ?: $archivePage['meta_tag']['meta_description']),
+            $request,
+        );
+        $fallbackMeta['meta_keyword'] = $category->meta_keyword ?: $fallbackMeta['meta_keyword'];
+        $fallbackMeta['meta_title'] = $category->meta_title ?: $fallbackMeta['meta_title'];
+        $fallbackMeta['meta_image'] = $categoryImage;
 
         return Inertia::render('category')->with([
             'status' => true,
             'title' => $category->name,
-            'meta_tag' => $this->seo->metaForModel($category, [
-                'meta_keyword' => $category->meta_keyword,
-                'meta_title' => $category->meta_title ?: $category->name . ' | Ignite Global Foundation',
-                'meta_description' => $category->meta_description ?: trim(strip_tags((string) $category->description)),
-                'meta_image' => $categoryImage,
-            ], route('frontend.category', ['slug' => $category->slug])),
+            'meta_tag' => $this->seo->metaForModel(
+                $category,
+                $fallbackMeta,
+                route('frontend.category', ['slug' => $category->slug]),
+            ),
             'properties' => [
                 'page' => $pages->currentPage(),
                 'total_page' => $pages->lastPage(),

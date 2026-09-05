@@ -16,7 +16,10 @@ class SiteSettingService
         'standard_85_595' => ['gold' => 85.0, 'silver' => 595.0],
     ];
 
-    public function __construct(private ContentSanitizer $sanitizer)
+    public function __construct(
+        private ContentSanitizer $sanitizer,
+        private PublicFormFieldLayoutService $formLayouts,
+    )
     {
     }
 
@@ -43,9 +46,13 @@ class SiteSettingService
                 $value = $setting
                     ? $setting->typed_value
                     : $this->localizedDefault($field, $locale);
-                $values[$groupKey][$key] = $publicOnly && in_array($field['type'] ?? null, ['url', 'url_or_path'], true)
-                    ? $this->sanitizer->sanitizeUrl($value)
-                    : $value;
+                if (($field['type'] ?? null) === 'form_field_layout') {
+                    $value = $this->formLayouts->normalize($field, $value);
+                } elseif ($publicOnly && in_array($field['type'] ?? null, ['url', 'url_or_path'], true)) {
+                    $value = $this->sanitizer->sanitizeUrl($value);
+                }
+
+                $values[$groupKey][$key] = $value;
             }
         }
 

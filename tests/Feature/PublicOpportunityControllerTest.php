@@ -173,6 +173,8 @@ class PublicOpportunityControllerTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('job')
                 ->where('title', 'বাংলা কর্মসূচি কর্মকর্তা')
+                ->where('meta_tag.meta_title', 'বাংলা কর্মসূচি কর্মকর্তা | ইগনাইট গ্লোবাল ফাউন্ডেশন')
+                ->where('meta_tag.meta_description', 'বাংলা সারসংক্ষেপ')
                 ->where('data.listing.title', 'বাংলা কর্মসূচি কর্মকর্তা')
                 ->where('data.copy.responsibilities_title', 'দায়িত্বসমূহ')
                 ->where('data.copy.required_message', '{field} আবশ্যক।')
@@ -188,6 +190,7 @@ class PublicOpportunityControllerTest extends TestCase
             ->assertHeader('Content-Language', 'bn')
             ->assertInertia(fn (Assert $page) => $page
                 ->component('workshop')
+                ->where('meta_tag.meta_title', 'English Workshop | ইগনাইট গ্লোবাল ফাউন্ডেশন')
                 ->where('data.listing.title', 'English Workshop')
                 ->where('data.copy.title', 'কর্মশালা')
             );

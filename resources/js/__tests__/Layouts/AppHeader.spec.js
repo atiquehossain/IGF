@@ -6,6 +6,7 @@ const baseProps = () => ({
   publicLocaleSwitcherEnabled: true,
   locale: 'en',
   seoLocale: { current: 'en', default: 'en' },
+  appUtilityMenus: [],
   siteSettings: {
     contact: { phone_primary: '+880 1972 016221', email: 'info@ignite.org.bd' },
     header: {
@@ -81,6 +82,48 @@ describe('AppHeader verified language switcher', () => {
 
     expect(wrapper.find('.utility-bar__links a[href="/annual-report"]').exists()).toBe(false);
     expect(wrapper.get('.utility-bar__links').text()).not.toContain('Annual reports');
+  });
+
+  test('renders the managed utility location in order through all three safe levels', () => {
+    usePage().props.siteSettings.header.contact_label = 'Legacy fixed contact';
+    usePage().props.siteSettings.header.contact_url = '/legacy-contact';
+    usePage().props.appUtilityMenus = [
+      {
+        uuid: 'utility-resources',
+        name: 'Resources',
+        link: null,
+        children: [
+          {
+            uuid: 'utility-reports',
+            name: 'Reports',
+            link: 'custom',
+            slug: '/annual-report',
+            children: [
+              { uuid: 'utility-latest', name: 'Latest report', link: 'custom', slug: 'https://example.test/report', children: [] },
+              { uuid: 'utility-unsafe', name: 'Unsafe legacy link', link: 'custom', slug: 'javascript:alert(1)', children: [] },
+            ],
+          },
+        ],
+      },
+      { uuid: 'utility-contact', name: 'Contact us', link: 'custom', slug: '/contact-us', children: [] },
+    ];
+
+    const wrapper = mount(AppHeader);
+    const utility = wrapper.get('.utility-navigation');
+    const links = utility.findAll('a');
+
+    expect(utility.get('[data-menu-depth="1"]').element.tagName).toBe('UL');
+    expect(utility.get('[data-menu-depth="2"]').element.tagName).toBe('UL');
+    expect(utility.get('[data-menu-depth="3"]').element.tagName).toBe('UL');
+    expect(links.map(link => [link.text(), link.attributes('href')])).toEqual([
+      ['Reports', '/annual-report'],
+      ['Latest report', 'https://example.test/report'],
+      ['Contact us', '/contact-us'],
+    ]);
+    expect(utility.text()).toContain('Unsafe legacy link');
+    expect(utility.html()).not.toContain('javascript:');
+    expect(wrapper.html()).not.toContain('/legacy-contact');
+    expect(wrapper.text()).not.toContain('Legacy fixed contact');
   });
 
   test('honors explicitly blank managed contact fields by hiding those links', () => {

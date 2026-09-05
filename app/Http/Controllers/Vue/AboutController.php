@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +17,8 @@ class AboutController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
+        private PublicSystemPageMetaService $systemMeta,
+        private SeoMetadataService $seo,
     ) {
     }
 
@@ -45,9 +48,12 @@ class AboutController extends Controller
             $foundersLetter->setAttribute('description', $this->sanitizer->sanitizeHtml($foundersLetter->description));
         }
 
-        $metaTag = app(SeoMetadataService::class)->metaForPage($about);
-        $metaTag['meta_title'] = $metaTag['meta_title'] ?: 'About Us | Ignite Global Foundation';
-        $metaTag['meta_description'] = $metaTag['meta_description'] ?: 'Learn how Ignite Global Foundation works alongside communities in Bangladesh and how the organization is governed.';
+        $metaTag = $this->seo->metaForModel(
+            $about,
+            $this->systemMeta->forPage($about, $request),
+            url()->current(),
+            (string) $about->language,
+        );
         $metaTag['canonical_url'] = $metaTag['canonical_url'] ?: url()->current();
         if ($about->visibility === 'unlisted') {
             $metaTag['robots'] = 'noindex,nofollow';

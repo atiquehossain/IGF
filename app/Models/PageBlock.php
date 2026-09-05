@@ -10,6 +10,8 @@ class PageBlock extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const UPDATE_ITEM_KINDS = ['event', 'news'];
+
     protected $fillable = [
         'page_id',
         'reusable_block_id',
@@ -51,9 +53,62 @@ class PageBlock extends Model
 
     public function resolvedContent(): array
     {
-        return $this->reusableBlock?->is_enabled
+        $content = $this->reusableBlock?->is_enabled
             ? ($this->reusableBlock->content ?? [])
             : ($this->content ?? []);
+
+        return $this->type === 'cards'
+            ? self::normalizeUpdatesContent($content)
+            : $content;
+    }
+
+    /**
+     * Give the legacy two-column updates block a language-neutral discriminator.
+     * Old records predate `kind`; their original column order is retained until
+     * an editor saves an explicit event/news choice.
+     */
+    public static function normalizeUpdatesContent(array $content): array
+    {
+        if (($content['variant'] ?? null) !== 'updates' || !is_array($content['items'] ?? null)) {
+            return $content;
+        }
+
+        $items = array_values($content['items']);
+        $total = count($items);
+
+        $content['items'] = array_map(
+            static function (mixed $item, int $index) use ($total): mixed {
+                if (!is_array($item)) {
+                    return $item;
+                }
+
+                $item['kind'] = self::normalizeUpdateItemKind($item, $index, $total);
+
+                return $item;
+            },
+            $items,
+            array_keys($items),
+        );
+
+        return $content;
+    }
+
+    public static function normalizeUpdateItemKind(array $item, int $index, int $total): string
+    {
+        $kind = strtolower(trim((string) ($item['kind'] ?? '')));
+        if (in_array($kind, self::UPDATE_ITEM_KINDS, true)) {
+            return $kind;
+        }
+
+        $contentKind = strtolower(trim((string) ($item['content_kind'] ?? '')));
+        if ($contentKind === 'event' || filled($item['event_start_at'] ?? null)) {
+            return 'event';
+        }
+        if (in_array($contentKind, ['article', 'news'], true)) {
+            return 'news';
+        }
+
+        return $index < (int) ceil(max(1, $total) / 2) ? 'event' : 'news';
     }
 
     public function resolvedSettings(): array

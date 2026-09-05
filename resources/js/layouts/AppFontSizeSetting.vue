@@ -184,7 +184,7 @@ export default {
 
   .trigger {
     width: 71px;
-    border: 1px solid #ff7828;
+    border: 1px solid var(--igf-primary, #ff7500);
     border-radius: 5px;
     display: flex;
     align-items: center;

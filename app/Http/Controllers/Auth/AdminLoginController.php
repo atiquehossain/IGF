@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Auth;
 use App\Models\Admin;
+use App\Services\SiteSettingService;
+use App\Support\AdminUi;
 
 class AdminLoginController extends Controller {
 
@@ -24,7 +26,12 @@ class AdminLoginController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function showLogin() {
-        $title = "Login";
+        $siteName = data_get(
+            app(SiteSettingService::class)->values(app()->getLocale(), true),
+            'branding.site_name',
+            config('app.name', 'Ignite Global Foundation')
+        );
+        $title = AdminUi::text('admin_login.page_title', ['site' => $siteName]);
         return view('auth.admin-login')->with(compact('title'));
     }
 
@@ -39,6 +46,13 @@ class AdminLoginController extends Controller {
         $this->validate($request, [
             'username' => 'required|string|max:255',
             'password' => 'required|string|min:8',
+        ], [
+            'username.required' => AdminUi::text('admin_login.validation.username_required'),
+            'username.string' => AdminUi::text('admin_login.validation.username_string'),
+            'username.max' => AdminUi::text('admin_login.validation.username_max'),
+            'password.required' => AdminUi::text('admin_login.validation.password_required'),
+            'password.string' => AdminUi::text('admin_login.validation.password_string'),
+            'password.min' => AdminUi::text('admin_login.validation.password_min'),
         ]);
 
         if (Auth::guard('admin')->attempt([
@@ -58,7 +72,7 @@ class AdminLoginController extends Controller {
             return redirect()->intended(route('dashboard.index'));
         }
 
-        $request->session()->flash('message', 'The supplied credentials are invalid.');
+        $request->session()->flash('message', AdminUi::text('admin_login.invalid_credentials'));
 
         return redirect(route('admin.login'));
     }

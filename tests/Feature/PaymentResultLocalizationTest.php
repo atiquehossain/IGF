@@ -86,6 +86,14 @@ class PaymentResultLocalizationTest extends TestCase
             'is_public' => true,
         ]);
         SiteSetting::create([
+            'group' => 'branding',
+            'key' => 'site_name',
+            'locale' => 'bn',
+            'value' => 'কমিউনিটি ইমপ্যাক্ট ট্রাস্ট',
+            'type' => 'text',
+            'is_public' => true,
+        ]);
+        SiteSetting::create([
             'group' => 'system_pages',
             'key' => 'success_message',
             'locale' => 'bn',
@@ -116,7 +124,8 @@ class PaymentResultLocalizationTest extends TestCase
                 ->where('title', 'আপনার সহায়তার জন্য আন্তরিক ধন্যবাদ।')
                 ->where('data.result_state', 'success')
                 ->where('data.result_copy.title', 'আপনার সহায়তার জন্য আন্তরিক ধন্যবাদ।')
-                ->where('data.message', 'আপনার BDT 1,250.00 অনুদান আমরা পেয়েছি।')
+                ->where('data.message', 'আপনার ৳১,২৫০.০০ অনুদান আমরা পেয়েছি।')
+                ->where('meta_tag.meta_title', 'আপনার সহায়তার জন্য আন্তরিক ধন্যবাদ। | কমিউনিটি ইমপ্যাক্ট ট্রাস্ট')
             );
     }
 

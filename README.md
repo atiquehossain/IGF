@@ -70,6 +70,11 @@ After migrations, restore or reconcile the snapshot with:
 php artisan db:seed --class=CmsContentSnapshotSeeder --force
 ```
 
+For a complete Git-safe local handoff—including the sanitized SQLite database
+and the tracked annual-report documents that belong in private storage—follow
+[`database/seeders/seed-data/igf-public-content.README.md`](database/seeders/seed-data/igf-public-content.README.md).
+The database records intentionally do not embed those binary files.
+
 The snapshot is not a substitute for an access-controlled production recovery backup. Continue backing up and verifying the real database together with the complete `storage/app` tree; never commit either raw artifact to Git.
 
 ## SEO 3.0 and production indexing

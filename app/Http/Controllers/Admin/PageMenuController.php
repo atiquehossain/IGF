@@ -28,7 +28,8 @@ use Illuminate\Validation\Rule;
 class PageMenuController extends Controller
 {
     private const MAX_MENU_DEPTH = 3;
-    private const LEGACY_MENU_LOCATIONS = ['main', 'middle', 'footer'];
+    private const EDITOR_MENU_LOCATIONS = ['main', 'utility', 'footer'];
+    private const LEGACY_MENU_LOCATIONS = ['main', 'middle', 'utility', 'footer'];
 
     public function __construct(private ContentSanitizer $sanitizer)
     {
@@ -36,7 +37,7 @@ class PageMenuController extends Controller
 
     public function index(Request $request)
     {
-        $location = in_array($request->string('location')->toString(), ['main', 'footer'], true)
+        $location = in_array($request->string('location')->toString(), self::EDITOR_MENU_LOCATIONS, true)
             ? $request->string('location')->toString()
             : 'main';
         $locale = mb_substr($request->string('locale', app()->getLocale())->toString(), 0, 10) ?: 'en';
@@ -58,7 +59,11 @@ class PageMenuController extends Controller
             'title' => 'Navigation',
             'location' => $location,
             'locale' => $locale,
-            'locations' => ['main' => 'Header & mobile', 'footer' => 'Footer'],
+            'locations' => [
+                'main' => 'Header & mobile',
+                'utility' => 'Utility bar',
+                'footer' => 'Footer',
+            ],
             'translations' => Translation::languageList(),
             'menuTree' => $menuTree,
             'destinationGroups' => [
@@ -378,7 +383,10 @@ class PageMenuController extends Controller
                 return $this->mutateMenuTrees($scopes, function () use ($request, $id, $scopes) {
                     $menus = PageMenu::where('uuid', $id)->get();
                     $this->assertMenusInLockedScopes($menus, $scopes);
-                    $data = $menus->firstWhere('language', 'en');
+                    // A localized item can be created in Bangla before an
+                    // English counterpart exists. Publication must still be
+                    // manageable for that valid locale-only record.
+                    $data = $menus->firstWhere('language', 'en') ?? $menus->first();
                     if (!$data) {
                         abort(404);
                     }
@@ -496,7 +504,7 @@ class PageMenuController extends Controller
     {
         $data = $request->validate([
             'locale' => ['required', 'string', 'max:10'],
-            'location' => ['required', Rule::in(['main', 'footer'])],
+            'location' => ['required', Rule::in(self::EDITOR_MENU_LOCATIONS)],
             'items' => ['required', 'array'],
             'items.*.uuid' => ['required', 'uuid', 'distinct'],
             'items.*.parent_uuid' => ['nullable', 'uuid'],
@@ -601,7 +609,7 @@ class PageMenuController extends Controller
     {
         $data = $request->validate([
             'locale' => ['required', 'string', 'max:10'],
-            'location' => ['required', Rule::in(['main', 'footer'])],
+            'location' => ['required', Rule::in(self::EDITOR_MENU_LOCATIONS)],
             'label' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:255'],
             'destination_type' => ['required', Rule::in(['route', 'page', 'category', 'project', 'custom', 'label'])],

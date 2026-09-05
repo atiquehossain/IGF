@@ -2,82 +2,85 @@
 
 use App\Helper\MyMenu;
 use App\Http\Middleware\Permission;
+use App\Support\AdminUi;
 
 $routeName = (string) Route::currentRouteName();
 $admin = Auth::guard('admin')->user();
 $permissions = app(Permission::class);
 $canSettings = $permissions->allows($admin, 'site.settings.index');
 $canUse = fn (string $route): bool => Route::has($route) && $permissions->allows($admin, $route);
+$ui = static fn (string $key, array $replace = []): string => AdminUi::text($key, $replace);
 $navGroups = [
     [
-        'label' => 'Website', 'icon' => 'fa-globe',
+        'label' => $ui('sidebar.groups.website'), 'icon' => 'fa-globe',
         'items' => [
-            ['route' => 'page.index', 'label' => 'Content Hub', 'icon' => 'fa-file-text-o'],
-            ['route' => 'page.menu.index', 'label' => 'Header & Footer', 'icon' => 'fa-sitemap'],
-            ['route' => 'site.settings.index', 'label' => 'Brand & Appearance', 'icon' => 'fa-magic'],
-            ['route' => 'media.index', 'label' => 'Media Library', 'icon' => 'fa-picture-o'],
+            ['route' => 'page.index', 'label' => $ui('sidebar.items.content_hub'), 'icon' => 'fa-file-text-o'],
+            ['route' => 'page.menu.index', 'label' => $ui('sidebar.items.header_footer'), 'icon' => 'fa-sitemap'],
+            ['route' => 'site.settings.index', 'label' => $ui('sidebar.items.brand_appearance'), 'icon' => 'fa-magic'],
+            ['route' => 'media.index', 'label' => $ui('sidebar.items.media_library'), 'icon' => 'fa-picture-o'],
+            ['route' => 'transactional-mail.index', 'label' => $ui('sidebar.items.email_templates'), 'icon' => 'fa-envelope-open-o'],
         ],
     ],
     [
-        'label' => 'Content', 'icon' => 'fa-pencil-square-o',
+        'label' => $ui('sidebar.groups.content'), 'icon' => 'fa-pencil-square-o',
         'items' => [
-            ['route' => 'category.index', 'label' => 'Programs', 'icon' => 'fa-compass'],
-            ['route' => 'tag.index', 'label' => 'Projects', 'icon' => 'fa-briefcase'],
-            ['route' => 'notice.board.index', 'label' => 'Events & News', 'icon' => 'fa-calendar'],
-            ['route' => 'latest.news.index', 'label' => 'Team Members', 'icon' => 'fa-users'],
-            ['route' => 'testimonial.index', 'label' => 'Community Stories', 'icon' => 'fa-quote-left'],
-            ['route' => 'gallery.index', 'label' => 'Photo Gallery', 'icon' => 'fa-camera'],
-            ['route' => 'annual.report.index', 'label' => 'Reports', 'icon' => 'fa-file-pdf-o'],
+            ['route' => 'category.index', 'label' => $ui('sidebar.items.programs'), 'icon' => 'fa-compass'],
+            ['route' => 'tag.index', 'label' => $ui('sidebar.items.projects'), 'icon' => 'fa-briefcase'],
+            ['route' => 'notice.board.index', 'label' => $ui('sidebar.items.events_news'), 'icon' => 'fa-calendar'],
+            ['route' => 'latest.news.index', 'label' => $ui('sidebar.items.team_members'), 'icon' => 'fa-users'],
+            ['route' => 'testimonial.index', 'label' => $ui('sidebar.items.community_stories'), 'icon' => 'fa-quote-left'],
+            ['route' => 'gallery.index', 'label' => $ui('sidebar.items.photo_gallery'), 'icon' => 'fa-camera'],
+            ['route' => 'annual.report.index', 'label' => $ui('sidebar.items.reports'), 'icon' => 'fa-file-pdf-o'],
         ],
     ],
     [
-        'label' => 'Get Involved', 'icon' => 'fa-heart-o',
+        'label' => $ui('sidebar.groups.get_involved'), 'icon' => 'fa-heart-o',
         'items' => [
-            ['route' => 'donationType.index', 'label' => 'Donation Causes', 'icon' => 'fa-heart'],
-            ['route' => 'donations.index', 'label' => 'Donation Records', 'icon' => 'fa-money'],
-            ['route' => 'sponsorships.index', 'label' => 'Sponsorship Enquiries', 'icon' => 'fa-child'],
-            ['route' => 'volunteerCause.index', 'label' => 'Volunteer Opportunities', 'icon' => 'fa-hand-paper-o'],
-            ['route' => 'volunteer.index', 'label' => 'Volunteer Applications', 'icon' => 'fa-id-card-o'],
-            ['route' => 'subscriber.index', 'label' => 'Subscribers', 'icon' => 'fa-envelope-o'],
-            ['route' => 'contact-message.index', 'label' => 'Contact Enquiries', 'icon' => 'fa-inbox'],
-            ['route' => 'chat.index', 'label' => 'Chat Inbox', 'icon' => 'fa-comments-o'],
-            ['route' => 'chat.faq.index', 'label' => 'Chat Answers', 'icon' => 'fa-commenting-o'],
+            ['route' => 'donationType.index', 'label' => $ui('sidebar.items.donation_causes'), 'icon' => 'fa-heart'],
+            ['route' => 'donations.index', 'label' => $ui('sidebar.items.donation_records'), 'icon' => 'fa-money'],
+            ['route' => 'sponsorships.index', 'label' => $ui('sidebar.items.sponsorship_enquiries'), 'icon' => 'fa-child'],
+            ['route' => 'volunteerCause.index', 'label' => $ui('sidebar.items.volunteer_opportunities'), 'icon' => 'fa-hand-paper-o'],
+            ['route' => 'volunteer.index', 'label' => $ui('sidebar.items.volunteer_applications'), 'icon' => 'fa-id-card-o'],
+            ['route' => 'subscriber.index', 'label' => $ui('sidebar.items.subscribers'), 'icon' => 'fa-envelope-o'],
+            ['route' => 'contact-message.index', 'label' => $ui('sidebar.items.contact_enquiries'), 'icon' => 'fa-inbox'],
+            ['route' => 'chat.index', 'label' => $ui('sidebar.items.chat_inbox'), 'icon' => 'fa-comments-o'],
+            ['route' => 'chat.faq.index', 'label' => $ui('sidebar.items.chat_answers'), 'icon' => 'fa-commenting-o'],
         ],
     ],
     [
-        'label' => 'Recruitment', 'icon' => 'fa-briefcase',
+        'label' => $ui('sidebar.groups.recruitment'), 'icon' => 'fa-briefcase',
         'items' => [
-            ['route' => 'recruitment.jobs.index', 'label' => 'Jobs', 'icon' => 'fa-briefcase'],
-            ['route' => 'recruitment.applications.index', 'label' => 'Applications', 'icon' => 'fa-id-card-o'],
-            ['route' => 'recruitment.forms.index', 'label' => 'Form Templates', 'icon' => 'fa-list-alt'],
-            ['route' => 'recruitment.imports.index', 'label' => 'CSV Imports', 'icon' => 'fa-upload'],
+            ['route' => 'recruitment.jobs.index', 'label' => $ui('sidebar.items.jobs'), 'icon' => 'fa-briefcase'],
+            ['route' => 'recruitment.applications.index', 'label' => $ui('sidebar.items.applications'), 'icon' => 'fa-id-card-o'],
+            ['route' => 'recruitment.forms.index', 'label' => $ui('sidebar.items.form_templates'), 'icon' => 'fa-list-alt'],
+            ['route' => 'recruitment.imports.index', 'label' => $ui('sidebar.items.csv_imports'), 'icon' => 'fa-upload'],
         ],
     ],
     [
-        'label' => 'Workshops', 'icon' => 'fa-calendar',
+        'label' => $ui('sidebar.groups.workshops'), 'icon' => 'fa-calendar',
         'items' => [
-            ['route' => 'workshops.index', 'label' => 'Workshops', 'icon' => 'fa-calendar'],
-            ['route' => 'workshop.registrations.index', 'label' => 'Registrations', 'icon' => 'fa-users'],
-            ['route' => 'workshop.forms.index', 'label' => 'Form Templates', 'icon' => 'fa-list-alt'],
-            ['route' => 'workshop.imports.index', 'label' => 'CSV Imports', 'icon' => 'fa-upload'],
+            ['route' => 'workshops.index', 'label' => $ui('sidebar.items.workshops'), 'icon' => 'fa-calendar'],
+            ['route' => 'workshop.registrations.index', 'label' => $ui('sidebar.items.registrations'), 'icon' => 'fa-users'],
+            ['route' => 'workshop.forms.index', 'label' => $ui('sidebar.items.form_templates'), 'icon' => 'fa-list-alt'],
+            ['route' => 'workshop.imports.index', 'label' => $ui('sidebar.items.csv_imports'), 'icon' => 'fa-upload'],
         ],
     ],
     [
-        'label' => 'Search & Languages', 'icon' => 'fa-search',
+        'label' => $ui('sidebar.groups.search_languages'), 'icon' => 'fa-search',
         'items' => [
-            ['route' => 'seo.index', 'label' => 'Search & Sharing', 'icon' => 'fa-line-chart'],
-            ['route' => 'seo.performance.index', 'label' => 'Search Performance', 'icon' => 'fa-area-chart'],
-            ['route' => 'seo.internal-links.index', 'label' => 'Internal Links', 'icon' => 'fa-link'],
-            ['route' => 'seo.redirects.index', 'label' => 'Redirects', 'icon' => 'fa-random'],
-            ['route' => 'seo.technical.index', 'label' => 'Technical SEO & 404s', 'icon' => 'fa-stethoscope'],
-            ['route' => 'translations.index', 'label' => 'Translations', 'icon' => 'fa-language'],
+            ['route' => 'seo.index', 'label' => $ui('sidebar.items.search_sharing'), 'icon' => 'fa-line-chart'],
+            ['route' => 'seo.performance.index', 'label' => $ui('sidebar.items.search_performance'), 'icon' => 'fa-area-chart'],
+            ['route' => 'seo.internal-links.index', 'label' => $ui('sidebar.items.internal_links'), 'icon' => 'fa-link'],
+            ['route' => 'seo.redirects.index', 'label' => $ui('sidebar.items.redirects'), 'icon' => 'fa-random'],
+            ['route' => 'seo.technical.index', 'label' => $ui('sidebar.items.technical_seo'), 'icon' => 'fa-stethoscope'],
+            ['route' => 'translations.index', 'label' => $ui('sidebar.items.translations'), 'icon' => 'fa-language'],
         ],
     ],
     [
-        'label' => 'Users & Access', 'icon' => 'fa-lock',
+        'label' => $ui('sidebar.groups.users_access'), 'icon' => 'fa-lock',
         'items' => [
-            ['route' => 'admin.index', 'label' => 'Administrators', 'icon' => 'fa-user-circle-o'],
-            ['route' => 'role.index', 'label' => 'Roles & Permissions', 'icon' => 'fa-key'],
+            ['route' => 'admin.index', 'label' => $ui('sidebar.items.administrators'), 'icon' => 'fa-user-circle-o'],
+            ['route' => 'role.index', 'label' => $ui('sidebar.items.roles_permissions'), 'icon' => 'fa-key'],
         ],
     ],
 ];
@@ -116,24 +119,24 @@ $legacyMenu = trim(MyMenu::menuUi($curatedRoutes));
 $legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
 ?>
 
-<aside id="left-panel" class="left-panel" aria-label="Administration navigation">
+<aside id="left-panel" class="left-panel" aria-label="{{ $ui('sidebar.administration_navigation') }}">
     <div class="igf-sidebar-brand">
-        <a class="igf-brand-home" href="{{ route('dashboard.index') }}" aria-label="Ignite Admin dashboard">
+        <a class="igf-brand-home" href="{{ route('dashboard.index') }}" aria-label="{{ $ui('sidebar.dashboard_label') }}">
             <span class="igf-brand-mark"><img src="{{ asset('image/logo.png') }}" alt=""></span>
             <span class="igf-brand-copy">
-                <strong>Ignite Admin</strong>
-                <small>Global Dashboard</small>
+                <strong>{{ $ui('sidebar.brand') }}</strong>
+                <small>{{ $ui('sidebar.global_dashboard') }}</small>
             </span>
         </a>
-        <button id="sidebarClose" class="igf-sidebar-close" type="button" aria-label="Close navigation">
+        <button id="sidebarClose" class="igf-sidebar-close" type="button" aria-label="{{ $ui('sidebar.close_navigation') }}">
             <i class="fa fa-times" aria-hidden="true"></i>
         </button>
     </div>
 
-    <nav class="navbar navbar-expand-sm navbar-default" aria-label="Content management">
+    <nav class="navbar navbar-expand-sm navbar-default" aria-label="{{ $ui('sidebar.content_management') }}">
         <div id="main-menu" class="main-menu collapse navbar-collapse">
             <ul class="nav navbar-nav igf-primary-nav">
-                <li class="{{ $routeName === 'dashboard.index' ? 'active' : '' }}"><a href="{{ route('dashboard.index') }}" aria-label="Dashboard" title="Dashboard" @if($routeName === 'dashboard.index') aria-current="page" @endif><i class="menu-icon fa fa-th-large" aria-hidden="true"></i><span class="igf-nav-label">Dashboard</span></a></li>
+                <li class="{{ $routeName === 'dashboard.index' ? 'active' : '' }}"><a href="{{ route('dashboard.index') }}" aria-label="{{ $ui('sidebar.dashboard') }}" title="{{ $ui('sidebar.dashboard') }}" @if($routeName === 'dashboard.index') aria-current="page" @endif><i class="menu-icon fa fa-th-large" aria-hidden="true"></i><span class="igf-nav-label">{{ $ui('sidebar.dashboard') }}</span></a></li>
             </ul>
             @foreach($navGroups as $group)
                 <details class="igf-nav-group" @if($group['active']) open @endif>
@@ -150,7 +153,7 @@ $legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
             @endforeach
             @if($legacyMenu !== '')
                 <details class="igf-all-tools" @if($legacyMenuHasCurrent) open @endif>
-                    <summary aria-label="Advanced and legacy tools navigation" title="Advanced &amp; Legacy Tools"><i class="fa fa-cogs" aria-hidden="true"></i><span>Advanced & Legacy Tools</span></summary>
+                    <summary aria-label="{{ $ui('sidebar.advanced_navigation') }}" title="{{ $ui('sidebar.advanced_tools') }}"><i class="fa fa-cogs" aria-hidden="true"></i><span>{{ $ui('sidebar.advanced_tools') }}</span></summary>
                     <ul class="nav navbar-nav">
                         {!! $legacyMenu !!}
                     </ul>
@@ -160,15 +163,15 @@ $legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
     </nav>
 
     <div class="igf-sidebar-footer">
-        <a class="igf-visit-site" href="{{ route('frontend.home') }}" target="_blank" rel="noopener" aria-label="Visit public website" title="Visit Site">
-            <i class="fa fa-external-link" aria-hidden="true"></i><span>Visit Site</span>
+        <a class="igf-visit-site" href="{{ route('frontend.home') }}" target="_blank" rel="noopener" aria-label="{{ $ui('sidebar.visit_public_site') }}" title="{{ $ui('sidebar.visit_site') }}">
+            <i class="fa fa-external-link" aria-hidden="true"></i><span>{{ $ui('sidebar.visit_site') }}</span>
         </a>
-        @if($canSettings)<a href="{{ route('site.settings.index') }}" aria-label="Website Customizer" title="Website Customizer">
-            <i class="fa fa-magic" aria-hidden="true"></i><span>Website Customizer</span>
+        @if($canSettings)<a href="{{ route('site.settings.index') }}" aria-label="{{ $ui('sidebar.website_customizer') }}" title="{{ $ui('sidebar.website_customizer') }}">
+            <i class="fa fa-magic" aria-hidden="true"></i><span>{{ $ui('sidebar.website_customizer') }}</span>
         </a>@endif
         <form method="post" action="{{ route('admin.logout') }}">
             @csrf
-            <button type="submit" aria-label="Log out" title="Log Out"><i class="fa fa-sign-out" aria-hidden="true"></i><span>Log Out</span></button>
+            <button type="submit" aria-label="{{ $ui('sidebar.logout') }}" title="{{ $ui('sidebar.logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i><span>{{ $ui('sidebar.logout') }}</span></button>
         </form>
     </div>
 </aside>

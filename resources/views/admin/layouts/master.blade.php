@@ -16,7 +16,7 @@
         <div class="blob blob-3"></div>
         <div class="blob blob-4"></div>
         <div class="blob blob-5"></div>
-        <span class="sr-only">Loading. Please wait.</span>
+        <span class="sr-only">{{ \App\Support\AdminUi::text('shell.loading') }}</span>
       </div>
       <div id="admin-content" tabindex="-1">
         @yield('content')

@@ -23,6 +23,7 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         'menu_actions',
         'migrations',
         'roles',
+        'seo_redirect_locks',
     ];
 
     /** @var list<string> */
@@ -95,7 +96,6 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         'seo_audit_alerts',
         'seo_audit_ignore_rules',
         'seo_not_found_hits',
-        'seo_redirect_locks',
         'editor_drafts',
         'failed_jobs',
         'private_file_cleanup_jobs',
@@ -126,6 +126,24 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         );
     }
 
+    public function test_public_content_database_contains_every_current_migration(): void
+    {
+        $database = $this->readOnlyConnection(database_path(self::ARTIFACT));
+        $applied = $database->query('SELECT migration FROM migrations ORDER BY migration')
+            ->fetchAll(PDO::FETCH_COLUMN);
+        $expected = array_map(
+            static fn (string $path): string => pathinfo($path, PATHINFO_FILENAME),
+            glob(database_path('migrations/*.php')) ?: []
+        );
+        sort($expected, SORT_STRING);
+
+        $this->assertSame(
+            $expected,
+            $applied,
+            'The public-content SQLite artifact must be rebuilt after every migration change.'
+        );
+    }
+
     public function test_public_content_database_contains_no_sensitive_or_operational_rows(): void
     {
         $database = $this->readOnlyConnection(database_path(self::ARTIFACT));
@@ -138,6 +156,18 @@ final class PublicContentDatabaseArtifactTest extends TestCase
                 "Sensitive or operational table [{$table}] must be empty in the public artifact."
             );
         }
+    }
+
+    public function test_public_content_database_retains_the_required_redirect_mutex(): void
+    {
+        $database = $this->readOnlyConnection(database_path(self::ARTIFACT));
+
+        $this->assertTableExists($database, 'seo_redirect_locks');
+        $this->assertSame(
+            [['id' => 1]],
+            $database->query('SELECT id FROM seo_redirect_locks ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
+            'The public-content database must retain the non-sensitive singleton used to serialize redirect edits.'
+        );
     }
 
     public function test_public_content_database_has_no_unclassified_nonempty_tables(): void
@@ -218,7 +248,7 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         $tables = $snapshot['tables'] ?? null;
 
         $this->assertIsArray($tables, 'The CMS snapshot table manifest is invalid.');
-        $this->assertCount(26, $tables, 'The public CMS snapshot must retain its 26-table allowlist.');
+        $this->assertCount(29, $tables, 'The public CMS snapshot must retain its 29-table allowlist.');
 
         foreach ($tables as $table => $records) {
             $this->assertIsString($table);
@@ -229,6 +259,88 @@ final class PublicContentDatabaseArtifactTest extends TestCase
                 $this->rowCount($database, $table),
                 "Public table [{$table}] does not match the CMS snapshot row count."
             );
+        }
+    }
+
+    public function test_bangla_team_overlays_follow_their_stable_english_member_identity(): void
+    {
+        $database = $this->readOnlyConnection(database_path(self::ARTIFACT));
+        $expected = [
+            'Muhammad Jahirul Islam' => [
+                'name' => 'মুহাম্মদ জাহিরুল ইসলাম',
+                'description' => 'প্রতিষ্ঠাতা - সভাপতি',
+            ],
+            'Monmoy Jahan Ali' => [
+                'name' => 'মনময় জাহান আলী',
+                'description' => 'উপ-সভাপতি',
+            ],
+            'Md. Rafeu Riyan' => [
+                'name' => 'মো. রাফিউ রিয়ান',
+                'description' => 'সাধারণ সম্পাদক',
+            ],
+            'Israt Jahan' => [
+                'name' => 'ইসরাত জাহান',
+                'description' => 'কোষাধ্যক্ষ',
+            ],
+            'Md. Fazle Munim' => [
+                'name' => 'মো. ফজলে মুনিম',
+                'description' => 'নির্বাহী সদস্য',
+            ],
+            'Md. Tajdin Hassan' => [
+                'name' => 'মো. তাজদিন হাসান',
+                'description' => 'নির্বাহী সদস্য',
+            ],
+            'Josinta Zinia' => [
+                'name' => 'জোসেন্টা জিনিয়া',
+                'description' => 'নির্বাহী সদস্য',
+            ],
+        ];
+        $members = $database->query(
+            "SELECT id, name, description
+             FROM latest_news
+             WHERE type = 'our-members' AND status = 1 AND language = 'en'
+             ORDER BY name"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->assertCount(count($expected), $members);
+        $this->assertEqualsCanonicalizing(array_keys($expected), array_column($members, 'name'));
+        $this->assertSame(
+            count($expected) * 2,
+            (int) $database->query(
+                "SELECT COUNT(*) FROM translation_strings
+                 WHERE locale = 'bn'
+                   AND (key GLOB 'content.team_member.*.name'
+                        OR key GLOB 'content.team_member.*.description')"
+            )->fetchColumn(),
+            'The artifact must contain exactly one Bangla name and role overlay for every approved team member.'
+        );
+
+        $translation = $database->prepare(
+            'SELECT value, source_hash, status FROM translation_strings WHERE locale = :locale AND key = :key'
+        );
+        foreach ($members as $member) {
+            $identity = (string) $member['name'];
+            $this->assertArrayHasKey($identity, $expected);
+
+            foreach (['name', 'description'] as $field) {
+                $translation->execute([
+                    'locale' => 'bn',
+                    'key' => 'content.team_member.'.(int) $member['id'].'.'.$field,
+                ]);
+                $overlay = $translation->fetch(PDO::FETCH_ASSOC);
+
+                $this->assertIsArray(
+                    $overlay,
+                    "The approved Bangla [{$field}] overlay is missing for [{$identity}]."
+                );
+                $this->assertSame($expected[$identity][$field], $overlay['value']);
+                $this->assertSame(
+                    hash('sha256', 'en|'.(string) $member[$field]),
+                    $overlay['source_hash'],
+                    "The Bangla [{$field}] overlay source hash does not belong to [{$identity}]."
+                );
+                $this->assertSame('translated', $overlay['status']);
+            }
         }
     }
 
@@ -292,6 +404,36 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         [$expected] = explode('  ', $manifest, 2);
 
         $this->assertSame(strtolower($expected), hash_file('sha256', $artifactPath));
+    }
+
+    public function test_private_annual_report_files_referenced_by_the_artifact_are_bundled_for_restore(): void
+    {
+        $database = $this->readOnlyConnection(database_path(self::ARTIFACT));
+        $reports = $database->query(
+            "SELECT DISTINCT image_path AS filename, file_size
+             FROM annual_reports
+             WHERE status = 1 AND COALESCE(TRIM(image_path), '') <> ''
+             ORDER BY image_path"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $this->assertNotEmpty($reports, 'The public-content artifact should retain its approved annual reports.');
+
+        foreach ($reports as $report) {
+            $filename = (string) $report['filename'];
+            $this->assertSame(basename($filename), $filename, 'Annual-report paths must remain private-storage basenames.');
+
+            $assetPath = database_path('seeders/assets/annual-reports/'.$filename);
+            $this->assertFileExists($assetPath, "Bundled annual-report file [{$filename}] is missing.");
+            $this->assertSame(
+                (int) $report['file_size'],
+                filesize($assetPath),
+                "Bundled annual-report file [{$filename}] differs from its approved metadata."
+            );
+        }
+
+        $instructions = File::get(database_path('seeders/seed-data/igf-public-content.README.md'));
+        $this->assertStringContainsString('storage/app/annual-reports', $instructions);
+        $this->assertStringContainsString('database/seeders/assets/annual-reports/*.pdf', $instructions);
     }
 
     private function readOnlyConnection(string $path): PDO

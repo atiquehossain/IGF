@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>{{ $Lang->Admin }} - {{ $title }}</title>
-        <meta name="description" content="Ignite Global Foundation content management platform">
+        <meta name="description" content="{{ \App\Support\AdminUi::text('meta.description') }}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -208,4 +208,4 @@
     </head>
 
     <body class="layout-wrapper">
-        <a class="igf-skip-link" href="#admin-content">Skip to main content</a>
+        <a class="igf-skip-link" href="#admin-content">{{ \App\Support\AdminUi::text('shell.skip_to_content') }}</a>

@@ -44,13 +44,18 @@ Route::prefix('admin')->group(function () {
             Route::delete('jobs/{job}', 'Admin\JobPostingController@destroy')->name('recruitment.jobs.destroy');
 
             Route::get('forms', 'Admin\ApplicationFormController@index')->defaults('purpose', 'job')->name('recruitment.forms.index');
+            Route::get('forms/trash', 'Admin\ApplicationFormController@trash')->defaults('purpose', 'job')->name('recruitment.forms.trash');
+            Route::patch('forms/trash/{form}/restore', 'Admin\ApplicationFormController@restore')->defaults('purpose', 'job')->name('recruitment.forms.restore');
+            Route::delete('forms/trash/{form}', 'Admin\ApplicationFormController@forceDestroy')->defaults('purpose', 'job')->name('recruitment.forms.force-destroy');
             Route::get('forms/create', 'Admin\ApplicationFormController@create')->defaults('purpose', 'job')->name('recruitment.forms.create');
             Route::post('forms', 'Admin\ApplicationFormController@store')->defaults('purpose', 'job')->name('recruitment.forms.store');
             Route::get('forms/{form}/edit', 'Admin\ApplicationFormController@edit')->defaults('purpose', 'job')->name('recruitment.forms.edit');
             Route::put('forms/{form}', 'Admin\ApplicationFormController@update')->defaults('purpose', 'job')->name('recruitment.forms.update');
+            Route::patch('forms/{form}/metadata', 'Admin\ApplicationFormController@updateMetadata')->defaults('purpose', 'job')->name('recruitment.forms.metadata');
             Route::post('forms/{form}/publish', 'Admin\ApplicationFormController@publish')->defaults('purpose', 'job')->name('recruitment.forms.publish');
             Route::post('forms/{form}/duplicate', 'Admin\ApplicationFormController@duplicate')->defaults('purpose', 'job')->name('recruitment.forms.duplicate');
             Route::get('forms/{form}/preview', 'Admin\ApplicationFormController@preview')->defaults('purpose', 'job')->name('recruitment.forms.preview');
+            Route::delete('forms/{form}', 'Admin\ApplicationFormController@destroy')->defaults('purpose', 'job')->name('recruitment.forms.destroy');
 
             Route::get('applications', 'Admin\JobApplicationController@index')->name('recruitment.applications.index');
             Route::post('applications/search', 'Admin\JobApplicationController@search')->name('recruitment.applications.search');
@@ -89,13 +94,18 @@ Route::prefix('admin')->group(function () {
 
         Route::prefix('workshop')->group(function () {
             Route::get('forms', 'Admin\ApplicationFormController@index')->defaults('purpose', 'workshop')->name('workshop.forms.index');
+            Route::get('forms/trash', 'Admin\ApplicationFormController@trash')->defaults('purpose', 'workshop')->name('workshop.forms.trash');
+            Route::patch('forms/trash/{form}/restore', 'Admin\ApplicationFormController@restore')->defaults('purpose', 'workshop')->name('workshop.forms.restore');
+            Route::delete('forms/trash/{form}', 'Admin\ApplicationFormController@forceDestroy')->defaults('purpose', 'workshop')->name('workshop.forms.force-destroy');
             Route::get('forms/create', 'Admin\ApplicationFormController@create')->defaults('purpose', 'workshop')->name('workshop.forms.create');
             Route::post('forms', 'Admin\ApplicationFormController@store')->defaults('purpose', 'workshop')->name('workshop.forms.store');
             Route::get('forms/{form}/edit', 'Admin\ApplicationFormController@edit')->defaults('purpose', 'workshop')->name('workshop.forms.edit');
             Route::put('forms/{form}', 'Admin\ApplicationFormController@update')->defaults('purpose', 'workshop')->name('workshop.forms.update');
+            Route::patch('forms/{form}/metadata', 'Admin\ApplicationFormController@updateMetadata')->defaults('purpose', 'workshop')->name('workshop.forms.metadata');
             Route::post('forms/{form}/publish', 'Admin\ApplicationFormController@publish')->defaults('purpose', 'workshop')->name('workshop.forms.publish');
             Route::post('forms/{form}/duplicate', 'Admin\ApplicationFormController@duplicate')->defaults('purpose', 'workshop')->name('workshop.forms.duplicate');
             Route::get('forms/{form}/preview', 'Admin\ApplicationFormController@preview')->defaults('purpose', 'workshop')->name('workshop.forms.preview');
+            Route::delete('forms/{form}', 'Admin\ApplicationFormController@destroy')->defaults('purpose', 'workshop')->name('workshop.forms.destroy');
 
             Route::get('registrations', 'Admin\WorkshopRegistrationController@index')->name('workshop.registrations.index');
             Route::post('registrations/search', 'Admin\WorkshopRegistrationController@search')->name('workshop.registrations.search');
@@ -354,6 +364,8 @@ Route::prefix('admin')->group(function () {
         Route::put('donation-type/group/{donationCauseGroup}', 'Admin\DonationCauseGroupController@update')->name('donationType.group.update');
         Route::put('donation-type/group/{donationCauseGroup}/status', 'Admin\DonationCauseGroupController@status')->name('donationType.group.status');
         Route::delete('donation-type/group/{donationCauseGroup}', 'Admin\DonationCauseGroupController@destroy')->name('donationType.group.destroy');
+        Route::get('donation-type/{donationType}/content', 'Admin\DonationCauseContentController@edit')->name('donationType.content.edit');
+        Route::put('donation-type/{donationType}/content', 'Admin\DonationCauseContentController@update')->name('donationType.content.update');
         Route::get('donation-type/{id}', 'Admin\DonationTypeController@show')->name('donationType.show');
         Route::get('donation-type/{id}/edit', 'Admin\DonationTypeController@edit')->name('donationType.edit');
         Route::put('donation-type', 'Admin\DonationTypeController@update')->name('donationType.update');
@@ -387,6 +399,11 @@ Route::prefix('admin')->group(function () {
         Route::delete('/subscriber/{id}/', 'Admin\SubscriberController@destroy')->name('subscriber.destroy');
         Route::get('subscriber/download-excel', 'Admin\SubscriberController@excel_download')->name('subscriber-excel-download.index');
         Route::post('subscriber/{subscriber:uuid}/send-email', 'Admin\SubscriberController@sendEmail')->name('subscriber.sendEmail');
+
+        Route::get('email-templates', 'Admin\TransactionalEmailTemplateController@index')->name('transactional-mail.index');
+        Route::get('email-templates/{templateKey}/{locale}', 'Admin\TransactionalEmailTemplateController@show')->name('transactional-mail.show');
+        Route::put('email-templates/{templateKey}/{locale}', 'Admin\TransactionalEmailTemplateController@update')->name('transactional-mail.update');
+        Route::delete('email-templates/{templateKey}/{locale}', 'Admin\TransactionalEmailTemplateController@destroy')->name('transactional-mail.destroy');
 
 
         Route::get('comment', 'Admin\CommentController@index')->name('comment.index');

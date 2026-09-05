@@ -27,6 +27,8 @@
 .afb-eyebrow { margin: 0!important; color: var(--afb-primary)!important; font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
 .afb-breadcrumb { display: flex; gap: 9px; margin-bottom: 16px; color: var(--afb-muted); font-size: 13px; }
 .afb-breadcrumb a { color: var(--afb-primary); font-weight: 800; }
+.afb-page-header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.afb-readonly-notice { margin-bottom: 18px; }
 
 .afb-filter-card { margin-bottom: 18px; }
 .afb-filter-grid { display: grid; grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, .7fr)) auto; gap: 14px; padding: 18px; align-items: end; }
@@ -43,7 +45,10 @@
 .afb-table th { white-space: nowrap; }
 .afb-table td { vertical-align: middle; }
 .afb-row-meta { display: block; margin-top: 4px; color: var(--afb-muted); font-size: 11px; }
-.afb-row-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+.afb-row-actions { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 6px; }
+.afb-lifecycle-form { display: inline-flex; margin: 0; }
+.afb-action-help { width: 100%; color: var(--afb-muted); text-align: right; }
+.afb-row-actions button:disabled { cursor: not-allowed; opacity: .48; }
 .afb-duplicate { position: relative; }
 .afb-duplicate > summary { list-style: none; cursor: pointer; }
 .afb-duplicate > summary::-webkit-details-marker { display: none; }
@@ -66,6 +71,14 @@
 .afb-check--card span { display: grid; gap: 3px; }
 .afb-check--card strong { font-size: 13px; }
 .afb-form-actions { justify-content: flex-end; padding-top: 4px; }
+.afb-metadata-card { margin: 0 24px 18px; border: 1px solid var(--afb-line); }
+.afb-metadata-card > summary { display: flex; min-height: 52px; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; cursor: pointer; list-style: none; }
+.afb-metadata-card > summary::-webkit-details-marker { display: none; }
+.afb-metadata-card > summary span { color: var(--afb-primary); font-weight: 850; }
+.afb-metadata-card > summary small { color: var(--afb-muted); }
+.afb-metadata-form { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(220px, .7fr) auto; align-items: end; gap: 14px; padding: 18px; border-top: 1px solid var(--afb-line); }
+.afb-metadata-form > label:not(.afb-check) { display: grid; gap: 6px; margin: 0; }
+.afb-metadata-form > label > span { font-size: 12px; font-weight: 850; }
 
 .afb-builder-page { padding: 20px 24px 32px; }
 .afb-builder-header { align-items: center; }
@@ -186,6 +199,7 @@
     .afb-page-header,
     .afb-builder-header,
     .afb-preview-toolbar { align-items: stretch; flex-direction: column; }
+    .afb-page-header-actions { justify-content: flex-start; }
     .afb-builder-header-actions,
     .afb-preview-actions { justify-content: flex-start; }
     .afb-builder-toolbar { position: static; flex-wrap: wrap; }
@@ -195,6 +209,7 @@
     .afb-builder-guide { border-right: 0; border-bottom: 1px solid var(--afb-line); }
     .afb-language-grid,
     .afb-field-settings-grid { grid-template-columns: 1fr; }
+    .afb-metadata-form { grid-template-columns: 1fr; }
     .afb-option-row { grid-template-columns: auto minmax(0, 1fr) auto; }
     .afb-option-row label:nth-of-type(2) { grid-column: 2 / -1; }
 }
@@ -205,6 +220,10 @@
     .afb-form-actions { align-items: stretch; flex-direction: column-reverse; }
     .afb-filter-actions .btn,
     .afb-form-actions .btn { width: 100%; }
+    .afb-page-header-actions { align-items: stretch; flex-direction: column; }
+    .afb-page-header-actions .btn { width: 100%; }
+    .afb-metadata-card { margin-right: 15px; margin-left: 15px; }
+    .afb-metadata-card > summary { align-items: flex-start; flex-direction: column; }
     .afb-field-workspace { padding: 14px; }
     .afb-field-list-heading { align-items: stretch; flex-direction: column; }
     .afb-field-card-header { grid-template-columns: auto minmax(0, 1fr); }

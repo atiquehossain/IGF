@@ -8,8 +8,10 @@ use Inertia\Inertia;
 
 use App\Models\AnnualReport;
 use App\Services\PublicArchiveSeoService;
+use App\Services\PublicSystemPageMetaService;
 use App\Services\PublicStructuredDataService;
 use App\Services\SeoMetadataService;
+use App\Services\SiteSettingService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,14 +19,26 @@ class AnnualReportController extends Controller
 {
     public function __construct(
         private PublicArchiveSeoService $archiveSeo,
+        private PublicSystemPageMetaService $systemMeta,
         private PublicStructuredDataService $structuredData,
         private SeoMetadataService $seo,
+        private SiteSettingService $siteSettings,
     ) {
     }
 
     public function index(Request $request)
     {
-        $title = 'Annual Reports';
+        $pageMeta = $this->systemMeta->resolve(
+            $request,
+            'reports_page.title',
+            'reports_page.introduction',
+            [
+                'title' => 'Annual reports',
+                'meta_title' => 'Annual Reports',
+                'description' => 'Read Ignite Global Foundation annual reports and published records of programs, governance, and responsible stewardship.',
+            ],
+        );
+        $title = $pageMeta['title'];
         $search = is_string($request->query('search'))
             ? trim((string) $request->query('search'))
             : '';
@@ -50,7 +64,14 @@ class AnnualReportController extends Controller
 
         $this->archiveSeo->abortIfOutOfRange($annualReports);
 
-        $annualReports->getCollection()->transform(function (AnnualReport $item): array {
+        $reportPageSettings = (array) data_get(
+            $this->siteSettings->values((string) app()->getLocale(), true),
+            'reports_page',
+            [],
+        );
+        $summaryFallback = trim((string) ($reportPageSettings['detail_summary_fallback'] ?? ''));
+
+        $annualReports->getCollection()->transform(function (AnnualReport $item) use ($summaryFallback): array {
             $publishedAt = $item->published_at;
             $imageUrl = $this->coverImageUrl($item);
 
@@ -59,7 +80,7 @@ class AnnualReportController extends Controller
                 'title' => (string) $item->title,
                 'sub_title' => (string) $item->sub_title,
                 'slug' => (string) $item->slug,
-                'summary' => $this->summary($item),
+                'summary' => $this->summary($item, $summaryFallback),
                 'publisher_name' => (string) $item->publisher_name,
                 'published_at' => $publishedAt ? Carbon::parse($publishedAt)->toDateString() : null,
                 'file_type' => 'application/pdf',
@@ -70,11 +91,15 @@ class AnnualReportController extends Controller
             ];
         });
 
-        $meta_tag = $this->archiveSeo->apply(array_merge([
-            'meta_keyword' => 'annual reports, nonprofit transparency, Ignite Global Foundation',
-            'meta_title' => 'Annual Reports | Ignite Global Foundation',
-            'meta_description' => 'Read Ignite Global Foundation annual reports and published records of programs, governance, and responsible stewardship.',
-        ], (array) $request->attributes->get('route_seo', [])), $request, $annualReports, route('frontend.annual_report.index'));
+        $meta_tag = $this->archiveSeo->apply(
+            array_merge(
+                $pageMeta['meta_tag'],
+                (array) $request->attributes->get('route_seo', []),
+            ),
+            $request,
+            $annualReports,
+            route('frontend.annual_report.index'),
+        );
         if (empty($meta_tag['schema_markup']) || $annualReports->currentPage() > 1) {
             $canonical = (string) $meta_tag['canonical_url'];
             $meta_tag['schema_markup'] = $this->structuredData->collection(
@@ -105,7 +130,7 @@ class AnnualReportController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(Request $request, string $slug)
     {
         $report = AnnualReport::query()
             ->publiclyReleased()
@@ -118,14 +143,22 @@ class AnnualReportController extends Controller
             (string) app()->getLocale()
         );
         $downloadUrl = route('frontend.annual_report.download', ['slug' => $report->slug]);
-        $summary = $this->summary($report);
+        $publicSettings = $this->siteSettings->values((string) app()->getLocale(), true);
+        $summary = $this->summary(
+            $report,
+            trim((string) data_get($publicSettings, 'reports_page.detail_summary_fallback', '')),
+        );
+        $publisherName = trim((string) $report->publisher_name)
+            ?: trim((string) data_get($publicSettings, 'branding.site_name', ''));
         $imageUrl = $this->coverImageUrl($report);
-        $metaTag = $this->seo->metaForModel($report, [
-            'meta_keyword' => trim((string) $report->title) . ', annual report, nonprofit transparency',
-            'meta_title' => trim((string) $report->title) . ' | Ignite Global Foundation',
-            'meta_description' => str($summary)->limit(160)->toString(),
-            'meta_image' => $imageUrl ?: '',
-        ], $canonical);
+        $metaTag = $this->seo->metaForModel($report, array_merge(
+            $this->systemMeta->forContent(
+                (string) $report->title,
+                str($summary)->limit(160)->toString(),
+                $request,
+            ),
+            ['meta_image' => $imageUrl ?: ''],
+        ), $canonical);
         if (empty($metaTag['schema_markup'])) {
             $metaTag['schema_markup'] = $this->structuredData->report(
                 $report,
@@ -156,7 +189,7 @@ class AnnualReportController extends Controller
                     'sub_title' => (string) $report->sub_title,
                     'slug' => (string) $report->slug,
                     'summary' => $summary,
-                    'publisher_name' => (string) ($report->publisher_name ?: 'Ignite Global Foundation'),
+                    'publisher_name' => $publisherName,
                     'published_at' => $publishedAt?->toDateString(),
                     'year' => $publishedAt?->year,
                     'file_type' => 'application/pdf',
@@ -207,7 +240,7 @@ class AnnualReportController extends Controller
         return $date !== false && $date->format('Y-m-d') === $value;
     }
 
-    private function summary(AnnualReport $report): string
+    private function summary(AnnualReport $report, string $fallback): string
     {
         $value = $report->description ?: $report->sub_title;
         $value = html_entity_decode(strip_tags((string) $value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -217,7 +250,7 @@ class AnnualReportController extends Controller
 
         return $value !== ''
             ? mb_substr($value, 0, 3000)
-            : 'Review this annual report for a transparent record of Ignite Global Foundation programs, governance, and responsible stewardship.';
+            : (trim($fallback) ?: (string) $report->title);
     }
 
     private function coverImageUrl(AnnualReport $report): ?string

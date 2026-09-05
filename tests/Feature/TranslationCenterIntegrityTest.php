@@ -15,6 +15,7 @@ use App\Models\PageBlock;
 use App\Models\PageMenu;
 use App\Models\Role;
 use App\Models\SiteSetting;
+use App\Models\Testimonial;
 use App\Models\TranslationLocale;
 use App\Models\TranslationString;
 use App\Services\PageEditorVersionService;
@@ -104,6 +105,45 @@ class TranslationCenterIntegrityTest extends TestCase
             Page::where('uuid', $page->uuid)->pluck('editor_version')->unique()->values()->all(),
             'One mixed Page/PageBlock batch must advance its logical Page generation exactly once.'
         );
+    }
+
+    public function test_testimonial_translation_reuses_its_logical_uuid_in_a_second_locale(): void
+    {
+        $source = Testimonial::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Community member',
+            'designation' => 'Feni',
+            'testimonial' => '<p>Ignite helped our family rebuild.</p>',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $service = app(TranslationCenterService::class);
+        $row = $service->rows('en', 'bn')->first(fn (array $candidate): bool =>
+            ($candidate['identity']['type'] ?? null) === 'content'
+            && ($candidate['identity']['model'] ?? null) === 'testimonial'
+            && ($candidate['identity']['source_id'] ?? null) === $source->id
+            && ($candidate['identity']['field'] ?? null) === 'name'
+        );
+
+        $this->assertNotNull($row);
+        $service->save('en', 'bn', [[
+            'key' => $row['key'],
+            'precondition' => $row['precondition'],
+            'value' => 'কমিউনিটির সদস্য',
+        ]], null);
+
+        $this->assertDatabaseHas('testimonials', [
+            'uuid' => $source->uuid,
+            'language' => 'en',
+            'name' => 'Community member',
+        ]);
+        $this->assertDatabaseHas('testimonials', [
+            'uuid' => $source->uuid,
+            'language' => 'bn',
+            'name' => 'কমিউনিটির সদস্য',
+            'status' => 0,
+        ]);
+        $this->assertSame(2, Testimonial::query()->where('uuid', $source->uuid)->count());
     }
 
     public function test_stale_page_block_batch_is_rejected_before_any_row_is_written(): void

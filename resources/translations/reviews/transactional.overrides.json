@@ -1,0 +1,1438 @@
+{
+  "e6529b314e0efc515257dd55a4af92144c827a7f245028c1c6f8e6cbda4a75c2": {
+    "translation": "community",
+    "preserve_source": true
+  },
+  "b1e7c0bd4a6b7321af735ee730e30f9ff42350081d6977b50e1a66311a884ffd": {
+    "translation": "dashboard",
+    "preserve_source": true
+  },
+  "453dddd94b14ad707a47db6df10e77dbe0a0d49fa5874193e8aadaa8f02e05e8": {
+    "translation": "হোম",
+    "preserve_source": false
+  },
+  "1a2e003dbe317d3c5ecfa0f8d899ba818eb393f04324360ae34c8d3dd974aee3": {
+    "translation": "Spotlight",
+    "preserve_source": true
+  },
+  "f3a88eba40256a95ce0e60e2d2554e2b921d54ebff91464d1932be87167dc48c": {
+    "translation": "আসন্ন ইভেন্টসমূহ",
+    "preserve_source": false
+  },
+  "ee46cb5e82622296c8feb88d1621ec38a727d50d7141e80aef8a45780e9bdb99": {
+    "translation": "কার্যক্রমের বিস্তারিত",
+    "preserve_source": false
+  },
+  "84e000bce3f032ce7d55c834f0d970d1ac77da924968db307e6ca542f5d36197": {
+    "translation": "এলিমিনেশন রানিং",
+    "preserve_source": false
+  },
+  "cbd381ad8ffe15757d910916df449dc045083d6d569ed2ac8fbd606e560071e1": {
+    "translation": "জিমন্যাস্টিকস প্রতিভা প্রদর্শনী",
+    "preserve_source": false
+  },
+  "4719fef4a5806b965d4e0009b7cfd87e4887bc1345114088807fa9bbeca44d4d": {
+    "translation": "মিনিটের সময়কাল",
+    "preserve_source": false
+  },
+  "2ab6efe00e30fa09cba050a063b5331a48e967aecd10835df9cf17c4d220a355": {
+    "translation": "এখনই যোগ দিন",
+    "preserve_source": false
+  },
+  "b8f274e00d2f3dd01bca93bd3bc7322808fa13028779fe7490e6a1e1cf9566eb": {
+    "translation": "বার্মিজ",
+    "preserve_source": false
+  },
+  "f41d3a13287efeaacbe089fa2f0bd1e80a151ac837a58337aad172f468308009": {
+    "translation": "ক্লিপবোর্ডে কপি করুন",
+    "preserve_source": false
+  },
+  "b3f5cf1d9a9474ff875ed8f2ddd0d205fb23848d9eb5103d053fb73966a8a4bd": {
+    "translation": "ভূমিকা",
+    "preserve_source": false
+  },
+  "6bc177a481971bce4892ae56ad0844780b40b640f21f867c30361b16b49aab44": {
+    "translation": "প্রচলিত বিভ্রান্তি",
+    "preserve_source": false
+  },
+  "0cb0fb89fd2c3e977847ac52cd1e3b1fc02c4676d3ff330a13981a1f465ed418": {
+    "translation": "রিসোর্সের বিস্তারিত",
+    "preserve_source": false
+  },
+  "cbe805386376b263096ad02abc6e6225541a90a756913a04b9a1b38daf23e9c3": {
+    "translation": "Preposition-এর নিয়মাবলি",
+    "preserve_source": false
+  },
+  "d4be600b0af938e4c492f5bd133a5f4571dc4939a0cdbc5f79186ad63433e83e": {
+    "translation": "সকল রিসোর্স",
+    "preserve_source": false
+  },
+  "cfa5c7a8741ff6160e8402c15fb7e062a0d4ad9a629fa2290a9603b5cdc2e2eb": {
+    "translation": "ফুটারের কলাম: অনুদানদাতা সহায়তা",
+    "preserve_source": false
+  },
+  "f7601247465a3fdbf6c791935bd7b112e55bfd144d6ee04101531e1cdb5eeb5d": {
+    "translation": "ফুটারের কলাম: ঘুরে দেখুন",
+    "preserve_source": false
+  },
+  "2c9874204f862616b1b0217f6a8dadf3f11b66bf88ab737def63d375f153a48f": {
+    "translation": "ফুটারের কলাম: আইনগত তথ্য ও যোগাযোগ",
+    "preserve_source": false
+  },
+  "8d95b8f9746d1d0b1f1c1313f1abafc3342f74c177bac9a6c15fda2557e3c4aa": {
+    "translation": "ফুটারের কলাম: কর্মসূচি",
+    "preserve_source": false
+  },
+  "0c1287b1fc42e0b30ae1e16a5dc4edaaa670d530a29ba9c9f9adc4d61fbff317": {
+    "translation": "যোগাযোগ করুন",
+    "preserve_source": false
+  },
+  "8c2cfc69cc685cb5611778ad4aeb88eaed04f1fd2412e6225f06b013360b05fe": {
+    "translation": "অনুদানদাতা সহায়তা",
+    "preserve_source": false
+  },
+  "8771656ca3c07dd24e032a3753d802581c2a6a1db877ca26c1b4fcea22e5a0f1": {
+    "translation": "ঘুরে দেখুন",
+    "preserve_source": false
+  },
+  "3411794bbabbbeaae5fac8d1f8dc487c44646c6997feb87d3796f3d1506b10e4": {
+    "translation": "গ্যালারি",
+    "preserve_source": false
+  },
+  "eef6c46457b9fa7cdfadcb7d59111fe822358f6aeaae45349cfd8fa18a98d29f": {
+    "translation": "আইনগত তথ্য ও যোগাযোগ",
+    "preserve_source": false
+  },
+  "43b6cc29e15cdffbe5a99b9dc86389f4f27ce15fbc898805adfbdeb33c0d60f2": {
+    "translation": "সংবাদ ও ব্লগ",
+    "preserve_source": false
+  },
+  "1304a2641bc1372656ba938f6733640e6a7a025e518f22fb0d11c4d718e2b588": {
+    "translation": "রিফান্ড নীতি",
+    "preserve_source": false
+  },
+  "7e73ea5605c7b6def55d1d329920c8796fae7c28cc0936e75bd4621c821ad3f0": {
+    "translation": "সুরক্ষা নীতি",
+    "preserve_source": false
+  },
+  "8798bba3aed204c85c7e3098c32a5edc30bb99d13802349bab44e8e2f5dc96f5": {
+    "translation": "একটি শিশুর পৃষ্ঠপোষক হোন",
+    "preserve_source": false
+  },
+  "db6c650624b21fbd0201e41ca526e91c5e7c8b3052c52fc651077e3a8a2c0760": {
+    "translation": "সেবার শর্তাবলি",
+    "preserve_source": false
+  },
+  "2ed9f821b88f54fa01e143b5c95a1d2538a1691ce2ae78975cde3e94a66f2e57": {
+    "translation": "স্বেচ্ছাসেবক হোন",
+    "preserve_source": false
+  },
+  "7b73945b89788a53eae1893da4f2a40cfb6b2ba389a1555760ac6b29aec11144": {
+    "translation": "অনুদানের উপায়",
+    "preserve_source": false
+  },
+  "f4aafc8e46c3a9f40dad5934d29ee32d9876b34ba29d079d85495ec359873382": {
+    "translation": "আমাদের সম্পর্কে",
+    "preserve_source": false
+  },
+  "ed282810c684a0a59d1edfd5e13bffadd588c62387ea327677bfa1577239e744": {
+    "translation": "কর্মসংস্থানের সুযোগ",
+    "preserve_source": false
+  },
+  "5f2b81d47f8f3e59db7ef46e1ab9241204fa064c1a952990363353d68f2f684e": {
+    "translation": "সম্পন্ন প্রকল্পসমূহ",
+    "preserve_source": false
+  },
+  "57bb86d9cc6c7e16453db9d862303b5bb4a4950ea95d19a5ee1070b854ced46d": {
+    "translation": "যোগাযোগ করুন",
+    "preserve_source": false
+  },
+  "3804a8c0af4aed99f02b8215e2a1fde81eb2182e15c62dbd73b6ac59584904bc": {
+    "translation": "চলমান প্রকল্পসমূহ",
+    "preserve_source": false
+  },
+  "d7143d0516fae5f78c46d84229a85008fd988e2f570635bc8dc7fda15af3ca77": {
+    "translation": "দুর্যোগ সহনশীলতা",
+    "preserve_source": false
+  },
+  "ae8af1440d587b174c5dbb13c633e663ec129ad810db112c5e90e5ba417fc993": {
+    "translation": "ইভেন্ট ও সংবাদ",
+    "preserve_source": false
+  },
+  "bb0018f986e0857ebcb2071f53f3786efb429aad77d70a04ce1fd7e49bcfc5f1": {
+    "translation": "প্রতিষ্ঠাতার চিঠি",
+    "preserve_source": false
+  },
+  "48b0185a675cbfbffd1b1cf47666cb26e95a74ea0049a45c36d8a83aafb26f9d": {
+    "translation": "আমাদের সঙ্গে যুক্ত হোন",
+    "preserve_source": false
+  },
+  "f63e9a0e4c2fbc0960360cace29d1c75cb39fb8d86babd25c55bc19238d9c8fd": {
+    "translation": "যাকাত দিন",
+    "preserve_source": false
+  },
+  "2d8ba2f332b336fdce3ae008d8fd8c4e4b969b0ca2e7f03479f057aa51c8c386": {
+    "translation": "হোম",
+    "preserve_source": false
+  },
+  "ae804a092f6760c6f941354cd77493cf6e3ca3a795bd73431d36696b1487fd9c": {
+    "translation": "অনুদান করুন",
+    "preserve_source": false
+  },
+  "d588a28464c6dd8a1032f9911126a590993707b688dbe9a87d62459a04c855a5": {
+    "translation": "ফটো গ্যালারি",
+    "preserve_source": false
+  },
+  "9f65df41d58d3fe010bbde148f11a4f5c12b0248cdaf41980c160846c511a935": {
+    "translation": "কর্মসূচির সারসংক্ষেপ",
+    "preserve_source": false
+  },
+  "42828a26e12541f408604904b0321e5f9c3c19b73e4e875df4731c9c9a3329ea": {
+    "translation": "একটি শিশুর পৃষ্ঠপোষক হোন",
+    "preserve_source": false
+  },
+  "0e6796fba9e27a3be634bd6964e73525efedcb684b466e78c05f165c89a8a4d4": {
+    "translation": "ইগনাইট স্কুল পরিদর্শন করুন",
+    "preserve_source": false
+  },
+  "671f06fcd82dd2798117a3b368dbfd2d59798407cb82fdf0fe73c03e0a720239": {
+    "translation": "স্বেচ্ছাসেবক হোন",
+    "preserve_source": false
+  },
+  "739b121e153afda4ef2554624820c661d2fb17bfe4074bbfa7019c8fbc3f6038": {
+    "translation": "জরুরি সহায়তা, দুর্যোগ সহনশীলতা, নিরাপদ পানি ও জরুরি সাড়াদান।",
+    "preserve_source": false
+  },
+  "b6add55d03281a538ed4ef33af539545228a1bb4f71f1108207d81f5152b1900": {
+    "translation": "শিক্ষা, বিদ্যালয়, যুব উন্নয়ন ও শিশু কল্যাণমূলক উদ্যোগ।",
+    "preserve_source": false
+  },
+  "beaff00b896497c4b3d494de14dfaa6cfd6fa6e3f64ecf39ae27b499bc42e801": {
+    "translation": "শিক্ষা ও শিশু কল্যাণ",
+    "preserve_source": false
+  },
+  "ceeb6277c31b5b00dab3bd4c3b20d6be9b6067c58801eff3b3db9ceaee9785e9": {
+    "translation": "যাকাত, সদকা, রমজান ও অন্যান্য মৌসুমি অনুদানের সুযোগ।",
+    "preserve_source": false
+  },
+  "784b916259196e3f8a69c099df8f6bc660d7cd9591d6df6dd587edb77e1b0eee": {
+    "translation": "ধর্মীয় ও মৌসুমি অনুদান",
+    "preserve_source": false
+  },
+  "23fa25fd3c184ad00c458d0ab46f28f74397da293d15e78045c6cffe40c395da": {
+    "translation": "কমিউনিটির অগ্রাধিকারভিত্তিক কার্যক্রমে ফাউন্ডেশনকে নমনীয়ভাবে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "3350e2898c52e39a08a4fcebc47122fdf9022e102a7e6658c90a83ebf5267b17": {
+    "translation": "শিক্ষাসামগ্রী, প্রয়োজনীয় সুযোগ-সুবিধা ও শ্রেণিকক্ষ সহায়তার মাধ্যমে একটি বিদ্যালয়কে শক্তিশালী করুন।",
+    "preserve_source": false
+  },
+  "7d2b0574d628815deaa8cd97568761ae5beb685db05eaaf372fc26a9db3355b9": {
+    "translation": "একটি বিদ্যালয়ের পৃষ্ঠপোষকতা তহবিল",
+    "preserve_source": false
+  },
+  "cfb4594b165ddbc596c6b935196e074d72203db727773a44c682ead95dcd73c3": {
+    "translation": "একটি বিদ্যালয়ের পৃষ্ঠপোষক হোন",
+    "preserve_source": false
+  },
+  "b257afc36cdb4b6040cdd2ecef22fdb43decaabf4bdb5eda1dfb1a7ff5278a93": {
+    "translation": "অনুমোদিত কমিউনিটি প্রয়োজনে স্বেচ্ছামূলক দান হিসেবে আপনার সদকা দিন।",
+    "preserve_source": false
+  },
+  "4485f403d9019e2024878dbf96187af59709a25ff11de841603c375de5a93bfd": {
+    "translation": "সদকা তহবিল",
+    "preserve_source": false
+  },
+  "582d216713c9e60835a3c75cfe830f6a21f6c4cc43ea56456eb72a68734dbbed": {
+    "translation": "আপনার সদকা দিন",
+    "preserve_source": false
+  },
+  "0627d58ad9ef36527d11267f45b759870c5e8c53748d384da2b9a9e128d36a43": {
+    "translation": "যাকাত সহায়তার জন্য যোগ্য কর্মসূচিসমূহ।",
+    "preserve_source": false
+  },
+  "2dda18ef69a298486bbbbcaa65e53ed62b733e3a1fac24a78bc86901bfc0f1f9": {
+    "translation": "আপনার যাকাত দিন",
+    "preserve_source": false
+  },
+  "31de9860148dbda237337158523a6a39410ef3ff290695afbcc7bb0b891729af": {
+    "translation": "শিক্ষার সুযোগ, শিক্ষাসামগ্রী ও বিদ্যালয় সহায়তা।",
+    "preserve_source": false
+  },
+  "c36668a9810e4ba141954219a6ee1bbdc0315180fe8b40b3fc3237a61eafecc6": {
+    "translation": "দুর্যোগ ও জরুরি পরিস্থিতিতে ক্ষতিগ্রস্ত কমিউনিটিকে জরুরি প্রয়োজনীয় সহায়তা দিন।",
+    "preserve_source": false
+  },
+  "03eedf03e27ebd24916f8bf696d297a83f6fb8a9a3fa97f2b02c90697997b6fa": {
+    "translation": "জরুরি ত্রাণ তহবিল",
+    "preserve_source": false
+  },
+  "a343a9a4b0c933e427c85f3e8f1c15a635643ef065eaf8e958eb422fc854635d": {
+    "translation": "সংকট বা জরুরি পরিস্থিতিতে থাকা পরিবারকে প্রয়োজনীয় খাদ্যসামগ্রী দিন।",
+    "preserve_source": false
+  },
+  "a2e7412fac609e02a7b3a127dcc7d7961ede6967959e155d5bc778ad459d7db9": {
+    "translation": "অভিভাবকীয় যত্নবঞ্চিত শিশুদের নিরাপদ আশ্রয়, শিক্ষা, পুষ্টি ও সার্বিক কল্যাণে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "6ff941bacae7d1780e828162ad9e5420589ebe726609176dc0ef7074adba1bce": {
+    "translation": "অনাথ শিশুদের আশ্রয় ও সহায়তা তহবিল",
+    "preserve_source": false
+  },
+  "16c2d16c2d2cb0c658de60ad3b4b3fd0924d161d43b9f4aa495bc83929c2df36": {
+    "translation": "অনাথ শিশুদের আশ্রয় ও সহায়তা",
+    "preserve_source": false
+  },
+  "40a22dca3fe53ec7660ba56e6682fc3170f7754c1b9cf6f5bb025bd097f8b403": {
+    "translation": "নিরাপদ পানি, স্যানিটেশন সুবিধা ও স্বাস্থ্যবিধি শিক্ষায় সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "fdb87dd7b2f52ff391a15e512e6bb8afd5b4d176cdd12a7787283dcde4d6d6f6": {
+    "translation": "যোগ্য পরিবারগুলোর জন্য কোরবানি ও মাংস বিতরণে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "c07f06df1d1c094b9f184288038274ba6ef78161884e1f21d0c67c81a0e3056a": {
+    "translation": "রমজানে পরিবার ও কমিউনিটির জন্য ইফতার সরবরাহ করুন।",
+    "preserve_source": false
+  },
+  "437a8801b781ee5254758e092f86d757d9299bfef3564c93c9fd94bbf5f81454": {
+    "translation": "রমজানের ইফতার",
+    "preserve_source": false
+  },
+  "46fe781c428a6343621a373a632e1f6da35dd6b68a79565f925d6a5f371db2c4": {
+    "translation": "শিশুদের শেখা ও বিকাশে সহায়ক পুষ্টিকর স্কুল-দিবসের খাবার দিন।",
+    "preserve_source": false
+  },
+  "be0b7a369a9cda0c9f7f22a4680cee5de67bb32ccf82084a5b2e46f7272c1b4c": {
+    "translation": "বিদ্যালয়ের শিক্ষাসামগ্রী",
+    "preserve_source": false
+  },
+  "f0cfe460b46c59fe14d4429c0923dcf57655049afbff528b1ac4dfdb33bf4687": {
+    "translation": "একটি পূর্ণাঙ্গ ইউনিফর্ম দিন, যাতে একজন শিক্ষার্থী আত্মবিশ্বাসের সঙ্গে স্কুলে যেতে পারে।",
+    "preserve_source": false
+  },
+  "e8c082b16e4d9e1b7329c4564d8254adbe6585c886493485778e334dae7e852e": {
+    "translation": "পথশিশুদের জন্য নিরাপদ, সহজলভ্য শিক্ষা ও সহায়তা দিন।",
+    "preserve_source": false
+  },
+  "8965d95395d67a68550cb4c4da6e7ca88399b6ebc990b80ade58bdc8c19239f0": {
+    "translation": "পথশিশুদের শিক্ষা",
+    "preserve_source": false
+  },
+  "09acd1b8b3b76fbed0f2346b003f03258e28d9edeaf89b0f322387266b17e8ff": {
+    "translation": "কমিউনিটির চলমান অগ্রাধিকারভিত্তিক কাজে নমনীয় সহায়তা।",
+    "preserve_source": false
+  },
+  "b4792e75415ce3d3217f8b85423a335541c6b96a1f3780c24cbdd8f2755b09ea": {
+    "translation": "নারীদের দক্ষতা, জীবিকা ও দীর্ঘমেয়াদি আর্থিক সক্ষমতা গড়ে তুলতে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "a98d0ccc472e4fbeecf81466012ed93b10a5da68a9469cdb1209bac148e319f4": {
+    "translation": "শিক্ষা, নেতৃত্ব ও কর্মসংস্থানযোগ্যতার দক্ষতায় তরুণদের সক্ষম করে তুলুন।",
+    "preserve_source": false
+  },
+  "9d6388a14144e2bd690f935f70f2f5f07f8cf14eafb06a23a83129a53c4f0aee": {
+    "translation": "সহায়তা কীভাবে ব্যবহার হচ্ছে, সে বিষয়ে স্বচ্ছ প্রতিবেদন",
+    "preserve_source": false
+  },
+  "c65346d7cda41bf5e05ef2861e021a55f5d555773c7ce8a62c1a6f9961d79bd5": {
+    "translation": "জবাবদিহিমূলক প্রভাব",
+    "preserve_source": false
+  },
+  "a9420df932c486ffc2b362132903b7ec1b1adfce5e120396118da8c7f956a1f9": {
+    "translation": "সব অনুদানের খাত",
+    "preserve_source": false
+  },
+  "8f0c2feeb59f981cbcc843108a0b2996a4b49debe55c6854b001088ec7229427": {
+    "translation": "সর্বোচ্চ দুই ঘর দশমিক পর্যন্ত লিখুন।",
+    "preserve_source": false
+  },
+  "653542198204325ab4d57e76f613997299ead57e4f1b8a27d72778a9cb46ab5c": {
+    "translation": "অনুদানের পরিমাণ আবশ্যক",
+    "preserve_source": false
+  },
+  "478e6fae33fe62d6d47af32fd77089f519a5c0162a6ff27e13f01dc8786c3276": {
+    "translation": "অনুদানের সব খাত",
+    "preserve_source": false
+  },
+  "777d9dd0f311a6a8b468f4265496cce0ff596027a303d412daf62e2dcc345324": {
+    "translation": "এই অনুদানের খাতটি নিচে দেখানো তহবিলকে সহায়তা করে; ফাউন্ডেশন নির্ধারিত উদ্দেশ্যের আওতায় অর্থ ব্যবহার করতে পারে।",
+    "preserve_source": false
+  },
+  "a10355f638693d8f994ec0b3bcaa86fd127d89789070d6d577ebe86553c027f3": {
+    "translation": "যোগ্য ডেবিট বা ক্রেডিট কার্ড দিয়ে নিরাপদে পেমেন্ট করুন",
+    "preserve_source": false
+  },
+  "598ddf59ff77bb3d99488711f638e93c7598c853cabe63f7394e2f6ddf434bd7": {
+    "translation": "এই খাতে অনুদান দিন",
+    "preserve_source": false
+  },
+  "3d8f97065f1bf828f83866944c8406e54fb40a75d4cc25a27d6331aa87bd80de": {
+    "translation": "একটি সক্রিয় অনুদানের খাত বেছে নিন, তারপর অনুদানের পরিমাণ নির্বাচন করে নিরাপদে পেমেন্ট সম্পন্ন করুন।",
+    "preserve_source": false
+  },
+  "8b65f689dcdfd69297ce8163f075c65831f121d53a04eed42df764329c389c88": {
+    "translation": "আপনার কাঙ্ক্ষিত প্রভাব বেছে নিন",
+    "preserve_source": false
+  },
+  "a6c34160e8c6aa283462e6e5d06e38c92a5b708b89c45d012450436e55ace6fc": {
+    "translation": "আপনার হৃদয়ের কাছের খাতটিতে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "889b140eaf9dc4bad69eb33e5742249411f0f931510c58e8596fe1af194e2c90": {
+    "translation": "অনুদানের খাতের বিভাগসমূহ",
+    "preserve_source": false
+  },
+  "fbac6758962273e59c70f94ef10bb60ba0d7242090815842da2fb3b918924572": {
+    "translation": "কোনো প্রকল্প বেছে নেওয়ার আগে অনুদানের একটি খাত নির্বাচন করুন।",
+    "preserve_source": false
+  },
+  "5cd24a74dce8ed24408d55b5a4baeed5b17b0e43678c132ce8e2518ba0981426": {
+    "translation": "পেমেন্টের পর লেনদেনের রেফারেন্স নম্বর পান",
+    "preserve_source": false
+  },
+  "f6ccfc9d21457f4e12415d04f3617d66276253692a35b97c3cf373e16d239fdd": {
+    "translation": "আপনার অনুদান যে খাতে যাবে",
+    "preserve_source": false
+  },
+  "2bb40667da9c9ae600d89e1c7bc29f3fdfd62fafecce2b7610d313c2b6a0d528": {
+    "translation": "বিস্তারিত তথ্য ও পেমেন্টে এগিয়ে যান",
+    "preserve_source": false
+  },
+  "3ac511a17a0e0e6eaeb9e567c8cc5f7600377821b4b794b1c8d5ac86372c9989": {
+    "translation": "বিস্তারিত তথ্য ও পেমেন্ট",
+    "preserve_source": false
+  },
+  "e1ac9bc6b2f26f621ccb86f007b063f50b31b09751d393268da046013c725053": {
+    "translation": "অনুদানের খাত নির্বাচন করুন *",
+    "preserve_source": false
+  },
+  "21b45a3dfe48f6013f7bb59f7c9eb32a1df97b5c1e2e5dd32289fc67d0b08807": {
+    "translation": "আপনার অনুদান কোন খাতে যাবে?",
+    "preserve_source": false
+  },
+  "b77c8df774b07d23b156760b7b35396f4a3696af4d4bcf0701f187613a7549cf": {
+    "translation": "আপনার অনুদান দিয়ে কোন খাতে প্রভাব রাখতে চান, তা বেছে নিন।",
+    "preserve_source": false
+  },
+  "f988df17bbaf3d994155beccb928cec2a76d5d8e0afe9703718f123fa162b633": {
+    "translation": "অনুদানের খাত বেছে নিন",
+    "preserve_source": false
+  },
+  "80688348ff6b8fbbfafe0b7206d536dcf1de2faaa752d5b09004429901394880": {
+    "translation": "অনুদানের সময়সূচি",
+    "preserve_source": false
+  },
+  "040ae45d23fa1b9fe577627868de28ed4234f8c0e4ba8c206319b02c3a794e06": {
+    "translation": "এককালীন অনুদানের অর্থ একবারই কাটা হয়। অনুমোদিত নিয়মিত পেমেন্ট সেবা সংযুক্ত হলে দৈনিক, সাপ্তাহিক ও মাসিক স্বয়ংক্রিয় অনুদান চালু হবে।",
+    "preserve_source": false
+  },
+  "41f45190f2089c3a0c85fa5389738bcddb48cc71e3915c50a991522012e7339b": {
+    "translation": "কত ঘন ঘন অনুদান দিতে চান",
+    "preserve_source": false
+  },
+  "eccba61f1647f51c148470d1e814580160e86d0434c62b430875e4f62144bc69": {
+    "translation": "অনুদানের ধাপসমূহ",
+    "preserve_source": false
+  },
+  "2fc83c2da8dd173f77d747982432636dd1cc4cebe6133503fb0dbb4c25674e2d": {
+    "translation": "নিরাপদ পেমেন্ট সেবায় যাওয়ার আগে আপনার নির্বাচনগুলো পর্যালোচনা করুন।",
+    "preserve_source": false
+  },
+  "4cc4583bf5ab5a43e28e9a3bae8b431c80c5776f388528f265e206916e17ec9c": {
+    "translation": "আপনার তথ্য",
+    "preserve_source": false
+  },
+  "4d70aa6739c5bcf65b6b3eecb17cadddfbe4df9202980841d91dc70d1d8e6da6": {
+    "translation": "অনুদানের নির্বাচন সম্পাদনা করুন",
+    "preserve_source": false
+  },
+  "b3464d29e6497a01256adb75f928310dc3c2b792aefca3edcf9c1e343b5d5fb5": {
+    "translation": "এই অনুদানের খাতটি শুধু নিচে দেখানো নির্দিষ্ট প্রকল্পের জন্য নির্ধারিত।",
+    "preserve_source": false
+  },
+  "3f9b2cfb4892ca8c60170a64ff543c9ca26e95a4cf02c682ccfdd9e5eaabd838": {
+    "translation": "অনুদান করুন",
+    "preserve_source": false
+  },
+  "952fe8d726d0a9c7e94229f962bb8ab87f304151795753dfbe50aa3dff0761ac": {
+    "translation": "অনুদানের বিকল্প",
+    "preserve_source": false
+  },
+  "5f724f22f7f9bbcb46d1c951356db782ef8993dbccb15bfb041d3c76b7bd830e": {
+    "translation": "স্বচ্ছ ও জবাবদিহিমূলক অনুদান",
+    "preserve_source": false
+  },
+  "788fe1a9df18e1c7827bc45546dfa190b86ba67b28d8e4d3a693cd0190bc76db": {
+    "translation": "প্রতিটি অনুদান আপনার নির্বাচিত খাতকে আরও শক্তিশালী করে।",
+    "preserve_source": false
+  },
+  "359b14e8b99b77533342a5afdcc4d8c49f68cd5e5d508fd6e56abcae5f4c238f": {
+    "translation": "বাংলাদেশে শিক্ষা, স্বাস্থ্যসেবা, জীবিকা, নিরাপদ পানি ও জরুরি ত্রাণে নিরাপদ এককালীন অনুদান দিন।",
+    "preserve_source": false
+  },
+  "4040ba7891cedb259d0385fea0ec00e529a655c6d03ecb20147c782edf4e4bac": {
+    "translation": "এগিয়ে গেলে আপনি আমাদের",
+    "preserve_source": false
+  },
+  "5c9b1eaa1795f2eda06af18bc1ea0caf573a17ac695c8e85ecd8bfb147bf0ce1": {
+    "translation": "পরিমাণ অন্তত {currency} ১০ হতে হবে",
+    "preserve_source": false
+  },
+  "8d2f96cf4fcf8943309f6f8771973ba244a673117e2cd2403a2873344f3fbdab": {
+    "translation": "আপনার নগদ অ্যাকাউন্ট থেকে নিরাপদে পেমেন্ট করুন",
+    "preserve_source": false
+  },
+  "d5f8693d652d9564ce05d850b17af3214fa857a138e46e8e4c3707ab9e784005": {
+    "translation": "নাম আবশ্যক",
+    "preserve_source": false
+  },
+  "231d33931dcf4040cabb40a45c4282870be9aa207b7b273f6b0b6c14018b9e66": {
+    "translation": "পেমেন্ট পদ্ধতিগুলো সাময়িকভাবে উপলভ্য নয়। অনুদান দেওয়ার আগে অনুগ্রহ করে আমাদের সঙ্গে যোগাযোগ করুন।",
+    "preserve_source": false
+  },
+  "f1d0432bbc6966e99aefcb9c294b8d3df259b009bd484ebd049f802f717dd378": {
+    "translation": "এককালীন",
+    "preserve_source": false
+  },
+  "2f5c0365e7793c739831d976e213917e84566cb4a9981cf3ea4118b63f2a662b": {
+    "translation": "অন্য পরিমাণ (BDT) *",
+    "preserve_source": false
+  },
+  "a28f999380de265e5e7b990a12f9426f689fe89eecbad8338198fc1cb92ff168": {
+    "translation": "নিজের পছন্দের পরিমাণ লিখুন",
+    "preserve_source": false
+  },
+  "b794098387d2b3d5497012ca0b94ac1e2418574b289e6fc58f93066e0f744bcb": {
+    "translation": "অন্য পরিমাণ",
+    "preserve_source": false
+  },
+  "52d9064d2e5b5e66a79fc1d31c57dd2b6fd03a9a3c2bde839892c11aeed3e429": {
+    "translation": "আপনার সহায়তায় কমিউনিটি দীর্ঘস্থায়ী পরিবর্তনে নেতৃত্ব দেয়।",
+    "preserve_source": false
+  },
+  "3059ef517cd5fadb6bcf3cd6f44bc11f7a4f8eeba51f7d0e1a1f328308332f18": {
+    "translation": "নিরাপদ পেমেন্টে এগিয়ে যান",
+    "preserve_source": false
+  },
+  "0c18577f09d5dff9ce21adaeb14373d2cbd4ce2bc478c0d7a6a996aec1ce3020": {
+    "translation": "নিরাপদে {amount} পেমেন্ট করতে এগিয়ে যান",
+    "preserve_source": false
+  },
+  "949c71cff72a24a8a3fd5684ad5fbe8f717b0bbe492d49e0fd0ae85cdae167b2": {
+    "translation": "এগিয়ে গেলে যাচাইকৃত পেমেন্ট সেবাদাতা ইগনাইট গ্লোবাল ফাউন্ডেশনের জন্য বর্তমানে সক্রিয় পেমেন্ট পদ্ধতিগুলো দেখাবে। এই ওয়েবসাইটে কখনোই কার্ড বা ওয়ালেটের তথ্য দিতে হয় না।",
+    "preserve_source": false
+  },
+  "dc759397e4529fb57668698589776994abf0cb588bfbe47e67080a8bda88c70f": {
+    "translation": "নিরাপদ পেমেন্টের বিকল্প",
+    "preserve_source": false
+  },
+  "538ec5deafc0921248b856fb5dbda5ab5569ba9f2bd924de158e836f88a0b7a4": {
+    "translation": "পেমেন্ট শুরু করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "preserve_source": false
+  },
+  "e7a78bf7174edb8f9b03251e3e4f76f08d10ddae281e9792d9c3bddb655cd895": {
+    "translation": "এই অনুদান প্রক্রিয়াকরণ ও নথিভুক্ত করার জন্যই শুধু আপনার তথ্য ব্যবহার করা হয়। এই পৃষ্ঠায় আমরা কখনোই কার্ডের তথ্য সংগ্রহ করি না।",
+    "preserve_source": false
+  },
+  "1084c1eba528fc4e900e11aad6f51a27acf5175000364e544cc61c5565547efc": {
+    "translation": "নির্দিষ্ট কোনো যোগ্য প্রকল্প বেছে নিন, অথবা পুরো কর্মসূচিকে সহায়তা করতে প্রকল্প নির্বাচন না করেও এগিয়ে যেতে পারেন।",
+    "preserve_source": false
+  },
+  "f3ffa276911ed6fcc45fae8acd29967e29cf1f74ea6e594e527bb7b242b910a4": {
+    "translation": "পুরো কর্মসূচিতে সহায়তা করুন",
+    "preserve_source": false
+  },
+  "e3ad39611345c5058e11c6cf4daf19bdf75569e70e84ce1853221bd55908866a": {
+    "translation": "রিফান্ড নীতি",
+    "preserve_source": false
+  },
+  "48bad6f6e599f6f5dc403e5f55a528211c8bb1f521ea20b4f36ef054b56a7282": {
+    "translation": "* চিহ্নিত ঘরগুলো পূরণ করা আবশ্যক।",
+    "preserve_source": false
+  },
+  "264deef5b27cd9971c13d7ed07274b6febe97273a58561e9905eeee2b4258fe6": {
+    "translation": "আমাদের যাচাইকৃত পেমেন্ট সহযোগীর মাধ্যমে প্রক্রিয়াকৃত",
+    "preserve_source": false
+  },
+  "1e9ba12890d25c242290b2a623faecc043ceaa26a49d6d76a70b2d1a45eea9cf": {
+    "translation": "নিরাপদ পেমেন্ট",
+    "preserve_source": false
+  },
+  "ed950d48d2eec39d46246530c4dc8344e929b71155e964361d8255c6c97869f0": {
+    "translation": "আপনার নির্বাচিত অনুদানের খাত",
+    "preserve_source": false
+  },
+  "6e81bcdca3dac4fbceda97216d240d23bbcdc9ba69c0a988ad3e4d0beed16c8c": {
+    "translation": "শিক্ষাসামগ্রী ও দৈনন্দিন প্রয়োজনীয় সামগ্রী",
+    "preserve_source": false
+  },
+  "3c7ce567e3b1a9667ac09309704870a56a7a1b96c51328b53156f44fd35ae5c5": {
+    "translation": "খাবার ও পরিবারের জন্য ব্যবহারিক সহায়তা",
+    "preserve_source": false
+  },
+  "1f807f111928f1f054e404413275e87027a1cbd3fc862afb9227c62987727e11": {
+    "translation": "শিক্ষা, স্বাস্থ্য ও জীবিকা কর্মসূচি",
+    "preserve_source": false
+  },
+  "3096e98390064db44cc098ffd22ba18223f96140b36fa3f38428b82dbc1cc515": {
+    "translation": "চলমান কমিউনিটি প্রকল্পে আরও বিস্তৃত সহায়তা",
+    "preserve_source": false
+  },
+  "8036c41f1abb2f2406c1f3be89c01a29dd3c0b471134cb0f7e7c1a6e1377a92f": {
+    "translation": "দীর্ঘমেয়াদি কমিউনিটি-নেতৃত্বাধীন প্রভাব টেকসই করতে সহায়তা করুন",
+    "preserve_source": false
+  },
+  "0b72830d89dc28b2725745249e07025dd5d20245a1b1ec872dfa93acd1b7a840": {
+    "translation": "প্রস্তাবিত পরিমাণসমূহ",
+    "preserve_source": false
+  },
+  "03a073c36b69cad2a7b93218a3a95396dde4220716a21de24d52bf8c33145666": {
+    "translation": "অনুদানের খাত",
+    "preserve_source": false
+  },
+  "fcf1fa2b3d49768acc18af453c5cd9e69875349a2cc8b8424de4aeea84c209ee": {
+    "translation": "সময়সূচি",
+    "preserve_source": false
+  },
+  "d278baf82a538eebeb622409c9ed83c54df75f04a9ee36f9261cb8673007c752": {
+    "translation": "পেমেন্ট",
+    "preserve_source": false
+  },
+  "1e5308c5d3db678c9c2146bb318bf7e5f3f5db0ea65849d24738635cf2a91ae8": {
+    "translation": "সেবার শর্তাবলি",
+    "preserve_source": false
+  },
+  "6effb1ce0154f18a499af8a4ff017a1975f1460ed10f9a3455aa2fa32a665d3c": {
+    "translation": "অনুদানের নিশ্চয়তাসমূহ",
+    "preserve_source": false
+  },
+  "577fbcb926a6704ac5e7a283a15c23c5cdd2e6827ed4f491782114e9f0f4e48f": {
+    "translation": "অনুরোধ করা অনুদানের খাতটি বর্তমানে উপলভ্য নয়। অনুগ্রহ করে অন্য একটি সক্রিয় খাত বেছে নিন।",
+    "preserve_source": false
+  },
+  "2d215a5f4f54abb305677c323a4ec31e11f9298d00ad562ed4d3985d0bf06880": {
+    "translation": "অনুরোধ করা প্রকল্পটি এই অনুদানের খাতের সঙ্গে সামঞ্জস্যপূর্ণ নয়। অনুগ্রহ করে অন্য একটি যোগ্য প্রকল্প বেছে নিন।",
+    "preserve_source": false
+  },
+  "d5b9b1fa02451b3be2c1b516bc63edee0564a41c4cd02d612a15ec97f9a5279d": {
+    "translation": "সীমাবদ্ধ খাতটি পর্যালোচনাধীন থাকায় যাকাত অনুদান সাময়িকভাবে উপলভ্য নয়।",
+    "preserve_source": false
+  },
+  "73e80cd1022beb7c633bc88f1b1e948ceb0fb027409fd75bdc411398b4f890f1": {
+    "translation": "অনুদানের খাতগুলো হালনাগাদ করা হচ্ছে। পেমেন্ট করার আগে অনুগ্রহ করে আমাদের সঙ্গে যোগাযোগ করুন।",
+    "preserve_source": false
+  },
+  "bc6592f5fe0a833204932f39e1ae2a26beb37ab99355e29ef3c185f4f51c9b4f": {
+    "translation": "আপনার বিকাশ অ্যাকাউন্ট থেকে নিরাপদে পেমেন্ট করুন",
+    "preserve_source": false
+  },
+  "f1d2d4229ac7c5bf61eac13682c78026c61b0f1a848ae1ba9e0027c7b659bfcc": {
+    "translation": "আমরা সহায়তার জন্য আছি।",
+    "preserve_source": false
+  },
+  "8a9e7dd0132db65e9ad76d2dfe7f68eb061d3a3eb9f635f78057e3c66df4a4f0": {
+    "translation": "আমাদের দলের সঙ্গে কথা বলুন",
+    "preserve_source": false
+  },
+  "0d2bac84f6558f94e4dda07beae6e19ccd002fc77a176a295c075dd37a35a863": {
+    "translation": "সাধারণ জিজ্ঞাসা",
+    "preserve_source": false
+  },
+  "b75855875a651f81414696ca0291fd0d17cf4ec382ee9040329f8a109a988774": {
+    "translation": "যোগাযোগ করুন",
+    "preserve_source": false
+  },
+  "f1be843859fda2719646504dc8a0f08068d9ebbbeb80969b9135b76ad47a0f99": {
+    "translation": "কোনো কর্মসূচি, অংশীদারিত্ব, অনুদান বা স্বেচ্ছাসেবা নিয়ে প্রশ্ন আছে? আমাদের বার্তা পাঠান; আমাদের দল যত দ্রুত সম্ভব উত্তর দেবে।",
+    "preserve_source": false
+  },
+  "50a43f56a650ff07863991e88d95c5e3c2e71de869264079345f701ac233ca56": {
+    "translation": "চলুন কথা শুরু করি।",
+    "preserve_source": false
+  },
+  "b85dad72388b510d60babfc120490d64e8fc5810d880a22b2aa8c26df3ad48d7": {
+    "translation": "আমরা দুই কার্যদিবসের মধ্যে উত্তর দেওয়ার চেষ্টা করি।",
+    "preserve_source": false
+  },
+  "05c77df720890c4b9e86973480d017b197749f05511e0bc9787d84e0b5e36f0d": {
+    "translation": "আপনার বার্তা পাঠানো যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "preserve_source": false
+  },
+  "fe4a4150531a3c7d77125f490b32ca1956532d31e44f45536ff617369bdf60dc": {
+    "translation": "আপনার বার্তা পাঠানো হয়েছে। ধন্যবাদ।",
+    "preserve_source": false
+  },
+  "fcf9050b44e56e37f3bd4aaf0db5ef7f88b9350b0ba1de45b12485ecdbe5447c": {
+    "translation": "© ইগনাইট গ্লোবাল ফাউন্ডেশন। সর্বস্বত্ব সংরক্ষিত।",
+    "preserve_source": false
+  },
+  "65140d59a4bfae2a3120f25a33817f9d25373db2102bdcd3b1825507a4c6a934": {
+    "translation": "বাংলাদেশে কমিউনিটির নেতৃত্বাধীন অলাভজনক সংস্থা",
+    "preserve_source": false
+  },
+  "ec1773b3f2d6504ac7793cd28d1c5c8f8ca7366cb76f77bdb8679a0fb81d9051": {
+    "translation": "ফুটার নেভিগেশন",
+    "preserve_source": false
+  },
+  "00ba6c0d8c527e9ed82afa8251ba29017d7435e6754e37ca558fe6e3ee9c497f": {
+    "translation": "ইগনাইটের গল্প ও মাঠপর্যায়ের খবর পেতে সঙ্গে থাকুন।",
+    "preserve_source": false
+  },
+  "74a08b99930c42723f0abb9ad1fbe6f0f036d4bcff2d445475aa980673871d2d": {
+    "translation": "এনজিও বিষয়ক ব্যুরোর নিবন্ধন নম্বর",
+    "preserve_source": false
+  },
+  "c5da96c467322da300b785a027af191c27e40cf616b4e198216a4e2e6c08199d": {
+    "translation": "যৌথ মূলধন কোম্পানি ও ফার্মসমূহের নিবন্ধন নম্বর",
+    "preserve_source": false
+  },
+  "7758da862a74d6d0fdd3386e6ba8402cca188ffddca7a2c0eba2dfd0d22cb67a": {
+    "translation": "আইনগত অবস্থা",
+    "preserve_source": false
+  },
+  "ec21deea88702bfea77b7f81f74bd23ac0300a877cba465abcae20589ed4bd40": {
+    "translation": "মোবাইল",
+    "preserve_source": false
+  },
+  "a71f11e6527ad78a2dc1683072b1030bbae9b30ba06f126f3df605871fc43573": {
+    "translation": "বিকল্প মোবাইল",
+    "preserve_source": false
+  },
+  "fc4b0e110719b7c3eb8b1858d86193f7eae59b764ebbbec4eaf20a29e755ec27": {
+    "translation": "{item} সাবমেনু বন্ধ করুন",
+    "preserve_source": false
+  },
+  "b878b9b81d345476c8bd9bbfb8514187fdddfa8fb16d486bcf60b76c6e5ef072": {
+    "translation": "{site} হোম",
+    "preserve_source": false
+  },
+  "8b90d40a1078523a65c07e33315a5c20b3e9030c7491c4df6951f7faf77f76f7": {
+    "translation": "নেভিগেশন মেনু খুলুন বা বন্ধ করুন",
+    "preserve_source": false
+  },
+  "e042bc1505d92d82c3c22eb39dd4d9ac08eb97ecc2b2122dd8713bcbe458c497": {
+    "translation": "{item} সাবমেনু খুলুন",
+    "preserve_source": false
+  },
+  "e97fb0df729dc5dfd0d0ee1a35bd9cfd5f155058192c4431b602dd713ae6ff43": {
+    "translation": "প্রধান নেভিগেশন",
+    "preserve_source": false
+  },
+  "230fb6dcc73d2cd43063df991a697914ed648cb9ec2ab3032fb6010083f024e1": {
+    "translation": "মূল বিষয়বস্তুতে যান",
+    "preserve_source": false
+  },
+  "c5aa78109469af7f04d2f03c3a014b27769145a36026c8c6413b0aba1635a175": {
+    "translation": "সামাজিক যোগাযোগমাধ্যমের প্রোফাইল",
+    "preserve_source": false
+  },
+  "774342384be4d952f38b84eb58b13d9a5a8595c94b6f36bd8d94a1e3c6041489": {
+    "translation": "একটি শিশুর পৃষ্ঠপোষক হোন",
+    "preserve_source": false
+  },
+  "2a87a065e12ae93dcc6cf659ca7d7a8a6bdbf730e1383156ef5140c1e884e7c7": {
+    "translation": "চেষ্টা করা অনুদানের পরিমাণ",
+    "preserve_source": false
+  },
+  "2462536c2a09715d4222b3df13efb4d8aa64bea1dc1aef9a0141b1f4a2e9f1f7": {
+    "translation": "আরেকটি অনুদান করুন",
+    "preserve_source": false
+  },
+  "e33f6b1e5b20ae034c13f3903b740d906f5136960c30ed982540a51802864454": {
+    "translation": "লিংকটি পুরোনো হতে পারে অথবা পৃষ্ঠাটি সরানো হয়েছে। আপনি হোমে ফিরতে বা প্রকাশিত সাইটে অনুসন্ধান করতে পারেন।",
+    "preserve_source": false
+  },
+  "f3d0abb236b97b866cc6e93faa5c494338c1886c4cef830e1d1ad0f714e1021e": {
+    "translation": "এই পৃষ্ঠায় কোনো সফল পেমেন্ট নথিভুক্ত নেই।",
+    "preserve_source": false
+  },
+  "48347f125738bf825e425e8a10aca80f61ab76a50fcf3cdc122fa71a79d634c1": {
+    "translation": "আপনার অনুদানের পেমেন্ট প্রক্রিয়া করা হয়নি।",
+    "preserve_source": false
+  },
+  "62c169cfc2dc8b02443d07b2d9250a0c6134241dd174f876308853c40645995a": {
+    "translation": "এই পৃষ্ঠাটি ব্যক্তিগতভাবে দেখার জন্য; এটি চূড়ান্ত অনুদান রসিদ নয়।",
+    "preserve_source": false
+  },
+  "f4c57f52f2fc187a8b3265919148aaf520b9a6451d514409754ea0e4330ecfbb": {
+    "translation": "ধন্যবাদ! আপনার {amount} অনুদান গ্রহণ করা হয়েছে।",
+    "preserve_source": false
+  },
+  "16fc6cc2372be1f17bc017afc0f1ec5f77cbe05e165a35c52b136a6e49e2ca65": {
+    "translation": "রেফারেন্স নম্বরটি সংরক্ষণ করুন। এই পৃষ্ঠাটি ব্যক্তিগত এবং সার্চ ইঞ্জিনে তালিকাভুক্ত নয়।",
+    "preserve_source": false
+  },
+  "f8f964a885825f34a4674b4980b69d8c9f28016697f8209a0c2f3d606560cb8c": {
+    "translation": "হোমে ফিরে যান",
+    "preserve_source": false
+  },
+  "87d51346bd74e3ced6887d3dbae112fe90263cc3b51d3102ef2edc267665b342": {
+    "translation": "লেনদেনের রেফারেন্স",
+    "preserve_source": false
+  },
+  "2efa49c7a8604e8bdc56bbe1f484daf7436b07d4e8a8e0e5e0c9644a8e806201": {
+    "translation": "প্রশাসকের অনুমোদনের জন্য আপনার সদস্যপদের আবেদন জমা হয়েছে।",
+    "preserve_source": false
+  },
+  "2803a8065a2eeef7354fd44dd2447cdc257d26fe46bde9ec51ed580bb59c578f": {
+    "translation": "এই ফর্ম জমা দিলেই সঙ্গে সঙ্গে অ্যাক্সেস পাওয়া যাবে না। প্রথমে একজন প্রশাসককে অ্যাকাউন্টটি অনুমোদন করতে হবে।",
+    "preserve_source": false
+  },
+  "4f13bf3d9eb1fb5d5a94aa331b6dd129248dd8bb0c9caa738e16ac41f8b2f64f": {
+    "translation": "অথেন্টিকেটর সেটআপের QR কোড",
+    "preserve_source": false
+  },
+  "5c5e08d4798a0fd2681a373b6d60bd71f36b846f768d48b18b2bf63e0778097d": {
+    "translation": "মূল গোপন কোডটি ব্যক্তিগত রাখুন। অন্য কারও সঙ্গে শেয়ার করবেন না বা স্ক্রিনশট পাঠাবেন না।",
+    "preserve_source": false
+  },
+  "9f60c91d6b24409c5324a6d5adf0308db6b173df209769da65c89fca43d8596a": {
+    "translation": "অথেন্টিকেটর অ্যাপ দিয়ে QR কোডটি স্ক্যান করুন, তারপর অ্যাপে দেখানো বর্তমান ছয় সংখ্যার কোড লিখুন।",
+    "preserve_source": false
+  },
+  "a079e8fb812daecc79ca53abcaddfda67a3be5c3e33abdce62c1821a64369b1b": {
+    "translation": "অথেন্টিকেটর সেটআপ করুন",
+    "preserve_source": false
+  },
+  "fdb437c92c3b2ddeb19aca7936bff08162374c1c4e622618b1d4322d21af77d1": {
+    "translation": "ইতিমধ্যে অনুমোদিত? সাইন ইন করুন",
+    "preserve_source": false
+  },
+  "5a4b68a2001a9e530b4123f6081d8bb5e067bf79c37ae21f3e1ebf3ee7a52395": {
+    "translation": "নিরাপদ সদস্য এলাকা",
+    "preserve_source": false
+  },
+  "eaffd0d98cba80e0e3a0ed8d68c65b9e8c2f33ab4f01db5c36cfc4bcb3d1e95a": {
+    "translation": "লগইনের চেষ্টা সীমিত হারে গ্রহণ করা হয় এবং প্রোডাকশন পরিবেশে সংযোগটি HTTPS দিয়ে সুরক্ষিত রাখা উচিত।",
+    "preserve_source": false
+  },
+  "71d7f2667612e275e982ca6e3e0399de6659d916afb896ca50fec8b971a22db9": {
+    "translation": "প্রতিষ্ঠান",
+    "preserve_source": false
+  },
+  "0738b19f9bc42ee68e81fdab2214ee82e2a7d1a5bc78280c22c99ccc65d7af63": {
+    "translation": "আপনার তথ্য দিন। সাইন ইন করার আগে একজন প্রশাসক আবেদনটি পর্যালোচনা করবেন।",
+    "preserve_source": false
+  },
+  "3aa51fe11541f625c8b1fc68a3dd89e52c13523469776aa49366bf0f876b1a46": {
+    "translation": "সদস্য অ্যাক্সেসের জন্য আবেদন করুন",
+    "preserve_source": false
+  },
+  "0dfe967d0120ce5f8ada36278124993a5205b60453f461d251c18efbd1b36b7f": {
+    "translation": "আবেদন জমা দেওয়া হচ্ছে...",
+    "preserve_source": false
+  },
+  "ddead077268d794995134280449defdab3976605a131c8fa3c6f95b81aee7aa1": {
+    "translation": "এই ডিভাইসে আমাকে সাইন ইন রাখা হোক",
+    "preserve_source": false
+  },
+  "5fdc09733748e002cd6ad9932ec5e20561d9c9b0863d1007982344bc6af34a2a": {
+    "translation": "পদ বা দায়িত্ব",
+    "preserve_source": false
+  },
+  "e9396b4dee094de481db5608de10fd625640fe4171d74241e0d745e57590cf9d": {
+    "translation": "ছয় সংখ্যার কোড",
+    "preserve_source": false
+  },
+  "d61018bd2e67f80345869cb9ed9e4cc9686fc2940222cc14bb19a5ecdffebed8": {
+    "translation": "অথেন্টিকেটর অ্যাপে দেখানো বর্তমান ছয় সংখ্যার কোড লিখুন।",
+    "preserve_source": false
+  },
+  "f54b03311ca90e75a9a6f68a16be407e863b4ad6cfcf62106be98040dc1ce7cf": {
+    "translation": "সাইন ইন করা হচ্ছে...",
+    "preserve_source": false
+  },
+  "ff93543095045758eda1fcd512a5f7b7290e77b32426c997232921dc800e8118": {
+    "translation": "নতুন যাচাইকরণ প্রক্রিয়া শুরু করুন",
+    "preserve_source": false
+  },
+  "600331ff57008a8824899f09f11b947e0185d0e6ac0f7a15ea0817156e6dc71e": {
+    "translation": "অনুমোদিত সদস্য অ্যাকাউন্টে প্রবেশ করতে সাইন ইন করুন এবং কমিউনিটির নেতৃত্বাধীন কাজে সহায়তা অব্যাহত রাখুন।",
+    "preserve_source": false
+  },
+  "04ef0e624765295eba88e9f39a618e0ea2bae0b9bd84a11e31f5ff7417e6e964": {
+    "translation": "সদস্য প্রবেশাধিকার",
+    "preserve_source": false
+  },
+  "5094a189e6a14e344810a12c5be40509ac55c4c7f6df17e4bb1b41499af043fc": {
+    "translation": "ইগনাইটে আবারও স্বাগতম।",
+    "preserve_source": false
+  },
+  "ceaf1a9a42b9890b14d916815f74758f6eb8d37201773f6ae115108dcce927b0": {
+    "translation": "অ্যাকাউন্ট যাচাই করা হচ্ছে...",
+    "preserve_source": false
+  },
+  "20801ccb8842953754ef4a8bbb6760b7d1b2bc8f7066b4b4837d73bd4b68e09b": {
+    "translation": "আপনার অ্যাকাউন্টের সঙ্গে যুক্ত ইমেইল ঠিকানা ও পাসওয়ার্ড লিখুন।",
+    "preserve_source": false
+  },
+  "9d78410d9a095073399355a9b1dd53ecccb041b26e18111fa6d9ff960fb2a104": {
+    "translation": "দুই-ধাপ যাচাইকরণ",
+    "preserve_source": false
+  },
+  "a214048488292c2db0fbe55b6790509c4a31b4848fca944a604b3e443ef130a9": {
+    "translation": "নিরাপদ সাইন-ইন",
+    "preserve_source": false
+  },
+  "8a358fb1d13c4577c4d37750b45feba7561c16bc616553f6fa08eae807f670af": {
+    "translation": "স্বল্পমেয়াদি সার্ভার-সাইড যাচাইকরণ চ্যালেঞ্জ তৈরির জন্যই শুধু আপনার পাসওয়ার্ড জমা দেওয়া হয়; চ্যালেঞ্জ টোকেনে এটি কখনো অন্তর্ভুক্ত করা হয় না।",
+    "preserve_source": false
+  },
+  "ed883a651f1f604b67e390b32eae11ccab3b6dbcb3e378ae51320d724cd5b817": {
+    "translation": "সময়সীমাবদ্ধ যাচাইকরণ চ্যালেঞ্জ শুরু করুন, তারপর অথেন্টিকেটর অ্যাপ দিয়ে তা যাচাই করুন।",
+    "preserve_source": false
+  },
+  "1fa6e2097076a0877c5239e571a5fdd70a28a673fbea39716834bb35afaea609": {
+    "translation": "দুই ধাপে নিরাপত্তা।",
+    "preserve_source": false
+  },
+  "2964f270bad2d6559246b4b2246afc838c64fffa3ab246ef04e11c6447d34a32": {
+    "translation": "যাচাই করে সাইন ইন করুন",
+    "preserve_source": false
+  },
+  "03279daf46009d3610a31f8e937b4d613503251697fcfb27997f77afdba5f79d": {
+    "translation": "যাচাই করা হচ্ছে...",
+    "preserve_source": false
+  },
+  "cc7ab0a21b1b147f0ec62afd6e93bada22ee4ce08bfdf0cd14cacd48f2e85425": {
+    "translation": "পরিচয় যাচাই",
+    "preserve_source": false
+  },
+  "a1d841b7cc4ebb56952f0d463f96b38cd01aebc261215287f42b924ff501be60": {
+    "translation": "আপনার অনুরোধ গোপনীয় রাখা হয়",
+    "preserve_source": false
+  },
+  "20664af1a250e2f2998cf212816e476d900cf623dfa9b423e74a15b7c2b6d357": {
+    "translation": "দলের একজন সদস্য ব্যক্তিগতভাবে যোগাযোগ করবেন",
+    "preserve_source": false
+  },
+  "5679520a91717e8446dda26755f26957818ea6d5dd1a12bc8256f631647ef09c": {
+    "translation": "৭২ ঘণ্টার মধ্যে উত্তর",
+    "preserve_source": false
+  },
+  "d36f999eb982777337ebf63a8091b6c7b9efbe263cc20fe9d8ddab6fc9389690": {
+    "translation": "পৃষ্ঠপোষকতার নিশ্চয়তাসমূহ",
+    "preserve_source": false
+  },
+  "d59772b44c529b3f3df1b2950423f456a5cc943c7a5e3bfe6dd5d93ee58088d3": {
+    "translation": "সহশিক্ষা কার্যক্রম",
+    "preserve_source": false
+  },
+  "211ac978a5a401496ff98f09020226763742f2291ad99e94c19d01949d18d547": {
+    "translation": "ফিরে যান",
+    "preserve_source": false
+  },
+  "542c797593c5cc4efff91be82a6f24bc317c4345f9791c9385f64f5ff350fd79": {
+    "translation": "এখন কোনো অর্থ নেওয়া হবে না। প্রক্রিয়াটি নিরাপদে সম্পন্ন করতে আমাদের দল আপনার সঙ্গে যোগাযোগ করবে।",
+    "preserve_source": false
+  },
+  "1132ce43498273be91ca13a99f5c00881ad9f9adb6d033313141a8a787d7d0ed": {
+    "translation": "অনুরোধ নিশ্চিত করুন",
+    "preserve_source": false
+  },
+  "774a1bb622f57811cffad4e1b48bfdb85ad7abe699dabaed8ea8c2a5e2b33db4": {
+    "translation": "আপনি {interval} অনুদানে {count} {children}-এর পৃষ্ঠপোষক হওয়ার অনুরোধ করছেন।",
+    "preserve_source": false
+  },
+  "30b900525dd1f0e4b0ae4aa72885f4f74d9f40abe0347766e782cc1a77d709af": {
+    "translation": "অনুদানের সময়সূচি",
+    "preserve_source": false
+  },
+  "0bfc48a4eb3b152410b40be5bd1cf5c50a54663160576ff3c3b1fa49d39fb4a5": {
+    "translation": "আপনার {interval} অনুদান",
+    "preserve_source": false
+  },
+  "bffd13d4f45b1e4771820b2e6f19038daa72f101e0d64a72ac94363c05c28d21": {
+    "translation": "একটি শিশুর পৃষ্ঠপোষক হোন",
+    "preserve_source": false
+  },
+  "bfccacc530821c0fb9c5ede4b8b17a09f160ce424b0d3c0c1a4d5529d5f472ca": {
+    "translation": "আপনি কীভাবে সহায়তা করতে চান, তা আমাদের জানান। পৃষ্ঠপোষকতার প্রক্রিয়াটি নিরাপদে সম্পন্ন করতে আমাদের দল ৭২ ঘণ্টার মধ্যে যোগাযোগ করবে।",
+    "preserve_source": false
+  },
+  "b22469b743031c4c9073f31d155c09f4e77c633633c113bb2fa76d5df3621f53": {
+    "translation": "পৃষ্ঠপোষকতা শুরু করুন",
+    "preserve_source": false
+  },
+  "ebe4d2fc4d8f2e2e0a36a7b411fb3c60c2b29ecab635cd9417c8bdc828071d84": {
+    "translation": "পৃষ্ঠপোষকতা শুরু করুন",
+    "preserve_source": false
+  },
+  "7db4f45163803be153194d9dd00d86cb3a65e7ed5cdac3345b50365a3e0f9391": {
+    "translation": "একটি শিশুর শেখা, অংশগ্রহণ ও বিকাশের বাস্তব প্রয়োজনগুলো বিবেচনা করেই আপনার সহায়তার পরিকল্পনা করা হয়।",
+    "preserve_source": false
+  },
+  "9923c09ad550685818ccebb96d642563e47d34b6a5f1694c8be5fbb3adc83910": {
+    "translation": "একটি অনুদান, শিশুর সার্বিক সহায়তা।",
+    "preserve_source": false
+  },
+  "2ebb869693ca50f2f0ee60ff81bdaa2ef198af207c61d2f421f16a773a714201": {
+    "translation": "নিয়মিত অনুদান একটি শিশুকে স্কুলে থাকতে, প্রয়োজনীয় যত্ন পেতে এবং কমিউনিটির সহায়তায় বিকশিত হতে সাহায্য করে।",
+    "preserve_source": false
+  },
+  "ecc3e2772c9473db6a662426eed3891160a5b823c856cbfaa32b177aba7152c3": {
+    "translation": "সর্বোচ্চ ১০০ জন শিশু বেছে নিন",
+    "preserve_source": false
+  },
+  "1620881b1969cafc725041b685503c1f252cf226c1ea67cfa07331fc1873a9b1": {
+    "translation": "এই পৃষ্ঠপোষকতার মোট পরিমাণ অনুমোদিত অনুরোধসীমা ছাড়িয়ে গেছে। আরও বড় অংশীদারত্বের জন্য আমাদের সঙ্গে যোগাযোগ করুন।",
+    "preserve_source": false
+  },
+  "c4620b6c778aaa4c1e4c0ce16b10e6d8e6081084fd5c33a20e0de43c7b8a492c": {
+    "translation": "প্রতি শিশু, প্রতি মাসে",
+    "preserve_source": false
+  },
+  "c2b0db348d50e48cd84dcb34a1786b3b11f7fe0c65bf935ffb4b59648e75125b": {
+    "translation": "একটি শিশুর সম্ভাবনাময় ভবিষ্যৎ গড়তে সহায়তা করুন।",
+    "preserve_source": false
+  },
+  "360618d834e32a0f1289335e0f3e3256b4c1160aca11de22e8f2867319f2a32d": {
+    "translation": "এই পৃষ্ঠপোষকতার অনুরোধে সাড়া দেওয়ার জন্যই শুধু আপনার তথ্য ব্যবহার করা হয় এবং তা যত্নসহকারে পরিচালিত হয়।",
+    "preserve_source": false
+  },
+  "bbd274a582b10fee7e51249479b47d0171ddd65eb2a1fe52d93eb9899f302ab7": {
+    "translation": "আপনার অনুরোধ পাঠানো যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "preserve_source": false
+  },
+  "cb320bda224c5d605fbef2e1c0db9e1f0b4256cf4e1e04ba24d2da25806f1a54": {
+    "translation": "{field} আবশ্যক",
+    "preserve_source": false
+  },
+  "b10c8ecbfb969a262a56692d229269ed38558587d1e176dee5ddde832aeb7461": {
+    "translation": "অনুরোধ পাঠানো হচ্ছে...",
+    "preserve_source": false
+  },
+  "1141f43484007e55257b496351edae108b18b0c0e5431d997d833f9ca68f97cb": {
+    "translation": "পৃষ্ঠপোষকতার অনুরোধ পাঠান",
+    "preserve_source": false
+  },
+  "7a40f432bd63de6322bff90dd196b975bf7bc9e6cdcacadd1d7584ca0b8e198a": {
+    "translation": "আপনার সবচেয়ে আগ্রহের কাজের ক্ষেত্র",
+    "preserve_source": false
+  },
+  "6916c52746dfceddcb2e196075031880c16016d42fcd193b8a0d2551bff3de2f": {
+    "translation": "স্বেচ্ছাসেবার একটি ক্ষেত্র বেছে নিন",
+    "preserve_source": false
+  },
+  "6ec5a95a710cb94cc6d3ee7b954fc28edd2c7f4ea1bb8fba83b37d2d8617ed87": {
+    "translation": "ইগনাইটের সঙ্গে স্বেচ্ছাসেবা",
+    "preserve_source": false
+  },
+  "8fd3021d633dc4595b45f78a89d01d17f021489bad4d6a4c87ad13f0c112b798": {
+    "translation": "ফর্মটি পূরণ করুন; আমাদের স্বেচ্ছাসেবক দল আপনার সঙ্গে যোগাযোগ করবে।",
+    "preserve_source": false
+  },
+  "29b51b1a835ef7723aca9337da0f17a83dacd82b529890b526c7513d5aa101cd": {
+    "translation": "কমিউনিটিতে যুক্ত হোন",
+    "preserve_source": false
+  },
+  "033a07b9b47f1660090153795e2027691ac336790c2a9c684ad35f489f0fa6d6": {
+    "translation": "আগ্রহ নিবন্ধন করুন",
+    "preserve_source": false
+  },
+  "61c311150fd983726f17b1b19489d92c572382edd1e245e1cbcf72883580b47c": {
+    "translation": "আগ্রহ নিবন্ধন করুন",
+    "preserve_source": false
+  },
+  "304f2517bb386e7e10ed86bae0ec92bd1e2fe4936ab7310a4898ffb728ba30b4": {
+    "translation": "কমিউনিটির শিক্ষা কার্যক্রমে অংশ নেওয়া স্বেচ্ছাসেবক ও শিশুরা",
+    "preserve_source": false
+  },
+  "2ea56046b49233689745b170df83c2d6eac2a21ceeb7b1590f3e20ef79e064ec": {
+    "translation": "স্থানীয় ধারণাকে দীর্ঘস্থায়ী পরিবর্তনে রূপ দেওয়া মানুষদের কমিউনিটিতে যুক্ত হোন। কোন বিষয়টি আপনার কাছে গুরুত্বপূর্ণ, তা জানান; আমরা আপনাকে উপযুক্ত সুযোগের সঙ্গে যুক্ত করব।",
+    "preserve_source": false
+  },
+  "32eb22042e826f7d380b75a023635324a8c2f411dec4b0a36443971a51945dba": {
+    "translation": "আমাদের দল আপনার আগ্রহ পর্যালোচনা করবে এবং উপযুক্ত সুযোগ পাওয়া গেলে আপনার সঙ্গে যোগাযোগ করবে।",
+    "preserve_source": false
+  },
+  "5cc67be5b522a27c4cda875947171b3f452407e567a195f868be254a221f476c": {
+    "translation": "আপনার সময়, দক্ষতা ও আন্তরিকতা নিয়ে এগিয়ে আসুন।",
+    "preserve_source": false
+  },
+  "d1ad60fb085cde14a6ccd07148c4e6cade46db214478b54a8a22d57dc5ef7586": {
+    "translation": "স্বেচ্ছাসেবায় আপনার আগ্রহ পর্যালোচনা এবং প্রাসঙ্গিক সুযোগ সম্পর্কে যোগাযোগের জন্যই শুধু আমরা আপনার তথ্য ব্যবহার করি।",
+    "preserve_source": false
+  },
+  "b6d809f672dd848226d98c06a8e44b82742992b6c7774137c1505264cfe3d082": {
+    "translation": "স্বেচ্ছাসেবী হিসেবে আপনার যাত্রা",
+    "preserve_source": false
+  },
+  "5f30c32bea4793c5c06e59669e4b301d2c4dc5f09ca84440f17bfe780e66febc": {
+    "translation": "স্বেচ্ছাসেবার প্রক্রিয়া",
+    "preserve_source": false
+  },
+  "0189866204a3cb2b8a73d42b01e65bcb7f9c845e1f116c0bd3662471562da2b4": {
+    "translation": "আপনার নিবন্ধন পাঠানো যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "preserve_source": false
+  },
+  "9dae85d24ccdcda136aeb9a4bee4e9efd2a9858e928c76b37a936a965b279e37": {
+    "translation": "{field} আবশ্যক",
+    "preserve_source": false
+  },
+  "ca10a3e216254f897aed34060e8171fbf31d9b18b9d891b084f4a195bb26728a": {
+    "translation": "নিবন্ধন পাঠানো হচ্ছে...",
+    "preserve_source": false
+  },
+  "0a0e30ea04905d21fe923e22331dde49d7eea330f4640047fbb0637809ce7e31": {
+    "translation": "আপনার আগ্রহ, প্রতিষ্ঠান ও পছন্দের কাজের ক্ষেত্র সম্পর্কে জানান।",
+    "preserve_source": false
+  },
+  "70876bd35bc50ca5f74a9d3a8bdd9f136ecfe41f01881e4d0fc0b8be9f5e2b0e": {
+    "translation": "দলের সঙ্গে পরিচিত হোন",
+    "preserve_source": false
+  },
+  "63abfc4f63802641aaec2813f8995a242e38ed1f279ab55c856e5dfd6aad149b": {
+    "translation": "একটি ওরিয়েন্টেশনে অংশ নিন এবং কোনো কর্মসূচিতে সহায়তা শুরু করুন।",
+    "preserve_source": false
+  },
+  "77e21663785bf88a2010b6f4b3bcd470fbf03db25762e96f9f457716b07b462f": {
+    "translation": "একসঙ্গে পরিবর্তন আনুন",
+    "preserve_source": false
+  },
+  "67fb102f23a3eac681288c29f8186dc45a8b1b98e4b955d7305f612e379ddb71": {
+    "translation": "স্বেচ্ছাসেবায় আপনার আগ্রহ নিবন্ধিত হয়েছে।",
+    "preserve_source": false
+  },
+  "d3382826cf33976bf64638c17da6f39f9a87e0f4ee90ca8b21d4ecf735b9da1a": {
+    "translation": "স্বেচ্ছাসেবার ক্ষেত্রগুলো হালনাগাদ করা হচ্ছে। নিবন্ধনে সহায়তার জন্য অনুগ্রহ করে আমাদের সঙ্গে যোগাযোগ করুন।",
+    "preserve_source": false
+  },
+  "7d827ad481a6a1d67b75d46e7db33577f115f241df741663cc91f0fcb1058638": {
+    "translation": "আপনার বাসস্থান, সাধারণ গৃহস্থালি সামগ্রী, ব্যক্তিগত যানবাহন বা পুনরায় বিক্রির জন্য রাখা হয়নি এমন সম্পত্তির মূল্য অন্তর্ভুক্ত করবেন না। শুধু যোগ্য নগদ অর্থ বা আপনার কাছে থাকা নিট ভাড়া আয় অন্তর্ভুক্ত করুন।",
+    "preserve_source": false
+  },
+  "0256f18f33720c49a89bf677c860a9122a1ff065cf0bc720cf7f990f8080f328": {
+    "translation": "পরিশোধযোগ্য বিল ও পেমেন্ট",
+    "preserve_source": false
+  },
+  "59f7c50228c5ee33c7789f2fba5610dfe3435d56b964d53571f84995392c13de": {
+    "translation": "হিসাব করা নিসাবসীমা",
+    "preserve_source": false
+  },
+  "f9102abab1056a229daaa9dbe42eb717b1a46a385eb94ded1461a26e9655667e": {
+    "translation": "এই হিসাবের জন্য সংস্থার অনুমোদিত {gold_weight} গ্রাম স্বর্ণ / {silver_weight} গ্রাম রৌপ্যের নিসাব মান ব্যবহার করা হয়। নিট যাকাতযোগ্য সম্পদ নির্বাচিত সীমায় পৌঁছালে এবং এক চান্দ্র বছরের শর্ত পূরণ হলে, নিট পরিমাণের {rate}% যাকাত হিসেবে হিসাব করা হয়।",
+    "preserve_source": false
+  },
+  "7e73f410b86bc6fbde700fdf39e7edef7d60d0dfc251568c173a1a782cb9cb56": {
+    "translation": "এটি একটি সাধারণ আনুমানিক হিসাব। আলেমদের মত ও ব্যক্তিগত পরিস্থিতি অনুযায়ী নিসাব পদ্ধতি এবং গয়না, শেয়ার, সম্পত্তি ও ঋণের হিসাব ভিন্ন হতে পারে। চূড়ান্ত শরয়ি সিদ্ধান্তের জন্য একজন যোগ্য আলেমের পরামর্শ নিন।",
+    "preserve_source": false
+  },
+  "4b18dd2af59d8da3e39f79d9342f6a79daa50eef1d85b323d5397720bedcd11c": {
+    "translation": "আপনার যাকাতের আনুমানিক হিসাব করুন",
+    "preserve_source": false
+  },
+  "b9572fa0bc0272df6aa4b25226df9e40d9a62f472917ec61312c7cd1fd70a2b3": {
+    "translation": "হাতে ও ব্যাংকে থাকা নগদ অর্থ",
+    "preserve_source": false
+  },
+  "2aaa5d6fdbf3f81b5becb24b3c6b069c042b29f4ebfbc95e6ce0ccacbf703754": {
+    "translation": "হিসাব মুছুন",
+    "preserve_source": false
+  },
+  "1172a46565e471a7dac9e799c1a6d3719941f0d4066f1083335a4807fcee5aa4": {
+    "translation": "আপনার যাকাত দিন",
+    "preserve_source": false
+  },
+  "f4df6dde7bcf52b3c2c2db6e46ac2f683185807a1f70d08dad83a8059571fc59": {
+    "translation": "যোগ্য শিশু ও পরিবারের শিক্ষার বাধা দূর করতে সহায়তা।",
+    "preserve_source": false
+  },
+  "fce5d6c712e749574a19be71869a17b693f114579d5d6d54dd90e3389a4f2496": {
+    "translation": "যাকাতের অনুদান শিক্ষাসামগ্রী ও বাস্তব সহায়তার মাধ্যমে যোগ্য শিশু ও পরিবারের শিক্ষার বাধা দূর করতে পারে। সংস্থার যাকাত-যোগ্যতা ও বিতরণ প্রক্রিয়া অনুযায়ী সহায়তা যাচাই করে প্রদান করা হয়।",
+    "preserve_source": false
+  },
+  "d47d5a6c602a8b574650654bdd123dd5b947915f2d8ac5ebefcbf05e6bf07177": {
+    "translation": "শিক্ষার সুযোগ",
+    "preserve_source": false
+  },
+  "c2b4466b015f4fb7c9068982a93c9855b1e41c9bffc65fb5bd9f70b49e6278eb": {
+    "translation": "নিট পরিমাণের ২.৫% হারে হিসাব করা হয়েছে।",
+    "preserve_source": false
+  },
+  "93b68beb34799474a8c5856e2737bc2b5ec87cdae21c1d2193de21278d14bf10": {
+    "translation": "আপনার হিসাব",
+    "preserve_source": false
+  },
+  "01ed7ded00b8ac32077af0f526a53cabe450925902a8910867d7228ca1cccb90": {
+    "translation": "তাৎক্ষণিক প্রয়োজনীয় ব্যয়",
+    "preserve_source": false
+  },
+  "41ae1f984c4c408aecde4ff5d4bc4e9b4ce7a3ad288e746752db0ec7459fb1a2": {
+    "translation": "যাকাতের অনুদান পুষ্টিকর খাদ্যসামগ্রী ও জরুরি সহায়তার মাধ্যমে যোগ্য পরিবারগুলোর জরুরি খাদ্যচাহিদা পূরণে সহায়তা করতে পারে। সংস্থার যাকাত-যোগ্যতা ও বিতরণ প্রক্রিয়া অনুযায়ী সহায়তা প্রদান করা হয়।",
+    "preserve_source": false
+  },
+  "94656dddd833185cd3398212b38d804ff44be8eaeb83de4461387c17f05b1bd7": {
+    "translation": "স্বর্ণ ও রৌপ্যের মূল্য",
+    "preserve_source": false
+  },
+  "054068695d7fbece84c7f9bca09dae5a650989be779cb15f049af654bdc6db33": {
+    "translation": "স্বর্ণের নিসাব",
+    "preserve_source": false
+  },
+  "74ed133b830f343a36920d95d073f48fd3744f0374fe603cd068fcc284c8c10f": {
+    "translation": "বর্তমানে পরিশোধযোগ্য ঋণ",
+    "preserve_source": false
+  },
+  "c69ed53fb2248ba26e42f274481f0719d50d1a4fdcfaa527942c801958c59ada": {
+    "translation": "শুধু এখন বা আপনার চলতি যাকাত সময়ের মধ্যে পরিশোধযোগ্য যোগ্য দায় বাদ দিন—দীর্ঘমেয়াদি গৃহঋণ বা ঋণের পুরো বকেয়া নয়।",
+    "preserve_source": false
+  },
+  "6b17382f6323ea5a9aadd56f3be90810d2b00b403356b3cfd00dae4820ef2161": {
+    "translation": "যাকাতের বাস্তব প্রভাব",
+    "preserve_source": false
+  },
+  "fb81ba67096917f4d9b245da6f3e3cbac4c387827a0bffc09ad7fd3fc32d6517": {
+    "translation": "বিস্তারিত বন্ধ করুন",
+    "preserve_source": false
+  },
+  "5c23c770f7b82b1bb3f575a5524821132553336dfc24ce50147e6490d7639a83": {
+    "translation": "একটি নিসাব পদ্ধতি বেছে নিন, সম্পদ এক চান্দ্র বছর ধরে রাখা হয়েছে কি না নিশ্চিত করুন, তারপর ২.৫% আনুমানিক হিসাবের জন্য যাকাতযোগ্য সম্পদ ও বর্তমানে পরিশোধযোগ্য দায় যোগ করুন।",
+    "preserve_source": false
+  },
+  "7600bcb57aff993f605143fef414146fc0637766b0ddca640c4547e2ff3ee8bd": {
+    "translation": "বাদ: দায়সমূহ",
+    "preserve_source": false
+  },
+  "dfddfb068f54b3081ef26f927a3cc3e7565f0020b657b1517717f015cd08c6ab": {
+    "translation": "বর্তমানে পরিশোধযোগ্য দায়",
+    "preserve_source": false
+  },
+  "0dbad0ab85c7ca83f1ae0d08a8b4143ff50bbde23d4eca061482af0b5ffdc4d8": {
+    "translation": "শুধু বর্তমানে পরিশোধযোগ্য বা আপনার চলতি যাকাত সময়ের মধ্যে পরিশোধযোগ্য যোগ্য দায় লিখুন।",
+    "preserve_source": false
+  },
+  "d4e2283a62f6d99ed52464f6334a3a47661732dc66d9c71a91083881eecd05e4": {
+    "translation": "প্রশিক্ষণ ও উৎপাদনশীল সম্পদ, যা যোগ্য পরিবারকে নির্ভরযোগ্য আয় করতে সহায়তা করে।",
+    "preserve_source": false
+  },
+  "fc4cf635c2b60226dcbffe6e4e815fd5f214812fd513a6dae1f52767ae7a4a8d": {
+    "translation": "যাকাতের অনুদান যোগ্য পরিবারকে দক্ষতা প্রশিক্ষণ ও নির্ভরযোগ্য আয়ের সহায়ক উৎপাদনশীল সম্পদ দিতে পারে। সংস্থার যাকাত-যোগ্যতা ও বিতরণ প্রক্রিয়া অনুযায়ী সহায়তা যাচাই করে প্রদান করা হয়।",
+    "preserve_source": false
+  },
+  "3f359b31f6c652f72424a1cfdb2c349bc373f0ff0919eb739d4c8fa2b7c85ec0": {
+    "translation": "কমিউনিটিতে জীবিকা সহায়তা",
+    "preserve_source": false
+  },
+  "dc2bf5f0e88b15d9174182b5f00bf5ad67c5f2ce7c7f7ad953558d24486f7f75": {
+    "translation": "যেকোনো একটি শর্ত প্রযোজ্য হলে এটি নিশ্চিত করুন। এই সময়কালকে হাওল বলা হয়। আপনার যাকাত বছর কখন শুরু হয় বা কোনো ব্যতিক্রম প্রযোজ্য কি না নিশ্চিত না হলে একজন যোগ্য আলেমের পরামর্শ নিন।",
+    "preserve_source": false
+  },
+  "33cae5bc867acb188bcdfab636ebe30b5af3e5bb69f7b9f08e012a1c5d297e22": {
+    "translation": "না—কোনো শর্তই নিশ্চিত নয়",
+    "preserve_source": false
+  },
+  "d34929a81484427930fb46df6513921efa9afcfa3712ad86674cf739cb068d1b": {
+    "translation": "আপনি প্রথম নিসাবে পৌঁছানোর পর কি এক চান্দ্র বছর পার হয়েছে, নাকি এটি আপনার নির্ধারিত বার্ষিক যাকাতের তারিখ?",
+    "preserve_source": false
+  },
+  "44877f4e647606d0e6d6b7f4abf6bdd41b2e70253adec582e9aa93967d582e5a": {
+    "translation": "হ্যাঁ—এক চান্দ্র বছর পার হয়েছে, অথবা এটি আমার নির্ধারিত বার্ষিক যাকাতের তারিখ",
+    "preserve_source": false
+  },
+  "8738c0de2ef7c998d56a9ec3d66e838ca0cf5ec9aafd3f098b729355f453f81c": {
+    "translation": "এক চান্দ্র বছরের শর্ত নিশ্চিত করা হয়নি বলে যাকাতের কোনো আনুমানিক হিসাব দেখানো হচ্ছে না। কোনো ব্যতিক্রম প্রযোজ্য হতে পারে মনে হলে একজন যোগ্য আলেমের পরামর্শ নিন।",
+    "preserve_source": false
+  },
+  "0d8fbe92714621a8a719e59b689efc52f185488f218a8be4bbf3218ecaf3333a": {
+    "translation": "নির্বাচিত নিসাবের মূল্য পাওয়া যাচ্ছে না, তাই যাকাতের আনুমানিক হিসাব দেখানো হচ্ছে না।",
+    "preserve_source": false
+  },
+  "cf535552d81a301dafec498c5cbfe8cf97e6a11650bbf155b8fff286c46e8ca3": {
+    "translation": "নিট যাকাতযোগ্য পরিমাণ",
+    "preserve_source": false
+  },
+  "ac9e9657fd4719618a7f91aeb11312c6fcd9cbb690062c25f80adc00c33b0408": {
+    "translation": "আপনার কাছে থাকা নিট ভাড়া আয়",
+    "preserve_source": false
+  },
+  "dca1f98b39e3aed2f162379675178f59a6602cc9496b2929b05824bf84acd91b": {
+    "translation": "ভাড়া দেওয়া সম্পত্তির মূল্য লিখবেন না। যাকাতের তারিখে আপনার কাছে থাকা যোগ্য নিট ভাড়া আয় অন্তর্ভুক্ত করুন; একই অর্থ নগদ ও ব্যাংক অংশে আবার লিখবেন না।",
+    "preserve_source": false
+  },
+  "723773fc0f693a4380afd38495010cfdaa7363e5927a702b85224235d01feb5b": {
+    "translation": "উপরে দেখানো নির্বাচিত ও অনুমোদিত রেফারেন্স মূল্য থেকে হিসাব করা হয়েছে।",
+    "preserve_source": false
+  },
+  "2c51c2380d70548cea4a7b9ee85f1d5b981edb529480bbf73156a4f362938120": {
+    "translation": "{weight} × প্রতি গ্রাম {price}",
+    "preserve_source": false
+  },
+  "5266d756c80cfb6ec2cbe7209e8cf1cac41fcc8eb67ab61ccd5ee466904b6828": {
+    "translation": "রৌপ্যের নিসাবসীমা কম হওয়ায় আরও বেশি মানুষের ওপর যাকাত প্রযোজ্য হতে পারে। স্বর্ণের নিসাবসীমা বেশি। আপনার পরিস্থিতির জন্য পরামর্শ দেওয়া পদ্ধতি অনুসরণ করুন।",
+    "preserve_source": false
+  },
+  "79d59c85da6ae9a0c14c1a86c64c74eed58956b67ec324abd429e74d3901d6bf": {
+    "translation": "বৈধ ধাতুমূল্য পাওয়া না পর্যন্ত নির্বাচিত নিসাব হিসাব করা যাবে না।",
+    "preserve_source": false
+  },
+  "81211182b3f1d7535b103b3fdc83971324010b070b8d31ad0a6625af7933667d": {
+    "translation": "এই ধাতুর মূল্য সাত দিনেরও বেশি আগে যাচাই করা হয়েছে। এই হিসাবের ওপর নির্ভর করার আগে বর্তমান নিসাব যাচাই করুন।",
+    "preserve_source": false
+  },
+  "a51f2135e40ca06426cdf4df621cda7146074ca31f5ee601dbb6bc19bb01e14b": {
+    "translation": "প্রশাসক বর্তমান ধাতুমূল্য যাচাই করে যাচাইয়ের তারিখ নথিভুক্ত না করা পর্যন্ত হিসাব স্থগিত থাকবে।",
+    "preserve_source": false
+  },
+  "ea63fbb7be378a3632beb6ff96ea8cbaad3852dafb5db826d8ecf45fccf078a2": {
+    "translation": "BAJUS-ভিত্তিক প্রাথমিক হিসাব — যাচাই করা হয়নি",
+    "preserve_source": false
+  },
+  "8e1a523e74e8f56f5480a76db7ab29c39c5ff1cdb7106139ea617a7b3d80deb0": {
+    "translation": "মূল্য যাচাইয়ের তারিখ",
+    "preserve_source": false
+  },
+  "40dc7678f2302ca24a35e840e3423ee9c5556b93f79cc6597e53986ad4292139": {
+    "translation": "সম্পত্তিটি বাণিজ্যিক পণ্য হিসেবে পুনরায় বিক্রির স্পষ্ট উদ্দেশ্যে কেনা হলে তবেই বর্তমান বিক্রয়মূল্য অন্তর্ভুক্ত করুন।",
+    "preserve_source": false
+  },
+  "4dc1ff9595cfb0b0f72dc21c4f5248156d6b4bacf19ec37a35376f4c4914bf3f": {
+    "translation": "প্রদেয় যাকাতের আনুমানিক পরিমাণ",
+    "preserve_source": false
+  },
+  "bd1f7bdddbc5c8f69ac9767754857190d2fc87cace3f674b5b0703cfd7c179cb": {
+    "translation": "মোট যাকাতযোগ্য সম্পদ",
+    "preserve_source": false
+  },
+  "58b8259fe380aab65f12f92396724c87780e5f7f4e4a0b462fc79f21118601f4": {
+    "translation": "বৈধ ধাতুমূল্য পাওয়া যাচ্ছে না। এই হিসাবের ওপর নির্ভর করার আগে অনুগ্রহ করে আমাদের দলের সঙ্গে যোগাযোগ করুন।",
+    "preserve_source": false
+  },
+  "39be32cbddd9bc99c2b8044131d4aac49b38f4aa012a30d14c3c4b5ba8b1469f": {
+    "translation": "যাকাত-যোগ্য অনুদান বাস্তব সহায়তায় ব্যয় করা হয়, যা ঝুঁকিতে থাকা পরিবারগুলোকে জরুরি চাহিদা পূরণ ও আরও নিরাপদ ভবিষ্যৎ গড়তে সাহায্য করে।",
+    "preserve_source": false
+  },
+  "7ba6a562e4c963c1c29074059689788fd1c76fcb4175b4177bc19847835c5431": {
+    "translation": "নির্ধারিত যাকাতের হার",
+    "preserve_source": false
+  },
+  "2edae033a13202b0dc695597844d4313bbf67dd33867e50e12a6a74038de0cb0": {
+    "translation": "কমিউনিটির সক্ষমতা বাড়াই। জীবন বদলাই।",
+    "preserve_source": false
+  },
+  "0163dca51eaad33f269a25ecd89263ee70f5a0a9c289c5e424e8d841bf36ab79": {
+    "translation": "PDF প্রতিবেদন",
+    "preserve_source": false
+  },
+  "9139fffd75223924d965a9b67692d7b3936e3fc1b2346c2482e58ce43e05ccda": {
+    "translation": "নথিটি নিরাপদ PDF ডাউনলোড হিসেবে খুলবে।",
+    "preserve_source": false
+  },
+  "aa2eb101f9c0cd30fe8f8e8901b86743b24e73ef3347af2adfb63c67817987d6": {
+    "translation": "ইভেন্ট ও সংবাদ",
+    "preserve_source": false
+  },
+  "606762ab3a0ecc0bd290f046f1eda8e8379a8474919570786a58c79fca82830b": {
+    "translation": "ছবি বন্ধ করুন",
+    "preserve_source": false
+  },
+  "38f93d61d216f1ff04fb4e9ec3323bfd5e43affc487b61a2c33af4904f30d13a": {
+    "translation": "ছবি বন্ধ করুন",
+    "preserve_source": false
+  },
+  "2bb3760b202c14ad8e2aebe08ea65dbe9e1e435da4ea5896fab281615a8c263e": {
+    "translation": "ইভেন্ট বা গল্প",
+    "preserve_source": false
+  },
+  "0a7bd537e728b37ecb7b6f0d4b305ebf0df073649daf2496be9685bb8faadbc5": {
+    "translation": "প্রকাশিত গল্প, কর্মসূচি, প্রতিবেদন ও পৃষ্ঠা খুঁজুন।",
+    "preserve_source": false
+  },
+  "6936a7711b4a32df62997e7629e5a6fd625b63a741150703d9973a0e28f0580d": {
+    "translation": "কম শব্দ বা আরও সাধারণ কোনো বাক্যাংশ দিয়ে চেষ্টা করুন।",
+    "preserve_source": false
+  },
+  "145dd82ae8a1c2de4e0d262e26f01dd7ab5017259b67ce7f3380906d7adf766d": {
+    "translation": "কোনো ফলাফল পাওয়া যায়নি",
+    "preserve_source": false
+  },
+  "2b863a16c110d9e76ec7bc50cfdf710b9484b05cee2d7444e913295feac8bfc5": {
+    "translation": "কর্মসূচির সংগ্রহ",
+    "preserve_source": false
+  },
+  "e15dfa6c0bbfec89c0c090101277a262780ff0cf110f61592695b9daade99466": {
+    "translation": "এর জন্য ফলাফল",
+    "preserve_source": false
+  },
+  "4681be52510427297b6e0f1743341d160459943830959ec6d20c9acc80aebd20": {
+    "translation": "ইগনাইটের ওয়েবসাইটে খুঁজুন",
+    "preserve_source": false
+  },
+  "a8cd12cdff30504c900482ed09b47d0e44d18148726c3246ca91f7146cc50cac": {
+    "translation": "আপনি কী খুঁজছেন?",
+    "preserve_source": false
+  },
+  "42a3ec2efdfd7a3f614b9d308a195f9ab23abef46c89ff28f3c8958ba34fbc38": {
+    "translation": "ইগনাইট সম্পর্কে জানুন",
+    "preserve_source": false
+  },
+  "7e7779e7c9850f91b67b66303da4148e0c62ac8743a7ef447132ab234e76b2d8": {
+    "translation": "ওয়েবসাইটে যান",
+    "preserve_source": false
+  },
+  "33995ea8f7abbc2dfdd6074eadfa0f1c524160ddd32a259fe3db0b3cf3d822fc": {
+    "translation": "প্রকাশিত",
+    "preserve_source": false
+  },
+  "3dbf4f5afcd06065a56c107ed5c2d8d59612efdbe86e0d30d025809f13c42b1d": {
+    "translation": "নিজের পছন্দের অনুদানের পরিমাণ",
+    "preserve_source": false
+  },
+  "04a7d48868acca6e3ac8ecb68ddedcf62c5f0a880949380fec856ed89b9e22a1": {
+    "translation": "নিজের পছন্দের অনুদানের পরিমাণ লিখুন",
+    "preserve_source": false
+  },
+  "09a2e0b45a67b5afa7d29b1b3897892ef2852a48becac974a9376e551a74d389": {
+    "translation": "অনুদান করুন",
+    "preserve_source": false
+  },
+  "13c56e6e403189c2cb72561eeeb1e8e9f6dc4da4180fb1d8b93db7495f650e2d": {
+    "translation": "গ্যালারি",
+    "preserve_source": false
+  },
+  "6b1cfadcdf78a33e38ae5be5aecef5a6a6938dbb5e183150fa3c635c897f5e40": {
+    "translation": "নির্বাচিত বিষয়সমূহ",
+    "preserve_source": false
+  },
+  "607b249c487ebb2f880fcced03d6ada3244726403d33eaaa1bae13127f2c05e6": {
+    "translation": "প্রধান স্লাইডসমূহ",
+    "preserve_source": false
+  },
+  "0390fe8d1dafa127a6c77cda125cd3d7b7fb3b7e484544495edb56f0de72ac7f": {
+    "translation": "{name}-এর বিস্তারিত লুকান",
+    "preserve_source": false
+  },
+  "d922cbcfceb22d226ba90a754333500185c109e3a256575c019f630e085547d4": {
+    "translation": "{name}-এর বিস্তারিত খোলা রাখুন",
+    "preserve_source": false
+  },
+  "95a85e7a2dea9a016bc2cec7fc67e13926644f74f9c33b81aa21b42c5217706a": {
+    "translation": "আমি হালনাগাদ তথ্য পেতে সম্মতি দিচ্ছি এবং মেনে নিচ্ছি",
+    "preserve_source": false
+  },
+  "a5f5d2d3e2142df9f4e4354ec05e8cda37409f6b75a47ef46de920f0dc8ac24c": {
+    "translation": "আগের গল্প",
+    "preserve_source": false
+  },
+  "b9084841cf71a35c8229c9cc00ab349c5c4a03f14bafc8df77e6d6a4076d216b": {
+    "translation": "{total}টির মধ্যে {current} নম্বর গল্প দেখুন",
+    "preserve_source": false
+  },
+  "718a08e690dee2e3d780325f9b61175f06d8b3e9d26e595806008eda2700057c": {
+    "translation": "{name}-এর প্রোফাইল দেখুন",
+    "preserve_source": false
+  },
+  "d9ed1a7dded53b9b9cdb5af1dc89be74ee3cbb450ef16d9f27604f3d760ab27f": {
+    "translation": "সামাজিক যোগাযোগমাধ্যমের লিংক",
+    "preserve_source": false
+  },
+  "2aaa3477dc308045eb857437c071459df12a7ca49cc1a8892f3aef54bde9bb1c": {
+    "translation": "কমিউনিটির গল্প",
+    "preserve_source": false
+  },
+  "75dc34cf05911a7b6eedf4edf02e90bbedcd5419fd3417ad2c88a526d69abf57": {
+    "translation": "{name}-এর বিস্তারিত দেখুন",
+    "preserve_source": false
+  }
+}

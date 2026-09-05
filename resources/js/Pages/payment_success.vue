@@ -35,24 +35,30 @@ const resultState = computed(() => isConfirmedSuccess.value ? 'success' : 'revie
 const resultIcon = computed(() => isConfirmedSuccess.value ? 'fa-solid fa-check' : 'fa-regular fa-clock');
 const resultNoteIcon = computed(() => isConfirmedSuccess.value ? 'fa-solid fa-shield-halved' : 'fa-solid fa-circle-info');
 const resultCopy = computed(() => {
-  if (isConfirmedSuccess.value) {
-    return {
-      eyebrow: settings.value.success_eyebrow,
-      title: settings.value.success_title,
-      message: data.value.message,
-      note: settings.value.success_note,
-    };
-  }
-
-  const controllerCopy = rawResultState.value === 'review' && data.value.result_copy && typeof data.value.result_copy === 'object'
+  const suppliedCopy = data.value.result_copy && typeof data.value.result_copy === 'object'
     ? data.value.result_copy
     : {};
 
+  if (isConfirmedSuccess.value) {
+    return {
+      eyebrow: settings.value.success_eyebrow || suppliedCopy.eyebrow || '',
+      title: settings.value.success_title || suppliedCopy.title || '',
+      message: data.value.message || suppliedCopy.message || '',
+      note: settings.value.success_note || suppliedCopy.note || '',
+    };
+  }
+
+  // Unknown states deliberately ignore server-supplied success-like claims and
+  // fall back to the localized, neutral review copy shared by the CMS.
+  const controllerCopy = rawResultState.value === 'review'
+    ? suppliedCopy
+    : {};
+
   return {
-    eyebrow: controllerCopy.eyebrow || 'Payment review',
-    title: controllerCopy.title || 'Payment under review',
-    message: controllerCopy.message || 'Our team is reviewing this payment. Keep the transaction reference while the review is completed.',
-    note: controllerCopy.note || 'This page is private and is not a final donation receipt.',
+    eyebrow: controllerCopy.eyebrow || settings.value.review_eyebrow || '',
+    title: controllerCopy.title || settings.value.review_title || '',
+    message: controllerCopy.message || settings.value.review_message || '',
+    note: controllerCopy.note || settings.value.review_note || '',
   };
 });
 const formatTransactionAmount = (amount, currency) => formatMoney(amount, regional.value, { currencyCode: currency, minimumFractionDigits: 2, maximumFractionDigits: 2 });

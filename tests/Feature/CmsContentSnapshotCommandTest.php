@@ -146,6 +146,22 @@ final class CmsContentSnapshotCommandTest extends TestCase
         $this->assertArrayNotHasKey('file_path', $notice);
         $this->assertArrayNotHasKey('ip', $notice);
 
+        $banglaLocale = $this->row($snapshot, 'translation_locales', 'locale', 'bn');
+        $this->assertSame(1, $banglaLocale['is_enabled']);
+        $this->assertSame('2026-08-29 10:00:00', $banglaLocale['enabled_at']);
+        $this->assertArrayNotHasKey('updated_by', $banglaLocale);
+
+        $translation = $this->row(
+            $snapshot,
+            'translation_strings',
+            'key',
+            $ids['translation_string_key']
+        );
+        $this->assertSame('বাংলায় স্বাগতম', $translation['value']);
+        $this->assertSame(hash('sha256', 'Welcome in Bangla'), $translation['source_hash']);
+        $this->assertSame('translated', $translation['status']);
+        $this->assertArrayNotHasKey('updated_by', $translation);
+
         $this->assertGitSafeRecordFields($snapshot['tables']);
     }
 
@@ -186,6 +202,14 @@ final class CmsContentSnapshotCommandTest extends TestCase
         DB::table('page_menus')->where('uuid', $ids['parent_menu_uuid'])->delete();
         DB::table('pages')->where('uuid', $ids['page_uuid'])->delete();
         DB::table('categories')->where('uuid', $ids['category_uuid'])->delete();
+        DB::table('translation_strings')
+            ->where('key', $ids['translation_string_key'])
+            ->where('locale', 'bn')
+            ->delete();
+        DB::table('translation_locales')->where('locale', 'bn')->update([
+            'is_enabled' => false,
+            'enabled_at' => null,
+        ]);
 
         $decoyCategoryId = DB::table('categories')->insertGetId([
             'uuid' => '92000000-0000-4000-8000-000000000001',
@@ -247,6 +271,17 @@ final class CmsContentSnapshotCommandTest extends TestCase
             $newCategoryId,
             (int) DB::table('latest_news')->where('name', 'Snapshot team member')->value('category_id')
         );
+        $this->assertDatabaseHas('translation_locales', [
+            'locale' => 'bn',
+            'is_enabled' => true,
+            'enabled_at' => '2026-08-29 10:00:00',
+        ]);
+        $this->assertDatabaseHas('translation_strings', [
+            'key' => $ids['translation_string_key'],
+            'locale' => 'bn',
+            'value' => 'বাংলায় স্বাগতম',
+            'status' => 'translated',
+        ]);
 
         $seeder->run();
 
@@ -258,6 +293,7 @@ final class CmsContentSnapshotCommandTest extends TestCase
             ['page_menus', 'uuid', $ids['parent_menu_uuid']],
             ['page_menus', 'uuid', $ids['child_menu_uuid']],
             ['seo_metadata', 'title', 'Snapshot SEO title'],
+            ['translation_strings', 'key', $ids['translation_string_key']],
         ] as [$table, $field, $value]) {
             $this->assertSame(
                 1,
@@ -265,6 +301,48 @@ final class CmsContentSnapshotCommandTest extends TestCase
                 "A second seed duplicated {$table}.{$field}={$value}."
             );
         }
+    }
+
+    public function test_seeder_adopts_the_fresh_migration_team_group_without_duplicate_slug_conflicts(): void
+    {
+        $snapshot = json_decode(
+            File::get(database_path('seeders/seed-data/cms-content.snapshot.json')),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $sourceGroup = collect($snapshot['tables']['team_groups'] ?? [])->first(
+            fn (array $group): bool => ($group['language'] ?? null) === 'en'
+                && ($group['slug'] ?? null) === 'board-of-directors'
+        );
+
+        $this->assertIsArray($sourceGroup);
+        $bootstrap = DB::table('team_groups')
+            ->where('language', 'en')
+            ->where('slug', 'board-of-directors')
+            ->first();
+        $this->assertNotNull($bootstrap);
+        $this->assertNotSame($sourceGroup['uuid'], $bootstrap->uuid);
+
+        $seeder = $this->app->make(CmsContentSnapshotSeeder::class);
+        $seeder->run();
+        $seeder->run();
+
+        $restored = DB::table('team_groups')
+            ->where('language', 'en')
+            ->where('slug', 'board-of-directors')
+            ->first();
+
+        $this->assertNotNull($restored);
+        $this->assertSame((int) $bootstrap->id, (int) $restored->id);
+        $this->assertSame($sourceGroup['uuid'], $restored->uuid);
+        $this->assertSame(
+            1,
+            DB::table('team_groups')
+                ->where('language', 'en')
+                ->where('slug', 'board-of-directors')
+                ->count()
+        );
     }
 
     public function test_seeder_preserves_localized_pages_that_share_a_uuid(): void
@@ -587,7 +665,25 @@ final class CmsContentSnapshotCommandTest extends TestCase
             'gallery_uuid' => '91000000-0000-4000-8000-000000000010',
             'donation_cause_group_uuid' => '91000000-0000-4000-8000-000000000011',
             'donation_type_uuid' => '91000000-0000-4000-8000-000000000012',
+            'translation_string_key' => 'snapshot.interface.greeting',
         ];
+
+        DB::table('translation_locales')->where('locale', 'bn')->update([
+            'is_enabled' => true,
+            'enabled_at' => $now,
+            'updated_by' => 710004,
+            'updated_at' => $now,
+        ]);
+        DB::table('translation_strings')->insert([
+            'key' => $ids['translation_string_key'],
+            'locale' => 'bn',
+            'value' => 'বাংলায় স্বাগতম',
+            'source_hash' => hash('sha256', 'Welcome in Bangla'),
+            'status' => 'translated',
+            'updated_by' => 710004,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
 
         $categoryId = DB::table('categories')->insertGetId([
             'uuid' => $ids['category_uuid'],

@@ -21,10 +21,10 @@ class EditorialGovernanceIntegrityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_incomplete_public_localization_is_not_exposed_as_a_broken_language_switch(): void
+    public function test_database_activation_still_gates_a_certified_public_language_switch(): void
     {
-        $this->assertFalse(config('localization.public_switcher_enabled'));
-        $this->assertSame(['en'], config('localization.public_locales'));
+        $this->assertTrue(config('localization.public_switcher_enabled'));
+        $this->assertSame(['en', 'bn'], config('localization.public_locales'));
         $this->get('/language/bn')->assertNotFound();
         $header = file_get_contents(resource_path('js/layouts/AppHeader.vue'));
         $switcher = file_get_contents(resource_path('js/Shared/composables/publicLocaleSwitcher.js'));

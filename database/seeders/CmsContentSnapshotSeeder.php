@@ -14,6 +14,7 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private const TABLE_ORDER = [
         'translation_locales',
+        'translation_strings',
         'albums',
         'banners',
         'categories',
@@ -69,6 +70,7 @@ class CmsContentSnapshotSeeder extends Seeder
         'page_menus',
         'pages',
         'splash_screens',
+        'testimonials',
     ];
 
     public function run(): void
@@ -272,6 +274,10 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private function identityFor(string $table, array $record): array
     {
+        if ($table === 'team_groups') {
+            return $this->teamGroupIdentity($record);
+        }
+
         // Localized records intentionally share a UUID across locales. Treating
         // UUID alone as the identity would collapse one locale during restore.
         if (
@@ -298,9 +304,32 @@ class CmsContentSnapshotSeeder extends Seeder
                 : $this->onlyIdentity($table, $record, ['route_name', 'route_path', 'locale']),
             'site_settings' => $this->onlyIdentity($table, $record, ['group', 'key', 'locale']),
             'translation_locales' => $this->onlyIdentity($table, $record, ['locale']),
+            'translation_strings' => $this->onlyIdentity($table, $record, ['key', 'locale']),
             'volunteer_causes' => $this->onlyIdentity($table, $record, ['name']),
             default => throw new RuntimeException("No CMS snapshot identity is configured for [{$table}]."),
         };
+    }
+
+    /**
+     * The team-groups migration creates a bootstrap board group with a random
+     * UUID so pre-existing team members always have a valid foreign key. On a
+     * fresh install that semantic row predates the snapshot's stable UUID.
+     * Adopt it in place to preserve its numeric ID and dependent relations,
+     * while continuing to use UUID as the identity after the first restore.
+     */
+    private function teamGroupIdentity(array $record): array
+    {
+        $uuidIdentity = $this->onlyIdentity('team_groups', $record, ['uuid']);
+        if (DB::table('team_groups')->where($uuidIdentity)->exists()) {
+            return $uuidIdentity;
+        }
+
+        $bootstrapIdentity = $this->onlyIdentity('team_groups', $record, ['language', 'slug']);
+        if (DB::table('team_groups')->where($bootstrapIdentity)->exists()) {
+            return $bootstrapIdentity;
+        }
+
+        return $uuidIdentity;
     }
 
     private function onlyIdentity(string $table, array $record, array $columns): array

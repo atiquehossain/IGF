@@ -218,7 +218,7 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         $tables = $snapshot['tables'] ?? null;
 
         $this->assertIsArray($tables, 'The CMS snapshot table manifest is invalid.');
-        $this->assertCount(25, $tables, 'The public CMS snapshot must retain its 25-table allowlist.');
+        $this->assertCount(26, $tables, 'The public CMS snapshot must retain its 26-table allowlist.');
 
         foreach ($tables as $table => $records) {
             $this->assertIsString($table);

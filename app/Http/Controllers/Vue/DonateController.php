@@ -7,6 +7,7 @@ use App\Models\Donation;
 use App\Models\DonationType;
 use App\Services\DonationPaymentMethodService;
 use App\Services\DonationDestinationService;
+use App\Services\LocalizationManager;
 use App\Services\PublicStructuredDataService;
 use App\Services\SSLCommerzService;
 use App\Services\SeoMetadataService;
@@ -26,6 +27,7 @@ class DonateController extends Controller
         protected TranslationCenterService $translations,
         protected DonationPaymentMethodService $paymentMethods,
         protected DonationDestinationService $destinations,
+        protected LocalizationManager $localization,
         protected SiteSettingService $siteSettings,
         protected PublicStructuredDataService $structuredData,
         protected SeoMetadataService $seo,
@@ -73,7 +75,7 @@ class DonateController extends Controller
         abort_unless(
             $cause,
             503,
-            'Direct donations are temporarily unavailable. Please contact Ignite Global Foundation for assistance.'
+            __('donation.direct_unavailable')
         );
 
         return $this->renderPage($request, (string) $cause->slug);
@@ -341,7 +343,7 @@ class DonateController extends Controller
                 'max:110',
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     if (!$this->sslCommerz->isValidCheckoutKey(is_string($value) ? $value : null)) {
-                        $fail('The checkout session is invalid. Refresh the payment form and try again.');
+                        $fail(__('donation.validation.checkout_session'));
                     }
                 },
             ],
@@ -357,7 +359,7 @@ class DonateController extends Controller
                 ->firstWhere('key', $validated['payment_method']);
 
             throw ValidationException::withMessages([
-                'payment_method' => (string) ($publicOption['unavailable_reason'] ?? 'This payment method is unavailable.'),
+                'payment_method' => (string) ($publicOption['unavailable_reason'] ?? __('donation.validation.payment_method_unavailable')),
             ]);
         }
 
@@ -367,7 +369,7 @@ class DonateController extends Controller
         );
         if (!$cause) {
             throw ValidationException::withMessages([
-                'payment_cause' => 'This donation cause is no longer available. Choose another cause and try again.',
+                'payment_cause' => __('donation.validation.cause_unavailable'),
             ]);
         }
         $selection = $this->destinations->resolveCheckoutSelection(
@@ -380,9 +382,9 @@ class DonateController extends Controller
         try {
             $payment = $this->sslCommerz
                 ->setUrls([
-                    'success_url' => route('frontend.donation.payment.success'),
-                    'fail_url'    => route('frontend.donation.payment.fail'),
-                    'cancel_url'  => route('frontend.donation.payment.cancel'),
+                    'success_url' => $this->localizedPaymentCallbackUrl('frontend.donation.payment.success'),
+                    'fail_url'    => $this->localizedPaymentCallbackUrl('frontend.donation.payment.fail'),
+                    'cancel_url'  => $this->localizedPaymentCallbackUrl('frontend.donation.payment.cancel'),
                     'ipn_url'     => route('frontend.donation.payment.ipn'),
                 ])
                 ->initializePayment(
@@ -437,7 +439,7 @@ class DonateController extends Controller
                 return response()->json(array_filter([
                     'status'  => false,
                     'code' => $payment['code'] ?? 'INITIALIZATION_FAILED',
-                    'message' => $payment['message'] ?? 'Payment initialization failed.',
+                    'message' => $payment['message'] ?? __('donation.initialization.failed'),
                     'tran_id' => $payment['tran_id'] ?? null,
                     'replacement_checkout_key' => $payment['replacement_checkout_key'] ?? null,
                 ], fn ($value) => $value !== null), (int) ($payment['http_status'] ?? 422));
@@ -448,7 +450,7 @@ class DonateController extends Controller
                 'payment_url' => $payment['payment_url'],
                 'tran_id'     => $payment['tran_id'],
                 'reused'      => (bool) ($payment['reused'] ?? false),
-                'message'     => 'Payment initialized successfully.',
+                'message'     => __('donation.initialization.success'),
             ]);
         } catch (Exception $e) {
             Log::error('Donation init failed', [
@@ -458,7 +460,7 @@ class DonateController extends Controller
             return response()->json([
                 'status'  => false,
                 'code' => 'INTERNAL_ERROR',
-                'message' => 'Something went wrong during payment initialization.',
+                'message' => __('donation.initialization.error'),
                 'replacement_checkout_key' => $this->sslCommerz->issueCheckoutKey(),
             ], 500);
         }
@@ -472,6 +474,7 @@ class DonateController extends Controller
      */
     public function success(Request $request)
     {
+        $this->applyPaymentResultLocale($request);
         $data = $request->all();
 
         $validated = $this->sslCommerz->validateIpnAndVerify($data);
@@ -484,7 +487,10 @@ class DonateController extends Controller
             return $this->renderPaymentPage(
                 view: 'payment_fail',
                 success: false,
-                errorMessage: 'Payment verification failed. Please contact support.'
+                errorMessage: $this->paymentResultMessage(
+                    'verification_failure_message',
+                    'donation.result.verification_failed'
+                )
             );
         }
 
@@ -494,7 +500,10 @@ class DonateController extends Controller
             return $this->renderPaymentPage(
                 view: 'payment_fail',
                 success: false,
-                errorMessage: 'Payment was verified but could not be saved.'
+                errorMessage: $this->paymentResultMessage(
+                    'save_failure_message',
+                    'donation.result.save_failed'
+                )
             );
         }
 
@@ -507,7 +516,6 @@ class DonateController extends Controller
             view: 'payment_success',
             success: !$requiresReview,
             transaction: $transaction,
-            titleOverride: $requiresReview ? 'Payment under review' : null,
             resultState: $requiresReview ? 'review' : 'success'
         );
     }
@@ -517,6 +525,7 @@ class DonateController extends Controller
      */
     public function fail(Request $request)
     {
+        $this->applyPaymentResultLocale($request);
         $data = $request->all();
         $tranId = $data['tran_id'] ?? null;
 
@@ -532,7 +541,7 @@ class DonateController extends Controller
             view: 'payment_fail',
             success: false,
             transaction: $transaction ?? null,
-            errorMessage: 'Your payment could not be processed. Please try again.'
+            errorMessage: $this->paymentResultMessage('failure_message', 'donation.result.payment_failed')
         );
     }
 
@@ -541,6 +550,7 @@ class DonateController extends Controller
      */
     public function cancel(Request $request)
     {
+        $this->applyPaymentResultLocale($request);
         $data = $request->all();
         $tranId = $data['tran_id'] ?? null;
 
@@ -556,7 +566,7 @@ class DonateController extends Controller
             view: 'payment_fail',
             success: false,
             transaction: $transaction ?? null,
-            errorMessage: 'You cancelled the payment.'
+            errorMessage: $this->paymentResultMessage('cancelled_message', 'donation.result.payment_cancelled')
         );
     }
 
@@ -613,36 +623,50 @@ class DonateController extends Controller
         ?string $messageOverride = null,
         ?string $resultState = null
     ) {
-        $title = $titleOverride ?: ($success ? 'Donation Successful' : 'Donation Failed');
+        $settings = $this->paymentResultSettings();
+        $title = $titleOverride ?: ($success
+            ? (string) ($settings['success_title'] ?? __('donation.result.success_title'))
+            : (string) ($settings['failure_title'] ?? __('donation.result.failure_title')));
+
+        $currency = (string) (data_get($transaction, 'currency_type') ?: data_get($transaction, 'currency') ?: 'BDT');
+        $formattedAmount = $currency . ' ' . number_format((float) ($transaction->amount ?? 0), 2);
 
         $message = $messageOverride ?: ($success
-            ? 'Thank you! Your donation of BDT ' . number_format((float) ($transaction->amount ?? 0), 2) . ' has been received.'
-            : ($errorMessage ?? "We're sorry - your donation payment could not be processed."));
+            ? $this->paymentResultMessage(
+                'success_message',
+                'donation.result.success_message',
+                ['amount' => $formattedAmount],
+                $settings
+            )
+            : ($errorMessage ?? $this->paymentResultMessage(
+                'generic_failure_message',
+                'donation.result.default_failure',
+                settings: $settings
+            )));
 
         $displayTransaction = $transaction ? [
             'donor_name' => (string) ($transaction->cus_name ?? ''),
             'amount' => (float) ($transaction->amount ?? 0),
-            'currency' => (string) ($transaction->currency_type ?: $transaction->currency ?: 'BDT'),
-            'payment_method' => (string) ($transaction->card_issuer ?: $transaction->card_type ?: 'Online payment'),
+            'currency' => $currency,
+            'payment_method' => (string) ($transaction->card_issuer ?: $transaction->card_type ?: __('donation.result.online_payment')),
             'reference' => (string) ($transaction->tran_id ?? ''),
             'created_at' => optional($transaction->created_at)->toIso8601String(),
         ] : null;
 
         $resultCopy = null;
         if ($view === 'payment_success') {
-            $settings = $this->siteSettings->values(app()->getLocale(), true)['system_pages'] ?? [];
             $resultState = $resultState === 'review' ? 'review' : 'success';
             $resultCopy = $resultState === 'review'
                 ? [
-                    'eyebrow' => (string) ($settings['review_eyebrow'] ?? 'Verification complete · Review required'),
-                    'title' => (string) ($settings['review_title'] ?? 'Payment under review'),
-                    'note' => (string) ($settings['review_note'] ?? 'Keep the reference for your records. Our team must finish its safety review before this donation is marked successful.'),
-                    'message' => (string) ($messageOverride ?: ($settings['review_message'] ?? $message)),
+                    'eyebrow' => (string) ($settings['review_eyebrow'] ?? __('donation.result.review_eyebrow')),
+                    'title' => (string) ($settings['review_title'] ?? __('donation.result.review_title')),
+                    'note' => (string) ($settings['review_note'] ?? __('donation.result.review_note')),
+                    'message' => (string) ($messageOverride ?: ($settings['review_message'] ?? __('donation.result.review_message'))),
                 ]
                 : [
-                    'eyebrow' => (string) ($settings['success_eyebrow'] ?? 'Payment confirmed'),
+                    'eyebrow' => (string) ($settings['success_eyebrow'] ?? __('donation.result.success_eyebrow')),
                     'title' => (string) ($settings['success_title'] ?? $title),
-                    'note' => (string) ($settings['success_note'] ?? 'Keep the reference for your records. This page is private and is not indexed.'),
+                    'note' => (string) ($settings['success_note'] ?? __('donation.result.success_note')),
                     'message' => $message,
                 ];
             $title = $resultCopy['title'];
@@ -668,5 +692,54 @@ class DonateController extends Controller
             'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
             'Pragma' => 'no-cache',
         ]);
+    }
+
+    private function localizedPaymentCallbackUrl(string $routeName): string
+    {
+        $parameter = (string) config('seo.locale_query_parameter', 'lang');
+        $query = http_build_query([$parameter => app()->getLocale()], '', '&', PHP_QUERY_RFC3986);
+
+        return route($routeName) . '?' . $query;
+    }
+
+    private function applyPaymentResultLocale(Request $request): void
+    {
+        $parameter = (string) config('seo.locale_query_parameter', 'lang');
+        $locale = strtolower(trim((string) $request->query($parameter, '')));
+
+        if ($locale === '' || !in_array($locale, $this->localization->publicLocales(), true)) {
+            return;
+        }
+
+        app()->setLocale($locale);
+        $request->session()->put('locale', $locale);
+    }
+
+    private function paymentResultSettings(): array
+    {
+        return (array) data_get(
+            $this->siteSettings->values(app()->getLocale(), true),
+            'system_pages',
+            []
+        );
+    }
+
+    private function paymentResultMessage(
+        string $settingKey,
+        string $translationKey,
+        array $replacements = [],
+        ?array $settings = null
+    ): string {
+        $settings ??= $this->paymentResultSettings();
+        $message = trim((string) ($settings[$settingKey] ?? ''));
+        if ($message === '') {
+            $message = __($translationKey, $replacements);
+        }
+
+        foreach ($replacements as $key => $value) {
+            $message = str_replace([':' . $key, '{' . $key . '}'], (string) $value, $message);
+        }
+
+        return $message;
     }
 }

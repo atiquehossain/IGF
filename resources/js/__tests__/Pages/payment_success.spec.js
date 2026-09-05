@@ -9,6 +9,10 @@ function baseSettings() {
     success_eyebrow: 'Payment confirmed',
     success_title: 'Thank you for standing with communities.',
     success_note: 'Your successful contribution has been received and confirmed.',
+    review_eyebrow: 'Payment review',
+    review_title: 'Payment under review',
+    review_message: 'Our team is reviewing this payment. Keep the transaction reference while the review is completed.',
+    review_note: 'This page is private and is not a final donation receipt.',
     transaction_donor_label: 'Donor',
     transaction_amount_label: 'Amount',
     transaction_method_label: 'Payment method',
@@ -118,5 +122,40 @@ describe('payment result presentation state', () => {
     expect(wrapper.text()).not.toContain('Payment confirmed');
     expect(wrapper.text()).not.toContain('has been received');
     expect(wrapper.find('.fa-check').exists()).toBe(false);
+  });
+
+  test('uses localized CMS review copy instead of embedded English fallbacks', () => {
+    usePage().props = {
+      data: {
+        result_state: 'unknown',
+        result_copy: {
+          title: 'Successful donation',
+          message: 'Your donation has been received.',
+        },
+        transaction: transaction(),
+        redirect_url: '/donate',
+      },
+      siteSettings: {
+        system_pages: {
+          ...baseSettings(),
+          review_eyebrow: 'পেমেন্ট পর্যালোচনা',
+          review_title: 'পেমেন্ট পর্যালোচনাধীন',
+          review_message: 'আমাদের দল এই পেমেন্টটি পর্যালোচনা করছে।',
+          review_note: 'এটি চূড়ান্ত অনুদান রসিদ নয়।',
+        },
+        regional: {},
+      },
+    };
+    usePage().url = '/donation/payment/result?lang=bn';
+    globalThis.route = vi.fn(name => name);
+
+    const wrapper = mount(PaymentResult, {
+      global: { stubs: { App: layoutStub, Layout: layoutStub } },
+    });
+
+    expect(wrapper.text()).toContain('পেমেন্ট পর্যালোচনাধীন');
+    expect(wrapper.text()).toContain('আমাদের দল এই পেমেন্টটি পর্যালোচনা করছে।');
+    expect(wrapper.text()).not.toContain('Successful donation');
+    expect(wrapper.text()).not.toContain('Your donation has been received.');
   });
 });

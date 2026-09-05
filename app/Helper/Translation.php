@@ -10,9 +10,17 @@ class Translation
 
     public static function languageList()
     {
-        $arr = (array) [
-            (object) ['id' => 'en', 'name' => 'English', 'assets' => 'image/flags/en.png']
-        ];
+        $arr = collect(config('localization.editor_locales', [
+            'en' => ['name' => 'English', 'native_name' => 'English'],
+        ]))->map(function (array $details, string $locale): object {
+            return (object) [
+                'id' => $locale,
+                'name' => $details['native_name'] ?? $details['name'] ?? strtoupper($locale),
+                'assets' => $locale === 'en'
+                    ? 'image/flags/en.png'
+                    : "image/flags/{$locale}.svg",
+            ];
+        })->values()->all();
 
         return config('app.localization') ? $arr : [$arr[0]];
     }

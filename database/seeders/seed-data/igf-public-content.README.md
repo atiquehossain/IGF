@@ -49,7 +49,7 @@ php artisan test tests/Feature/PublicContentDatabaseArtifactTest.php
 The guard checks SQLite integrity, foreign keys, free pages, the requested
 sensitive-table denylist, every otherwise-unclassified nonempty table,
 public-field constraints, the published checksum, and byte-exact normalized
-parity with the 25-table `cms-content.snapshot.json` manifest. Future snapshot
+parity with the 26-table `cms-content.snapshot.json` manifest. Future snapshot
 exports must receive editorial approval because unpublished CMS copy is also
 eligible for this sanitized artifact. Never replace it with a live database
 that has merely had rows deleted: deleted SQLite pages may retain recoverable

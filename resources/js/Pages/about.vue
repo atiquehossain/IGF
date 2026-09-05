@@ -14,7 +14,7 @@
           <h1 id="about-page-title">{{ about?.name || copy.aboutTitle }}</h1>
           <p v-if="about?.sub_title" class="igf-about-hero__lead">{{ about.sub_title }}</p>
         </div>
-        <aside v-if="about?.description" class="igf-about-hero__statement" aria-label="About Ignite Global Foundation">
+        <aside v-if="about?.description" class="igf-about-hero__statement" :aria-label="copy.aboutStatementLabel">
           <span class="igf-about-hero__statement-icon" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart" /></span>
           <div v-html="about.description" />
         </aside>
@@ -51,6 +51,7 @@ const hasHeroBlock = computed(() => (about.value?.visible_blocks || []).some(blo
 const copy = computed(() => ({
   aboutEyebrow: page.props.siteSettings?.shared_blocks?.about_eyebrow || '',
   aboutTitle: page.props.siteSettings?.shared_blocks?.about_fallback_title || '',
+  aboutStatementLabel: page.props.siteSettings?.shared_blocks?.about_statement_label || 'About Ignite Global Foundation',
   founderEyebrow: page.props.siteSettings?.shared_blocks?.founder_eyebrow || '',
 }));
 </script>

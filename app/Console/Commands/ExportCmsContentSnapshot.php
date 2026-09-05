@@ -37,6 +37,7 @@ class ExportCmsContentSnapshot extends Command
         'team_groups',
         'testimonials',
         'translation_locales',
+        'translation_strings',
         'volunteer_causes',
     ];
 

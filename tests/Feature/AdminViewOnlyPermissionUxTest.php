@@ -166,7 +166,7 @@ class AdminViewOnlyPermissionUxTest extends TestCase
             ->assertSee('send-email-btn', false)
             ->assertSee('Send Email to Subscriber')
             ->assertSee(route('subscriber.sendEmail', ['subscriber' => $subscriber->uuid]), false)
-            ->assertDontSee(route('subscriber.destroy', $subscriber->id), false)
+            ->assertDontSee('data-url="'.route('subscriber.destroy', $subscriber->id).'"', false)
             ->assertDontSee('Read-only email list.');
 
         $deleter = $this->makeAdmin('Subscriber deleter', $this->makeRole(

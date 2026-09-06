@@ -46,7 +46,12 @@ if (!existsSync(environmentFile)) {
   throw new Error('Run "node scripts/cypress-environment.js init" before running Cypress.');
 }
 
-Object.assign(process.env, parseEnv(readFileSync(environmentFile, 'utf8')));
+const fileEnvironment = parseEnv(readFileSync(environmentFile, 'utf8'));
+for (const [key, value] of Object.entries(fileEnvironment)) {
+  if (process.env[key] === undefined) {
+    process.env[key] = value;
+  }
+}
 
 if (process.env.APP_ENV !== 'testing') {
   throw new Error('Cypress may only run with APP_ENV=testing.');

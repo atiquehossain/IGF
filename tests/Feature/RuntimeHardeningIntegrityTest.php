@@ -280,6 +280,7 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $commands = file_get_contents(base_path('cypress/support/commands.js'));
         $environment = file_get_contents(base_path('.env.cypress.example'));
         $cypressConfig = file_get_contents(base_path('cypress.config.js'));
+        $cypressEnvironment = file_get_contents(base_path('scripts/cypress-environment.js'));
         $workflow = file_get_contents(base_path('.github/workflows/quality.yml'));
         $pipeline = file_get_contents(base_path('bitbucket-pipelines.yml'));
 
@@ -291,6 +292,8 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $this->assertStringContainsString('DB_DATABASE=database/cypress.sqlite', $environment);
         $this->assertStringContainsString('APP_URL=http://127.0.0.1:8001', $environment);
         $this->assertStringContainsString('LOCAL_ADMIN_PASSWORD=', $environment);
+        $this->assertStringContainsString('if (process.env[key] === undefined)', $cypressEnvironment);
+        $this->assertStringNotContainsString('Object.assign(process.env, parseEnv(', $cypressEnvironment);
         $this->assertStringContainsString("baseUrl: 'http://127.0.0.1:8001/'", $cypressConfig);
         $this->assertStringContainsString('allowCypressEnv: false', $cypressConfig);
         $this->assertStringContainsString('browser-smoke:', $workflow);

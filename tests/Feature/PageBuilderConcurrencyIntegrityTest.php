@@ -216,6 +216,8 @@ class PageBuilderConcurrencyIntegrityTest extends TestCase
 
     public function test_legacy_page_editor_carries_the_logical_version_and_cannot_overwrite_a_newer_builder_save(): void
     {
+        config()->set('app.localization', true);
+
         $admin = $this->authorizedAdmin(false, false, true);
         $page = $this->page();
         $block = $this->block($page, 'Original builder copy');

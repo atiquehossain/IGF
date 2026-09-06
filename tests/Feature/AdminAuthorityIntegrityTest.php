@@ -441,7 +441,7 @@ class AdminAuthorityIntegrityTest extends TestCase
         Storage::fake('local');
         [$owner] = $this->owner('avatar-owner');
         $staffRole = $this->role('Avatar staff', 200);
-        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQMcAAAAASUVORK5CYII=', true);
+        $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true);
         $polyglot = UploadedFile::fake()->createWithContent('avatar.png', $png . '<?php echo "unsafe";');
 
         $this->asAdmin($owner)->post(route('admin.store'), [

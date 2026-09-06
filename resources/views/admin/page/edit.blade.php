@@ -197,7 +197,7 @@
                                                         <div class="form-group m-0 mt-3">
                                                             <label for="name_enabled_${{$lang}}" class="control-label">{{ $Lang->Common->Form->Title }} {{ $Lang->Common->Form->Enabled }}</label>
                                                             <input name="name_enabled[{{$lang}}]" id="name_enabled_${{$lang}}" type="checkbox" value="1"
-                                                            <?php if($page->name_enabled == '1') { echo 'checked'; } ?>>
+                                                            {{ $page?->name_enabled == '1' ? 'checked' : '' }}>
                                                             @if ($errors->has('name_enabled.'. $lang))
                                                             <small class="help-block form-text text-danger">{{ $errors->first('name_enabled.'. $lang) }}</small>
                                                             @endif
@@ -208,7 +208,7 @@
                                                         <div class="form-group m-0 mt-3">
                                                             <label for="sub_title_enabled${{$lang}}" class="control-label">Sub {{ $Lang->Common->Form->Title }} {{ $Lang->Common->Form->Enabled }}</label>
                                                             <input name="sub_title_enabled[{{$lang}}]" id="sub_title_enabled${{$lang}}" type="checkbox" value="1"
-                                                            <?php if($page->name_enabled == '1') { echo 'checked'; } ?>>
+                                                            {{ $page?->sub_title_enabled == '1' ? 'checked' : '' }}>
                                                             @if ($errors->has('sub_title_enabled.'. $lang))
                                                             <small class="help-block form-text text-danger">{{ $errors->first('sub_title_enabled.'. $lang) }}</small>
                                                             @endif
@@ -218,9 +218,9 @@
                                                         <div class="form-group">
                                                             <label for="is_relationship${{$lang}}" class="control-label mb-1">{{ $Lang->Common->Form->HasRelationship }}</label>
                                                             <input name="is_relationship[{{$lang}}]" id="is_relationship-{{$lang}}" type="checkbox" value="{{ @$page->is_relationship }}" {{ @$page->is_relationship ? 'checked' : '' }}>
-                                                            <select data-placeholder="{{ $Lang->Common->Form->SelectOption }}" multiple="multiple" name="tags[{{$lang}}][]" class="form-control chosen-select" {{ !$page->is_relationship ? 'disabled' : '' }}>
+                                                            <select data-placeholder="{{ $Lang->Common->Form->SelectOption }}" multiple="multiple" name="tags[{{$lang}}][]" class="form-control chosen-select" {{ $page?->is_relationship ? '' : 'disabled' }}>
                                                                 @foreach ($tags as $tag)
-                                                                 <option value="{{ $tag->id }}" {{ ($page->pageTags ?? collect())->contains('tag_id', $tag->id) ? 'selected' : '' }}>
+                                                                 <option value="{{ $tag->id }}" {{ ($page?->pageTags ?? collect())->contains('tag_id', $tag->id) ? 'selected' : '' }}>
                                                                     {{ $tag->name }}
                                                                 </option>
                                                                 @endforeach

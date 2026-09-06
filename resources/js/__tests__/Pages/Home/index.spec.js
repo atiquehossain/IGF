@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import Home from "@/pages/Home/home.vue";
+import Home from "@/Pages/Home/home.vue";
 import { globalTestData } from "../../../test.global-data";
 
 describe("testing home component", () => {

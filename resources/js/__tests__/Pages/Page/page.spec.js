@@ -1,5 +1,5 @@
 import { shallowMountComponent } from '../../../vue-inertial.helper';
-import Page from '@/pages/page.vue';
+import Page from '@/Pages/page.vue';
 import { globalTestData } from '../../../test.global-data';
 
 describe('Testing Page.vue component', () => {

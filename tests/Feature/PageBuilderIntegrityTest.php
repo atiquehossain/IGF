@@ -1579,14 +1579,14 @@ class PageBuilderIntegrityTest extends TestCase
         )->assertUnprocessable()->assertJsonValidationErrors('file');
     }
 
-    public function test_page_builder_supplies_separate_image_and_video_asset_collections_to_both_editors(): void
+    public function test_page_builder_supplies_separate_image_video_and_document_asset_collections_to_both_editors(): void
     {
         Storage::fake('public');
         $admin = $this->makeAuthorizedAdmin();
         $page = $this->makePage();
         $image = $this->makeMediaAsset('media/story.jpg', ['mime_type' => 'image/jpeg']);
         $video = $this->makeMediaAsset('media/story.mp4', ['mime_type' => 'video/mp4']);
-        $this->makeMediaAsset('media/brief.pdf', ['mime_type' => 'application/pdf']);
+        $document = $this->makeMediaAsset('media/brief.pdf', ['mime_type' => 'application/pdf']);
 
         foreach ([null, 'advanced'] as $mode) {
             $parameters = ['uuid' => $page->uuid, 'locale' => 'en'];
@@ -1594,7 +1594,7 @@ class PageBuilderIntegrityTest extends TestCase
                 $parameters['mode'] = $mode;
             }
 
-            $this->actingAs($admin, 'admin')
+            $response = $this->actingAs($admin, 'admin')
                 ->get(route('page.builder.edit', $parameters))
                 ->assertOk()
                 ->assertViewHas('mediaAssets', fn ($assets): bool =>
@@ -1602,8 +1602,62 @@ class PageBuilderIntegrityTest extends TestCase
                 )
                 ->assertViewHas('videoAssets', fn ($assets): bool =>
                     $assets->pluck('uuid')->all() === [$video->uuid]
+                )
+                ->assertViewHas('documentAssets', fn ($assets): bool =>
+                    $assets->pluck('uuid')->all() === [$document->uuid]
                 );
+
+            if ($mode === null) {
+                $response
+                    ->assertSee('id="document-media-modal"', false)
+                    ->assertSee('id="simple-document-grid"', false)
+                    ->assertSee('data-layout-choose-file', false)
+                    ->assertSee('brief.pdf');
+            }
         }
+    }
+
+    public function test_page_editor_document_upload_accepts_public_documents_and_rejects_spoofed_files(): void
+    {
+        Storage::fake('public');
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+
+        $response = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.media.store', $page->uuid),
+            [
+                'locale' => 'en',
+                'media_kind' => 'document',
+                'file' => UploadedFile::fake()->create('public-guide.pdf', 80, 'application/pdf'),
+            ]
+        )->assertCreated()
+            ->assertJsonPath('asset.mime_type', 'application/pdf')
+            ->assertJsonPath('asset.original_name', 'public-guide.pdf');
+
+        Storage::disk('public')->assertExists($response->json('asset.path'));
+
+        $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.media.store', $page->uuid),
+            [
+                'locale' => 'en',
+                'media_kind' => 'document',
+                'file' => UploadedFile::fake()->createWithContent(
+                    'photo.png',
+                    base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2WQAAAABJRU5ErkJggg==')
+                ),
+            ]
+        )->assertUnprocessable()->assertJsonValidationErrors('file');
+
+        $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.media.store', $page->uuid),
+            [
+                'locale' => 'en',
+                'media_kind' => 'document',
+                'file' => UploadedFile::fake()->create('malware.pdf', 20, 'application/x-msdownload'),
+            ]
+        )->assertUnprocessable()->assertJsonValidationErrors('file');
+
+        $this->assertDatabaseCount('media_assets', 1);
     }
 
     public function test_new_hero_exposes_configurable_overlay_control(): void
@@ -1988,9 +2042,28 @@ class PageBuilderIntegrityTest extends TestCase
             ->assertSee('No JSON or special formatting is needed.')
             ->assertSee('Describe the image for screen readers')
             ->assertSee('Icon shown when there is no image')
+            ->assertSee('Use the full row')
+            ->assertSee('The preview updates immediately.')
+            ->assertSee('data-card-key="full_width"', false)
+            ->assertSee('simple-preview-card--full-width', false)
+            ->assertSee("input.type === 'checkbox' ? input.checked : input.value", false)
             ->assertSee('data-card-key="link_label"', false);
 
         $content = $block->content;
+        $content['items'][0]['full_width'] = true;
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertOk()->assertJsonPath('block.content.items.0.full_width', true);
+
+        $content = $block->fresh()->content;
+        $content['items'][0]['full_width'] = 'wide';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $block->uuid]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $content])
+        )->assertUnprocessable()->assertJsonValidationErrors('content.items.0.full_width');
+
+        $content['items'][0]['full_width'] = true;
         $content['items'][0]['link_label'] = str_repeat('x', 121);
         $this->actingAs($admin, 'admin')->putJson(
             route('page.builder.block.update', [$page->uuid, $block->uuid]),

@@ -51,6 +51,7 @@ return [
      * arbitrary grid, class name, colour, or element type.
      */
     'layout' => [
+        'schema_version' => 2,
         'limits' => [
             'payload_bytes' => 524288,
             'rows' => 12,
@@ -108,11 +109,20 @@ return [
         'element_types' => [
             'heading' => 'Heading',
             'rich_text' => 'Rich text',
-            'image' => 'Image',
-            'video' => 'Video',
             'button' => 'Button',
+            'icon' => 'Icon',
             'divider' => 'Divider',
             'spacer' => 'Spacer',
+            'callout' => 'Highlighted message',
+            'image' => 'Image',
+            'video' => 'Video',
+            'file' => 'File download',
+            'gallery' => 'Photo gallery',
+            'card' => 'Card',
+            'stat' => 'Impact number',
+            'quote' => 'Quotation',
+            'accordion' => 'Questions and answers',
+            'timeline' => 'Timeline or steps',
         ],
         'heading_levels' => [
             'h2' => 'Heading 2',

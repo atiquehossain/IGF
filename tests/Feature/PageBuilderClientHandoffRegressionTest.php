@@ -82,7 +82,7 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
         }
 
         $this->assertStringContainsString('rows.length >= 12', $wiring);
-        $this->assertStringContainsString('column.elements.length >= 12', $wiring);
+        $this->assertStringContainsString('layoutColumnCapacityIssue(column,type)', $wiring);
         $this->assertStringContainsString("openMedia({kind:'layout'", $wiring);
         $this->assertStringContainsString("openVideoMedia({kind:'layout'", $wiring);
         $this->assertStringContainsString("target.kind==='layout'", $source);
@@ -104,6 +104,25 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
         $this->assertStringContainsString("if (!/^https:\\/\\//i.test(candidate)) return '';", $source);
         $this->assertStringContainsString("sourceType === 'youtube' ? explicitHttpsYoutubeEmbedUrl(element.source)", $preview);
         $this->assertStringNotContainsString('custom_html', $editor);
+    }
+
+    public function test_read_only_shared_layouts_cannot_expose_or_reach_preview_mutations(): void
+    {
+        $source = $this->simpleBuilderSource();
+        $picker = $this->between($source, 'function openElementPicker(', 'function renderLayoutContentOverview(');
+        $preview = $this->between($source, 'function previewLayoutRow(', "if (block.type === 'hero')");
+        $wiring = $this->between($source, 'function wireLayoutPreviewSelection()', 'function wireTestimonialPreview()');
+
+        $this->assertStringContainsString(
+            "const canEditLayoutBlock = block => canEditBlockContent(block) && block?.type === 'layout' && !layoutIsBlocked(block);",
+            $source
+        );
+        $this->assertStringContainsString('if (!canEditLayoutBlock(block)) return;', $picker);
+        $this->assertStringContainsString('if (!target || !canEditLayoutBlock(block) || !column', $picker);
+        $this->assertStringContainsString('const addButton = canEditLayoutBlock(block) && elements.length<12', $preview);
+        $this->assertStringContainsString('const rowInserter = index => canEditLayoutBlock(block)', $preview);
+        $this->assertStringContainsString('if (!canEditLayoutBlock(block)) return;', $wiring);
+        $this->assertGreaterThanOrEqual(5, substr_count($source, 'canEditLayoutBlock(block)'));
     }
 
     public function test_safe_design_fields_are_defaulted_validated_and_persisted(): void

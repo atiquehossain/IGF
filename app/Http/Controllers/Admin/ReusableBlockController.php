@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\PageBlock;
 use App\Models\ReusableBlock;
 use App\Services\ContentSanitizer;
+use App\Services\LayoutBlockContentService;
 use App\Services\PageBlockContentResolver;
 use App\Services\PageEditorVersionService;
 use App\Services\PageRevisionService;
@@ -25,7 +26,8 @@ class ReusableBlockController extends Controller
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageEditorVersionService $pageVersions,
-        private PageBuilderController $pageBuilder
+        private PageBuilderController $pageBuilder,
+        private LayoutBlockContentService $layoutBlocks
     ) {
     }
 
@@ -145,9 +147,10 @@ class ReusableBlockController extends Controller
         $validationLocale = $data['locale'] === '*'
             ? (string) config('app.fallback_locale', 'en')
             : (string) $data['locale'];
+        $incomingContent = (array) $data['content'];
         $data['content'] = $this->pageBuilder->validateReusableBlockPayload(
             (string) $reusableBlock->type,
-            (array) $data['content'],
+            $incomingContent,
             $validationLocale
         );
 
@@ -177,13 +180,20 @@ class ReusableBlockController extends Controller
             }
         }
 
-        $reusableBlock = DB::transaction(function () use ($reusableBlock, $data, $anticipatedPageUuids): ReusableBlock {
+        $reusableBlock = DB::transaction(function () use ($reusableBlock, $data, $anticipatedPageUuids, $incomingContent): ReusableBlock {
             $this->pageVersions->advanceMany($anticipatedPageUuids);
             $locked = ReusableBlock::withTrashed()
                 ->whereKey($reusableBlock->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
             $this->assertExpectedVersion($locked, (int) $data['expected_version']);
+            if ($locked->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    (array) $locked->content,
+                    'content',
+                    $incomingContent
+                );
+            }
             // Attach and revision restore lock the shared row before they can
             // insert/delete PageBlock instances. Match that order after the
             // deterministic Page locks to avoid a MySQL next-key deadlock.
@@ -348,6 +358,23 @@ class ReusableBlockController extends Controller
         $editorLocale = $reusableBlock->locale === '*'
             ? (string) config('app.fallback_locale', 'en')
             : (string) $reusableBlock->locale;
+        $managedContent = $this->pageBuilder->reusableBlockEditorOptions($editorLocale);
+        $elementGroups = collect(data_get($managedContent, 'layout.element_catalog', []))
+            ->map(function (array $group): array {
+                $group['elements'] = collect($group['elements'] ?? [])
+                    ->filter(fn (array $element): bool => ($element['mode'] ?? null) === 'static')
+                    ->values()
+                    ->all();
+
+                return $group;
+            })
+            ->filter(fn (array $group): bool => $group['elements'] !== [])
+            ->all();
+        data_set($managedContent, 'layout.element_catalog', $elementGroups);
+        $designDefaults = array_merge(
+            ['section_presentation' => (string) config('page-builder.section_presentation_default', 'standard')],
+            (array) config('page-builder.design_defaults', [])
+        );
 
         return view('admin.reusable-blocks.editor', [
             'title' => ($canEdit && $editing ? 'Edit reusable section — ' : 'Reusable section — ').$reusableBlock->name,
@@ -362,15 +389,27 @@ class ReusableBlockController extends Controller
             'canOpenMedia' => $permissions->allows($admin, 'media.index'),
             'locales' => config('localization.editor_locales', []),
             'mediaAssets' => MediaAsset::query()
-                ->where(function ($query) {
-                    $query->where('mime_type', 'like', 'image/%')
-                        ->orWhereIn('mime_type', ['video/mp4', 'video/webm']);
-                })
+                ->whereIn('mime_type', [
+                    'image/avif',
+                    'image/gif',
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp',
+                    'video/mp4',
+                    'video/webm',
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ])
                 ->latest()
-                ->limit(120)
+                ->limit(200)
                 ->get(['uuid', 'disk', 'path', 'original_name', 'mime_type', 'alt_text']),
             'defaultContent' => config('page-builder.default_content.'.$reusableBlock->type, []),
-            'managedContent' => $this->pageBuilder->reusableBlockEditorOptions($editorLocale),
+            'managedContent' => $managedContent,
+            'designDefaults' => $designDefaults,
+            'columnCountBlockTypes' => (array) config('page-builder.column_count_block_types', []),
             'fieldChoices' => [
                 'section_presentation' => config('page-builder.section_presentations', []),
                 'section_spacing' => config('page-builder.section_spacing_options', []),

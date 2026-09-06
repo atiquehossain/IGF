@@ -425,6 +425,7 @@
             v-for="(item, index) in block.content?.items || []"
             :key="index"
             class="igf-card"
+            :class="{ 'igf-card--full-width': cardIsFullWidth(block, item, index) }"
             :href="safeHref(item.url) || null"
           >
             <div v-if="item.image" class="igf-card__media">
@@ -854,6 +855,183 @@
                     :class="layoutSpacerClass(element)"
                     aria-hidden="true"
                   />
+                  <span
+                    v-else-if="layoutElementType(element) === 'icon'"
+                    class="igf-layout-element igf-layout-icon"
+                    :class="layoutIconClasses(element)"
+                    :role="layoutIconAccessibleLabel(element) ? 'img' : null"
+                    :aria-label="layoutIconAccessibleLabel(element) || null"
+                    :aria-hidden="layoutIconAccessibleLabel(element) ? null : 'true'"
+                  ><i :class="iconClass(element.icon)" aria-hidden="true" /></span>
+                  <a
+                    v-else-if="layoutElementType(element) === 'file' && layoutFileUrl(element) && element.label"
+                    class="igf-layout-element igf-layout-file"
+                    :href="layoutFileUrl(element)"
+                    :target="element.open_in_new_tab === true ? '_blank' : null"
+                    :rel="element.open_in_new_tab === true ? 'noopener noreferrer' : null"
+                  >
+                    <span class="igf-layout-file__icon" aria-hidden="true"><i class="fa-regular fa-file-lines" /></span>
+                    <span class="igf-layout-file__copy"><strong>{{ element.label }}<span v-if="element.open_in_new_tab === true" class="sr-only">, {{ shared.team_external_link_suffix || 'opens in a new tab' }}</span></strong><small v-if="element.description">{{ element.description }}</small></span>
+                    <i class="fa-solid fa-arrow-down" aria-hidden="true" />
+                  </a>
+                  <component
+                    :is="layoutCardHref(element) ? 'a' : 'article'"
+                    v-else-if="layoutElementType(element) === 'card' && element.heading"
+                    class="igf-layout-element igf-layout-card"
+                    :class="layoutCardClass(element)"
+                    :href="layoutCardHref(element) || null"
+                  >
+                    <img
+                      v-if="layoutCardImageUrl(element)"
+                      :src="layoutCardImageUrl(element)"
+                      :srcset="responsiveImage(layoutCardImageUrl(element), '(max-width: 767px) 100vw, 50vw').webpSrcset || undefined"
+                      :sizes="responsiveImage(layoutCardImageUrl(element), '(max-width: 767px) 100vw, 50vw').sizes"
+                      :width="responsiveImage(layoutCardImageUrl(element)).width"
+                      :height="responsiveImage(layoutCardImageUrl(element)).height"
+                      :alt="element.image_alt || ''"
+                      loading="lazy"
+                      decoding="async"
+                    >
+                    <span v-else-if="element.icon" class="igf-layout-card__icon" aria-hidden="true"><i :class="iconClass(element.icon)" /></span>
+                    <span class="igf-layout-card__content">
+                      <small v-if="element.eyebrow" class="igf-layout-card__eyebrow">{{ element.eyebrow }}</small>
+                      <strong class="igf-layout-card__heading">{{ element.heading }}</strong>
+                      <span v-if="element.body" class="igf-layout-card__body">{{ element.body }}</span>
+                      <span v-if="layoutCardHref(element) && element.link_label" class="igf-layout-card__link">{{ element.link_label }} <span aria-hidden="true">→</span></span>
+                    </span>
+                  </component>
+                  <div
+                    v-else-if="layoutElementType(element) === 'stat' && (element.value || element.label)"
+                    class="igf-layout-element igf-layout-stat"
+                    :class="layoutStatClass(element)"
+                  >
+                    <span v-if="element.icon" class="igf-layout-stat__icon" aria-hidden="true"><i :class="iconClass(element.icon)" /></span>
+                    <strong>{{ element.value }}</strong>
+                    <span>{{ element.label }}</span>
+                  </div>
+                  <figure
+                    v-else-if="layoutElementType(element) === 'quote' && element.quote"
+                    class="igf-layout-element igf-layout-quote"
+                    :class="layoutQuoteClass(element)"
+                  >
+                    <img
+                      v-if="layoutQuoteImageUrl(element)"
+                      :src="layoutQuoteImageUrl(element)"
+                      :alt="element.image_alt || ''"
+                      loading="lazy"
+                      decoding="async"
+                    >
+                    <span class="igf-layout-quote__mark" aria-hidden="true">“</span>
+                    <blockquote><p>{{ element.quote }}</p></blockquote>
+                    <figcaption v-if="element.attribution || element.role">
+                      <strong v-if="element.attribution">{{ element.attribution }}</strong>
+                      <span v-if="element.role">{{ element.role }}</span>
+                    </figcaption>
+                  </figure>
+                  <div
+                    v-else-if="layoutElementType(element) === 'gallery' && layoutGalleryItems(element).length"
+                    class="igf-layout-element igf-layout-gallery"
+                    :class="layoutGalleryClass(element)"
+                  >
+                    <figure
+                      v-for="(item, itemIndex) in layoutGalleryItems(element)"
+                      :key="item.id || `layout-gallery-item-${itemIndex}`"
+                    >
+                      <button
+                        v-if="element.lightbox !== false"
+                        type="button"
+                        class="igf-layout-gallery__trigger"
+                        :aria-label="layoutGalleryOpenLabel(item, itemIndex)"
+                        @click="openLayoutGalleryLightbox(block, element, rowIndex, columnIndex, elementIndex, itemIndex, $event)"
+                      ><img :src="layoutGalleryImageUrl(item)" :alt="item.alt || ''" loading="lazy" decoding="async"></button>
+                      <img v-else :src="layoutGalleryImageUrl(item)" :alt="item.alt || ''" loading="lazy" decoding="async">
+                      <figcaption v-if="item.caption">{{ item.caption }}</figcaption>
+                    </figure>
+                    <div
+                      v-if="layoutGalleryLightboxMatches(block, element, rowIndex, columnIndex, elementIndex)"
+                      class="igf-layout-gallery-lightbox"
+                      role="presentation"
+                      @click.self="closeLayoutGalleryLightbox"
+                    >
+                      <div
+                        class="igf-layout-gallery-lightbox__dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        :aria-label="layoutGalleryDialogLabel(element)"
+                        tabindex="-1"
+                        @keydown.esc.stop.prevent="closeLayoutGalleryLightbox"
+                        @keydown.left.prevent="moveLayoutGalleryLightbox(element, -1)"
+                        @keydown.right.prevent="moveLayoutGalleryLightbox(element, 1)"
+                        @keydown.tab="trapGalleryLightboxFocus"
+                      >
+                        <button type="button" class="igf-layout-gallery-lightbox__close" :aria-label="shared.gallery_close_image_label || 'Close image'" @click="closeLayoutGalleryLightbox"><i class="fa-solid fa-xmark" aria-hidden="true" /></button>
+                        <button
+                          type="button"
+                          class="igf-layout-gallery-lightbox__nav igf-layout-gallery-lightbox__nav--previous"
+                          :aria-label="shared.gallery_previous_image_label || 'Previous image'"
+                          :disabled="layoutGalleryLightbox.index === 0"
+                          @click="moveLayoutGalleryLightbox(element, -1)"
+                        ><i class="fa-solid fa-arrow-left" aria-hidden="true" /></button>
+                        <figure>
+                          <img
+                            :src="layoutGalleryImageUrl(activeLayoutGalleryLightboxItem(element))"
+                            :alt="activeLayoutGalleryLightboxItem(element)?.alt || ''"
+                          >
+                          <figcaption v-if="activeLayoutGalleryLightboxItem(element)?.caption">{{ activeLayoutGalleryLightboxItem(element).caption }}</figcaption>
+                        </figure>
+                        <button
+                          type="button"
+                          class="igf-layout-gallery-lightbox__nav igf-layout-gallery-lightbox__nav--next"
+                          :aria-label="shared.gallery_next_image_label || 'Next image'"
+                          :disabled="layoutGalleryLightbox.index === layoutGalleryItems(element).length - 1"
+                          @click="moveLayoutGalleryLightbox(element, 1)"
+                        ><i class="fa-solid fa-arrow-right" aria-hidden="true" /></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    v-else-if="layoutElementType(element) === 'accordion' && layoutAccordionItems(element).length"
+                    class="igf-layout-element igf-layout-accordion"
+                  >
+                    <details
+                      v-for="(item, itemIndex) in layoutAccordionItems(element)"
+                      :key="item.id || `layout-accordion-item-${itemIndex}`"
+                      :name="element.allow_one_open === true ? layoutAccordionName(block, element, rowIndex, columnIndex, elementIndex) : null"
+                    >
+                      <summary>{{ item.question }}</summary>
+                      <div v-if="item.answer" class="igf-layout-accordion__answer igf-page-block__copy" v-html="item.answer" />
+                    </details>
+                  </div>
+                  <ol
+                    v-else-if="layoutElementType(element) === 'timeline' && layoutTimelineItems(element).length"
+                    class="igf-layout-element igf-layout-timeline"
+                    :class="layoutTimelineClass(element)"
+                  >
+                    <li
+                      v-for="(item, itemIndex) in layoutTimelineItems(element)"
+                      :key="item.id || `layout-timeline-item-${itemIndex}`"
+                    >
+                      <span class="igf-layout-timeline__marker" aria-hidden="true"><i v-if="item.icon" :class="iconClass(item.icon)" /><b v-else>{{ itemIndex + 1 }}</b></span>
+                      <div>
+                        <small v-if="item.date_label">{{ item.date_label }}</small>
+                        <h3 v-if="item.heading">{{ item.heading }}</h3>
+                        <p v-if="item.body">{{ item.body }}</p>
+                      </div>
+                    </li>
+                  </ol>
+                  <aside
+                    v-else-if="layoutElementType(element) === 'callout' && element.heading"
+                    class="igf-layout-element igf-layout-callout"
+                    :class="layoutCalloutClass(element)"
+                  >
+                    <span v-if="element.icon" class="igf-layout-callout__icon" aria-hidden="true"><i :class="iconClass(element.icon)" /></span>
+                    <div>
+                      <small v-if="element.eyebrow">{{ element.eyebrow }}</small>
+                      <h3>{{ element.heading }}</h3>
+                      <div v-if="element.body" class="igf-layout-callout__body igf-page-block__copy" v-html="element.body" />
+                      <a v-if="layoutCalloutHref(element) && element.link_label" :href="layoutCalloutHref(element)">{{ element.link_label }} <span aria-hidden="true">→</span></a>
+                    </div>
+                  </aside>
                 </template>
               </div>
             </div>
@@ -990,7 +1168,10 @@ const layoutPresetColumns = new Map([
 const layoutWidths = new Set(['standard', 'wide', 'full']);
 const layoutBackgrounds = new Set(['default', 'soft', 'accent', 'dark']);
 const layoutSpacings = new Set(['compact', 'standard', 'generous']);
-const layoutElementTypes = new Set(['heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer']);
+const layoutElementTypes = new Set([
+  'heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer',
+  'icon', 'file', 'card', 'stat', 'quote', 'gallery', 'accordion', 'timeline', 'callout',
+]);
 const page = usePage();
 const shared = computed(() => page.props.siteSettings?.shared_blocks || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
@@ -1021,6 +1202,7 @@ const heroInteractionPaused = ref({});
 const testimonialIndexes = ref({});
 const galleryIndexes = ref({});
 const galleryLightbox = ref(null);
+const layoutGalleryLightbox = ref(null);
 const openTeamCardKey = ref('');
 const hoverTeamCardKey = ref('');
 const viewportTeamCardKey = ref('');
@@ -1530,6 +1712,121 @@ function layoutSpacerClass(element) {
   const size = String(element?.size || 'medium').trim().toLowerCase();
   return `igf-layout-spacer--${['small', 'medium', 'large'].includes(size) ? size : 'medium'}`;
 }
+function layoutChoice(value, choices, fallback) {
+  const choice = String(value || '').trim().toLowerCase();
+  return choices.includes(choice) ? choice : fallback;
+}
+function layoutIconAccessibleLabel(element) {
+  if (element?.decorative !== false) return '';
+  return String(element?.accessible_label || '').trim();
+}
+function layoutIconClasses(element) {
+  return [
+    `igf-layout-icon--${layoutChoice(element?.size, ['small', 'medium', 'large'], 'medium')}`,
+    `igf-layout-icon--${layoutChoice(element?.style, ['plain', 'soft', 'circle'], 'soft')}`,
+  ];
+}
+function layoutFileUrl(element) {
+  return safeMediaHref(element?.path);
+}
+function layoutCardHref(element) {
+  return safeHref(element?.url);
+}
+function layoutCardImageUrl(element) {
+  return safeMediaHref(element?.image);
+}
+function layoutCardClass(element) {
+  return `igf-layout-card--${layoutChoice(element?.style, ['standard', 'soft', 'contrast'], 'standard')}`;
+}
+function layoutStatClass(element) {
+  return `igf-layout-stat--${layoutChoice(element?.emphasis, ['standard', 'accent', 'contrast'], 'standard')}`;
+}
+function layoutQuoteImageUrl(element) {
+  return safeMediaHref(element?.image);
+}
+function layoutQuoteClass(element) {
+  return `igf-layout-quote--${layoutChoice(element?.style, ['standard', 'featured', 'compact'], 'standard')}`;
+}
+function layoutGalleryImageUrl(item) {
+  return safeMediaHref(item?.path);
+}
+function layoutGalleryItems(element) {
+  const items = Array.isArray(element?.items) ? element.items : [];
+  return items
+    .filter(item => item && typeof item === 'object' && !Array.isArray(item) && layoutGalleryImageUrl(item))
+    .slice(0, 12);
+}
+function layoutGalleryClass(element) {
+  return `igf-layout-gallery--columns-${layoutChoice(element?.columns, ['2', '3', '4'], '3')}`;
+}
+function layoutGalleryOpenLabel(item, index) {
+  const name = String(item?.caption || item?.alt || index + 1).trim();
+  return interpolateSetting(shared.value.gallery_open_image_label || 'Open image: {name}', { name });
+}
+function layoutElementDomKey(block, element, rowIndex, columnIndex, elementIndex) {
+  const blockKey = String(block?.uuid || block?.id || 'layout');
+  const elementKey = String(element?.id || `${rowIndex}-${columnIndex}-${elementIndex}`);
+  return `${blockKey}:${elementKey}`;
+}
+function layoutGalleryLightboxMatches(block, element, rowIndex, columnIndex, elementIndex) {
+  return layoutGalleryLightbox.value?.key === layoutElementDomKey(block, element, rowIndex, columnIndex, elementIndex);
+}
+function openLayoutGalleryLightbox(block, element, rowIndex, columnIndex, elementIndex, index, event) {
+  if (!layoutGalleryItems(element)[index]) return;
+  layoutGalleryLightbox.value = {
+    key: layoutElementDomKey(block, element, rowIndex, columnIndex, elementIndex),
+    index,
+    returnFocus: event?.currentTarget || null,
+  };
+  nextTick(() => pageBlocksRoot.value?.querySelector('.igf-layout-gallery-lightbox__close')?.focus());
+}
+function activeLayoutGalleryLightboxItem(element) {
+  return layoutGalleryItems(element)[layoutGalleryLightbox.value?.index ?? -1] || null;
+}
+function layoutGalleryDialogLabel(element) {
+  const item = activeLayoutGalleryLightboxItem(element);
+  return String(item?.caption || item?.alt || shared.value.gallery_image_label || 'Gallery image').trim();
+}
+function closeLayoutGalleryLightbox() {
+  const returnFocus = layoutGalleryLightbox.value?.returnFocus || null;
+  layoutGalleryLightbox.value = null;
+  nextTick(() => returnFocus?.focus?.());
+}
+function moveLayoutGalleryLightbox(element, direction) {
+  if (!layoutGalleryLightbox.value) return;
+  const lastIndex = layoutGalleryItems(element).length - 1;
+  const index = Math.min(lastIndex, Math.max(0, layoutGalleryLightbox.value.index + direction));
+  layoutGalleryLightbox.value = { ...layoutGalleryLightbox.value, index };
+}
+function layoutRepeaterItems(element) {
+  const items = Array.isArray(element?.items) ? element.items : [];
+  return items
+    .filter(item => item && typeof item === 'object' && !Array.isArray(item))
+    .slice(0, 12);
+}
+function layoutAccordionItems(element) {
+  return layoutRepeaterItems(element).filter(item => String(item?.question || '').trim());
+}
+function layoutTimelineItems(element) {
+  return layoutRepeaterItems(element).filter(item => (
+    String(item?.date_label || '').trim()
+    || String(item?.heading || '').trim()
+    || String(item?.body || '').trim()
+  ));
+}
+function layoutAccordionName(block, element, rowIndex, columnIndex, elementIndex) {
+  return `layout-accordion-${layoutElementDomKey(block, element, rowIndex, columnIndex, elementIndex)}`
+    .replace(/[^a-zA-Z0-9_-]+/g, '-');
+}
+function layoutTimelineClass(element) {
+  return `igf-layout-timeline--${layoutChoice(element?.style, ['timeline', 'steps', 'compact'], 'timeline')}`;
+}
+function layoutCalloutClass(element) {
+  return `igf-layout-callout--${layoutChoice(element?.tone, ['neutral', 'accent', 'success', 'warning'], 'accent')}`;
+}
+function layoutCalloutHref(element) {
+  return safeHref(element?.url);
+}
 function mediaTextType(block) {
   const type = String(block.content?.media_type || 'image').trim().toLowerCase();
   return ['image', 'video', 'youtube'].includes(type) ? type : 'image';
@@ -1581,6 +1878,14 @@ function normalizedColumnCount(block) {
 }
 function columnCountClass(block) {
   return `igf-page-block--columns-${normalizedColumnCount(block)}`;
+}
+function cardIsFullWidth(block, item, index) {
+  if (item?.full_width === true) return true;
+  if (item?.full_width !== undefined && item?.full_width !== null) return false;
+  const items = Array.isArray(block?.content?.items) ? block.content.items : [];
+  return block?.content?.variant === 'about-pillars'
+    && items.length % 2 === 1
+    && index === items.length - 1;
 }
 function visibilityClass(block) {
   return { 'igf-page-block--desktop-hidden': !block.show_on_desktop, 'igf-page-block--mobile-hidden': !block.show_on_mobile };
@@ -1980,6 +2285,102 @@ function subscribe() {
 .igf-layout-spacer--small { min-height:24px; }
 .igf-layout-spacer--medium { min-height:56px; }
 .igf-layout-spacer--large { min-height:96px; }
+.igf-layout-icon { display:inline-grid; width:auto; align-self:flex-start; place-items:center; margin:0 0 22px; color:var(--orange); line-height:1; }
+.igf-layout-icon--small { font-size:22px; }
+.igf-layout-icon--medium { font-size:32px; }
+.igf-layout-icon--large { font-size:44px; }
+.igf-layout-icon--soft,.igf-layout-icon--circle { min-width:1.9em; min-height:1.9em; padding:.42em; background:var(--linen); }
+.igf-layout-icon--soft { border-radius:14px; }
+.igf-layout-icon--circle { border-radius:999px; }
+.igf-layout-icon--plain { background:transparent; }
+.igf-layout-file { display:flex; min-height:76px; align-items:center; gap:15px; margin:0 0 24px; padding:16px 18px; border:1px solid var(--line); border-radius:var(--igf-card-radius,16px); background:#fff; color:var(--ink); text-decoration:none; box-shadow:0 7px 20px rgba(25,28,29,.07); transition:border-color .2s ease,transform .2s ease; }
+.igf-layout-file:hover { border-color:var(--orange); color:var(--brown); transform:translateY(-2px); }
+.igf-layout-file:focus-visible,.igf-layout-gallery__trigger:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+.igf-layout-file__icon { display:grid; width:44px; height:44px; flex:0 0 44px; place-items:center; border-radius:12px; background:var(--linen); color:var(--brown); font-size:20px; }
+.igf-layout-file__copy { display:flex; min-width:0; flex:1; flex-direction:column; gap:3px; }
+.igf-layout-file__copy strong { overflow-wrap:anywhere; }
+.igf-layout-file__copy small { color:var(--muted); line-height:1.4; }
+.igf-layout-card { display:flex; overflow:hidden; min-height:100%; flex-direction:column; margin:0 0 24px; border:1px solid var(--line); border-radius:var(--igf-card-radius,18px); background:#fff; color:var(--ink); text-decoration:none; box-shadow:var(--igf-card-shadow,0 10px 30px rgba(25,28,29,.09)); }
+a.igf-layout-card { transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease; }
+a.igf-layout-card:hover { border-color:rgba(255,117,0,.65); color:var(--ink); transform:translateY(-3px); box-shadow:0 16px 36px rgba(25,28,29,.13); }
+a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+.igf-layout-card>img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; }
+.igf-layout-card__icon { display:grid; width:52px; height:52px; margin:22px 22px 0; place-items:center; border-radius:14px; background:var(--linen); color:var(--orange); font-size:23px; }
+.igf-layout-card__content { display:flex; flex:1; flex-direction:column; align-items:flex-start; padding:22px; }
+.igf-layout-card__eyebrow { margin-bottom:8px; color:var(--brown); font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.igf-layout-card__heading { color:inherit; font:650 var(--igf-heading-3,22px)/1.25 'Literata',Georgia,serif; }
+.igf-layout-card__body { margin-top:10px; color:var(--muted); line-height:1.6; }
+.igf-layout-card__link { margin-top:auto; padding-top:18px; color:var(--brown); font-weight:800; }
+.igf-layout-card--soft { border-color:#eadfd6; background:var(--cream); }
+.igf-layout-card--contrast { border-color:#302b28; background:#24211f; color:#fff; }
+.igf-layout-card--contrast :is(.igf-layout-card__body,.igf-layout-card__eyebrow,.igf-layout-card__link) { color:rgba(255,255,255,.82); }
+.igf-layout-stat { display:flex; min-height:176px; flex-direction:column; align-items:center; justify-content:center; margin:0 0 24px; padding:26px 22px; border:1px solid var(--line); border-radius:var(--igf-card-radius,18px); background:#fff; text-align:center; box-shadow:0 8px 24px rgba(25,28,29,.07); }
+.igf-layout-stat__icon { display:grid; width:46px; height:46px; margin-bottom:12px; place-items:center; border-radius:999px; background:var(--linen); color:var(--orange); font-size:19px; }
+.igf-layout-stat>strong { color:inherit; font:700 clamp(36px,5vw,56px)/1 'Literata',Georgia,serif; letter-spacing:-.04em; }
+.igf-layout-stat>span:last-child { margin-top:9px; color:var(--muted); font-weight:650; }
+.igf-layout-stat--accent { border-color:#ffd1aa; background:var(--linen); }
+.igf-layout-stat--contrast { border-color:#302b28; background:#24211f; color:#fff; }
+.igf-layout-stat--contrast>span:last-child { color:rgba(255,255,255,.78); }
+.igf-layout-quote { position:relative; margin:0 0 24px; padding:clamp(24px,4vw,38px); border-left:5px solid var(--orange); border-radius:0 var(--igf-card-radius,18px) var(--igf-card-radius,18px) 0; background:var(--cream); }
+.igf-layout-quote>img { width:72px; height:72px; margin-bottom:17px; border:3px solid #fff; border-radius:999px; object-fit:cover; box-shadow:0 6px 18px rgba(25,28,29,.13); }
+.igf-layout-quote__mark { position:absolute; top:13px; right:22px; color:rgba(255,117,0,.2); font:700 72px/1 Georgia,serif; }
+.igf-layout-quote blockquote { margin:0; }
+.igf-layout-quote blockquote p { margin:0; color:inherit; font:550 clamp(20px,2.5vw,28px)/1.5 'Literata',Georgia,serif; }
+.igf-layout-quote figcaption { display:flex; flex-direction:column; gap:3px; margin-top:18px; }
+.igf-layout-quote figcaption span { color:var(--muted); font-size:14px; }
+.igf-layout-quote--featured { border-left:0; background:linear-gradient(135deg,#ff7500,#d95400); color:#fff; text-align:center; }
+.igf-layout-quote--featured .igf-layout-quote__mark { color:rgba(255,255,255,.2); }
+.igf-layout-quote--featured figcaption span { color:rgba(255,255,255,.78); }
+.igf-layout-quote--compact { padding:22px 25px; }
+.igf-layout-quote--compact blockquote p { font-size:19px; }
+.igf-layout-gallery { display:grid; gap:14px; margin:0 0 24px; }
+.igf-layout-gallery--columns-2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.igf-layout-gallery--columns-3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.igf-layout-gallery--columns-4 { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.igf-layout-gallery>figure { min-width:0; margin:0; }
+.igf-layout-gallery__trigger { display:block; width:100%; padding:0; overflow:hidden; border:0; border-radius:14px; background:#eee; cursor:zoom-in; }
+.igf-layout-gallery>figure>img,.igf-layout-gallery__trigger img { display:block; width:100%; aspect-ratio:4/3; border-radius:14px; object-fit:cover; transition:transform .25s ease; }
+.igf-layout-gallery__trigger:hover img { transform:scale(1.035); }
+.igf-layout-gallery>figure>figcaption { margin-top:7px; color:var(--muted); font-size:13px; line-height:1.4; }
+.igf-layout-gallery-lightbox { position:fixed; z-index:10000; inset:0; display:grid; place-items:center; padding:20px; background:rgba(12,12,12,.9); }
+.igf-layout-gallery-lightbox__dialog { position:relative; display:grid; width:min(100%,1100px); max-height:calc(100vh - 40px); grid-template-columns:48px minmax(0,1fr) 48px; align-items:center; gap:12px; padding:58px 16px 18px; border-radius:18px; background:#171717; color:#fff; }
+.igf-layout-gallery-lightbox__dialog>figure { min-width:0; margin:0; text-align:center; }
+.igf-layout-gallery-lightbox__dialog img { display:block; max-width:100%; max-height:calc(100vh - 150px); margin:0 auto; object-fit:contain; }
+.igf-layout-gallery-lightbox__dialog figcaption { margin-top:10px; color:rgba(255,255,255,.82); }
+.igf-layout-gallery-lightbox__close,.igf-layout-gallery-lightbox__nav { display:grid; width:44px; height:44px; place-items:center; border:1px solid rgba(255,255,255,.35); border-radius:999px; background:#2a2a2a; color:#fff; cursor:pointer; }
+.igf-layout-gallery-lightbox__close:focus-visible,.igf-layout-gallery-lightbox__nav:focus-visible { outline:3px solid #ff9b48; outline-offset:3px; }
+.igf-layout-gallery-lightbox__close { position:absolute; top:10px; right:12px; }
+.igf-layout-gallery-lightbox__nav:disabled { opacity:.35; cursor:not-allowed; }
+.igf-layout-accordion { margin:0 0 24px; border-top:1px solid var(--line); }
+.igf-layout-accordion details { border-bottom:1px solid var(--line); }
+.igf-layout-accordion summary { position:relative; padding:19px 44px 19px 2px; color:inherit; font-weight:750; cursor:pointer; list-style:none; }
+.igf-layout-accordion summary::-webkit-details-marker { display:none; }
+.igf-layout-accordion summary::after { position:absolute; top:50%; right:8px; color:var(--orange); font-size:24px; font-weight:400; content:'+'; transform:translateY(-50%); }
+.igf-layout-accordion details[open] summary::after { content:'−'; }
+.igf-layout-accordion summary:focus-visible { outline:3px solid var(--orange); outline-offset:2px; }
+.igf-layout-accordion__answer { padding:0 34px 19px 2px; color:inherit; }
+.igf-layout-accordion__answer :deep(:last-child) { margin-bottom:0; }
+.igf-layout-timeline { margin:0 0 24px; padding:0; list-style:none; }
+.igf-layout-timeline li { position:relative; display:grid; grid-template-columns:52px minmax(0,1fr); gap:16px; padding-bottom:28px; }
+.igf-layout-timeline li:not(:last-child)::after { position:absolute; top:48px; bottom:0; left:23px; width:2px; background:var(--line); content:''; }
+.igf-layout-timeline__marker { position:relative; z-index:1; display:grid; width:48px; height:48px; place-items:center; border-radius:999px; background:var(--orange); color:#fff; font-weight:800; }
+.igf-layout-timeline li small { display:block; margin:1px 0 5px; color:var(--brown); font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.igf-layout-timeline li h3 { margin-bottom:7px; }
+.igf-layout-timeline li p { margin:0; line-height:1.6; }
+.igf-layout-timeline--steps .igf-layout-timeline__marker { border-radius:13px; }
+.igf-layout-timeline--compact li { grid-template-columns:36px minmax(0,1fr); gap:12px; padding-bottom:18px; }
+.igf-layout-timeline--compact .igf-layout-timeline__marker { width:34px; height:34px; font-size:13px; }
+.igf-layout-timeline--compact li:not(:last-child)::after { top:34px; left:16px; }
+.igf-layout-callout { display:grid; grid-template-columns:auto minmax(0,1fr); gap:18px; margin:0 0 24px; padding:clamp(22px,4vw,34px); border:1px solid #ffd0aa; border-radius:var(--igf-card-radius,18px); background:var(--linen); color:var(--ink); }
+.igf-layout-callout__icon { display:grid; width:48px; height:48px; place-items:center; border-radius:14px; background:#fff; color:var(--orange); font-size:21px; }
+.igf-layout-callout small { display:block; margin-bottom:6px; color:var(--brown); font-size:11px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.igf-layout-callout h3 { margin-bottom:9px; }
+.igf-layout-callout__body { color:inherit; }
+.igf-layout-callout__body :deep(:last-child) { margin-bottom:0; }
+.igf-layout-callout a { display:inline-flex; margin-top:14px; color:var(--brown); font-weight:800; }
+.igf-layout-callout--neutral { border-color:var(--line); background:#fff; }
+.igf-layout-callout--success { border-color:#b8dec1; background:#eff9f1; }
+.igf-layout-callout--warning { border-color:#f0ce79; background:#fff8df; }
 .igf-layout-row--background-accent :is(p,.igf-page-block__copy),.igf-layout-row--background-dark :is(p,.igf-page-block__copy) { color:rgba(255,255,255,.88); }
 .igf-layout-row--background-accent .igf-layout-media figcaption,.igf-layout-row--background-dark .igf-layout-media figcaption { color:rgba(255,255,255,.78); }
 .igf-layout-row--background-accent .igf-layout-copy :deep(a),.igf-layout-row--background-dark .igf-layout-copy :deep(a) { color:#fff; text-decoration:underline; text-underline-offset:3px; }
@@ -1987,6 +2388,10 @@ function subscribe() {
 .igf-layout-row--background-accent .igf-button--primary { border-color:#fff; background:#fff; color:#9c4500; }
 .igf-layout-row--background-accent .igf-button--outline,.igf-layout-row--background-dark .igf-button--outline { border-color:#fff; color:#fff; }
 .igf-layout-row--background-dark .igf-layout-button--text,.igf-layout-row--background-accent .igf-layout-button--text { color:#fff; }
+.igf-layout-row--background-accent :is(.igf-layout-file,.igf-layout-card,.igf-layout-stat,.igf-layout-quote,.igf-layout-accordion,.igf-layout-callout),.igf-layout-row--background-dark :is(.igf-layout-file,.igf-layout-card,.igf-layout-stat,.igf-layout-quote,.igf-layout-accordion,.igf-layout-callout) { border-color:rgba(255,255,255,.24); }
+.igf-layout-row--background-accent .igf-layout-accordion,.igf-layout-row--background-dark .igf-layout-accordion { border-top-color:rgba(255,255,255,.3); }
+.igf-layout-row--background-accent .igf-layout-accordion details,.igf-layout-row--background-dark .igf-layout-accordion details { border-bottom-color:rgba(255,255,255,.3); }
+.igf-layout-row--background-accent .igf-layout-timeline li:not(:last-child)::after,.igf-layout-row--background-dark .igf-layout-timeline li:not(:last-child)::after { background:rgba(255,255,255,.3); }
 .igf-page-block__eyebrow { margin:0 0 14px; color:var(--brown); font:800 12px/1.25 'Hanken Grotesk',Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; }
 .igf-page-block__eyebrow--inverse { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid rgba(255,117,0,.34); border-radius:12px; background:rgba(255,117,0,.1); color:#ffb070; }
 .igf-page-blocks :is(h1,h2,h3) { color:inherit; font-family:'Literata',Georgia,serif; letter-spacing:-.025em; }
@@ -2064,6 +2469,7 @@ function subscribe() {
 .igf-section-heading .igf-section-lead { margin:0; }
 .igf-card-grid { display:grid; grid-template-columns:repeat(var(--igf-card-columns,3),minmax(0,1fr)); gap:24px; }
 .igf-card-grid--four { grid-template-columns:repeat(var(--igf-card-columns,3),minmax(0,1fr)); }
+.igf-card-grid>.igf-card--full-width { grid-column:1/-1; }
 .igf-card { display:flex; overflow:hidden; min-height:250px; flex-direction:column; border:1px solid var(--igf-card-border,var(--line)); border-radius:var(--igf-card-radius,16px); background:#fff; color:var(--ink); text-decoration:none; box-shadow:var(--igf-card-shadow,0 3px 10px rgba(25,28,29,.035)); transition:.2s ease; }
 .igf-card:hover { transform:translateY(-4px); border-color:#d9c8bb; box-shadow:0 12px 28px rgba(25,28,29,.09); }
 .igf-card:not(a):hover { transform:none; border-color:var(--igf-card-border,var(--line)); box-shadow:var(--igf-card-shadow,0 3px 10px rgba(25,28,29,.035)); }
@@ -2502,6 +2908,7 @@ function subscribe() {
 }
 @media (max-width:960px) {
   .igf-layout-row--quarter .igf-layout-row__columns { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .igf-layout-gallery--columns-3,.igf-layout-gallery--columns-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-stats { grid-template-columns:repeat(2,1fr); }
   .igf-card-grid { grid-template-columns:repeat(2,1fr); }
   .igf-focus-areas { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -2525,6 +2932,8 @@ function subscribe() {
 @media (max-width:767px) {
   .igf-layout-row__columns { grid-template-columns:minmax(0,1fr)!important; }
   .igf-layout-row--spacing-generous .igf-layout-row__inner { padding-top:72px; padding-bottom:72px; }
+  .igf-layout-gallery-lightbox__dialog { grid-template-columns:42px minmax(0,1fr) 42px; gap:6px; padding-right:8px; padding-left:8px; }
+  .igf-layout-gallery-lightbox__close,.igf-layout-gallery-lightbox__nav { width:40px; height:40px; }
   .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:1; }
   .igf-page-block { padding:var(--igf-section-mobile,68px) 20px; }
   .igf-page-block--partners { padding-top:28px; padding-bottom:68px; }
@@ -2631,6 +3040,12 @@ function subscribe() {
 }
 @media (max-width:420px) {
   .igf-stats { grid-template-columns:1fr; }
+  .igf-layout-gallery { grid-template-columns:1fr; }
+  .igf-layout-gallery-lightbox__dialog { grid-template-columns:1fr; padding:62px 12px 70px; }
+  .igf-layout-gallery-lightbox__nav { position:absolute; bottom:14px; }
+  .igf-layout-gallery-lightbox__nav--previous { left:calc(50% - 50px); }
+  .igf-layout-gallery-lightbox__nav--next { right:calc(50% - 50px); }
+  .igf-layout-callout { grid-template-columns:1fr; }
   .igf-page-block__eyebrow--inverse { font-size:10px; }
   .igf-card-grid { grid-template-columns:1fr; }
   .igf-campaign-frequency__tabs { grid-template-columns:1fr 1fr; }

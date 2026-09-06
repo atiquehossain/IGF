@@ -1170,6 +1170,86 @@ describe('PageBlocks editorial links', () => {
     wrapper.unmount();
   });
 
+  test('opts explicitly flagged cards into the full-width grid span', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [{
+          uuid: 'full-width-cards',
+          type: 'cards',
+          content: {
+            heading: 'Our pillars',
+            items: [
+              { heading: 'Mission' },
+              { heading: 'Values', full_width: true },
+              { heading: 'Vision', full_width: false },
+            ],
+          },
+        }],
+      },
+    });
+
+    const cards = wrapper.findAll('.igf-card');
+    expect(cards).toHaveLength(3);
+    expect(cards[0].classes()).not.toContain('igf-card--full-width');
+    expect(cards[1].classes()).toContain('igf-card--full-width');
+    expect(cards[2].classes()).not.toContain('igf-card--full-width');
+
+    wrapper.unmount();
+  });
+
+  test('keeps the final odd about pillar full-width when its flag is absent or null', () => {
+    [undefined, null].forEach(fullWidth => {
+      const wrapper = mount(PageBlocks, {
+        props: {
+          blocks: [{
+            uuid: `legacy-about-pillars-${String(fullWidth)}`,
+            type: 'cards',
+            content: {
+              variant: 'about-pillars',
+              heading: 'Our pillars',
+              items: [
+                { heading: 'Mission' },
+                { heading: 'Vision' },
+                { heading: 'Values', ...(fullWidth === null ? { full_width: null } : {}) },
+              ],
+            },
+          }],
+        },
+      });
+
+      const cards = wrapper.findAll('.igf-card');
+      expect(cards.map(card => card.classes().includes('igf-card--full-width'))).toEqual([false, false, true]);
+      wrapper.unmount();
+    });
+  });
+
+  test('allows an explicit false flag to disable the about-pillars fallback', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [{
+          uuid: 'non-spanning-about-pillars',
+          type: 'cards',
+          content: {
+            variant: 'about-pillars',
+            heading: 'Our pillars',
+            items: [
+              { heading: 'Mission' },
+              { heading: 'Vision' },
+              { heading: 'Values', full_width: false },
+            ],
+          },
+        }],
+      },
+    });
+
+    expect(wrapper.findAll('.igf-card--full-width')).toHaveLength(0);
+    wrapper.unmount();
+  });
+
+  test('spans an opted-in card across every grid column', () => {
+    expect(pageBlocksSource).toContain('.igf-card-grid>.igf-card--full-width { grid-column:1/-1; }');
+  });
+
   test('uses the Ignite brand palette for the campus presentation', () => {
     const campusStyles = pageBlocksSource.slice(
       pageBlocksSource.indexOf('.igf-page-block--hero.igf-page-block--campus { min-height:430px'),

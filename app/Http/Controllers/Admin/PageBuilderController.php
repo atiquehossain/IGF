@@ -22,6 +22,7 @@ use App\Services\ContentSanitizer;
 use App\Services\DonationDestinationService;
 use App\Services\LayoutBlockContentService;
 use App\Services\LogicalPageTagService;
+use App\Support\PageBuilderElementManifest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -32,6 +33,14 @@ use Illuminate\Validation\ValidationException;
 class PageBuilderController extends Controller
 {
     private const REQUIRED_SYSTEM_PAGE_SLUGS = ['home', 'about-us', 'zakat'];
+
+    private const PAGE_BUILDER_DOCUMENT_MIME_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
 
     public function __construct(
         private PageRevisionService $revisions,
@@ -158,6 +167,11 @@ class PageBuilderController extends Controller
             ->latest()
             ->limit(120)
             ->get();
+        $documentAssets = MediaAsset::query()
+            ->whereIn('mime_type', self::PAGE_BUILDER_DOCUMENT_MIME_TYPES)
+            ->latest()
+            ->limit(120)
+            ->get();
         if ($selectedThumbnailAsset && !$mediaAssets->contains('id', $selectedThumbnailAsset->id)) {
             $mediaAssets->prepend($selectedThumbnailAsset);
         }
@@ -178,6 +192,7 @@ class PageBuilderController extends Controller
                 ->get(),
             'mediaAssets' => $mediaAssets,
             'videoAssets' => $videoAssets,
+            'documentAssets' => $documentAssets,
             'selectedThumbnailAssetUuid' => $selectedThumbnailAsset?->uuid,
             'canManageFundingEligibility' => app(Permission::class)
                 ->allows(auth('admin')->user(), 'donationType.edit'),
@@ -294,6 +309,13 @@ class PageBuilderController extends Controller
             $blockUpdates = collect();
             foreach ($blockPayloads as $blockData) {
                 $block = $blocks->get($blockData['uuid']);
+                if ($block->type === 'layout') {
+                    $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                        $block->resolvedContent(),
+                        'blocks.' . $blockData['uuid'] . '.content',
+                        $blockData['content']
+                    );
+                }
                 Validator::make([
                     'locale' => $data['locale'],
                     'expected_version' => $data['expected_version'],
@@ -462,16 +484,19 @@ class PageBuilderController extends Controller
     public function storeMedia(string $uuid, Request $request)
     {
         $mediaKind = $request->input('media_kind', 'image');
+        $mimeRule = match ($mediaKind) {
+            'video' => 'mimetypes:video/mp4,video/webm',
+            'document' => 'mimetypes:' . implode(',', self::PAGE_BUILDER_DOCUMENT_MIME_TYPES),
+            default => 'mimetypes:image/jpeg,image/png,image/webp,image/gif',
+        };
         $data = $request->validate([
             'locale' => ['required', 'string', 'max:10'],
-            'media_kind' => ['sometimes', 'string', Rule::in(['image', 'video'])],
+            'media_kind' => ['sometimes', 'string', Rule::in(['image', 'video', 'document'])],
             'file' => [
                 'required',
                 'file',
                 'max:20480',
-                $mediaKind === 'video'
-                    ? 'mimetypes:video/mp4,video/webm'
-                    : 'mimetypes:image/jpeg,image/png,image/webp,image/gif',
+                $mimeRule,
             ],
             'alt_text' => ['nullable', 'string', 'max:255'],
         ]);
@@ -672,6 +697,13 @@ class PageBuilderController extends Controller
                 $reusable = $lockedReusableBlocks->get((int) $block->reusable_block_id);
                 $block->setRelation('reusableBlock', $reusable);
             }
+            if ($block->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    $block->resolvedContent(),
+                    'content',
+                    array_key_exists('content', $data) ? $data['content'] : null
+                );
+            }
             if (array_key_exists('content', $data)) {
                 $data['content'] = $this->prepareBlockContentForType($block->type, $data['content']);
             }
@@ -767,6 +799,17 @@ class PageBuilderController extends Controller
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $lockedReusableBlocks = $this->revisions->lockReusableBlocksForPage($page);
             $source = $page->blocks()->where('uuid', $blockUuid)->lockForUpdate()->firstOrFail();
+            if ($source->reusable_block_id) {
+                $reusable = $lockedReusableBlocks->get((int) $source->reusable_block_id);
+                abort_unless($reusable && !$reusable->trashed(), 409, PageRevisionService::SHARED_CONFLICT_MESSAGE);
+                $source->setRelation('reusableBlock', $reusable);
+            }
+            if ($source->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    $source->resolvedContent(),
+                    'content'
+                );
+            }
             $this->revisions->capture(
                 $page,
                 'Before duplicating block ' . $source->label,
@@ -807,6 +850,12 @@ class PageBuilderController extends Controller
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $lockedReusableBlocks = $this->revisions->lockReusableBlocksForPage($page);
             $block = $page->blocks()->where('uuid', $blockUuid)->lockForUpdate()->firstOrFail();
+            if ($block->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    (array) ($block->content ?? []),
+                    'content'
+                );
+            }
             $this->revisions->capture(
                 $page,
                 'Before converting block to a reusable section',
@@ -869,6 +918,12 @@ class PageBuilderController extends Controller
                 409,
                 'This reusable section changed or became unavailable. Reload the editor and try again.'
             );
+            if ($reusable->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    (array) ($reusable->content ?? []),
+                    'content'
+                );
+            }
             $convertLegacyContent = $this->assertLegacyConversionConfirmed(
                 $page,
                 (bool) ($data['convert_legacy_content'] ?? false)
@@ -932,6 +987,12 @@ class PageBuilderController extends Controller
                 : null;
             abort_unless($reusable && !$reusable->trashed(), 422, 'This section is not linked to the reusable library.');
             $block->setRelation('reusableBlock', $reusable);
+            if ($block->type === 'layout' || $reusable->type === 'layout') {
+                $this->layoutBlocks->assertStoredVersionTwoIsValid(
+                    (array) ($reusable->content ?? []),
+                    'content'
+                );
+            }
             $this->revisions->capture(
                 $page,
                 'Before detaching reusable section ' . $block->label,
@@ -1171,6 +1232,7 @@ class PageBuilderController extends Controller
             'content.items.*.url' => ['sometimes', 'nullable', 'string', 'max:2048'],
             'content.items.*.link_label' => ['sometimes', 'nullable', 'string', 'max:120'],
             'content.items.*.icon' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'content.items.*.full_width' => ['sometimes', 'boolean'],
             'content.items.*.features' => ['sometimes', 'array', 'max:20'],
             'content.items.*.features.*' => ['required', 'string', 'max:255'],
             'content.item_link_label' => ['sometimes', 'nullable', 'string', 'max:80'],
@@ -2214,7 +2276,10 @@ class PageBuilderController extends Controller
                 'defaults' => config('page-builder.design_defaults', []),
                 'column_count_types' => config('page-builder.column_count_block_types', []),
             ],
-            'layout' => config('page-builder.layout', []),
+            'layout' => array_merge(config('page-builder.layout', []), [
+                'element_catalog_version' => PageBuilderElementManifest::VERSION,
+                'element_catalog' => PageBuilderElementManifest::grouped(),
+            ]),
             'manage_urls' => $this->managedContentUrls($locale),
             'categories' => Category::query()
                 ->where('language', $locale)

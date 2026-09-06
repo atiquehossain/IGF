@@ -42,6 +42,7 @@
     .simple-preview{container-type:inline-size}
     .simple-editor{--orange:#ff7500;--brown:#9c4500;--ink:#191c1d;--muted:#6d6a67;--line:#e5dfd9;display:flex;height:100vh;min-height:0;flex-direction:column;background:#f4f3f1;color:var(--ink);font-family:'Hanken Grotesk',Arial,sans-serif}.simple-editor *{box-sizing:border-box}.simple-topbar{z-index:30;display:flex;min-height:72px;align-items:center;justify-content:space-between;gap:16px;padding:10px 22px;border-bottom:1px solid var(--line);background:#fff}.simple-topbar__title{display:flex;min-width:0;align-items:center;gap:14px}.simple-back{display:grid;width:44px;height:44px;flex:0 0 auto;place-content:center;border:1px solid var(--line);border-radius:9px;color:#4d4945;text-decoration:none}.simple-topbar h1{overflow:hidden;margin:0;font:700 20px/1.2 'Literata',Georgia,serif;text-overflow:ellipsis;white-space:nowrap}.simple-topbar p{margin:3px 0 0;color:var(--muted);font-size:11px}.simple-live-address{color:var(--brown);font-weight:800;text-decoration:none}.simple-live-address:hover,.simple-live-address:focus-visible{text-decoration:underline}.simple-actions{display:flex;align-items:center;gap:8px}.simple-btn{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border:1px solid #d7cfc7;border-radius:8px;background:#fff;color:#3f3b38;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none!important;white-space:nowrap}.simple-btn:hover{border-color:var(--orange);color:var(--brown)}.simple-btn:focus-visible,.simple-back:focus-visible,.simple-viewport button:focus-visible{outline:3px solid rgba(255,117,0,.32)!important;outline-offset:2px}.simple-btn--primary{border-color:var(--brown);background:var(--brown);color:#fff!important;box-shadow:0 5px 13px rgba(120,51,0,.2)}.simple-btn--primary:hover{border-color:#783300;background:#783300}.simple-btn--danger{border-color:#e5b6b1;color:#a52c24}.simple-btn:disabled{cursor:not-allowed;opacity:.48;box-shadow:none}.simple-save-state{color:var(--muted);font-size:11px;font-weight:750}.simple-save-state.is-dirty{color:#8d570b}.simple-grid{display:grid;grid-template-columns:220px minmax(520px,1fr) 320px;flex:1;min-height:0}.simple-sections,.simple-inspector{min-height:0;overflow-y:auto;background:#fff}.simple-sections{border-right:1px solid var(--line)}.simple-inspector{border-left:1px solid var(--line)}.simple-panel-head{position:sticky;z-index:4;top:0;padding:18px;border-bottom:1px solid var(--line);background:#fff}.simple-panel-head h2{margin:0;font:700 18px/1.2 'Literata',Georgia,serif}.simple-panel-head p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.45}.simple-sections__body,.simple-inspector__body{padding:16px}.simple-section-list{display:grid;gap:8px;margin:0 0 14px;padding:0;list-style:none}.simple-section-item{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:7px;padding:7px;border:1px solid var(--line);border-radius:9px;background:#fff}.simple-section-item.is-selected{border-color:var(--orange);box-shadow:0 0 0 2px rgba(255,117,0,.1)}.simple-section-item.is-dragging{opacity:.45}.simple-drag{display:grid;width:44px;height:44px;place-content:center;border:0;border-radius:6px;background:#f4f1ee;color:#7c756f;cursor:grab}.simple-select{min-width:0;min-height:44px;border:0;background:transparent;text-align:left;cursor:pointer}.simple-select strong,.simple-select small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.simple-select strong{font-size:12px}.simple-select small{margin-top:2px;color:var(--muted);font-size:10px}.simple-order{display:flex;flex-direction:column;gap:4px}.simple-order button{display:grid;width:44px;height:44px;place-content:center;border:1px solid var(--line);border-radius:6px;background:#fff;color:#625c57;cursor:pointer}.simple-order button:disabled{opacity:.3}.simple-page-settings{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.simple-page-settings summary,.simple-options summary{color:var(--brown);font-size:12px;font-weight:850;cursor:pointer}.simple-field{display:grid;gap:6px;margin:0 0 14px}.simple-field>label,.simple-field>span{color:#514c48;font-size:11px;font-weight:850;letter-spacing:.03em;text-transform:uppercase}.simple-field input,.simple-field textarea,.simple-field select{width:100%;min-height:44px;padding:9px 10px;border:1px solid #d9d2cc;border-radius:7px;background:#fff;color:var(--ink);font-size:13px}.simple-field textarea{min-height:90px;resize:vertical}.simple-field input:focus,.simple-field textarea:focus,.simple-field select:focus,.simple-rich:focus{border-color:var(--orange);outline:3px solid rgba(255,117,0,.13)}.simple-check{display:flex;align-items:center;gap:8px;min-height:44px;margin:12px 0;color:#494541;font-size:12px;font-weight:750}.simple-check input{width:18px;height:18px;accent-color:var(--orange)}.simple-canvas{min-width:0;min-height:0;padding:20px;overflow:auto}.simple-preview{width:min(100%,1050px);min-height:100%;margin:0 auto;overflow:hidden;border:1px solid #ded9d4;border-radius:11px;background:#fff;box-shadow:0 10px 30px rgba(26,22,20,.05);transition:width .2s}.simple-preview[data-viewport=tablet]{width:min(100%,768px)}.simple-preview[data-viewport=mobile]{width:min(100%,390px)}.simple-preview-block{position:relative;padding:54px 7%;border:3px solid transparent;cursor:pointer}.simple-preview-block:hover,.simple-preview-block.is-selected{border-color:var(--orange)}.simple-preview-block::before{content:attr(data-label);position:absolute;z-index:5;top:9px;left:10px;padding:4px 7px;border-radius:5px;background:#9c4500;color:#fff;font-size:9px;font-weight:850;opacity:0}.simple-preview-block:hover::before,.simple-preview-block.is-selected::before{opacity:1}.simple-preview-block.is-hidden{opacity:.55}.simple-preview-block h2{margin:0 0 12px;font:700 clamp(28px,4vw,54px)/1.08 'Literata',Georgia,serif}.simple-preview-block p{max-width:720px;margin:0 0 16px;line-height:1.6}.simple-preview-block--hero{display:flex;min-height:490px;flex-direction:column;justify-content:center;background:#302d2b center/cover;color:#fff}.simple-preview-block--hero::after{position:absolute;z-index:0;inset:0;background:rgba(0,0,0,.58);content:''}.simple-preview-block--hero>*{position:relative;z-index:1}.simple-preview-eyebrow{margin-bottom:10px;color:#ff8a26;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.simple-preview-button{display:inline-flex;padding:9px 14px;border-radius:7px;background:var(--brown);color:#fff;font-size:11px;font-weight:850}.simple-preview-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.simple-preview-stat{padding:18px;border-radius:10px;background:#f7f4f1;text-align:center}.simple-preview-stat strong{display:block;color:var(--brown);font:700 30px 'Literata',serif}.simple-preview-media{display:grid;grid-template-columns:1fr 1.1fr;align-items:center;gap:28px}.simple-preview-media img,.simple-preview-card img{width:100%;height:220px;object-fit:cover;border-radius:10px}.simple-preview-media video,.simple-preview-media iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:#171717;object-fit:contain}.simple-preview-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.simple-preview-card{overflow:hidden;border:1px solid var(--line);border-radius:10px}.simple-preview-card div{padding:14px}.simple-preview-card h3{margin:0 0 7px;font:700 18px 'Literata',serif}.simple-empty{padding:90px 24px;text-align:center;color:var(--muted)}.simple-inspector__head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.simple-type-badge{display:inline-flex;margin-top:7px;padding:4px 7px;border-radius:999px;background:#fff1e5;color:var(--brown);font-size:9px;font-weight:900;text-transform:uppercase}.simple-shared{margin-bottom:14px;padding:11px;border-radius:8px;background:#fff5df;color:#76510e;font-size:11px;line-height:1.5}.simple-rich-toolbar{display:flex;gap:4px;padding:6px;border:1px solid #d9d2cc;border-bottom:0;border-radius:7px 7px 0 0;background:#f7f5f3}.simple-rich-toolbar button{min-width:44px;height:44px;border:1px solid #ddd5ce;border-radius:5px;background:#fff;font-weight:850;cursor:pointer}.simple-rich{min-height:130px;padding:11px;border:1px solid #d9d2cc;border-radius:0 0 7px 7px;background:#fff;font-size:13px;line-height:1.6}.simple-image-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.simple-repeat{display:grid;gap:9px;margin-bottom:12px}.simple-repeat-item{padding:11px;border:1px solid var(--line);border-radius:8px;background:#faf9f8}.simple-repeat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.simple-repeat-head strong{font-size:11px}.simple-repeat-head button{min-height:44px;border:0;background:transparent;color:#a52c24;font-size:11px;font-weight:800;cursor:pointer}.simple-options{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}.simple-modal{position:fixed;z-index:1500;inset:0;display:grid;place-items:center;padding:20px;background:rgba(25,28,29,.56)}.simple-modal[hidden]{display:none}.simple-modal__dialog{width:min(820px,100%);max-height:min(760px,92vh);overflow:auto;border-radius:15px;background:#fff;box-shadow:0 25px 70px rgba(0,0,0,.27)}.simple-modal__head{position:sticky;z-index:2;top:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 22px;border-bottom:1px solid var(--line);background:#fff}.simple-modal__head h2{margin:0;font:700 24px 'Literata',serif}.simple-close{display:grid;width:44px;height:44px;place-content:center;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}.simple-section-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:22px}.simple-section-card{display:grid;grid-template-columns:46px 1fr;gap:13px;min-height:72px;padding:16px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left;cursor:pointer}.simple-section-card:hover{border-color:var(--orange);background:#fff9f4}.simple-section-card i{display:grid;width:44px;height:44px;place-content:center;border-radius:9px;background:#fff0e3;color:var(--orange);font-size:18px}.simple-section-card strong{display:block;margin-bottom:5px}.simple-section-card span{color:var(--muted);font-size:11px;line-height:1.45}.simple-media-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:20px}.simple-media-option{overflow:hidden;padding:0;border:2px solid transparent;border-radius:9px;background:#f3f1ef;cursor:pointer}.simple-media-option:hover{border-color:var(--orange)}.simple-media-option img{width:100%;aspect-ratio:1;object-fit:cover}.simple-media-option video{display:block;width:100%;aspect-ratio:16/9;background:#171717;object-fit:contain;pointer-events:none}.simple-upload{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:#faf8f6}.simple-notice{position:fixed;z-index:1700;right:24px;bottom:24px;max-width:390px;padding:13px 16px;border-radius:9px;background:#24211f;color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.22);font-size:12px;font-weight:750}.simple-viewport{display:flex;gap:3px;padding:3px;border-radius:8px;background:#efedeb}.simple-viewport button{display:grid;width:44px;height:44px;place-content:center;border:0;border-radius:6px;background:transparent;color:#6c6763;cursor:pointer}.simple-viewport button.is-active{background:#fff;color:var(--brown);box-shadow:0 1px 4px rgba(0,0,0,.1)}.simple-more{position:relative;margin:0}.simple-more>summary{list-style:none}.simple-more>summary::-webkit-details-marker{display:none}.simple-more__menu{position:absolute;top:calc(100% + 7px);right:0;z-index:50;display:grid;min-width:230px;gap:4px;padding:7px;border:1px solid var(--line);border-radius:10px;background:#fff;box-shadow:0 16px 38px rgba(25,28,29,.16)}.simple-more__menu .simple-btn{justify-content:flex-start;width:100%;border-color:transparent}.simple-add-section{width:100%;border-color:#efb789;background:#fff8f2;color:var(--brown)}
     .simple-preview-cards--four{grid-template-columns:repeat(2,1fr)}
+    .simple-preview-card--full-width{grid-column:1/-1}.simple-preview-card[data-preview-card-index]{position:relative;cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}.simple-preview-card[data-preview-card-index]:hover{border-color:var(--orange);box-shadow:0 8px 22px rgba(156,69,0,.12);transform:translateY(-1px)}.simple-preview-card.is-card-selected{border:3px solid var(--orange);box-shadow:0 10px 24px rgba(156,69,0,.2)}.simple-preview-card [data-inline-path]{cursor:text}.simple-preview-card__edit{position:absolute;z-index:3;top:10px;right:10px;display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:7px 10px;border:1px solid #e4c3a7;border-radius:999px;background:#fff;color:var(--brown);box-shadow:0 4px 12px rgba(25,28,29,.12);font-size:10px;font-weight:900;cursor:pointer}.simple-preview-card__edit:hover,.simple-preview-card__edit:focus-visible,.simple-preview-card__edit[aria-pressed=true]{border-color:var(--orange);background:var(--orange);color:#20150c;outline:none}.simple-preview-card__edit:focus-visible{box-shadow:0 0 0 3px rgba(255,117,0,.32),0 4px 12px rgba(25,28,29,.12)}.simple-repeat-item[data-card-editor-index]{scroll-margin-block:18px}.simple-repeat-item.is-current-card{border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(255,117,0,.14)}.simple-repeat-item[data-card-editor-index]>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}.simple-repeat-current{padding:3px 7px;border-radius:999px;background:#ffead8;color:var(--brown);font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.simple-field>.simple-check{margin:0}.simple-field>small{color:var(--muted);font-size:11px;line-height:1.45}
     .simple-preview{container-type:inline-size}.simple-preview-block--focus{padding:clamp(48px,6cqw,72px) clamp(20px,4.6cqw,48px)}.simple-focus-grid{position:relative;display:grid;isolation:isolate;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}.simple-focus-grid::before{position:absolute;z-index:-1;top:50%;left:50%;width:min(900px,100%);height:600px;background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%);content:'';pointer-events:none;transform:translate(-50%,-50%)}.simple-focus-tile{min-width:0;min-height:390px;animation:simple-focus-rise .5s ease-out both;animation-delay:var(--simple-focus-delay,0ms)}.simple-focus-heading{container-type:inline-size;display:flex;overflow:hidden;padding:clamp(28px,4.4cqw,46px);flex-direction:column;justify-content:center;border-radius:16px;background:var(--orange);color:#fff}.simple-focus-heading .simple-preview-eyebrow{color:#572500}.simple-focus-heading h2{max-width:100%;margin:0;font-size:clamp(30px,10.5cqi,44px);line-height:1.08;overflow-wrap:anywhere}.simple-focus-heading>p{margin:18px 0 0;color:rgba(255,255,255,.9)}.simple-focus-view-all{display:inline-flex;width:fit-content;align-items:center;gap:6px;margin-top:28px;color:#fff;font-size:14px;font-weight:800}.simple-focus-card{position:relative;z-index:0;display:flex;overflow:hidden;padding:clamp(26px,3.6cqw,38px);flex-direction:column;align-items:flex-start;isolation:isolate;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(25,28,29,.08);color:var(--ink);transition:color .3s ease-out,border-color .3s ease-out,box-shadow .3s ease-out}.simple-focus-card::before{position:absolute;z-index:-1;inset:0;background:var(--orange);content:'';transform:scaleX(0);transform-origin:left center;transition:transform .5s ease-out}.simple-focus-card:hover,.simple-focus-card:focus-within{border-color:var(--orange);box-shadow:0 14px 32px rgba(156,69,0,.2);color:#fff}.simple-focus-card:hover::before,.simple-focus-card:focus-within::before{transform:scaleX(1)}.simple-focus-card__visual{display:grid;width:72px;height:72px;flex:0 0 auto;margin-bottom:28px;place-items:center;overflow:hidden;border-radius:16px;background:#fff2e8;color:var(--brown);font-size:34px;transition:background-color .3s ease-out,color .3s ease-out}.simple-focus-card__visual img{width:100%;height:100%;border-radius:0;object-fit:cover}.simple-focus-card:hover .simple-focus-card__visual,.simple-focus-card:focus-within .simple-focus-card__visual{background:rgba(255,255,255,.2);color:#fff}.simple-focus-card__copy{display:flex;min-width:0;flex:1;flex-direction:column}.simple-focus-card h3{margin:0 0 16px;font:700 clamp(24px,2.95cqw,31px)/1.22 'Literata',Georgia,serif}.simple-focus-card p{margin:0 0 24px;color:var(--muted);font-size:16px;line-height:1.65;transition:color .3s ease-out}.simple-focus-card:hover p,.simple-focus-card:focus-within p{color:rgba(255,255,255,.92)}.simple-focus-card__link{width:fit-content;margin-top:auto;padding:8px 14px;border:1px dashed currentColor;border-radius:999px;font-size:13px;font-weight:800}.simple-preview[data-viewport=tablet] .simple-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-preview[data-viewport=mobile] .simple-focus-grid{grid-template-columns:1fr}.simple-preview[data-viewport=mobile] .simple-focus-tile{min-height:320px}@container (max-width:960px){.simple-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container (max-width:560px){.simple-focus-grid{grid-template-columns:1fr}.simple-focus-tile{min-height:320px}}@keyframes simple-focus-rise{from{opacity:0;transform:translateY(100px)}to{opacity:1;transform:translateY(0)}}
     .simple-preview-block--testimonials{background:#242220;color:#fff}.simple-preview-block--testimonials h2{color:#fff}.simple-preview-block--testimonials>p{color:#d4d0cc}.simple-testimonial-card{position:relative;max-width:820px;margin:34px auto 0;padding:clamp(28px,5vw,56px);border:1px solid rgba(255,255,255,.15);border-radius:22px;background:#30302f;text-align:center}.simple-testimonial-card>.fa-quote-left{color:var(--orange);font-size:38px}.simple-testimonial-card blockquote{max-width:690px;margin:20px auto 28px;color:#f1efec;font:500 clamp(20px,3vw,30px)/1.5 'Literata',Georgia,serif}.simple-testimonial-person{display:flex;align-items:center;justify-content:center;gap:13px}.simple-testimonial-person img{width:64px;height:64px;border:3px solid #fff;border-radius:50%;object-fit:cover}.simple-testimonial-person span{display:grid;gap:3px;text-align:left}.simple-testimonial-person strong{color:#fff}.simple-testimonial-person small{color:#bbb}.simple-testimonial-nav{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:28px}.simple-testimonial-nav button{display:grid;min-width:42px;min-height:42px;padding:0;place-items:center;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:transparent;color:#fff;cursor:pointer}.simple-testimonial-nav button:hover,.simple-testimonial-nav button:focus-visible{border-color:var(--orange);background:var(--brown);outline:3px solid rgba(255,117,0,.3);outline-offset:2px}.simple-testimonial-nav .simple-testimonial-dot{min-width:28px;border-color:transparent}.simple-testimonial-dot span{width:8px;height:8px;border-radius:50%;background:#777}.simple-testimonial-dot[aria-current=true] span{width:18px;border-radius:99px;background:var(--orange)}
     .simple-preview-block--cta{padding:clamp(38px,5cqw,58px) clamp(18px,4cqw,42px)}.simple-cta-panel{position:relative;display:grid;overflow:hidden;grid-template-columns:64px minmax(0,1fr) minmax(205px,auto);align-items:center;gap:clamp(20px,3.5cqw,40px);isolation:isolate;padding:clamp(30px,4.5cqw,48px);border-radius:26px;background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20,#292624);box-shadow:0 18px 42px rgba(39,29,22,.18);color:#fff}.simple-cta-panel[data-actions=false]{grid-template-columns:64px minmax(0,1fr)}.simple-cta-panel::before{position:absolute;z-index:-1;top:0;bottom:0;left:0;width:7px;background:linear-gradient(180deg,#ff9b4c,#ff7500 55%,#b94e00);content:''}.simple-cta-signal{display:grid;width:64px;height:64px;place-items:center;align-self:start;border:1px solid rgba(255,172,105,.35);border-radius:19px;background:rgba(255,117,0,.13);color:#ff9b4c;font-size:26px}.simple-cta-content{min-width:0}.simple-cta-content .simple-preview-eyebrow{color:#ffad70}.simple-cta-content h2{margin-bottom:14px;color:#fff;font-size:clamp(31px,5.2cqw,48px);line-height:1.06;overflow-wrap:anywhere}.simple-cta-content p{margin:0;color:#d9d5d1}.simple-cta-actions{display:grid;min-width:0;gap:10px}.simple-cta-actions>:only-child{grid-column:1/-1}.simple-cta-actions .simple-preview-button{min-width:0;min-height:48px;align-items:center;justify-content:space-between;padding:0 18px;border:1px solid #ff7500;border-radius:12px;background:#ff7500;color:#1c1e20;line-height:1.25;overflow-wrap:anywhere}.simple-cta-actions .simple-preview-button::after{margin-left:12px;content:'\2192';font-size:17px}.simple-cta-actions .simple-preview-button--outline{border-color:rgba(255,255,255,.42);background:rgba(255,255,255,.04);color:#fff}@container (max-width:960px){.simple-cta-panel{grid-template-columns:58px minmax(0,1fr)}.simple-cta-signal{width:58px;height:58px}.simple-cta-actions{grid-column:2;grid-template-columns:repeat(2,minmax(0,1fr))}}@container (max-width:520px){.simple-preview-block--cta{padding:30px 14px}.simple-cta-panel{grid-template-columns:1fr;gap:20px;padding:28px 22px;border-radius:22px}.simple-cta-actions{grid-column:auto;grid-template-columns:1fr}.simple-cta-content h2{font-size:clamp(30px,10cqw,39px)}}
@@ -87,6 +88,26 @@
     @container (max-width:520px){.simple-preview-block :is(.simple-preview-stats,.simple-preview-cards,.simple-preview-events,.simple-preview-team,.simple-preview-gallery),.simple-preview-partners ul{grid-template-columns:1fr}.simple-preview-block{padding-right:18px;padding-left:18px}.simple-preview-block--spacing-compact{padding-top:28px;padding-bottom:28px}.simple-preview-block--spacing-standard{padding-top:42px;padding-bottom:42px}.simple-preview-block--spacing-spacious{padding-top:58px;padding-bottom:58px}.simple-preview-newsletter{padding:24px 18px}.simple-preview-newsletter__form{grid-template-columns:1fr}.simple-preview-newsletter__form>.simple-preview-button,.simple-preview-newsletter__consent{grid-column:1}.simple-preview-timeline>ol{padding-left:58px}.simple-preview-timeline>ol::before{left:22px}.simple-preview-timeline li>span{left:-58px;width:46px;height:46px}.simple-managed-option{grid-template-columns:auto minmax(0,1fr)}.simple-managed-move{grid-column:2}.simple-repeat-move{flex-wrap:wrap}}
     .simple-preview-block--layout{padding:0!important}
     .simple-layout-element-header{flex-direction:column;align-items:stretch}.simple-layout-element-actions{justify-content:flex-end}
+    .simple-layout-select-fallback{margin-top:9px}.simple-layout-select-fallback>summary{color:var(--brown);font-size:10px;font-weight:800;cursor:pointer}.simple-layout-select-fallback .simple-field{margin-top:8px}
+    .simple-editor-mode{display:flex;flex:0 0 auto;gap:3px;padding:3px;border-radius:9px;background:#efedeb}.simple-editor-mode button{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:#6c6763;font-size:12px;font-weight:850;white-space:nowrap;cursor:pointer}.simple-editor-mode button:hover{background:rgba(255,255,255,.7);color:var(--brown)}.simple-editor-mode button.is-active{background:#fff;color:var(--brown);box-shadow:0 1px 5px rgba(25,28,29,.12)}.simple-editor-mode button:focus-visible{outline:3px solid rgba(255,117,0,.32);outline-offset:2px}
+    .simple-sections{overflow-x:hidden}.simple-sections__body{min-width:0}.simple-section-list{min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr)}.simple-section-item{display:block;width:100%;min-width:0;max-width:100%;grid-template-columns:none}.simple-section-row{display:grid;width:100%;min-width:0;max-width:100%;grid-template-columns:44px 32px minmax(0,1fr);grid-template-areas:'drag toggle select' 'actions actions actions';align-items:center;gap:7px}.simple-section-row>.simple-drag,.simple-section-row>.simple-drag-placeholder{grid-area:drag}.simple-section-row>.simple-navigator-toggle,.simple-section-row>.simple-navigator-toggle-placeholder{grid-area:toggle}.simple-section-row>.simple-select{grid-area:select;width:100%}.simple-section-row>.simple-order{grid-area:actions;justify-self:end}.simple-navigator-toggle,.simple-navigator-toggle-placeholder{display:grid;width:32px;height:44px;place-items:center}.simple-navigator-toggle{border:0;border-radius:7px;background:transparent;color:#766f69;cursor:pointer}.simple-navigator-toggle:hover{background:#f5eee8;color:var(--brown)}.simple-navigator-toggle:focus-visible{outline:3px solid rgba(255,117,0,.25);outline-offset:1px}.simple-navigator-toggle i{transition:transform .18s ease}.simple-navigator-toggle[aria-expanded=true] i{transform:rotate(90deg)}.simple-section-item.is-selected>.simple-section-row .simple-select strong{color:var(--brown)}
+    .simple-navigator-tree{display:grid;min-width:0;gap:3px;margin:7px 0 0 8px;padding:0 0 0 8px;border-left:1px solid #eadfd7;list-style:none}.simple-navigator-tree .simple-navigator-tree{margin-top:3px;margin-left:8px}.simple-navigator-tree li{min-width:0;list-style:none}.simple-navigator-node{display:grid;width:100%;min-width:0;min-height:42px;grid-template-columns:23px minmax(0,1fr) auto;align-items:center;gap:6px;padding:6px 7px;border:1px solid transparent;border-radius:7px;background:transparent;color:#514c48;text-align:left;cursor:pointer}.simple-navigator-node i{display:grid;width:23px;height:23px;place-items:center;border-radius:6px;background:#f5f1ed;color:#8a5a35;font-size:10px}.simple-navigator-node span{min-width:0;overflow:hidden;font-size:10px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}.simple-navigator-node small{color:var(--muted);font-size:8px;white-space:nowrap}.simple-navigator-node:hover{border-color:#ead6c5;background:#fff9f4}.simple-navigator-node.is-selected{border-color:var(--orange);background:#fff2e7;color:var(--brown);box-shadow:0 0 0 2px rgba(255,117,0,.1)}.simple-navigator-node.is-selected i{background:var(--orange);color:#fff}.simple-navigator-node:focus-visible{outline:3px solid rgba(255,117,0,.28);outline-offset:1px}
+    .simple-breadcrumb{display:flex;width:min(100%,1050px);min-height:42px;align-items:center;gap:6px;margin:0 auto 10px;padding:6px 9px;overflow-x:auto;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.96);box-shadow:0 4px 14px rgba(25,28,29,.05);scrollbar-width:thin}.simple-breadcrumb:empty{display:none}.simple-breadcrumb>span,.simple-breadcrumb>button{display:inline-flex;min-height:32px;flex:0 0 auto;align-items:center;gap:5px;padding:5px 7px;border:0;border-radius:6px;background:transparent;color:#625c57;font-size:10px;font-weight:800;white-space:nowrap}.simple-breadcrumb>button{cursor:pointer}.simple-breadcrumb>button:hover{background:#fff2e7;color:var(--brown)}.simple-breadcrumb>button[aria-current=page]{background:#fff0e4;color:var(--brown)}.simple-breadcrumb>button:focus-visible{outline:3px solid rgba(255,117,0,.26);outline-offset:1px}.simple-breadcrumb>i{flex:0 0 auto;color:#b2aaa3;font-size:8px}
+    .simple-layout-content-overview,.simple-layout-context-list{display:grid;gap:8px}.simple-layout-context-button{display:grid;width:100%;min-width:0;min-height:58px;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}.simple-layout-context-button>i{display:grid;width:38px;height:38px;place-items:center;border-radius:9px;background:#fff0e4;color:var(--brown)}.simple-layout-context-button span,.simple-layout-context-button strong,.simple-layout-context-button small{display:block;min-width:0}.simple-layout-context-button strong{overflow:hidden;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.simple-layout-context-button small{margin-top:3px;color:var(--muted);font-size:9px}.simple-layout-context-button:hover{border-color:#e6b993;background:#fff9f4}.simple-layout-context-button.is-selected{border-color:var(--orange);background:#fff2e7;box-shadow:0 0 0 2px rgba(255,117,0,.1)}.simple-layout-context-button:focus-visible{outline:3px solid rgba(255,117,0,.27);outline-offset:1px}.simple-layout-selected-summary{margin:0 0 13px;padding:11px 12px;border-left:3px solid var(--orange);border-radius:7px;background:#fff7ef;color:#665348;font-size:10px;line-height:1.55}.simple-layout-selected-summary strong{color:var(--brown);font-size:12px}.simple-layout-context-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 15px}.simple-layout-context-actions .simple-btn{width:100%;padding-inline:8px}
+    .simple-layout-preset-field{min-width:0;margin:0 0 16px;padding:0;border:0}.simple-layout-preset-field>legend{margin-bottom:9px;color:#514c48;font-size:11px;font-weight:850;letter-spacing:.03em;text-transform:uppercase}.simple-layout-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.simple-layout-preset{display:grid;min-width:0;min-height:72px;align-content:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#625c57;font-size:9px;font-weight:800;cursor:pointer}.simple-layout-preset:hover{border-color:#e6b993;background:#fff9f4}.simple-layout-preset[aria-pressed=true]{border-color:var(--orange);background:#fff2e7;color:var(--brown);box-shadow:0 0 0 2px rgba(255,117,0,.1)}.simple-layout-preset:focus-visible{outline:3px solid rgba(255,117,0,.27);outline-offset:1px}.simple-layout-preset__bars{display:flex;width:100%;height:26px;align-items:stretch;gap:3px}.simple-layout-preset__bars>span{display:block;min-width:5px;border:1px solid #dfc5b0;border-radius:4px;background:#fff}.simple-layout-preset[aria-pressed=true] .simple-layout-preset__bars>span{border-color:#e99855;background:#ffd9ba}
+    .simple-layout-preview-inserter{display:inline-flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px dashed #cf9f78;border-radius:8px;background:rgba(255,255,255,.72);color:var(--brown);font-size:10px;font-weight:850;cursor:pointer}.simple-layout-preview-inserter:hover{border-style:solid;border-color:var(--orange);background:#fff2e7}.simple-layout-preview-inserter:focus-visible{outline:3px solid rgba(255,117,0,.32);outline-offset:2px}.simple-layout-preview-row-inserter{width:calc(100% - 24px);margin:0 auto}.simple-layout-preview-row,.simple-layout-preview-column,.simple-layout-preview-element{scroll-margin:90px}.simple-layout-preview-element{position:relative;width:100%;min-width:0;border-radius:9px;outline:2px solid transparent;outline-offset:3px;transition:outline-color .15s ease,box-shadow .15s ease}.simple-layout-preview-element:hover{outline-color:rgba(255,117,0,.52)}[data-editor-mode=layout] .simple-layout-preview-row:hover{box-shadow:inset 0 0 0 2px rgba(255,117,0,.25)}[data-editor-mode=layout] .simple-layout-preview-column:hover{border-color:rgba(255,117,0,.7)}.simple-layout-preview-row.is-layout-selected{z-index:2;box-shadow:inset 0 0 0 3px var(--orange)}.simple-layout-preview-column.is-layout-selected{position:relative;border-color:var(--orange)!important;border-style:solid;box-shadow:0 0 0 3px rgba(255,117,0,.18)}.simple-layout-preview-element.is-layout-selected{z-index:3;outline-color:var(--orange);box-shadow:0 0 0 5px rgba(255,117,0,.12)}.simple-layout-preview-row.is-layout-selected::after,.simple-layout-preview-column.is-layout-selected::after,.simple-layout-preview-element.is-layout-selected::after{position:absolute;z-index:8;top:5px;right:6px;padding:3px 6px;border-radius:5px;background:var(--orange);color:#fff;content:attr(data-node-label);font-size:8px;font-weight:900;letter-spacing:.02em;line-height:1.2;pointer-events:none}.simple-layout-preview-element.is-layout-selected::after{top:-14px}.simple-layout-preview-row:focus-visible,.simple-layout-preview-column:focus-visible,.simple-layout-preview-element:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+    @media(max-width:1180px){.simple-grid{grid-template-columns:235px minmax(420px,1fr) 315px}.simple-editor-mode button span{display:none}}
+    @media(max-width:880px){.simple-grid{display:flex}.simple-editor-mode button span{display:inline}.simple-navigator-structure,.simple-navigator-content-tree{margin-left:35px}.simple-breadcrumb{position:sticky;z-index:4;top:76px}.simple-section-row{grid-template-columns:36px 36px minmax(0,1fr)}}
+    @media(max-width:520px){.simple-editor-mode{order:4;width:100%;justify-content:center}.simple-editor-mode button{flex:1;justify-content:center}.simple-breadcrumb{top:132px}.simple-section-list{grid-template-columns:1fr}}
+    .simple-element-picker__intro{margin:0;padding:16px 22px;border-bottom:1px solid var(--line);background:#fffaf5;color:#625750;font-size:12px;line-height:1.55}.simple-element-picker{display:grid;gap:24px;padding:22px}.simple-element-category{display:grid;gap:11px}.simple-element-category__head{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:10px}.simple-element-category__head>i{display:grid;width:38px;height:38px;place-items:center;border-radius:9px;background:#fff0e4;color:var(--brown)}.simple-element-category__head h3{margin:0;font:700 17px/1.2 'Literata',Georgia,serif}.simple-element-category__head p{margin:3px 0 0;color:var(--muted);font-size:11px}.simple-element-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.simple-element-card{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:start;gap:11px;min-height:108px;padding:14px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}.simple-element-card:hover,.simple-element-card:focus-visible{border-color:var(--orange);background:#fff9f4;outline:3px solid rgba(255,117,0,.15);outline-offset:1px}.simple-element-card:disabled{cursor:not-allowed;opacity:.48}.simple-element-card>i{display:grid;width:42px;height:42px;place-items:center;border-radius:10px;background:#fff0e4;color:var(--orange);font-size:18px}.simple-element-card strong,.simple-element-card small{display:block}.simple-element-card strong{margin:2px 0 5px;font-size:12px}.simple-element-card small{color:var(--muted);font-size:10px;line-height:1.45}.simple-element-card em{display:block;margin-top:7px;color:var(--brown);font-size:9px;font-style:normal;font-weight:850}.simple-element-picker-fallback{margin:0 22px 22px;padding:13px;border:1px solid var(--line);border-radius:9px}.simple-element-picker-fallback>summary{color:var(--brown);font-size:11px;font-weight:850;cursor:pointer}.simple-element-picker-fallback__row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:10px}.simple-element-picker-fallback select{min-height:44px;padding:8px;border:1px solid #d9d2cc;border-radius:7px;background:#fff}.simple-layout-add{display:block}.simple-layout-add>[data-layout-open-picker]{width:100%}
+    .simple-layout-media-field__preview{display:flex;min-width:0;align-items:center;gap:8px;margin-top:7px;padding:8px;border:1px solid var(--line);border-radius:7px;background:#faf9f8}.simple-layout-media-field__preview img{width:52px;height:42px;flex:0 0 auto;border-radius:5px;object-fit:cover}.simple-layout-media-field__preview i{display:grid;width:42px;height:42px;flex:0 0 auto;place-items:center;border-radius:7px;background:#fff0e4;color:var(--brown)}.simple-layout-media-field__preview span{min-width:0;overflow:hidden;color:var(--muted);font-size:10px;text-overflow:ellipsis;white-space:nowrap}.simple-document-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:20px}.simple-document-option{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:12px;min-height:78px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;text-align:left;cursor:pointer}.simple-document-option:hover,.simple-document-option:focus-visible{border-color:var(--orange);outline:3px solid rgba(255,117,0,.14)}.simple-document-option>i{display:grid;width:44px;height:44px;place-items:center;border-radius:10px;background:#fff0e4;color:var(--brown);font-size:19px}.simple-document-option strong,.simple-document-option small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.simple-document-option strong{font-size:12px}.simple-document-option small{margin-top:4px;color:var(--muted);font-size:9px}
+    .simple-layout-repeater{display:grid;gap:9px;margin-bottom:14px}.simple-layout-repeater-item{border:1px solid var(--line);border-radius:9px;background:#fff}.simple-layout-repeater-item>summary{display:flex;min-height:50px;align-items:center;gap:8px;padding:9px 10px;color:var(--ink);font-size:11px;font-weight:850;cursor:pointer;list-style:none}.simple-layout-repeater-item>summary::-webkit-details-marker{display:none}.simple-layout-repeater-item>summary::after{margin-left:auto;color:var(--brown);content:'+';font-size:17px}.simple-layout-repeater-item[open]>summary::after{content:'−'}.simple-layout-repeater-item__body{padding:11px;border-top:1px solid var(--line)}.simple-layout-repeater-actions{display:grid;grid-template-columns:repeat(3,44px);justify-content:end;gap:5px;margin-bottom:11px}.simple-layout-repeater-actions button{display:grid;width:44px;height:44px;place-items:center;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--brown);cursor:pointer}.simple-layout-repeater-actions button:last-child{color:#a52c24}.simple-layout-repeater-actions button:disabled{opacity:.35}.simple-layout-add-item{width:100%}.simple-progressive{margin:4px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.simple-progressive>summary{min-height:44px;padding:13px 2px;color:var(--brown);font-size:11px;font-weight:850;cursor:pointer}.simple-progressive>div{padding-top:5px}
+    .simple-validation-error{margin:0 0 14px;padding:12px 13px;border:1px solid #e6a6a0;border-left:4px solid #b42318;border-radius:8px;background:#fff4f2;color:#7a211a;font-size:11px;line-height:1.5}.simple-validation-error strong{display:block;margin-bottom:3px;font-size:12px}.simple-field.is-invalid input,.simple-field.is-invalid textarea,.simple-field.is-invalid select{border-color:#b42318;box-shadow:0 0 0 2px rgba(180,35,24,.1)}
+    .simple-help-content{display:grid;gap:22px;padding:22px}.simple-help-quickstart{margin:0;padding:18px 18px 18px 42px;border-radius:11px;background:#fff7ef}.simple-help-quickstart li{margin:0 0 10px;padding-left:4px;line-height:1.5}.simple-help-glossary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.simple-help-term{padding:15px;border:1px solid var(--line);border-radius:10px;background:#fff}.simple-help-term i{color:var(--orange);font-size:20px}.simple-help-term h3{margin:9px 0 5px;font:700 15px 'Literata',Georgia,serif}.simple-help-term p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}.simple-help-modes{display:grid;grid-template-columns:1fr 1fr;gap:11px}.simple-help-mode{padding:16px;border-radius:10px;background:#f7f4f1}.simple-help-mode strong{display:block;margin-bottom:6px}.simple-help-mode p{margin:0;color:var(--muted);font-size:11px;line-height:1.5}
+    .simple-layout-preview-icon{display:grid;place-items:center;color:var(--orange)}.simple-layout-preview-icon--small{width:38px;height:38px;font-size:20px}.simple-layout-preview-icon--medium{width:50px;height:50px;font-size:27px}.simple-layout-preview-icon--large{width:66px;height:66px;font-size:36px}.simple-layout-preview-icon--soft,.simple-layout-preview-icon--circle{background:#fff0e4}.simple-layout-preview-icon--soft{border-radius:13px}.simple-layout-preview-icon--circle{border-radius:999px}.simple-layout-preview-file{display:flex;width:100%;align-items:center;gap:12px;padding:13px;border:1px solid var(--line);border-radius:10px;background:#fff}.simple-layout-preview-file>i{display:grid;width:42px;height:42px;flex:0 0 auto;place-items:center;border-radius:9px;background:#fff0e4;color:var(--brown)}.simple-layout-preview-file span{display:grid;gap:3px}.simple-layout-preview-file strong{font-size:12px}.simple-layout-preview-file small{color:var(--muted);font-size:10px}.simple-layout-preview-card{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);box-shadow:0 6px 18px rgba(25,28,29,.07)}.simple-layout-preview-card--soft{background:#fff8f2}.simple-layout-preview-card--contrast{border-color:#24211f;background:#24211f;color:#fff}.simple-layout-preview-card>img{width:100%;aspect-ratio:16/9;object-fit:cover}.simple-layout-preview-card__icon{display:grid;width:46px;height:46px;margin:16px 16px 0;place-items:center;border-radius:11px;background:#fff0e4;color:var(--orange);font-size:20px}.simple-layout-preview-card__copy{display:grid;gap:7px;padding:16px}.simple-layout-preview-card__copy small{color:var(--brown);font-size:9px;font-weight:850;text-transform:uppercase}.simple-layout-preview-card__copy strong{font:700 18px 'Literata',serif}.simple-layout-preview-card__copy p{margin:0;font-size:11px}.simple-layout-preview-card__copy em{color:var(--brown);font-size:10px;font-style:normal;font-weight:850}.simple-layout-preview-stat{display:grid;width:100%;min-height:150px;place-items:center;align-content:center;gap:8px;padding:20px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:center}.simple-layout-preview-stat--accent{border-color:#ffd0aa;background:#fff0e4}.simple-layout-preview-stat--contrast{border-color:#24211f;background:#24211f;color:#fff}.simple-layout-preview-stat i{color:var(--orange);font-size:24px}.simple-layout-preview-stat strong{font:700 clamp(30px,5cqw,49px)/1 'Literata',serif}.simple-layout-preview-stat span{font-size:11px}.simple-layout-preview-quote{position:relative;width:100%;margin:0;padding:22px;border-left:4px solid var(--orange);border-radius:0 12px 12px 0;background:#fff8f2}.simple-layout-preview-quote--featured{border-left:0;background:linear-gradient(135deg,#ff7500,#d95400);color:#fff;text-align:center}.simple-layout-preview-quote--compact{padding:16px}.simple-layout-preview-quote img{width:58px;height:58px;border-radius:50%;object-fit:cover}.simple-layout-preview-quote blockquote{margin:10px 0;font:600 17px/1.5 'Literata',serif}.simple-layout-preview-quote figcaption{display:grid;gap:2px;font-size:10px}.simple-layout-preview-quote figcaption span{opacity:.74}.simple-layout-preview-gallery{display:grid;width:100%;gap:7px}.simple-layout-preview-gallery--2{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-layout-preview-gallery--3{grid-template-columns:repeat(3,minmax(0,1fr))}.simple-layout-preview-gallery--4{grid-template-columns:repeat(4,minmax(0,1fr))}.simple-layout-preview-gallery figure{min-width:0;margin:0}.simple-layout-preview-gallery img,.simple-layout-preview-gallery__empty{display:grid;width:100%;aspect-ratio:4/3;place-items:center;border-radius:8px;background:#eee;object-fit:cover}.simple-layout-preview-gallery figcaption{margin-top:3px;font-size:8px}.simple-layout-preview-accordion{width:100%;border-top:1px solid var(--line)}.simple-layout-preview-accordion details{border-bottom:1px solid var(--line)}.simple-layout-preview-accordion summary{padding:12px 28px 12px 2px;font-size:11px;font-weight:850;cursor:pointer}.simple-layout-preview-accordion__answer{padding:0 2px 12px;font-size:10px}.simple-layout-preview-timeline{display:grid;width:100%;gap:10px;margin:0;padding:0;list-style:none}.simple-layout-preview-timeline li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:9px}.simple-layout-preview-timeline__marker{display:grid;width:36px;height:36px;place-items:center;border-radius:50%;background:var(--orange);color:#fff;font-size:10px}.simple-layout-preview-timeline li small{color:var(--brown);font-size:8px;font-weight:850;text-transform:uppercase}.simple-layout-preview-timeline h4{margin:2px 0 4px!important;font-size:14px!important}.simple-layout-preview-timeline p{margin:0!important;font-size:10px}.simple-layout-preview-callout{display:grid;width:100%;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:18px;border:1px solid #ffd0aa;border-radius:12px;background:#fff0e4;color:var(--ink)}.simple-layout-preview-callout--neutral{border-color:var(--line);background:#fff}.simple-layout-preview-callout--success{border-color:#b8dec1;background:#eff9f1}.simple-layout-preview-callout--warning{border-color:#f0ce79;background:#fff8df}.simple-layout-preview-callout__icon{display:grid;width:42px;height:42px;place-items:center;border-radius:10px;background:#fff;color:var(--orange)}.simple-layout-preview-callout small{color:var(--brown);font-size:8px;font-weight:850;text-transform:uppercase}.simple-layout-preview-callout h4{margin:4px 0 7px!important}.simple-layout-preview-callout p{margin:0!important;font-size:10px}.simple-layout-preview-callout em{display:block;margin-top:9px;color:var(--brown);font-size:9px;font-style:normal;font-weight:850}
+    @media(max-width:880px){.simple-element-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){.simple-element-cards,.simple-document-grid,.simple-help-glossary,.simple-help-modes{grid-template-columns:1fr}.simple-element-picker{padding:14px}.simple-element-picker-fallback__row{grid-template-columns:1fr}.simple-layout-preview-gallery--3,.simple-layout-preview-gallery--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .simple-image-actions{display:flex;flex-wrap:wrap;gap:7px}
 </style>
 
 <main class="simple-editor" id="simple-editor">
@@ -99,6 +120,10 @@
             <button type="button" class="is-active" data-viewport="desktop" aria-label="Desktop preview" aria-pressed="true"><i class="fa fa-desktop"></i></button>
             <button type="button" data-viewport="tablet" aria-label="Tablet preview" aria-pressed="false"><i class="fa fa-tablet"></i></button>
             <button type="button" data-viewport="mobile" aria-label="Mobile preview" aria-pressed="false"><i class="fa fa-mobile"></i></button>
+        </div>
+        <div class="simple-editor-mode" role="group" aria-label="Editing mode">
+            <button type="button" class="is-active" data-editor-mode="content" aria-pressed="true"><i class="fa fa-pencil" aria-hidden="true"></i><span>Edit content</span></button>
+            <button type="button" data-editor-mode="layout" aria-pressed="false"><i class="fa fa-columns" aria-hidden="true"></i><span>Customize layout</span></button>
         </div>
         <div class="simple-history" aria-label="Editing history">
             <button class="simple-btn" id="simple-undo" type="button" aria-label="Undo last unsaved change" title="Undo" disabled><i class="fa fa-undo" aria-hidden="true"></i></button>
@@ -124,8 +149,8 @@
     @endunless
 
     <div class="simple-grid">
-        <aside class="simple-sections" aria-label="Page sections">
-            <div class="simple-panel-head"><h2>Sections</h2><p>{{ $canEditBuilder ? 'Select a section to edit it. Use the arrow buttons or drag handle to change the visitor order.' : 'Select a section to review its content.' }}</p></div>
+        <aside class="simple-sections" aria-label="Page structure">
+            <div class="simple-panel-head"><h2>Page Structure</h2><p>{{ $canEditBuilder ? 'Choose anything here or in the preview. Use Customize layout when you need rows and columns. Use the arrow buttons or drag handle to change the visitor order.' : 'Choose an item to review its content.' }}</p></div>
             <div class="simple-sections__body">
                 @if($canCreateBuilder)<button class="simple-btn simple-add-section" type="button" id="open-add-section"><i class="fa fa-plus" aria-hidden="true"></i> Add section</button>@endif
                 @if($legacyContentNeedsConversion)
@@ -202,12 +227,13 @@
         </aside>
 
         <section class="simple-canvas" aria-label="Live page preview">
-            <div class="simple-canvas-tip"><i class="fa {{ $canEditBuilder ? 'fa-pencil' : 'fa-eye' }}" aria-hidden="true"></i> {{ $canEditBuilder ? 'Click any outlined text to edit it directly' : 'Previewing the page in read-only mode' }}</div>
+            <div class="simple-canvas-tip" id="simple-canvas-tip"><i class="fa {{ $canEditBuilder ? 'fa-pencil' : 'fa-eye' }}" aria-hidden="true"></i> <span>{{ $canEditBuilder ? 'Click any outlined text to edit it directly' : 'Previewing the page in read-only mode' }}</span></div>
+            <nav class="simple-breadcrumb" id="simple-selection-breadcrumb" aria-label="Selected page item"></nav>
             <div class="simple-preview" id="simple-preview" data-viewport="desktop" aria-live="polite"></div>
         </section>
 
         <aside class="simple-inspector" aria-label="Selected section editor">
-            <div class="simple-panel-head"><div class="simple-inspector__head-row"><div><h2 id="simple-inspector-title">Edit section</h2><span class="simple-type-badge" id="simple-inspector-type">Section</span></div><button type="button" class="simple-btn" id="simple-help"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</button></div></div>
+            <div class="simple-panel-head"><div class="simple-inspector__head-row"><div><h2 class="simple-inspector-title-focus" id="simple-inspector-title" tabindex="-1">Edit section</h2><span class="simple-type-badge" id="simple-inspector-type">Section</span></div><button type="button" class="simple-btn" id="simple-help"><i class="fa fa-question-circle" aria-hidden="true"></i> Help</button></div></div>
             <div class="simple-inspector__body" id="simple-inspector-body"></div>
         </aside>
     </div>
@@ -282,6 +308,44 @@
         @endforelse
     </div></div>
 </div>
+@if($canEditBuilder)
+<div class="simple-modal" id="element-picker-modal" role="dialog" aria-modal="true" aria-labelledby="element-picker-title" aria-describedby="element-picker-description" hidden>
+    <div class="simple-modal__dialog">
+        <header class="simple-modal__head"><div><h2 id="element-picker-title">Add content</h2><p style="margin:4px 0 0;color:var(--muted);font-size:12px" id="element-picker-location">Choose what belongs in this column.</p></div><button class="simple-close" type="button" data-close-element-picker aria-label="Close content picker">&times;</button></header>
+        <p class="simple-element-picker__intro" id="element-picker-description"><strong>Choose one content type.</strong> Safe starter content is added immediately, and its easy settings open on the right.</p>
+        <div class="simple-element-picker" id="simple-element-picker"></div>
+        <details class="simple-element-picker-fallback"><summary>Prefer a simple list?</summary><div class="simple-element-picker-fallback__row"><label class="simple-layout-sr" for="simple-element-picker-select">Content type</label><select id="simple-element-picker-select"></select><button class="simple-btn simple-btn--primary" type="button" id="simple-element-picker-add"><i class="fa fa-plus" aria-hidden="true"></i> Add selected content</button></div></details>
+    </div>
+</div>
+@endif
+<div class="simple-modal" id="document-media-modal" role="dialog" aria-modal="true" aria-labelledby="document-media-modal-title" hidden>
+    <div class="simple-modal__dialog">
+        <header class="simple-modal__head"><div><h2 id="document-media-modal-title">Choose a public file</h2><p style="margin:4px 0 0;color:var(--muted);font-size:12px">PDF, Word, and Excel files from the Media Library.</p></div><button class="simple-close" type="button" data-close-document-media aria-label="Close file chooser">&times;</button></header>
+        @if($canCreateBuilder)<div class="simple-upload"><span style="font-size:12px;color:var(--muted)">Upload PDF, DOC, DOCX, XLS or XLSX (maximum 20 MB)</span><label class="simple-btn simple-btn--primary">Upload file<input id="simple-document-upload" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.pdf,.doc,.docx,.xls,.xlsx" hidden></label></div>@endif
+        <div class="simple-document-grid" id="simple-document-grid">
+            @forelse(($documentAssets ?? collect()) as $asset)
+                <button class="simple-document-option" type="button" data-document-media-url="{{ $asset->url }}" aria-label="Choose {{ $asset->original_name }}"><i class="fa fa-file-text-o" aria-hidden="true"></i><span><strong>{{ $asset->original_name }}</strong><small>{{ $asset->mime_type }}</small></span></button>
+            @empty
+                <p class="simple-empty">No public documents are available yet.</p>
+            @endforelse
+        </div>
+    </div>
+</div>
+<div class="simple-modal" id="simple-help-modal" role="dialog" aria-modal="true" aria-labelledby="simple-help-title" aria-describedby="simple-help-intro" hidden>
+    <div class="simple-modal__dialog">
+        <header class="simple-modal__head"><div><h2 id="simple-help-title">Build a page without code</h2><p style="margin:4px 0 0;color:var(--muted);font-size:12px" id="simple-help-intro">Start with content. Open layout controls only when the page structure needs to change.</p></div><button class="simple-close" type="button" data-close-help aria-label="Close help">&times;</button></header>
+        <div class="simple-help-content">
+            <section><h3 style="margin:0 0 10px;font:700 18px 'Literata',serif">Quick start</h3><ol class="simple-help-quickstart"><li>Choose a <strong>Section</strong> in Page Structure or click it in the preview.</li><li>Stay in <strong>Edit content</strong> to change words, images, buttons, cards, files, and other visitor content.</li><li>Choose <strong>Customize layout</strong> only to arrange rows and columns.</li><li>Use the orange outline and breadcrumb to confirm exactly what you are editing.</li><li>Check desktop, tablet, and mobile previews, then choose <strong>Save changes</strong>.</li></ol></section>
+            <section><h3 style="margin:0 0 10px;font:700 18px 'Literata',serif">What each part means</h3><div class="simple-help-glossary">
+                <article class="simple-help-term"><i class="fa fa-object-group" aria-hidden="true"></i><h3>Sections</h3><p>Ready-made page patterns, such as a Hero, Story, Gallery, or Visual layout. Sections make common pages quick and consistent.</p></article>
+                <article class="simple-help-term"><i class="fa fa-bars" aria-hidden="true"></i><h3>Rows</h3><p>Horizontal bands inside a Visual layout. Each row controls page width, background, spacing, and its column arrangement.</p></article>
+                <article class="simple-help-term"><i class="fa fa-columns" aria-hidden="true"></i><h3>Columns</h3><p>Side-by-side spaces inside a row. On small screens, columns safely stack so the page remains readable.</p></article>
+                <article class="simple-help-term"><i class="fa fa-pencil" aria-hidden="true"></i><h3>Content</h3><p>The visitor-facing items inside a column: headings, text, images, buttons, cards, downloads, questions, and more.</p></article>
+            </div></section>
+            <section><h3 style="margin:0 0 10px;font:700 18px 'Literata',serif">Two safe ways to work</h3><div class="simple-help-modes"><article class="simple-help-mode"><strong><i class="fa fa-pencil" aria-hidden="true"></i> Edit content</strong><p>The everyday mode. It hides row and column controls so you can focus on what visitors read and see.</p></article><article class="simple-help-mode"><strong><i class="fa fa-columns" aria-hidden="true"></i> Customize layout</strong><p>Use this when you need another row, a different column split, background, spacing, or content position.</p></article></div></section>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('custom-js')
@@ -330,8 +394,14 @@
         busy: false,
         heroSlide: 0,
         layoutOpenElement: null,
+        editorMode: 'content',
+        selectedLayout: {kind:'section',rowId:null,columnId:null,elementId:null},
+        expandedSections: new Set(),
         testimonialIndexes: {},
+        cardIndexes: {},
         mediaTarget: null,
+        elementPickerTarget: null,
+        validationError: null,
         modalReturn: null,
         undo: [],
         redo: [],
@@ -339,6 +409,7 @@
         leaving: false,
         pendingDeleteUuid: null,
     };
+    if (state.selected) state.expandedSections.add(state.selected);
     const csrf = document.querySelector('meta[name="csrf-token"]').content;
     const list = document.getElementById('simple-section-list');
     const preview = document.getElementById('simple-preview');
@@ -459,6 +530,10 @@
     const current = () => state.blocks.find(block => block.uuid === state.selected);
     const endpoint = (template, uuid) => template.replace('__BLOCK__', uuid);
     const hasDirty = () => state.dirtyBlocks.size > 0 || state.dirtyPage || state.dirtyOrder;
+    const hasSavableDirty = () => state.dirtyPage || state.dirtyOrder || [...state.dirtyBlocks].some(uuid=>{
+        const block=state.blocks.find(item=>item.uuid===uuid);
+        return block && !layoutIsBlocked(block);
+    });
     const draftKey = `ignite-simple-editor:${pageUuid}:${locale}`;
     const clone = value => JSON.parse(JSON.stringify(value));
     const formatDateTimeLocal = value => value ? String(value).replace(' ', 'T').slice(0, 16) : '';
@@ -471,22 +546,29 @@
     }
     function updateSaveState() {
         const dirty = hasDirty();
-        saveState.textContent = permissions.edit ? (dirty ? 'Unsaved changes' : 'All changes saved') : 'Read only';
+        const savable = hasSavableDirty();
+        saveState.textContent = permissions.edit ? (dirty ? (savable?'Unsaved changes':'Repair needed before this section can be saved') : 'All changes saved') : 'Read only';
         saveState.classList.toggle('is-dirty', dirty);
-        document.querySelectorAll('[data-save-changes]').forEach(button => { button.disabled = !permissions.edit || !dirty || state.busy; });
+        document.querySelectorAll('[data-save-changes]').forEach(button => { button.disabled = !permissions.edit || !savable || state.busy; });
         document.getElementById('simple-undo').disabled = !permissions.edit || state.undo.length === 0;
         document.getElementById('simple-redo').disabled = !permissions.edit || state.redo.length === 0;
         document.querySelectorAll('[data-delete-section],#simple-delete').forEach(button => { button.disabled = state.busy; });
     }
     function markDirty(scope) {
         if (!permissions.edit) return;
-        if (scope === 'page') state.dirtyPage = true; else if (scope === 'order') state.dirtyOrder = true; else if (state.selected) state.dirtyBlocks.add(state.selected);
+        if (scope === 'page') state.dirtyPage = true;
+        else if (scope === 'order') state.dirtyOrder = true;
+        else if (state.selected) {
+            const block=current();
+            if (layoutIsBlocked(block)) return notify('This visual layout is locked so its saved content stays safe. Ask a website administrator to repair it.');
+            state.dirtyBlocks.add(state.selected);
+        }
         updateSaveState();
         scheduleDraft();
     }
     function snapshot() {
         return {
-            blocks: clone(state.blocks), selected: state.selected, heroSlide: state.heroSlide,
+            blocks: clone(state.blocks), selected: state.selected, heroSlide: state.heroSlide, cardIndexes: clone(state.cardIndexes),
             dirtyBlocks: [...state.dirtyBlocks], dirtyPage: state.dirtyPage, dirtyOrder: state.dirtyOrder,
             pageName: document.getElementById('simple-page-name').value,
             pageStatus: document.getElementById('simple-page-status').value,
@@ -499,8 +581,8 @@
         };
     }
     function applySnapshot(saved) {
-        state.blocks = clone(saved.blocks || []); state.selected = saved.selected || state.blocks[0]?.uuid || null; state.heroSlide = Number(saved.heroSlide || 0);
-        state.layoutOpenElement = null;
+        state.blocks = clone(saved.blocks || []); state.selected = saved.selected || state.blocks[0]?.uuid || null; state.heroSlide = Number(saved.heroSlide || 0); state.cardIndexes = clone(saved.cardIndexes || {});
+        state.layoutOpenElement = null; state.selectedLayout = {kind:'section',rowId:null,columnId:null,elementId:null};
         state.dirtyBlocks = new Set(saved.dirtyBlocks || []); state.dirtyPage = !!saved.dirtyPage; state.dirtyOrder = !!saved.dirtyOrder;
         document.getElementById('simple-page-name').value = saved.pageName || '';
         document.getElementById('simple-page-status').value = saved.pageStatus || 'draft';
@@ -534,7 +616,7 @@
         clearTimeout(state.autosaveTimer);
         if (!hasDirty()) { clearDraft(); return; }
         state.autosaveTimer = setTimeout(() => {
-            try { sessionStorage.setItem(draftKey, JSON.stringify({version:2,baseEditorVersion:editorVersion,savedAt:Date.now(),...snapshot()})); updateSaveState(); }
+            try { sessionStorage.setItem(draftKey, JSON.stringify({version:3,baseEditorVersion:editorVersion,savedAt:Date.now(),...snapshot()})); updateSaveState(); }
             catch (error) { notify('Your browser could not back up this draft. Please save your changes.'); }
         }, 600);
     }
@@ -576,7 +658,7 @@
             const saved = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
             if (!saved) return false;
             if (!saved.savedAt) { clearDraft(); return false; }
-            if (saved.version !== 2 || Number(saved.baseEditorVersion) !== editorVersion) {
+            if (saved.version !== 3 || Number(saved.baseEditorVersion) !== editorVersion) {
                 offerStaleDraftBackup(saved);
                 return false;
             }
@@ -593,13 +675,210 @@
             : body;
         const response = await fetch(url, {method, headers: form ? {'Accept':'application/json','X-CSRF-TOKEN':csrf} : {'Accept':'application/json','Content-Type':'application/json','X-CSRF-TOKEN':csrf}, body: form ? body : (versionedBody ? JSON.stringify(versionedBody) : undefined)});
         const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.errors ? Object.values(payload.errors).flat().join(' ') : (payload.message || 'The request could not be completed.'));
+        if (!response.ok) {
+            const validationErrors = payload.errors && typeof payload.errors === 'object' ? payload.errors : {};
+            const firstValidationMessage = Object.values(validationErrors).flat().find(message => typeof message === 'string' && message.trim());
+            const error = new Error(firstValidationMessage || payload.message || 'The request could not be completed.');
+            error.validationErrors = validationErrors;
+            error.status = response.status;
+            error.payload = payload;
+            throw error;
+        }
         if (Number.isInteger(Number(payload.editor_version))) editorVersion = Number(payload.editor_version);
         return payload;
     }
-    function selectSection(uuid) {
-        if (!uuid || uuid === state.selected) return;
-        state.selected = uuid; state.heroSlide = 0; state.layoutOpenElement = null; updateSaveState(); renderAll();
+    function firstValidationEntry(error) {
+        const entries=Object.entries(error?.validationErrors||{});
+        for(const [path,messages] of entries){
+            const message=(Array.isArray(messages)?messages:[messages]).find(value=>typeof value==='string'&&value.trim());
+            if(message)return {path,message};
+        }
+        return null;
+    }
+    function focusLayoutValidationError(error) {
+        const entries=Object.entries(error?.validationErrors||{});
+        for(const [path,messages] of entries){
+            const match=String(path).match(/^(?:blocks\.([^.]+)\.content|block\.content|content)\.rows\.(\d+)(?:\.columns\.(\d+))?(?:\.elements\.(\d+))?(?:\.(.+))?$/);
+            if(!match)continue;
+            const token=match[1],rowIndex=Number(match[2]),columnIndex=match[3]===undefined?-1:Number(match[3]),elementIndex=match[4]===undefined?-1:Number(match[4]),fieldPath=String(match[5]||'');
+            const block=state.blocks.find(item=>item.uuid===token) || (/^\d+$/.test(String(token||''))?state.blocks[Number(token)]:null) || current();
+            if(!block||block.type!=='layout')continue;
+            const message=(Array.isArray(messages)?messages:[messages]).find(value=>typeof value==='string'&&value.trim()) || error.message;
+            state.selected=block.uuid;state.expandedSections.add(block.uuid);
+            if(elementIndex>=0)assignLayoutSelection(block,'element',rowIndex,columnIndex,elementIndex);
+            else if(columnIndex>=0)assignLayoutSelection(block,'column',rowIndex,columnIndex);
+            else assignLayoutSelection(block,'row',rowIndex);
+            if(elementIndex<0)state.editorMode='layout';
+            state.validationError={blockUuid:block.uuid,path:String(path),message,rowIndex,columnIndex,elementIndex,fieldPath};
+            renderAll();
+            requestAnimationFrame(()=>{
+                let control=null;
+                const itemMatch=fieldPath.match(/^items\.(\d+)\.([A-Za-z0-9_]+)/);
+                if(elementIndex>=0&&itemMatch)control=inspector.querySelector(`[data-layout-item="${Number(itemMatch[1])}"][data-layout-item-field="${itemMatch[2]}"]`);
+                else if(elementIndex>=0&&fieldPath){const field=fieldPath.split('.')[0];control=inspector.querySelector(`[data-layout-element-field="${field}"],[data-layout-rich-field="${field}"]`)}
+                else if(elementIndex<0&&fieldPath){const field=fieldPath.split('.')[0];control=inspector.querySelector(`[data-layout-row-field="${field}"]`)}
+                control?.closest('details')?.setAttribute('open','');
+                control?.closest('.simple-field')?.classList.add('is-invalid');
+                (control||document.getElementById('simple-validation-error')||document.getElementById('simple-inspector-title'))?.focus?.();
+            });
+            return true;
+        }
+        return false;
+    }
+    function layoutRowIdentity(row, rowIndex) {
+        return validLayoutId(row?.id) ? row.id : `row-${rowIndex}`;
+    }
+    function layoutColumnIdentity(row, column, columnIndex, rowIndex) {
+        return validLayoutId(column?.id) ? column.id : `${layoutRowIdentity(row,rowIndex)}:column-${columnIndex}`;
+    }
+    function layoutElementIdentity(row, column, element, elementIndex, rowIndex, columnIndex) {
+        return validLayoutId(element?.id) ? element.id : `${layoutColumnIdentity(row,column,columnIndex,rowIndex)}:element-${elementIndex}`;
+    }
+    function resolveLayoutSelection(block = current()) {
+        const sectionSelection = {kind:'section',row:null,column:null,element:null,rowIndex:-1,columnIndex:-1,elementIndex:-1};
+        if (!block || block.type !== 'layout' || state.selectedLayout?.kind === 'section') return sectionSelection;
+        const rows = layoutRows(block);
+        const rowIndex = rows.findIndex((row,index) => layoutRowIdentity(row,index) === state.selectedLayout.rowId);
+        if (rowIndex < 0) return sectionSelection;
+        const row = rows[rowIndex];
+        if (state.selectedLayout.kind === 'row') return {...sectionSelection,kind:'row',row,rowIndex};
+        const columnCount = layoutPresetColumnCount(row.layout);
+        const columns = row.columns.slice(0,columnCount);
+        const columnIndex = columns.findIndex((column,index) => layoutColumnIdentity(row,column,index,rowIndex) === state.selectedLayout.columnId);
+        if (columnIndex < 0) return {...sectionSelection,kind:'row',row,rowIndex};
+        const column = columns[columnIndex];
+        if (state.selectedLayout.kind === 'column') return {...sectionSelection,kind:'column',row,column,rowIndex,columnIndex};
+        const elements = Array.isArray(column.elements) ? column.elements : [];
+        const elementIndex = elements.findIndex((element,index) => layoutElementIdentity(row,column,element,index,rowIndex,columnIndex) === state.selectedLayout.elementId);
+        if (elementIndex < 0) return {...sectionSelection,kind:'column',row,column,rowIndex,columnIndex};
+        return {...sectionSelection,kind:'element',row,column,element:elements[elementIndex],rowIndex,columnIndex,elementIndex};
+    }
+    function assignLayoutSelection(block, kind = 'section', rowIndex = -1, columnIndex = -1, elementIndex = -1) {
+        if (!block || block.type !== 'layout' || kind === 'section') {
+            state.selectedLayout = {kind:'section',rowId:null,columnId:null,elementId:null};
+            state.layoutOpenElement = null;
+            return;
+        }
+        const rows = layoutRows(block);
+        const row = rows[rowIndex];
+        if (!row) return assignLayoutSelection(block);
+        const rowId = layoutRowIdentity(row,rowIndex);
+        if (kind === 'row') {
+            state.selectedLayout = {kind,rowId,columnId:null,elementId:null};
+            state.layoutOpenElement = null;
+            return;
+        }
+        const column = row.columns?.[columnIndex];
+        if (!column) return assignLayoutSelection(block,'row',rowIndex);
+        const columnId = layoutColumnIdentity(row,column,columnIndex,rowIndex);
+        if (kind === 'column') {
+            state.selectedLayout = {kind,rowId,columnId,elementId:null};
+            state.layoutOpenElement = null;
+            return;
+        }
+        const element = column.elements?.[elementIndex];
+        if (!element) return assignLayoutSelection(block,'column',rowIndex,columnIndex);
+        state.selectedLayout = {kind:'element',rowId,columnId,elementId:layoutElementIdentity(row,column,element,elementIndex,rowIndex,columnIndex)};
+        state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${elementIndex}`;
+    }
+    function currentSelectionKey() {
+        if (!state.selected) return '';
+        const selection = resolveLayoutSelection();
+        return [state.selected,selection.kind,state.selectedLayout?.rowId||'',state.selectedLayout?.columnId||'',state.selectedLayout?.elementId||''].join('|');
+    }
+    function restoreSelectionFocus(destination) {
+        if (!destination) return;
+        const key = currentSelectionKey();
+        requestAnimationFrame(() => {
+            if (destination === 'inspector') {
+                document.getElementById('simple-inspector-title')?.focus();
+                document.querySelector('.simple-inspector')?.scrollTo({top:0,behavior:'smooth'});
+                return;
+            }
+            if (destination === 'preview') {
+                (preview.querySelector('.is-layout-selected') || preview.querySelector(`[data-preview-block="${state.selected}"]`))?.focus?.();
+                return;
+            }
+            [...list.querySelectorAll('[data-navigator-key]')].find(button => button.dataset.navigatorKey === key)?.focus();
+        });
+    }
+    function selectSection(uuid, options = {}) {
+        if (!uuid) return;
+        const sameSection = uuid === state.selected && state.selectedLayout?.kind === 'section';
+        state.selected = uuid; state.heroSlide = 0; assignLayoutSelection(state.blocks.find(block=>block.uuid===uuid));
+        state.expandedSections.add(uuid);
+        updateSaveState();
+        if (!sameSection || options.force) renderAll(); else { renderList(); renderInspector(); renderBreadcrumb(); syncPreviewSelection(); }
+        restoreSelectionFocus(options.focus);
+    }
+    function selectLayoutNode(block, kind, rowIndex, columnIndex = -1, elementIndex = -1, options = {}) {
+        if (!block || block.type !== 'layout') return;
+        state.selected = block.uuid;
+        state.heroSlide = 0;
+        state.expandedSections.add(block.uuid);
+        assignLayoutSelection(block,kind,rowIndex,columnIndex,elementIndex);
+        updateSaveState();
+        if (options.preservePreview) {
+            renderList(); renderInspector(); renderBreadcrumb(); syncModeUi(); syncPreviewSelection();
+        } else renderAll();
+        restoreSelectionFocus(options.focus);
+    }
+
+    function selectedCardIndex(block, items = []) {
+        if (!items.length) return 0;
+        const requested = Number(state.cardIndexes[block.uuid] ?? 0);
+        return Number.isInteger(requested) ? Math.min(Math.max(requested, 0), items.length - 1) : 0;
+    }
+    function syncPreviewSelection() {
+        const block = current();
+        const layoutSelection = resolveLayoutSelection(block);
+        preview.querySelectorAll('[data-preview-block]').forEach(section => {
+            const isCurrent = section.dataset.previewBlock === state.selected;
+            section.classList.toggle('is-selected', isCurrent && (section.dataset.previewType !== 'layout' || layoutSelection.kind === 'section'));
+        });
+        preview.querySelectorAll('[data-layout-node]').forEach(node => {
+            const nodeKind = node.dataset.layoutNode;
+            const selected = block?.type === 'layout' && node.closest('[data-preview-block]')?.dataset.previewBlock === state.selected
+                && nodeKind === layoutSelection.kind
+                && (nodeKind === 'row' ? node.dataset.layoutRowId === state.selectedLayout.rowId
+                    : nodeKind === 'column' ? node.dataset.layoutColumnId === state.selectedLayout.columnId
+                    : node.dataset.layoutElementId === state.selectedLayout.elementId);
+            node.classList.toggle('is-layout-selected', selected);
+            if (node.hasAttribute('aria-pressed')) node.setAttribute('aria-pressed',String(selected));
+        });
+        preview.querySelectorAll('[data-preview-card-index]').forEach(card => {
+            const selected = card.closest('[data-preview-block]')?.dataset.previewBlock === state.selected
+                && Number(card.dataset.previewCardIndex) === Number(state.cardIndexes[state.selected] ?? 0);
+            card.classList.toggle('is-card-selected', selected);
+            card.querySelector('[data-preview-card-select]')?.setAttribute('aria-pressed', String(selected));
+        });
+    }
+    function revealSelectedCard(index) {
+        requestAnimationFrame(() => {
+            const editor = inspector.querySelector(`[data-card-editor-index="${index}"]`);
+            if (!editor) return;
+            editor.open = true;
+            editor.scrollIntoView({
+                block: 'nearest',
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+            });
+        });
+    }
+    function selectPreviewCard(uuid, requestedIndex) {
+        const block = state.blocks.find(item => item.uuid === uuid);
+        const items = Array.isArray(block?.content?.items) ? block.content.items : [];
+        if (!block || block.type !== 'cards' || contentSource(block) !== 'manual' || !items.length) return;
+        const index = Math.min(Math.max(Number(requestedIndex) || 0, 0), items.length - 1);
+        state.selected = uuid;
+        state.cardIndexes[uuid] = index;
+        state.heroSlide = 0;
+        assignLayoutSelection(block);
+        updateSaveState();
+        renderList();
+        renderInspector();
+        renderBreadcrumb();
+        syncPreviewSelection();
+        revealSelectedCard(index);
     }
 
     function heroSlides(block) {
@@ -642,6 +921,12 @@
         alignment: configuredDesignChoices.content_alignment || contentOptions.content_alignment_options || fallbackDesignChoices.alignment,
         columns: configuredDesignChoices.column_count || contentOptions.column_count_options || fallbackDesignChoices.columns,
     };
+    const layoutGlobalDesignChoices = Object.freeze({
+        section_presentation: sectionPresentationChoices,
+        section_spacing: designChoices.spacing,
+        content_alignment: designChoices.alignment,
+        column_count: designChoices.columns,
+    });
     const designDefaults = configuredDesignChoices.defaults || {section_spacing:'standard',content_alignment:'left',column_count:'auto'};
     const normalizedDesignValue = (value, choices, fallback) => Object.prototype.hasOwnProperty.call(choices, String(value || fallback)) ? String(value || fallback) : fallback;
     const columnSectionTypes = new Set(Array.isArray(configuredDesignChoices.column_count_types) ? configuredDesignChoices.column_count_types : ['stats','cards','ways_to_give','causes','events','team','partners','gallery']);
@@ -690,15 +975,80 @@
     const layoutWidthChoices = layoutChoiceMap(configuredLayoutOptions.widths, {standard:'Standard page width',wide:'Wide',full:'Full width'});
     const layoutBackgroundChoices = layoutChoiceMap(configuredLayoutOptions.backgrounds, {default:'Default',soft:'Soft neutral',accent:'Accent',dark:'Dark'});
     const layoutSpacingChoices = layoutChoiceMap(configuredLayoutOptions.spacings, {compact:'Compact',standard:'Standard',generous:'Generous'});
-    const layoutElementChoices = layoutChoiceMap(configuredLayoutOptions.element_types, {heading:'Heading',rich_text:'Formatted text',image:'Image',video:'Video',button:'Button',divider:'Divider',spacer:'Space'});
-    const layoutHeadingChoices = layoutChoiceMap(configuredLayoutOptions.heading_levels, {h2:'Large heading',h3:'Medium heading',h4:'Small heading'});
-    const layoutVideoSourceChoices = layoutChoiceMap(configuredLayoutOptions.video_source_types, {upload:'Uploaded video',youtube:'YouTube video'});
-    const layoutButtonStyleChoices = layoutChoiceMap(configuredLayoutOptions.button_styles, {primary:'Primary',secondary:'Secondary',text:'Text link'});
-    const layoutSpacerSizeChoices = layoutChoiceMap(configuredLayoutOptions.spacer_sizes, {small:'Small',medium:'Medium',large:'Large'});
-    const layoutElementIcons = Object.freeze({heading:'fa-header',rich_text:'fa-align-left',image:'fa-picture-o',video:'fa-play-circle',button:'fa-hand-pointer-o',divider:'fa-minus',spacer:'fa-arrows-v'});
+    const fallbackLayoutElementCatalog = Object.freeze({
+        heading:{type:'heading',label:'Heading',description:'Add a clear heading to organize this part of the page.',category:'text_layout',icon:'fa-header',mode:'static',defaults:{type:'heading',text:'New heading',level:'h2'},fields:{text:{kind:'plain_text',bounds:{max_length:500}},level:{kind:'choice',options:{h2:'Large',h3:'Medium',h4:'Small'}}}},
+        rich_text:{type:'rich_text',label:'Formatted text',description:'Add paragraphs, links, emphasis, or a short list.',category:'text_layout',icon:'fa-align-left',mode:'static',defaults:{type:'rich_text',body:'<p>Add your text here.</p>'},fields:{body:{kind:'rich_text',bounds:{max_length:20000}}}},
+        button:{type:'button',label:'Button',description:'Help visitors move to another page or approved web address.',category:'text_layout',icon:'fa-link',mode:'static',defaults:{type:'button',label:'Learn more',url:'',style:'primary'},fields:{label:{kind:'plain_text',bounds:{max_length:120}},url:{kind:'safe_link'},style:{kind:'choice',options:{primary:'Primary',secondary:'Secondary',text:'Text link'}}}},
+        icon:{type:'icon',label:'Icon',description:'Add a simple approved symbol without uploading an image.',category:'text_layout',icon:'fa-heart-o',mode:'static',defaults:{type:'icon',icon:'heart',accessible_label:'',decorative:true,size:'medium',style:'soft'},fields:{}},
+        divider:{type:'divider',label:'Divider',description:'Separate nearby content with a subtle horizontal line.',category:'text_layout',icon:'fa-minus',mode:'static',defaults:{type:'divider'},fields:{}},
+        spacer:{type:'spacer',label:'Space',description:'Add controlled breathing room between nearby items.',category:'text_layout',icon:'fa-arrows-v',mode:'static',defaults:{type:'spacer',size:'medium'},fields:{}},
+        callout:{type:'callout',label:'Highlighted message',description:'Draw attention to a short message and optional action.',category:'text_layout',icon:'fa-info-circle',mode:'static',defaults:{type:'callout',eyebrow:'',heading:'Important information',body:'',icon:'',tone:'accent',link_label:'',url:''},fields:{}},
+        image:{type:'image',label:'Image',description:'Choose an approved image from the Media Library.',category:'media_files',icon:'fa-picture-o',mode:'static',defaults:{type:'image',path:'',alt:'',caption:''},fields:{}},
+        video:{type:'video',label:'Video',description:'Choose an uploaded video or add a secure YouTube link.',category:'media_files',icon:'fa-play-circle',mode:'static',defaults:{type:'video',source_type:'upload',source:'',title:''},fields:{}},
+        file:{type:'file',label:'File download',description:'Offer an approved public document from the Media Library.',category:'media_files',icon:'fa-file-o',mode:'static',defaults:{type:'file',path:'',label:'Download file',description:'',open_in_new_tab:false},fields:{}},
+        gallery:{type:'gallery',label:'Photo gallery',description:'Show a small collection of approved images.',category:'media_files',icon:'fa-th',mode:'static',defaults:{type:'gallery',items:[],columns:'3',lightbox:true},fields:{}},
+        card:{type:'card',label:'Card',description:'Highlight one topic with an image or icon and an optional link.',category:'highlights',icon:'fa-id-card-o',mode:'static',defaults:{type:'card',eyebrow:'',heading:'New card',body:'',image:'',image_alt:'',icon:'',link_label:'Learn more',url:'',style:'standard'},fields:{}},
+        stat:{type:'stat',label:'Impact number',description:'Emphasize one important number and explain what it means.',category:'highlights',icon:'fa-bar-chart',mode:'static',defaults:{type:'stat',value:'0',label:'People reached',icon:'',emphasis:'standard'},fields:{}},
+        quote:{type:'quote',label:'Quotation',description:'Highlight a quotation with an optional name and photograph.',category:'highlights',icon:'fa-quote-left',mode:'static',defaults:{type:'quote',quote:'Add a meaningful quotation.',attribution:'',role:'',image:'',image_alt:'',style:'standard'},fields:{}},
+        accordion:{type:'accordion',label:'Questions and answers',description:'Add expandable answers to common questions.',category:'highlights',icon:'fa-question-circle',mode:'static',defaults:{type:'accordion',items:[{id:null,question:'Add a question',answer:'<p>Add the answer here.</p>'}],allow_one_open:false},fields:{}},
+        timeline:{type:'timeline',label:'Timeline or steps',description:'Explain milestones, history, or a step-by-step process.',category:'highlights',icon:'fa-list-ol',mode:'static',defaults:{type:'timeline',items:[{id:null,date_label:'Step 1',heading:'First step',body:'',icon:''}],style:'timeline'},fields:{}},
+    });
+    const configuredElementCatalogGroups = Object.entries(configuredLayoutOptions.element_catalog || {}).map(([category,group]) => ({
+        category,
+        label:String(group?.label || category),
+        description:String(group?.description || ''),
+        icon:String(group?.icon || 'fa-square-o'),
+        elements:(Array.isArray(group?.elements) ? group.elements : []).filter(element => element?.mode === 'static'),
+    })).filter(group => group.elements.length);
+    const fallbackElementGroups = [
+        {category:'text_layout',label:'Text and layout',description:'Words, actions, icons, separators, and spacing.',icon:'fa-align-left'},
+        {category:'media_files',label:'Media and files',description:'Images, video, galleries, and approved downloads.',icon:'fa-picture-o'},
+        {category:'highlights',label:'Highlights',description:'Cards, important numbers, quotations, answers, and steps.',icon:'fa-star'},
+    ].map(group => ({...group,elements:Object.values(fallbackLayoutElementCatalog).filter(element=>element.category===group.category)}));
+    const layoutElementCatalogGroups = configuredElementCatalogGroups.length ? configuredElementCatalogGroups : fallbackElementGroups;
+    const layoutElementCatalog = Object.freeze(Object.fromEntries(layoutElementCatalogGroups.flatMap(group=>group.elements).filter(element=>element?.mode==='static').map(element=>[String(element.type),element])));
+    const isStaticLayoutElementType = type => Object.prototype.hasOwnProperty.call(layoutElementCatalog,String(type||''));
+    const layoutElementChoices = Object.freeze(Object.fromEntries(Object.entries(layoutElementCatalog).map(([type,definition])=>[type,String(definition.label||type)])));
+    const configuredLayoutLimit = (key,fallback) => Math.max(1,Math.floor(Number(configuredLayoutOptions.limits?.[key])||fallback));
+    const layoutStorageLimits = Object.freeze({
+        payloadBytes:configuredLayoutLimit('payload_bytes',524288),
+        rows:configuredLayoutLimit('rows',12),
+        columns:configuredLayoutLimit('columns',4),
+        elementsPerColumn:configuredLayoutLimit('elements_per_column',12),
+    });
+    const layoutManifestChoices = (type,field,fallback) => {
+        const choices = layoutElementCatalog[type]?.fields?.[field]?.options;
+        return choices && typeof choices === 'object' && !Array.isArray(choices) ? choices : fallback;
+    };
+    const layoutManifestRepeaterChoices = (type,repeater,field,fallback) => {
+        const choices = layoutElementCatalog[type]?.fields?.[repeater]?.item_fields?.[field]?.options;
+        return choices && typeof choices === 'object' && !Array.isArray(choices) ? choices : fallback;
+    };
+    const optionalLayoutIconFallback = Object.freeze({'':'No icon',people:'People',map:'Location',heart:'Care and support',school:'Education',health:'Health',water:'Water',leaf:'Environment',relief:'Emergency relief',child:'Children',report:'Report',financials:'Finance',security:'Safeguarding',policy:'Policy'});
+    const requiredLayoutIconFallback = Object.freeze(Object.fromEntries(Object.entries(optionalLayoutIconFallback).filter(([value])=>value!=='')));
+    const layoutHeadingChoices = layoutManifestChoices('heading','level',{h2:'Large',h3:'Medium',h4:'Small'});
+    const layoutVideoSourceChoices = layoutManifestChoices('video','source_type',{upload:'Uploaded video',youtube:'YouTube'});
+    const layoutButtonStyleChoices = layoutManifestChoices('button','style',{primary:'Primary',secondary:'Secondary',text:'Text link'});
+    const layoutSpacerSizeChoices = layoutManifestChoices('spacer','size',{small:'Small',medium:'Medium',large:'Large'});
+    const layoutIconChoices = layoutManifestChoices('icon','icon',requiredLayoutIconFallback);
+    const layoutCardIconChoices = layoutManifestChoices('card','icon',optionalLayoutIconFallback);
+    const layoutStatIconChoices = layoutManifestChoices('stat','icon',optionalLayoutIconFallback);
+    const layoutCalloutIconChoices = layoutManifestChoices('callout','icon',optionalLayoutIconFallback);
+    const layoutTimelineIconChoices = layoutManifestRepeaterChoices('timeline','items','icon',optionalLayoutIconFallback);
+    const layoutIconSizeChoices = layoutManifestChoices('icon','size',{small:'Small',medium:'Medium',large:'Large'});
+    const layoutIconStyleChoices = layoutManifestChoices('icon','style',{plain:'Plain',soft:'Soft background',circle:'Circle'});
+    const layoutCalloutToneChoices = layoutManifestChoices('callout','tone',{neutral:'Neutral',accent:'Accent',success:'Positive',warning:'Important'});
+    const layoutCardStyleChoices = layoutManifestChoices('card','style',{standard:'Standard',soft:'Soft',contrast:'Dark contrast'});
+    const layoutStatEmphasisChoices = layoutManifestChoices('stat','emphasis',{standard:'Standard',accent:'Accent',contrast:'Dark contrast'});
+    const layoutQuoteStyleChoices = layoutManifestChoices('quote','style',{standard:'Standard',featured:'Featured',compact:'Compact'});
+    const layoutGalleryColumnChoices = layoutManifestChoices('gallery','columns',{'2':'Two','3':'Three','4':'Four'});
+    const layoutTimelineStyleChoices = layoutManifestChoices('timeline','style',{timeline:'Timeline',steps:'Numbered steps',compact:'Compact list'});
+    const layoutElementIcons = Object.freeze(Object.fromEntries(Object.entries(layoutElementCatalog).map(([type,definition])=>[type,String(definition.icon||'fa-square-o')])));
     const layoutChoice = (value, choices, fallback) => Object.prototype.hasOwnProperty.call(choices, String(value || '')) ? String(value) : fallback;
     const layoutPresetColumnCount = preset => layoutPresetDefinitions[layoutChoice(preset, layoutPresetChoices, 'full')].columns;
     const validLayoutId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+    const layoutLoadGuards = new WeakMap();
+    const isLayoutObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
     function newLayoutId() {
         if (typeof window.crypto?.randomUUID === 'function') return window.crypto.randomUUID();
         const bytes = new Uint8Array(16);
@@ -709,45 +1059,260 @@
         const hex = [...bytes].map(byte => byte.toString(16).padStart(2,'0')).join('');
         return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
     }
+    const layoutElementType = element => isStaticLayoutElementType(element?.type) ? String(element.type) : 'heading';
     const layoutElementName = element => {
-        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
-        const copy = type === 'heading' ? element?.text : type === 'rich_text' ? plainText(element?.body) : type === 'button' ? element?.label : type === 'image' ? (element?.caption || element?.alt) : type === 'video' ? element?.title : '';
+        const type = layoutElementType(element);
+        const firstItem = Array.isArray(element?.items) ? element.items[0] : null;
+        const copy = {
+            heading:element?.text,
+            rich_text:plainText(element?.body),
+            button:element?.label,
+            icon:element?.accessible_label || layoutIconChoices[element?.icon],
+            image:element?.caption || element?.alt,
+            video:element?.title,
+            file:element?.label,
+            card:element?.heading,
+            stat:[element?.value,element?.label].filter(Boolean).join(' '),
+            quote:element?.quote,
+            gallery:Array.isArray(element?.items) ? `${element.items.length} ${element.items.length===1?'photo':'photos'}` : '',
+            accordion:firstItem?.question,
+            timeline:firstItem?.heading || firstItem?.date_label,
+            callout:element?.heading,
+        }[type] || '';
         return copy ? `${layoutElementChoices[type]} · ${String(copy).slice(0, 34)}` : layoutElementChoices[type];
     };
-    function layoutRows(block) {
-        const content = block.content || (block.content = {});
-        if (!Array.isArray(content.rows)) content.rows = [];
-        content.rows.forEach(row => {
-            if (!validLayoutId(row.id)) row.id = newLayoutId();
-            row.layout = layoutChoice(row.layout, layoutPresetChoices, 'full');
-            row.width = layoutChoice(row.width, layoutWidthChoices, 'standard');
-            row.background = layoutChoice(row.background, layoutBackgroundChoices, 'default');
-            row.spacing = layoutChoice(row.spacing, layoutSpacingChoices, 'standard');
-            if (!Array.isArray(row.columns)) row.columns = [];
-            while (row.columns.length < layoutPresetColumnCount(row.layout)) row.columns.push({elements:[]});
-            row.columns.forEach(column => {
-                if (!Array.isArray(column.elements)) column.elements = [];
-                column.elements.forEach(element => { if (element && !validLayoutId(element.id)) element.id = newLayoutId(); });
+    const layoutRepeaterDefinitions = type => Object.entries(layoutElementCatalog[type]?.fields || {}).filter(([,field])=>field?.kind==='repeater');
+    function layoutStoredFieldShapeIssue(value, definition, location) {
+        if ((value === null || value === undefined) && !definition?.required) return null;
+        const kind = String(definition?.kind || 'plain_text');
+        if (kind === 'repeater') return Array.isArray(value) ? null : `${location} has a damaged saved list.`;
+        if (kind === 'boolean') return typeof value === 'boolean' ? null : `${location} has a damaged saved value.`;
+        if (kind === 'integer') return Number.isInteger(value) ? null : `${location} has a damaged saved number.`;
+        if (kind === 'uuid') return validLayoutId(value) ? null : `${location} has a damaged stable identity.`;
+        if (typeof value !== 'string') return `${location} has a damaged saved value.`;
+        if (['choice','approved_icon'].includes(kind) && !Object.prototype.hasOwnProperty.call(definition?.options || {},value)) {
+            return `${location} uses a choice this editor does not support.`;
+        }
+        return null;
+    }
+    function layoutSerializedByteLength(value) {
+        let serialized;
+        try {
+            serialized = JSON.stringify(value);
+            if (typeof serialized !== 'string') return Number.POSITIVE_INFINITY;
+            serialized = serialized.replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+            if (typeof TextEncoder === 'function') return new TextEncoder().encode(serialized).length;
+            return encodeURIComponent(serialized).replace(/%[0-9a-f]{2}|./gi,'x').length;
+        } catch (error) {
+            return Number.POSITIVE_INFINITY;
+        }
+    }
+    function layoutStoredBoundsIssue(value) {
+        if (!isLayoutObject(value)) return null;
+        if (layoutSerializedByteLength(value)>layoutStorageLimits.payloadBytes) return 'This visual layout is too large for this editor to save safely.';
+        if (!Array.isArray(value.rows)) return null;
+        if (value.rows.length>layoutStorageLimits.rows) return `This visual layout contains more than ${layoutStorageLimits.rows} rows.`;
+        for (let rowIndex=0; rowIndex<value.rows.length; rowIndex+=1) {
+            const columns=value.rows[rowIndex]?.columns;
+            if (!Array.isArray(columns)) continue;
+            if (columns.length>layoutStorageLimits.columns) return `Row ${rowIndex+1} contains more than ${layoutStorageLimits.columns} columns.`;
+            for (let columnIndex=0; columnIndex<columns.length; columnIndex+=1) {
+                const elements=columns[columnIndex]?.elements;
+                if (!Array.isArray(elements)) continue;
+                const location=`Row ${rowIndex+1}, column ${columnIndex+1}`;
+                if (elements.length>layoutStorageLimits.elementsPerColumn) return `${location} contains more content items than this editor can safely handle.`;
+                const typeCounts={};
+                for (let elementIndex=0; elementIndex<elements.length; elementIndex+=1) {
+                    const element=elements[elementIndex];
+                    if (!isLayoutObject(element) || !isStaticLayoutElementType(element.type)) continue;
+                    const definition=layoutElementCatalog[element.type];
+                    const type=String(element.type);
+                    typeCounts[type]=(typeCounts[type]||0)+1;
+                    const instanceLimit=Math.max(1,Math.min(layoutStorageLimits.elementsPerColumn,Math.floor(Number(definition?.safe_bounds?.max_instances_per_column)||layoutStorageLimits.elementsPerColumn)));
+                    if (typeCounts[type]>instanceLimit) return `${location} contains more than ${instanceLimit} ${String(definition?.label||type)} items.`;
+                    const byteLimit=Math.max(1,Math.floor(Number(definition?.safe_bounds?.max_serialized_bytes)||65536));
+                    if (layoutSerializedByteLength(element)>byteLimit) return `${location}, content item ${elementIndex+1} is too large for this editor to save safely.`;
+                }
+            }
+        }
+        return null;
+    }
+    function layoutStoredGlobalDesignIssue(value) {
+        for (const [key, choices] of Object.entries(layoutGlobalDesignChoices)) {
+            if (!Object.prototype.hasOwnProperty.call(value,key)) continue;
+            if (typeof value[key] !== 'string' || !Object.prototype.hasOwnProperty.call(choices || {},value[key])) {
+                return 'The visual layout contains a design choice this editor does not support.';
+            }
+        }
+        return null;
+    }
+    function inspectStoredLayout(content) {
+        const blocked = detail => ({blocked:true,detail,missingIdentities:[],usedIds:{},legacy:false});
+        if (!isLayoutObject(content)) return blocked('The saved visual layout is not in a usable format.');
+        const hasVersion = Object.prototype.hasOwnProperty.call(content,'schema_version');
+        const version = hasVersion ? content.schema_version : null;
+        if (hasVersion && version !== 1 && version !== 2) return blocked('This visual layout was created by an unsupported editor version.');
+        const legacy = !hasVersion || version === 1;
+        if (!Array.isArray(content.rows)) return blocked('The saved rows list is damaged or missing.');
+        const boundsIssue=layoutStoredBoundsIssue(content);
+        if (boundsIssue) return blocked(boundsIssue);
+        const allowedContentKeys = new Set(['schema_version','rows','section_presentation','section_spacing','content_alignment','column_count']);
+        if (Object.keys(content).some(key=>!allowedContentKeys.has(key))) return blocked('The visual layout contains a setting this editor does not support.');
+        const designIssue=layoutStoredGlobalDesignIssue(content);
+        if (designIssue) return blocked(designIssue);
+        const usedIds = {row:new Set(),column:new Set(),element:new Set(),repeater:new Set()};
+        const missingIdentities = [];
+        const identityIssue = (owner,key,location,kind) => {
+            const value = owner[key];
+            if (value === undefined || value === null || value === '') {
+                if (!legacy) return `${location} lost its stable identity.`;
+                missingIdentities.push({owner,key,kind});
+                return null;
+            }
+            if (!validLayoutId(value)) return `${location} has a damaged stable identity.`;
+            const normalized = String(value).toLowerCase();
+            if (usedIds[kind].has(normalized)) return `${location} repeats an identity already used by another ${kind==='repeater'?'list item':kind}.`;
+            usedIds[kind].add(normalized);
+            return null;
+        };
+        for (let rowIndex=0; rowIndex<content.rows.length; rowIndex+=1) {
+            const row = content.rows[rowIndex];
+            const rowLocation = `Row ${rowIndex+1}`;
+            if (!isLayoutObject(row)) return blocked(`${rowLocation} is not stored in a usable format.`);
+            if (Object.keys(row).some(key=>!['id','layout','width','background','spacing','columns'].includes(key))) return blocked(`${rowLocation} contains a setting this editor does not support.`);
+            const rowIdIssue = identityIssue(row,'id',rowLocation,'row');
+            if (rowIdIssue) return blocked(rowIdIssue);
+            if (!Object.prototype.hasOwnProperty.call(layoutPresetChoices,String(row.layout||''))) return blocked(`${rowLocation} uses a column design this editor does not support.`);
+            if (!Object.prototype.hasOwnProperty.call(layoutWidthChoices,String(row.width||''))) return blocked(`${rowLocation} uses a content width this editor does not support.`);
+            if (!Object.prototype.hasOwnProperty.call(layoutBackgroundChoices,String(row.background||''))) return blocked(`${rowLocation} uses a background this editor does not support.`);
+            if (!Object.prototype.hasOwnProperty.call(layoutSpacingChoices,String(row.spacing||''))) return blocked(`${rowLocation} uses spacing this editor does not support.`);
+            if (!Array.isArray(row.columns)) return blocked(`${rowLocation} has a damaged or missing columns list.`);
+            if (row.columns.length !== layoutPresetColumnCount(row.layout)) return blocked(`${rowLocation} does not have the number of columns required by its saved design.`);
+            for (let columnIndex=0; columnIndex<row.columns.length; columnIndex+=1) {
+                const column = row.columns[columnIndex];
+                const columnLocation = `${rowLocation}, column ${columnIndex+1}`;
+                if (!isLayoutObject(column)) return blocked(`${columnLocation} is not stored in a usable format.`);
+                if (Object.keys(column).some(key=>!['id','elements'].includes(key))) return blocked(`${columnLocation} contains a setting this editor does not support.`);
+                const columnIdIssue = identityIssue(column,'id',columnLocation,'column');
+                if (columnIdIssue) return blocked(columnIdIssue);
+                if (!Array.isArray(column.elements)) return blocked(`${columnLocation} has a damaged or missing content list.`);
+                if (column.elements.length>12) return blocked(`${columnLocation} contains more content items than this editor can safely handle.`);
+                for (let elementIndex=0; elementIndex<column.elements.length; elementIndex+=1) {
+                    const element = column.elements[elementIndex];
+                    const elementLocation = `${columnLocation}, content item ${elementIndex+1}`;
+                    if (!isLayoutObject(element)) return blocked(`${elementLocation} is not stored in a usable format.`);
+                    if (!isStaticLayoutElementType(element.type)) return blocked(`${elementLocation} uses a content type this editor does not support.`);
+                    const definition = layoutElementCatalog[element.type];
+                    const allowedFields = new Set(Array.isArray(definition?.allowed_fields) ? definition.allowed_fields : ['id','type',...Object.keys(definition?.fields||{})]);
+                    if (Object.keys(element).some(key=>!allowedFields.has(key))) return blocked(`${elementLocation} contains a setting this editor does not support.`);
+                    const elementIdIssue = identityIssue(element,'id',elementLocation,'element');
+                    if (elementIdIssue) return blocked(elementIdIssue);
+                    for (const [field,fieldDefinition] of Object.entries(definition?.fields || {})) {
+                        const fieldLocation = `${elementLocation}, ${String(fieldDefinition?.label||field).toLowerCase()}`;
+                        if (!Object.prototype.hasOwnProperty.call(element,field)) {
+                            if (fieldDefinition?.required) return blocked(`${fieldLocation} is missing from the saved content.`);
+                            continue;
+                        }
+                        const shapeIssue = layoutStoredFieldShapeIssue(element[field],fieldDefinition,fieldLocation);
+                        if (shapeIssue) return blocked(shapeIssue);
+                        if (fieldDefinition?.kind !== 'repeater') continue;
+                        const items = element[field];
+                        const maxItems = Number(fieldDefinition?.bounds?.max_items ?? 12);
+                        if (Number.isFinite(maxItems) && items.length>maxItems) return blocked(`${fieldLocation} contains more items than this editor can safely handle.`);
+                        const itemFields = fieldDefinition?.item_fields || {};
+                        const allowedItemFields = new Set(Object.keys(itemFields));
+                        const identity = String(fieldDefinition?.item_identity || 'id');
+                        for (let itemIndex=0; itemIndex<items.length; itemIndex+=1) {
+                            const item = items[itemIndex];
+                            const itemLocation = `${fieldLocation}, item ${itemIndex+1}`;
+                            if (!isLayoutObject(item)) return blocked(`${itemLocation} is not stored in a usable format.`);
+                            if (Object.keys(item).some(key=>!allowedItemFields.has(key))) return blocked(`${itemLocation} contains a setting this editor does not support.`);
+                            const itemIdIssue = identityIssue(item,identity,itemLocation,'repeater');
+                            if (itemIdIssue) return blocked(itemIdIssue);
+                            for (const [itemField,itemDefinition] of Object.entries(itemFields)) {
+                                if (itemField===identity && legacy && !Object.prototype.hasOwnProperty.call(item,itemField)) continue;
+                                if (!Object.prototype.hasOwnProperty.call(item,itemField)) {
+                                    if (itemDefinition?.required) return blocked(`${itemLocation} is missing ${String(itemDefinition?.label||itemField).toLowerCase()}.`);
+                                    continue;
+                                }
+                                const itemShapeIssue = layoutStoredFieldShapeIssue(item[itemField],itemDefinition,`${itemLocation}, ${String(itemDefinition?.label||itemField).toLowerCase()}`);
+                                if (itemShapeIssue) return blocked(itemShapeIssue);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return {blocked:false,detail:'',missingIdentities,usedIds,legacy};
+    }
+    function layoutLoadGuard(block) {
+        if (!block || block.type!=='layout') return {blocked:false,detail:'',legacy:false};
+        const content = block.content;
+        if (isLayoutObject(content) && layoutLoadGuards.has(content)) return layoutLoadGuards.get(content);
+        const guard = inspectStoredLayout(content);
+        if (!guard.blocked && guard.legacy) {
+            guard.missingIdentities.forEach(({owner,key,kind})=>{
+                let identity = newLayoutId();
+                while (guard.usedIds[kind].has(identity.toLowerCase())) identity = newLayoutId();
+                owner[key]=identity;
+                guard.usedIds[kind].add(identity.toLowerCase());
+            });
+            content.schema_version=2;
+            guard.upgraded=true;
+        }
+        if (isLayoutObject(content)) layoutLoadGuards.set(content,guard);
+        return guard;
+    }
+    const layoutIsBlocked = block => block?.type==='layout' && layoutLoadGuard(block).blocked;
+    function layoutRepairNotice(guard, compact=false) {
+        return `<div class="simple-validation-error simple-layout-load-guard" data-layout-load-guard role="alert"><strong>This visual layout is locked to protect its content</strong><span>${escapeHtml(guard?.detail||'Its saved structure needs repair.')}</span><p>Nothing was changed. Ask a website administrator to repair this section, then reload this page. ${compact?'You can safely work on other sections.':'Editing and saving this section stay unavailable until it is repaired.'}</p></div>`;
+    }
+    function ensureLayoutElementIds(element, regenerate = false) {
+        if (!element || !isStaticLayoutElementType(element.type)) return element;
+        if (regenerate || !validLayoutId(element.id)) element.id = newLayoutId();
+        let repeaters = layoutRepeaterDefinitions(element.type);
+        if (!repeaters.length && ['gallery','accordion','timeline'].includes(element.type)) repeaters = [['items',{item_identity:'id'}]];
+        repeaters.forEach(([field,definition]) => {
+            // Never replace malformed saved content merely because the editor rendered it.
+            // The inspector below explains the repair instead, and server validation keeps
+            // an unrelated save from silently discarding the original value.
+            if (!Array.isArray(element[field])) return;
+            const identity = String(definition?.item_identity || 'id');
+            element[field].forEach(item => {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return;
+                if (regenerate || !validLayoutId(item[identity])) item[identity] = newLayoutId();
             });
         });
-        return content.rows;
+        return element;
     }
-    const newLayoutRow = () => ({id:newLayoutId(),layout:'full',width:'standard',background:'default',spacing:'standard',columns:[{elements:[]}]});
+    function layoutRows(block) {
+        const guard = layoutLoadGuard(block);
+        return guard.blocked ? [] : block.content.rows;
+    }
+    const newLayoutRow = () => ({id:newLayoutId(),layout:'full',width:'standard',background:'default',spacing:'standard',columns:[{id:newLayoutId(),elements:[]} ]});
     function newLayoutElement(type) {
-        const normalized = layoutChoice(type, layoutElementChoices, 'heading');
-        const id = newLayoutId();
-        if (normalized === 'rich_text') return {id,type:normalized,body:'<p>Add your text here.</p>'};
-        if (normalized === 'image') return {id,type:normalized,path:'',alt:'',caption:''};
-        if (normalized === 'video') return {id,type:normalized,source_type:'upload',source:'',title:''};
-        if (normalized === 'button') return {id,type:normalized,label:'Learn more',url:'',style:'primary'};
-        if (normalized === 'divider') return {id,type:normalized};
-        if (normalized === 'spacer') return {id,type:normalized,size:'medium'};
-        return {id,type:'heading',text:'New heading',level:'h2'};
+        const normalized = isStaticLayoutElementType(type) ? String(type) : 'heading';
+        const defaults = clone(layoutElementCatalog[normalized]?.defaults || fallbackLayoutElementCatalog[normalized]?.defaults || {type:normalized});
+        defaults.type = normalized;
+        defaults.id = newLayoutId();
+        return ensureLayoutElementIds(defaults);
+    }
+    function newLayoutRepeaterItem(element, field = 'items') {
+        const definition = layoutElementCatalog[element?.type]?.fields?.[field];
+        const itemFields = definition?.item_fields || {};
+        const item = Object.fromEntries(Object.entries(itemFields).map(([name,itemDefinition])=>[name,clone(itemDefinition?.default ?? '')]));
+        if (!Object.keys(item).length) {
+            if (element?.type === 'gallery') Object.assign(item,{path:'',alt:'',caption:''});
+            else if (element?.type === 'accordion') Object.assign(item,{question:'Add a question',answer:'<p>Add the answer here.</p>'});
+            else Object.assign(item,{date_label:`Step ${(element?.items?.length||0)+1}`,heading:'New milestone',body:'',icon:''});
+        }
+        item[String(definition?.item_identity || 'id')] = newLayoutId();
+        return item;
     }
     function duplicateLayoutRow(row) {
         const copy = clone(row);
         copy.id = newLayoutId();
-        copy.columns.forEach(column => column.elements.forEach(element => { element.id = newLayoutId(); }));
+        copy.columns.forEach(column => { column.id = newLayoutId(); column.elements.forEach(element => ensureLayoutElementIds(element,true)); });
         return copy;
     }
     const safeManageUrl = value => /^(?:https?:\/\/|\/(?!\/))/i.test(String(value || '').trim()) ? String(value).trim() : '';
@@ -943,6 +1508,7 @@
         return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true,max:1200})}${selectField('layout','Giving layout',content.layout,{single_cta:'Single CTA',card_grid:'Card grid',banner:'Banner'}).replace('<select ','<select data-giving-rerender ')}${selectField('selection_mode','Giving options',content.selection_mode,{automatic:'All active giving options',manual:'Choose specific options and order'}).replace('<select ','<select data-giving-rerender ')}${chooser}${projectField}${textField('link_label','Button text for managed causes',content.link_label || 'Give now',{max:80})}${textField('empty_state','Message when no option is available',content.empty_state || '',{textarea:true,max:300})}<div class="simple-giving-preview"><strong>Destination preview:</strong> ${escapeHtml(behavior)}</div>${contentManagementLinks(block,'ways_to_give')}<p style="color:var(--muted);font-size:11px">Names, descriptions, images, and destinations come from Donation Causes, the Zakat page, and the Sponsor-a-Child page. No web addresses are entered here.</p>`;
     }
     const canEditBlockContent = block => permissions.edit && (!block?.is_reusable || permissions.editReusable);
+    const canEditLayoutBlock = block => canEditBlockContent(block) && block?.type === 'layout' && !layoutIsBlocked(block);
     const blockForEditorRender = block => block?.is_reusable && !permissions.editReusable
         ? {...block, content: JSON.parse(JSON.stringify(block.content || {}))}
         : block;
@@ -959,6 +1525,15 @@
             <div style="display:flex;gap:8px;margin-bottom:14px"><button class="simple-btn" type="button" data-hero-action="add"><i class="fa fa-plus"></i> Add slide</button>${slides.length > 1 ? '<button class="simple-btn simple-btn--danger" type="button" data-hero-action="remove">Remove slide</button>' : ''}</div>`;
     }
     const simpleIconChoices = {'':'No icon',people:'People',map:'Location',heart:'Care and support',school:'Education',health:'Health',water:'Water',leaf:'Environment',relief:'Emergency relief',child:'Children',report:'Report',financials:'Finance',security:'Safeguarding',policy:'Policy'};
+    function cardUsesFullRow(block, item, index, items) {
+        const explicitlySet = item && Object.prototype.hasOwnProperty.call(item, 'full_width') && item.full_width !== null;
+        if (explicitlySet) return item.full_width === true;
+
+        return block.type === 'cards'
+            && block.content?.variant === 'about-pillars'
+            && index === items.length - 1
+            && items.length % 2 === 1;
+    }
     function renderStatsEditor(block) {
         const items = Array.isArray(block.content?.items) ? block.content.items : [];
         const animationEnabled = block.content?.animation_enabled !== false;
@@ -972,13 +1547,14 @@
         const items = Array.isArray(block.content?.items) ? block.content.items : [];
         const isContributionList = block.type === 'cards' && block.content?.variant === 'contributions';
         const settings = {
-            cards:{item:'card',heading:'Card heading',body:isContributionList?'Checklist (one item per line)':'Description',image:'Image',imageAlt:'Describe the image for screen readers',icon:true,linkLabel:block.content?.variant !== 'initiatives',url:'Destination'},
+            cards:{item:'card',heading:'Card heading',body:isContributionList?'Checklist (one item per line)':'Description',image:'Image',imageAlt:'Describe the image for screen readers',icon:true,linkLabel:block.content?.variant !== 'initiatives',url:'Destination',fullWidth:true},
             partners:{item:'partner',heading:'Partner name',body:null,image:'Logo',imageAlt:'Logo description for screen readers',url:'Partner website'},
             faq:{item:'question',heading:'Question',body:'Answer',image:null,url:null},
             timeline:{item:'milestone',heading:'Milestone heading',itemEyebrow:'Step label or year',body:'Description',image:null,url:null},
             gallery:{item:'photo',heading:'Photo caption',body:null,image:'Photo',imageAlt:'Describe the photo for screen readers',url:'Optional destination'},
         }[block.type] || {item:'item',heading:'Heading',body:'Description',image:'Image',url:'Destination'};
-        return `${textField('eyebrow','Small heading',block.content?.eyebrow || '')}${textField('heading','Section heading',block.content?.heading || '')}${textField('body','Introduction',block.content?.body || '',{textarea:true})}<div class="simple-repeat">${items.map((item,index)=>`<details class="simple-repeat-item" ${index===0?'open':''}><summary><strong>${escapeHtml(item.heading || `${settings.item} ${index+1}`)}</strong></summary><div style="padding-top:11px"><div class="simple-repeat-head"><span></span><span class="simple-repeat-move"><button type="button" data-card-move="up" data-card-index="${index}" aria-label="Move ${settings.item} ${index+1} up" ${index===0?'disabled':''}>↑</button><button type="button" data-card-move="down" data-card-index="${index}" aria-label="Move ${settings.item} ${index+1} down" ${index===items.length-1?'disabled':''}>↓</button><button type="button" data-remove-card="${index}">Remove ${settings.item}</button></span></div>${settings.itemEyebrow?`<label class="simple-field"><span>${settings.itemEyebrow}</span><input data-card-index="${index}" data-card-key="eyebrow" value="${escapeHtml(item.eyebrow || '')}"></label>`:''}<label class="simple-field"><span>${settings.heading}</span><input data-card-index="${index}" data-card-key="heading" value="${escapeHtml(item.heading || '')}"></label>${settings.body?`<label class="simple-field"><span>${settings.body}</span><textarea data-card-index="${index}" data-card-key="body">${escapeHtml(item.body || '')}</textarea>${isContributionList?'<small>Press Enter after each checklist item. No JSON or special formatting is needed.</small>':''}</label>`:''}${settings.image ? imageField(`card-image-${index}`,settings.image,item.image || '').replace(`data-content-key="card-image-${index}"`,`data-card-index="${index}" data-card-key="image"`).replace(`data-choose-image="card-image-${index}"`,`data-choose-card-image="${index}"`) : ''}${settings.imageAlt ? `<label class="simple-field"><span>${settings.imageAlt}</span><input data-card-index="${index}" data-card-key="image_alt" maxlength="255" value="${escapeHtml(item.image_alt || item.heading || '')}"><small>Describe useful visual information; do not write “image of”.</small></label>` : ''}${settings.icon ? cardSelectField(index,'icon','Icon shown when there is no image',item.icon || '',simpleIconChoices) : ''}${settings.linkLabel ? `<label class="simple-field"><span>Link text</span><input data-card-index="${index}" data-card-key="link_label" maxlength="120" value="${escapeHtml(item.link_label || '')}" placeholder="Learn more"></label>` : ''}${settings.url ? linkField('url',settings.url,item.url || '',{cardIndex:index}) : ''}</div></details>`).join('')}</div><button class="simple-btn" type="button" id="add-card"><i class="fa fa-plus"></i> Add ${settings.item}</button>`;
+        const activeCardIndex = selectedCardIndex(block, items);
+        return `${textField('eyebrow','Small heading',block.content?.eyebrow || '')}${textField('heading','Section heading',block.content?.heading || '')}${textField('body','Introduction',block.content?.body || '',{textarea:true})}<div class="simple-repeat">${items.map((item,index)=>`<details class="simple-repeat-item${index===activeCardIndex?' is-current-card':''}" data-card-editor-index="${index}" ${index===activeCardIndex?'open':''}><summary><strong>${escapeHtml(item.heading || `${settings.item} ${index+1}`)}</strong>${index===activeCardIndex?'<span class="simple-repeat-current">Editing</span>':''}</summary><div style="padding-top:11px"><div class="simple-repeat-head"><span></span><span class="simple-repeat-move"><button type="button" data-card-move="up" data-card-index="${index}" aria-label="Move ${settings.item} ${index+1} up" ${index===0?'disabled':''}>↑</button><button type="button" data-card-move="down" data-card-index="${index}" aria-label="Move ${settings.item} ${index+1} down" ${index===items.length-1?'disabled':''}>↓</button><button type="button" data-remove-card="${index}">Remove ${settings.item}</button></span></div>${settings.itemEyebrow?`<label class="simple-field"><span>${settings.itemEyebrow}</span><input data-card-index="${index}" data-card-key="eyebrow" value="${escapeHtml(item.eyebrow || '')}"></label>`:''}<label class="simple-field"><span>${settings.heading}</span><input data-card-index="${index}" data-card-key="heading" value="${escapeHtml(item.heading || '')}"></label>${settings.body?`<label class="simple-field"><span>${settings.body}</span><textarea data-card-index="${index}" data-card-key="body">${escapeHtml(item.body || '')}</textarea>${isContributionList?'<small>Press Enter after each checklist item. No JSON or special formatting is needed.</small>':''}</label>`:''}${settings.image ? imageField(`card-image-${index}`,settings.image,item.image || '').replace(`data-content-key="card-image-${index}"`,`data-card-index="${index}" data-card-key="image"`).replace(`data-choose-image="card-image-${index}"`,`data-choose-card-image="${index}"`) : ''}${settings.imageAlt ? `<label class="simple-field"><span>${settings.imageAlt}</span><input data-card-index="${index}" data-card-key="image_alt" maxlength="255" value="${escapeHtml(item.image_alt || item.heading || '')}"><small>Describe useful visual information; do not write “image of”.</small></label>` : ''}${settings.icon ? cardSelectField(index,'icon','Icon shown when there is no image',item.icon || '',simpleIconChoices) : ''}${settings.fullWidth ? `<div class="simple-field"><span>Card width</span><label class="simple-check"><input type="checkbox" data-card-index="${index}" data-card-key="full_width" data-card-boolean ${cardUsesFullRow(block,item,index,items)?'checked':''}> Use the full row</label><small>Stretch this card across every column. The preview updates immediately.</small></div>` : ''}${settings.linkLabel ? `<label class="simple-field"><span>Link text</span><input data-card-index="${index}" data-card-key="link_label" maxlength="120" value="${escapeHtml(item.link_label || '')}" placeholder="Learn more"></label>` : ''}${settings.url ? linkField('url',settings.url,item.url || '',{cardIndex:index}) : ''}</div></details>`).join('')}</div><button class="simple-btn" type="button" id="add-card"><i class="fa fa-plus"></i> Add ${settings.item}</button>`;
     }
     function renderMediaTextEditor(block) {
         const content = block.content || (block.content = {});
@@ -1002,23 +1578,71 @@
         return `<label class="simple-field"><span>${escapeHtml(label)}</span>${options.textarea?`<textarea ${attributes}${limit}>${escapeHtml(value||'')}</textarea>`:`<input ${attributes} type="${options.type||'text'}" value="${escapeHtml(value||'')}"${limit}>`}${options.help?`<small>${escapeHtml(options.help)}</small>`:''}</label>`;
     };
     const layoutElementSelect = (rowIndex, columnIndex, elementIndex, field, label, value, choices, rerender = false) => `<label class="simple-field"><span>${escapeHtml(label)}</span><select data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}" ${rerender?'data-layout-rerender':''}>${layoutOptionsMarkup(choices,value)}</select></label>`;
-    function layoutElementLinkField(rowIndex, columnIndex, elementIndex, value) {
+    const layoutElementCheckbox = (rowIndex,columnIndex,elementIndex,field,label,value,rerender=false) => `<label class="simple-check"><input type="checkbox" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}" ${rerender?'data-layout-rerender':''} ${value===true?'checked':''}> ${escapeHtml(label)}</label>`;
+    const layoutFieldMax = (type,field,fallback) => Math.max(1,Number(layoutElementCatalog[type]?.fields?.[field]?.bounds?.max_length)||fallback);
+    function layoutElementLinkField(rowIndex, columnIndex, elementIndex, value, label = 'Destination') {
         const id = `simple-layout-link-${rowIndex}-${columnIndex}-${elementIndex}`;
         const known = linkTargets.some(target => target.url === value);
-        return `<div class="simple-field"><label for="${escapeHtml(id)}">Button destination</label><div class="simple-link-row"><select data-link-picker="${escapeHtml(id)}" aria-label="Choose button destination from existing pages"><option value="" ${value?'':'selected'}>Choose a page...</option>${linkTargets.map(target=>`<option value="${escapeHtml(target.url)}" ${target.url===value?'selected':''}>${escapeHtml(target.label)}</option>`).join('')}<option value="__custom" ${value&&!known?'selected':''}>Custom web address...</option></select><input id="${escapeHtml(id)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="url" value="${escapeHtml(value||'')}" placeholder="Or enter /page-name or https://..."></div></div>`;
+        return `<div class="simple-field"><label for="${escapeHtml(id)}">${escapeHtml(label)}</label><div class="simple-link-row"><select data-link-picker="${escapeHtml(id)}" aria-label="Choose ${escapeHtml(label)} from existing pages"><option value="" ${value?'':'selected'}>Choose a page...</option>${linkTargets.map(target=>`<option value="${escapeHtml(target.url)}" ${target.url===value?'selected':''}>${escapeHtml(target.label)}</option>`).join('')}<option value="__custom" ${value&&!known?'selected':''}>Custom web address...</option></select><input id="${escapeHtml(id)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="url" value="${escapeHtml(value||'')}" maxlength="2048" placeholder="Or enter /page-name or https://..."></div><small>Choose an existing page or enter a secure public address.</small></div>`;
+    }
+    function layoutElementRichField(rowIndex,columnIndex,elementIndex,field,label,value,max=20000) {
+        const editorId = `simple-layout-rich-${field}-${rowIndex}-${columnIndex}-${elementIndex}`;
+        return `<div class="simple-field"><span id="${editorId}-label">${escapeHtml(label)}</span><div class="simple-rich-toolbar" role="toolbar" aria-label="Format ${escapeHtml(label)}"><button type="button" data-layout-format="bold" data-layout-rich-editor="${editorId}" aria-label="Bold">B</button><button type="button" data-layout-format="italic" data-layout-rich-editor="${editorId}" aria-label="Italic"><em>I</em></button><button type="button" data-layout-format="insertUnorderedList" data-layout-rich-editor="${editorId}" aria-label="Bulleted list">•</button><button type="button" data-layout-format="createLink" data-layout-rich-editor="${editorId}" aria-label="Add link">↗</button></div><div id="${editorId}" class="simple-rich" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="${editorId}-label" data-layout-rich data-layout-rich-field="${escapeHtml(field)}" data-layout-rich-max="${max}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">${safeLayoutRichHtml(value||'')}</div></div>`;
+    }
+    function layoutElementImageField(rowIndex,columnIndex,elementIndex,field,label,value,options={}) {
+        const id = `simple-layout-image-${field}-${rowIndex}-${columnIndex}-${elementIndex}`;
+        const image = safeImage(value);
+        const help = options.help || 'Choose an approved image from the Media Library.';
+        const populated = String(value || '').trim() !== '';
+        const actions = permissions.edit ? `<span class="simple-image-actions"><button class="simple-btn" type="button" data-layout-choose-image data-layout-image-field="${escapeHtml(field)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">Choose</button>${options.clearable&&populated?`<button class="simple-btn simple-btn--danger" type="button" data-layout-clear-image data-layout-image-field="${escapeHtml(field)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}"><i class="fa fa-times" aria-hidden="true"></i> Remove image</button>`:''}</span>` : '';
+        return `<div class="simple-field"><label for="${id}">${escapeHtml(label)}</label><div class="simple-image-row"><input id="${id}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}" maxlength="2048" value="${escapeHtml(value||'')}" placeholder="Choose an image" readonly>${actions}</div>${image?`<div class="simple-layout-media-field__preview"><img src="${escapeHtml(image)}" alt=""><span>${escapeHtml(value)}</span></div>`:''}<small>${escapeHtml(help)}</small></div>`;
+    }
+    function layoutElementFileField(rowIndex,columnIndex,elementIndex,value) {
+        const id = `simple-layout-file-${rowIndex}-${columnIndex}-${elementIndex}`;
+        return `<div class="simple-field"><label for="${id}">Public file</label><div class="simple-image-row"><input id="${id}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="path" maxlength="2048" value="${escapeHtml(value||'')}" placeholder="Choose a PDF, Word, or Excel file" readonly>${permissions.edit?`<button class="simple-btn" type="button" data-layout-choose-file data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">Choose</button>`:''}</div>${value?`<div class="simple-layout-media-field__preview"><i class="fa fa-file-text-o" aria-hidden="true"></i><span>${escapeHtml(value)}</span></div>`:''}<small>Only approved public documents from the Media Library can be used.</small></div>`;
+    }
+    const layoutItemAttributes = (rowIndex,columnIndex,elementIndex,itemIndex,field) => `data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}" data-layout-item-field="${escapeHtml(field)}"`;
+    const layoutItemInput = (rowIndex,columnIndex,elementIndex,itemIndex,field,label,value,options={}) => `<label class="simple-field"><span>${escapeHtml(label)}</span>${options.textarea?`<textarea ${layoutItemAttributes(rowIndex,columnIndex,elementIndex,itemIndex,field)} maxlength="${options.max||2000}">${escapeHtml(value||'')}</textarea>`:`<input ${layoutItemAttributes(rowIndex,columnIndex,elementIndex,itemIndex,field)} value="${escapeHtml(value||'')}" maxlength="${options.max||500}">`}${options.help?`<small>${escapeHtml(options.help)}</small>`:''}</label>`;
+    const layoutItemSelect = (rowIndex,columnIndex,elementIndex,itemIndex,field,label,value,choices) => `<label class="simple-field"><span>${escapeHtml(label)}</span><select ${layoutItemAttributes(rowIndex,columnIndex,elementIndex,itemIndex,field)}>${layoutOptionsMarkup(choices,value)}</select></label>`;
+    function layoutItemRichField(rowIndex,columnIndex,elementIndex,itemIndex,field,label,value) {
+        const editorId = `simple-layout-item-rich-${rowIndex}-${columnIndex}-${elementIndex}-${itemIndex}-${field}`;
+        return `<div class="simple-field"><span id="${editorId}-label">${escapeHtml(label)}</span><div class="simple-rich-toolbar" role="toolbar" aria-label="Format ${escapeHtml(label)}"><button type="button" data-layout-format="bold" data-layout-rich-editor="${editorId}" aria-label="Bold">B</button><button type="button" data-layout-format="italic" data-layout-rich-editor="${editorId}" aria-label="Italic"><em>I</em></button><button type="button" data-layout-format="insertUnorderedList" data-layout-rich-editor="${editorId}" aria-label="Bulleted list">•</button></div><div id="${editorId}" class="simple-rich" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="${editorId}-label" data-layout-item-rich data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}" data-layout-item-field="${escapeHtml(field)}">${safeLayoutRichHtml(value||'')}</div></div>`;
+    }
+    function layoutRepeaterActions(rowIndex,columnIndex,elementIndex,itemIndex,itemCount,itemName) {
+        return `<div class="simple-layout-repeater-actions" role="group" aria-label="Arrange ${escapeHtml(itemName)} ${itemIndex+1}"><button type="button" data-layout-item-action="up" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}" aria-label="Move ${escapeHtml(itemName)} ${itemIndex+1} up" ${itemIndex===0?'disabled':''}>↑</button><button type="button" data-layout-item-action="down" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}" aria-label="Move ${escapeHtml(itemName)} ${itemIndex+1} down" ${itemIndex===itemCount-1?'disabled':''}>↓</button><button type="button" data-layout-item-action="remove" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}" aria-label="Remove ${escapeHtml(itemName)} ${itemIndex+1}"><i class="fa fa-trash" aria-hidden="true"></i></button></div>`;
+    }
+    function renderLayoutGalleryFields(element,rowIndex,columnIndex,elementIndex) {
+        if (!Array.isArray(element.items)) return '<div class="simple-validation-error" role="alert"><strong>This saved photo list needs repair.</strong> It has been left unchanged. Ask an administrator to repair it before saving this section.</div>';
+        const items = element.items;
+        const cards = items.map((item,itemIndex)=>{
+            const image = safeImage(item.path);
+            const inputId = `simple-layout-gallery-${rowIndex}-${columnIndex}-${elementIndex}-${itemIndex}`;
+            return `<details class="simple-layout-repeater-item" ${itemIndex===0?'open':''}><summary>Photo ${itemIndex+1}${item.caption?` · ${escapeHtml(String(item.caption).slice(0,28))}`:''}</summary><div class="simple-layout-repeater-item__body">${layoutRepeaterActions(rowIndex,columnIndex,elementIndex,itemIndex,items.length,'photo')}<div class="simple-field"><label for="${inputId}">Image</label><div class="simple-image-row"><input id="${inputId}" ${layoutItemAttributes(rowIndex,columnIndex,elementIndex,itemIndex,'path')} value="${escapeHtml(item.path||'')}" readonly placeholder="Choose an image">${permissions.edit?`<button class="simple-btn" type="button" data-layout-item-choose-image data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-item="${itemIndex}">Choose</button>`:''}</div>${image?`<div class="simple-layout-media-field__preview"><img src="${escapeHtml(image)}" alt=""><span>${escapeHtml(item.path)}</span></div>`:''}</div>${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'alt','Describe the image',item.alt||'',{max:255,help:'Describe useful visual information; leave empty only for a decorative image.'})}${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'caption','Caption (optional)',item.caption||'',{max:500})}</div></details>`;
+        }).join('');
+        return `<div class="simple-layout-repeater">${cards||'<p class="simple-layout-empty">No photos yet. Add the first photo below.</p>'}</div><button class="simple-btn simple-layout-add-item" type="button" data-layout-item-add="items" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" ${items.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add photo</button><p class="simple-layout-limit">${items.length} of 12 photos used</p><details class="simple-progressive"><summary>Gallery display options</summary><div>${layoutElementSelect(rowIndex,columnIndex,elementIndex,'columns','Photos per row',layoutChoice(element.columns,layoutGalleryColumnChoices,'3'),layoutGalleryColumnChoices)}${layoutElementCheckbox(rowIndex,columnIndex,elementIndex,'lightbox','Open larger photos when visitors select them',element.lightbox!==false)}</div></details>`;
+    }
+    function renderLayoutAccordionFields(element,rowIndex,columnIndex,elementIndex) {
+        if (!Array.isArray(element.items)) return '<div class="simple-validation-error" role="alert"><strong>This saved question list needs repair.</strong> It has been left unchanged. Ask an administrator to repair it before saving this section.</div>';
+        const items = element.items;
+        const cards = items.map((item,itemIndex)=>`<details class="simple-layout-repeater-item" ${itemIndex===0?'open':''}><summary>Question ${itemIndex+1}${item.question?` · ${escapeHtml(String(item.question).slice(0,28))}`:''}</summary><div class="simple-layout-repeater-item__body">${layoutRepeaterActions(rowIndex,columnIndex,elementIndex,itemIndex,items.length,'question')}${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'question','Question',item.question||'',{max:500})}${layoutItemRichField(rowIndex,columnIndex,elementIndex,itemIndex,'answer','Answer',item.answer||'')}</div></details>`).join('');
+        return `<div class="simple-layout-repeater">${cards||'<p class="simple-layout-empty">No questions yet. Add the first question below.</p>'}</div><button class="simple-btn simple-layout-add-item" type="button" data-layout-item-add="items" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" ${items.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add question</button><p class="simple-layout-limit">${items.length} of 12 questions used</p>${layoutElementCheckbox(rowIndex,columnIndex,elementIndex,'allow_one_open','Keep only one answer open at a time',element.allow_one_open===true)}`;
+    }
+    function renderLayoutTimelineFields(element,rowIndex,columnIndex,elementIndex) {
+        if (!Array.isArray(element.items)) return '<div class="simple-validation-error" role="alert"><strong>This saved timeline needs repair.</strong> It has been left unchanged. Ask an administrator to repair it before saving this section.</div>';
+        const items = element.items;
+        const cards = items.map((item,itemIndex)=>`<details class="simple-layout-repeater-item" ${itemIndex===0?'open':''}><summary>${element.style==='steps'?'Step':'Milestone'} ${itemIndex+1}${item.heading?` · ${escapeHtml(String(item.heading).slice(0,28))}`:''}</summary><div class="simple-layout-repeater-item__body">${layoutRepeaterActions(rowIndex,columnIndex,elementIndex,itemIndex,items.length,element.style==='steps'?'step':'milestone')}${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'date_label','Date or step number',item.date_label||'',{max:120})}${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'heading','Heading',item.heading||'',{max:300})}${layoutItemInput(rowIndex,columnIndex,elementIndex,itemIndex,'body','Description',item.body||'',{textarea:true,max:2000})}${layoutItemSelect(rowIndex,columnIndex,elementIndex,itemIndex,'icon','Icon (optional)',item.icon||'',layoutTimelineIconChoices)}</div></details>`).join('');
+        return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Display as',layoutChoice(element.style,layoutTimelineStyleChoices,'timeline'),layoutTimelineStyleChoices,true)}<div class="simple-layout-repeater">${cards||'<p class="simple-layout-empty">No milestones yet. Add the first one below.</p>'}</div><button class="simple-btn simple-layout-add-item" type="button" data-layout-item-add="items" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" ${items.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add ${element.style==='steps'?'step':'milestone'}</button><p class="simple-layout-limit">${items.length} of 12 items used</p>`;
     }
     function renderLayoutElementFields(element, rowIndex, columnIndex, elementIndex) {
-        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
+        const type = layoutElementType(element);
         if (type === 'heading') {
-            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'text','Heading text',element.text||'',{max:240})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'level','Heading size',layoutChoice(element.level,layoutHeadingChoices,'h2'),layoutHeadingChoices)}`;
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'text','Heading text',element.text||'',{max:layoutFieldMax(type,'text',500)})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'level','Heading size',layoutChoice(element.level,layoutHeadingChoices,'h2'),layoutHeadingChoices)}`;
         }
         if (type === 'rich_text') {
-            const editorId = `simple-layout-rich-${rowIndex}-${columnIndex}-${elementIndex}`;
-            return `<div class="simple-field"><span id="${editorId}-label">Formatted text</span><div class="simple-rich-toolbar" role="toolbar" aria-label="Format this text"><button type="button" data-layout-format="bold" data-layout-rich-editor="${editorId}" aria-label="Bold">B</button><button type="button" data-layout-format="italic" data-layout-rich-editor="${editorId}" aria-label="Italic"><em>I</em></button><button type="button" data-layout-format="insertUnorderedList" data-layout-rich-editor="${editorId}" aria-label="Bulleted list">•</button><button type="button" data-layout-format="createLink" data-layout-rich-editor="${editorId}" aria-label="Add link">↗</button></div><div id="${editorId}" class="simple-rich" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="${editorId}-label" data-layout-rich data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">${safeLayoutRichHtml(element.body||'')}</div></div>`;
+            return layoutElementRichField(rowIndex,columnIndex,elementIndex,'body','Formatted text',element.body||'',layoutFieldMax(type,'body',20000));
         }
         if (type === 'image') {
-            const pathId = `simple-layout-image-${rowIndex}-${columnIndex}-${elementIndex}`;
-            return `<div class="simple-field"><label for="${pathId}">Image</label><div class="simple-image-row"><input id="${pathId}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="path" maxlength="2048" value="${escapeHtml(element.path||'')}" placeholder="Choose an image" readonly>${permissions.edit?`<button class="simple-btn" type="button" data-layout-choose-image data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">Choose</button>`:''}</div><small>Choose an image from the Media Library.</small></div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'alt','Describe the image',element.alt||'',{max:255,help:'Describe useful visual information; do not write “image of”.'})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'caption','Caption (optional)',element.caption||'',{max:500})}`;
+            return `${layoutElementImageField(rowIndex,columnIndex,elementIndex,'path','Image',element.path||'')}${layoutElementInput(rowIndex,columnIndex,elementIndex,'alt','Describe the image',element.alt||'',{max:255,help:'Describe useful visual information; do not write “image of”.'})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'caption','Caption (optional)',element.caption||'',{max:1000})}`;
         }
         if (type === 'video') {
             const sourceType = layoutChoice(element.source_type,layoutVideoSourceChoices,'upload');
@@ -1028,29 +1652,65 @@
             return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'source_type','Video source',sourceType,layoutVideoSourceChoices,true)}<div class="simple-field"><label for="${sourceId}">${sourceLabel}</label><div class="simple-image-row"><input id="${sourceId}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="source" maxlength="2048" value="${escapeHtml(element.source||'')}" placeholder="${sourceType==='upload'?'Choose an uploaded MP4 or WebM video':'https://www.youtube.com/watch?v=...'}" ${sourceType==='upload'?'readonly':''}>${picker}</div>${sourceType==='upload'?'<small>Choose an MP4 or WebM video from the Media Library.</small>':''}</div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'title','Video title',element.title||'',{max:255,help:'A short, useful title for visitors using assistive technology.'})}`;
         }
         if (type === 'button') {
-            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','Button text',element.label||'',{max:80})}${layoutElementLinkField(rowIndex,columnIndex,elementIndex,element.url||'')}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Button style',layoutChoice(element.style,layoutButtonStyleChoices,'primary'),layoutButtonStyleChoices)}`;
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','Button text',element.label||'',{max:120})}${layoutElementLinkField(rowIndex,columnIndex,elementIndex,element.url||'','Button destination')}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Button style',layoutChoice(element.style,layoutButtonStyleChoices,'primary'),layoutButtonStyleChoices)}`;
+        }
+        if (type === 'icon') {
+            return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'icon','Symbol',layoutChoice(element.icon,layoutIconChoices,'heart'),layoutIconChoices)}${layoutElementCheckbox(rowIndex,columnIndex,elementIndex,'decorative','This icon is decorative',element.decorative!==false,true)}${element.decorative===false?layoutElementInput(rowIndex,columnIndex,elementIndex,'accessible_label','Meaning for screen readers',element.accessible_label||'',{max:120,help:'Briefly explain what this icon means.'}):''}<details class="simple-progressive"><summary>Icon appearance</summary><div>${layoutElementSelect(rowIndex,columnIndex,elementIndex,'size','Icon size',layoutChoice(element.size,layoutIconSizeChoices,'medium'),layoutIconSizeChoices)}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Icon appearance',layoutChoice(element.style,layoutIconStyleChoices,'soft'),layoutIconStyleChoices)}</div></details>`;
+        }
+        if (type === 'file') {
+            return `${layoutElementFileField(rowIndex,columnIndex,elementIndex,element.path||'')}${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','Download link text',element.label||'',{max:160})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'description','Short description (optional)',element.description||'',{textarea:true,max:500})}${layoutElementCheckbox(rowIndex,columnIndex,elementIndex,'open_in_new_tab','Open the file in a new tab',element.open_in_new_tab===true)}`;
+        }
+        if (type === 'card') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'heading','Card heading',element.heading||'',{max:300})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'body','Description',element.body||'',{textarea:true,max:2000})}<details class="simple-progressive" open><summary>Image or icon</summary><div>${layoutElementImageField(rowIndex,columnIndex,elementIndex,'image','Card image (optional)',element.image||'',{clearable:true})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'image_alt','Describe the card image',element.image_alt||'',{max:255})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'icon','Icon when there is no image',layoutChoice(element.icon,layoutCardIconChoices,''),layoutCardIconChoices)}</div></details><details class="simple-progressive"><summary>Optional label, link, and appearance</summary><div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'eyebrow','Small heading',element.eyebrow||'',{max:120})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'link_label','Link text',element.link_label||'',{max:120})}${layoutElementLinkField(rowIndex,columnIndex,elementIndex,element.url||'','Card destination')}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Card appearance',layoutChoice(element.style,layoutCardStyleChoices,'standard'),layoutCardStyleChoices)}</div></details>`;
+        }
+        if (type === 'stat') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'value','Number or value',element.value||'',{max:40})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','What this number means',element.label||'',{max:200})}<details class="simple-progressive"><summary>Icon and appearance</summary><div>${layoutElementSelect(rowIndex,columnIndex,elementIndex,'icon','Icon (optional)',layoutChoice(element.icon,layoutStatIconChoices,''),layoutStatIconChoices)}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'emphasis','Appearance',layoutChoice(element.emphasis,layoutStatEmphasisChoices,'standard'),layoutStatEmphasisChoices)}</div></details>`;
+        }
+        if (type === 'quote') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'quote','Quotation',element.quote||'',{textarea:true,max:2000})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'attribution','Name (optional)',element.attribution||'',{max:200})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'role','Role or organization (optional)',element.role||'',{max:300})}<details class="simple-progressive"><summary>Photograph and appearance</summary><div>${layoutElementImageField(rowIndex,columnIndex,elementIndex,'image','Photograph (optional)',element.image||'',{clearable:true})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'image_alt','Describe the photograph',element.image_alt||'',{max:255})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Quotation appearance',layoutChoice(element.style,layoutQuoteStyleChoices,'standard'),layoutQuoteStyleChoices)}</div></details>`;
+        }
+        if (type === 'gallery') return renderLayoutGalleryFields(element,rowIndex,columnIndex,elementIndex);
+        if (type === 'accordion') return renderLayoutAccordionFields(element,rowIndex,columnIndex,elementIndex);
+        if (type === 'timeline') return renderLayoutTimelineFields(element,rowIndex,columnIndex,elementIndex);
+        if (type === 'callout') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'heading','Heading',element.heading||'',{max:300})}${layoutElementRichField(rowIndex,columnIndex,elementIndex,'body','Message',element.body||'',5000)}<details class="simple-progressive"><summary>Optional label, icon, link, and appearance</summary><div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'eyebrow','Small heading',element.eyebrow||'',{max:120})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'icon','Icon (optional)',layoutChoice(element.icon,layoutCalloutIconChoices,''),layoutCalloutIconChoices)}${layoutElementInput(rowIndex,columnIndex,elementIndex,'link_label','Link text',element.link_label||'',{max:120})}${layoutElementLinkField(rowIndex,columnIndex,elementIndex,element.url||'','Link destination')}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'tone','Appearance',layoutChoice(element.tone,layoutCalloutToneChoices,'accent'),layoutCalloutToneChoices)}</div></details>`;
         }
         if (type === 'spacer') {
             return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'size','Amount of space',layoutChoice(element.size,layoutSpacerSizeChoices,'medium'),layoutSpacerSizeChoices)}<p class="simple-layout-element-note">Space automatically becomes smaller on phones.</p>`;
         }
         return '<p class="simple-layout-element-note">A divider adds a subtle horizontal line between nearby elements.</p>';
     }
-    function renderLayoutElementEditor(block, element, rowIndex, columnIndex, elementIndex, columnCount, columnElements) {
-        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
+    const layoutInspectorSelectAttributes = (kind,rowIndex,columnIndex=-1,elementIndex=-1) => `data-layout-inspector-select="${kind}" data-layout-row="${rowIndex}"${columnIndex>=0?` data-layout-column="${columnIndex}"`:''}${elementIndex>=0?` data-layout-element="${elementIndex}"`:''}`;
+    function layoutContextButton(kind, rowIndex, columnIndex, elementIndex, icon, title, detail, selected = false) {
+        return `<button type="button" class="simple-layout-context-button${selected?' is-selected':''}" ${layoutInspectorSelectAttributes(kind,rowIndex,columnIndex,elementIndex)}><i class="fa ${icon}" aria-hidden="true"></i><span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail)}</small></span></button>`;
+    }
+    function renderLayoutPresetChooser(rowIndex, selectedPreset) {
+        return `<fieldset class="simple-layout-preset-field"><legend>Choose the column layout</legend><div class="simple-layout-presets">${Object.entries(layoutPresetDefinitions).map(([preset,definition])=>{
+            const widths = Array.isArray(definition.widths) && definition.widths.length ? definition.widths : Array(definition.columns).fill(1);
+            const bars = widths.slice(0,definition.columns).map(width=>`<span style="flex:${Math.max(1,Math.min(12,Number(width)||1))}" aria-hidden="true"></span>`).join('');
+            return `<button type="button" class="simple-layout-preset" data-layout-preset="${escapeHtml(preset)}" data-layout-row="${rowIndex}" aria-label="Use ${escapeHtml(definition.label)}" aria-pressed="${preset===selectedPreset}"><span class="simple-layout-preset__bars">${bars}</span><span>${escapeHtml(definition.label)}</span></button>`;
+        }).join('')}</div><p class="simple-layout-element-note" style="margin-top:8px">Columns stack automatically on smaller screens.</p><details class="simple-layout-select-fallback"><summary>Choose from a list instead</summary>${layoutRowSelect(rowIndex,'layout','Column layout',selectedPreset,layoutPresetChoices,'Changing the layout keeps every content item whenever space allows.')}</details></fieldset>`;
+    }
+    function renderLayoutElementEditor(block, element, rowIndex, columnIndex, elementIndex, columnCount, columnElements, options = {}) {
+        const type = layoutElementType(element);
         const label = layoutElementName(element);
         const path = `${block.uuid}:${rowIndex}:${columnIndex}:${elementIndex}`;
-        const open = state.layoutOpenElement === path || (state.layoutOpenElement === null && rowIndex === 0 && columnIndex === 0 && elementIndex === 0);
-        const targetLeftFull = columnIndex > 0 && block.content.rows[rowIndex].columns[columnIndex-1].elements.length >= 12;
-        const targetRightFull = columnIndex < columnCount-1 && block.content.rows[rowIndex].columns[columnIndex+1].elements.length >= 12;
-        return `<article class="simple-layout-element-editor" aria-label="${escapeHtml(label)}">
-            <header class="simple-layout-element-header"><span class="simple-layout-element-title"><i class="fa ${layoutElementIcons[type]||'fa-square-o'}" aria-hidden="true"></i><span>${escapeHtml(label)}</span></span><span class="simple-layout-element-actions" role="group" aria-label="Arrange ${escapeHtml(layoutElementChoices[type])}">
+        const open = options.forceOpen || state.layoutOpenElement === path || (state.layoutOpenElement === null && rowIndex === 0 && columnIndex === 0 && elementIndex === 0);
+        const targetLeft = columnIndex > 0 ? block.content.rows[rowIndex].columns[columnIndex-1] : null;
+        const targetRight = columnIndex < columnCount-1 ? block.content.rows[rowIndex].columns[columnIndex+1] : null;
+        const targetLeftBlocked = !targetLeft || !layoutColumnCanAccept(targetLeft,type);
+        const targetRightBlocked = !targetRight || !layoutColumnCanAccept(targetRight,type);
+        const duplicateDisabled = !layoutColumnCanAccept({elements:columnElements},type);
+        const actions = options.contentOnly ? '' : `<span class="simple-layout-element-actions" role="group" aria-label="Arrange ${escapeHtml(layoutElementChoices[type])}">
                 <button type="button" data-layout-element-action="up" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} up" title="Move up" ${elementIndex===0?'disabled':''}>↑</button>
                 <button type="button" data-layout-element-action="down" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} down" title="Move down" ${elementIndex===columnElements.length-1?'disabled':''}>↓</button>
-                <button type="button" data-layout-element-action="left" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the previous column" title="Move to previous column" ${columnIndex===0||targetLeftFull?'disabled':''}>←</button>
-                <button type="button" data-layout-element-action="right" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the next column" title="Move to next column" ${columnIndex===columnCount-1||targetRightFull?'disabled':''}>→</button>
-                <button type="button" data-layout-element-action="duplicate" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Duplicate ${escapeHtml(layoutElementChoices[type])}" title="Duplicate" ${columnElements.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
+                <button type="button" data-layout-element-action="left" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the previous column" title="Move to previous column" ${targetLeftBlocked?'disabled':''}>←</button>
+                <button type="button" data-layout-element-action="right" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the next column" title="Move to next column" ${targetRightBlocked?'disabled':''}>→</button>
+                <button type="button" data-layout-element-action="duplicate" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Duplicate ${escapeHtml(layoutElementChoices[type])}" title="Duplicate" ${duplicateDisabled?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
                 <button type="button" data-layout-element-action="remove" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Delete ${escapeHtml(layoutElementChoices[type])}" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
-            </span></header>
+            </span>`;
+        return `<article class="simple-layout-element-editor" aria-label="${escapeHtml(label)}">
+            <header class="simple-layout-element-header"><span class="simple-layout-element-title"><i class="fa ${layoutElementIcons[type]||'fa-square-o'}" aria-hidden="true"></i><span>${escapeHtml(label)}</span></span>${actions}</header>
             <details class="simple-layout-element-details" data-layout-element-details="${path}" ${open?'open':''}><summary>Edit content</summary><div class="simple-layout-element-body">${renderLayoutElementFields(element,rowIndex,columnIndex,elementIndex)}</div></details>
         </article>`;
     }
@@ -1065,18 +1725,193 @@
                 <button type="button" data-layout-row-action="duplicate" data-layout-row="${rowIndex}" aria-label="Duplicate row ${rowIndex+1}" title="Duplicate row" ${rows.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
                 <button type="button" data-layout-row-action="remove" data-layout-row="${rowIndex}" aria-label="Delete row ${rowIndex+1}" title="Delete row"><i class="fa fa-trash" aria-hidden="true"></i></button>
             </span></header>
-            <div class="simple-layout-row-body"><div class="simple-layout-row-settings">${layoutRowSelect(rowIndex,'layout','Column layout',preset,layoutPresetChoices,'Changing the layout keeps elements whenever the new columns have enough room.')}${layoutRowSelect(rowIndex,'width','Content width',layoutChoice(row.width,layoutWidthChoices,'standard'),layoutWidthChoices)}${layoutRowSelect(rowIndex,'background','Background',layoutChoice(row.background,layoutBackgroundChoices,'default'),layoutBackgroundChoices)}${layoutRowSelect(rowIndex,'spacing','Space inside row',layoutChoice(row.spacing,layoutSpacingChoices,'standard'),layoutSpacingChoices)}</div>
+            <div class="simple-layout-row-body">${renderLayoutPresetChooser(rowIndex,preset)}<div class="simple-layout-row-settings">${layoutRowSelect(rowIndex,'width','Content width',layoutChoice(row.width,layoutWidthChoices,'standard'),layoutWidthChoices)}${layoutRowSelect(rowIndex,'background','Background',layoutChoice(row.background,layoutBackgroundChoices,'default'),layoutBackgroundChoices)}${layoutRowSelect(rowIndex,'spacing','Space inside row',layoutChoice(row.spacing,layoutSpacingChoices,'standard'),layoutSpacingChoices)}</div>
                 <div class="simple-layout-columns-editor">${columns.map((column,columnIndex)=>{
                     const elements = Array.isArray(column.elements) ? column.elements : (column.elements=[]);
-                    const selectId = `simple-layout-add-${rowIndex}-${columnIndex}`;
-                    return `<section class="simple-layout-column-editor" aria-labelledby="simple-layout-column-${rowIndex}-${columnIndex}"><header class="simple-layout-column-head"><strong id="simple-layout-column-${rowIndex}-${columnIndex}">Column ${columnIndex+1}</strong><small>${elements.length} of 12 elements</small></header>${elements.length?elements.map((element,elementIndex)=>renderLayoutElementEditor(block,element,rowIndex,columnIndex,elementIndex,columnCount,elements)).join(''):'<p class="simple-layout-empty">This column is empty. Add its first element below.</p>'}<div class="simple-layout-add"><label class="simple-layout-sr" for="${selectId}">Element type for row ${rowIndex+1}, column ${columnIndex+1}</label><select id="${selectId}" data-layout-new-element>${layoutOptionsMarkup(layoutElementChoices,'heading')}</select><button class="simple-btn" type="button" data-layout-add-element data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" aria-label="Add selected element to row ${rowIndex+1}, column ${columnIndex+1}" ${elements.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add element</button></div></section>`;
+                    return `<section class="simple-layout-column-editor" aria-labelledby="simple-layout-column-${rowIndex}-${columnIndex}"><header class="simple-layout-column-head"><strong id="simple-layout-column-${rowIndex}-${columnIndex}">Column ${columnIndex+1}</strong><small>${elements.length} of 12 content items</small></header>${elements.length?elements.map((element,elementIndex)=>renderLayoutElementEditor(block,element,rowIndex,columnIndex,elementIndex,columnCount,elements)).join(''):'<p class="simple-layout-empty">This column is empty. Add its first content item below.</p>'}${renderLayoutAddToColumn(rowIndex,columnIndex,elements.length)}</section>`;
                 }).join('')}</div>
             </div>
         </section>`;
     }
+    function renderLayoutAddToColumn(rowIndex, columnIndex, elementCount) {
+        return `<div class="simple-layout-add"><button class="simple-btn" type="button" data-layout-open-picker data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" aria-label="Choose content for row ${rowIndex+1}, column ${columnIndex+1}" ${elementCount>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add content</button></div>`;
+    }
+    const layoutColumnElementLimit = layoutStorageLimits.elementsPerColumn;
+    function layoutElementInstanceLimit(type) {
+        return Math.max(1,Math.min(layoutColumnElementLimit,Number(layoutElementCatalog[type]?.safe_bounds?.max_instances_per_column)||layoutColumnElementLimit));
+    }
+    const layoutColumnElements = column => Array.isArray(column?.elements) ? column.elements : [];
+    const layoutColumnTypeCount = (column,type) => layoutColumnElements(column).filter(element=>String(element?.type||'')===String(type||'')).length;
+    function layoutColumnCapacityIssue(column,type,additional=1) {
+        const amount = Math.max(0,Math.floor(Number(additional)||0));
+        if (layoutColumnElements(column).length+amount>layoutColumnElementLimit) return 'total';
+        if (layoutColumnTypeCount(column,type)+amount>layoutElementInstanceLimit(type)) return 'type';
+        return null;
+    }
+    const layoutColumnCanAccept = (column,type,additional=1) => layoutColumnCapacityIssue(column,type,additional)===null;
+    function layoutColumnIsWithinCapacity(column) {
+        const elements = layoutColumnElements(column);
+        if (elements.length>layoutColumnElementLimit) return false;
+        const counts = new Map();
+        elements.forEach(element=>{const type=String(element?.type||'');counts.set(type,(counts.get(type)||0)+1)});
+        return [...counts].every(([type,count])=>count<=layoutElementInstanceLimit(type));
+    }
+    function layoutCapacityForType(column,type) {
+        return Math.max(0,Math.min(
+            layoutColumnElementLimit-layoutColumnElements(column).length,
+            layoutElementInstanceLimit(type)-layoutColumnTypeCount(column,type)
+        ));
+    }
+    function layoutCollapseAssignments(columns,displaced) {
+        if (!displaced.length) return [];
+        const types=[...new Set(displaced.map(element=>String(element?.type||'')))].sort();
+        const sourceNode=0,typeOffset=1,columnOffset=typeOffset+types.length,sinkNode=columnOffset+columns.length,nodeCount=sinkNode+1;
+        const residual=Array.from({length:nodeCount},()=>Array(nodeCount).fill(0));
+        const addCapacity=(from,to,capacity)=>{residual[from][to]+=Math.max(0,Math.floor(Number(capacity)||0))};
+        types.forEach((type,typeIndex)=>{
+            addCapacity(sourceNode,typeOffset+typeIndex,displaced.filter(element=>String(element?.type||'')===type).length);
+            columns.forEach((column,columnIndex)=>addCapacity(typeOffset+typeIndex,columnOffset+columnIndex,layoutCapacityForType(column,type)));
+        });
+        columns.forEach((column,columnIndex)=>addCapacity(columnOffset+columnIndex,sinkNode,layoutColumnElementLimit-layoutColumnElements(column).length));
+        let flow=0;
+        while (flow<displaced.length) {
+            const parent=Array(nodeCount).fill(-1),queue=[sourceNode];
+            parent[sourceNode]=sourceNode;
+            for(let cursor=0;cursor<queue.length&&parent[sinkNode]===-1;cursor+=1){
+                const node=queue[cursor];
+                for(let next=0;next<nodeCount;next+=1){if(parent[next]===-1&&residual[node][next]>0){parent[next]=node;queue.push(next);if(next===sinkNode)break}}
+            }
+            if(parent[sinkNode]===-1)break;
+            let amount=Number.POSITIVE_INFINITY;
+            for(let node=sinkNode;node!==sourceNode;node=parent[node])amount=Math.min(amount,residual[parent[node]][node]);
+            for(let node=sinkNode;node!==sourceNode;node=parent[node]){residual[parent[node]][node]-=amount;residual[node][parent[node]]+=amount}
+            flow+=amount;
+        }
+        if(flow!==displaced.length)return null;
+        const quotas=new Map(types.map((type,typeIndex)=>[type,columns.map((column,columnIndex)=>layoutCapacityForType(column,type)-residual[typeOffset+typeIndex][columnOffset+columnIndex])]));
+        const assignments=displaced.map(element=>{
+            const available=quotas.get(String(element?.type||''))||[],columnIndex=available.findIndex(count=>count>0);
+            if(columnIndex>=0)available[columnIndex]-=1;
+            return columnIndex;
+        });
+        return assignments.some(columnIndex=>columnIndex<0)?null:assignments;
+    }
+    function planLayoutColumnCollapse(currentColumns,desiredCount) {
+        const source = Array.isArray(currentColumns) ? currentColumns : [];
+        const base = source.slice(0,desiredCount).map(column=>({...column,elements:[...layoutColumnElements(column)]}));
+        if (!base.length || base.some(column=>!layoutColumnIsWithinCapacity(column))) return null;
+        const displaced = source.slice(desiredCount).flatMap(column=>layoutColumnElements(column));
+        const assignments=layoutCollapseAssignments(base,displaced);
+        if(!assignments)return null;
+        displaced.forEach((element,index)=>base[assignments[index]].elements.push(element));
+        return base;
+    }
+    function elementPickerContext() {
+        const target = state.elementPickerTarget;
+        const block = target ? state.blocks.find(item=>item.uuid===target.blockUuid) : null;
+        const rows = block ? layoutRows(block) : [];
+        const column = rows[target?.row]?.columns?.[target?.column];
+        return {target,block,rows,column};
+    }
+    function renderElementPicker() {
+        const picker = document.getElementById('simple-element-picker');
+        const fallback = document.getElementById('simple-element-picker-select');
+        const location = document.getElementById('element-picker-location');
+        if (!picker || !fallback) return;
+        const {target,column} = elementPickerContext();
+        const elements = Array.isArray(column?.elements) ? column.elements : [];
+        if (location && target) location.textContent = `Adding to Row ${target.row+1}, Column ${target.column+1}`;
+        picker.innerHTML = layoutElementCatalogGroups.map(group=>{
+            const cards = group.elements.filter(definition=>definition?.mode==='static' && isStaticLayoutElementType(definition.type)).map(definition=>{
+                const limit = layoutElementInstanceLimit(definition.type);
+                const issue = layoutColumnCapacityIssue(column,definition.type);
+                const disabled = issue!==null;
+                return `<button type="button" class="simple-element-card" data-layout-pick-element="${escapeHtml(definition.type)}" ${disabled?'disabled':''}><i class="fa ${escapeHtml(definition.icon||'fa-square-o')}" aria-hidden="true"></i><span><strong>${escapeHtml(definition.label||definition.type)}</strong><small>${escapeHtml(definition.description||'Add this content to the page.')}</small>${disabled?`<em>${elements.length>=12?'This column is full':`Limit of ${limit} reached`}</em>`:''}</span></button>`;
+            }).join('');
+            return cards ? `<section class="simple-element-category" aria-labelledby="simple-element-category-${escapeHtml(group.category)}"><header class="simple-element-category__head"><i class="fa ${escapeHtml(group.icon||'fa-square-o')}" aria-hidden="true"></i><div><h3 id="simple-element-category-${escapeHtml(group.category)}">${escapeHtml(group.label)}</h3>${group.description?`<p>${escapeHtml(group.description)}</p>`:''}</div></header><div class="simple-element-cards">${cards}</div></section>` : '';
+        }).join('');
+        fallback.innerHTML = layoutElementCatalogGroups.flatMap(group=>group.elements).filter(definition=>definition?.mode==='static'&&isStaticLayoutElementType(definition.type)).map(definition=>{
+            const disabled = !layoutColumnCanAccept(column,definition.type);
+            return `<option value="${escapeHtml(definition.type)}" ${disabled?'disabled':''}>${escapeHtml(groupedElementLabel(definition))}</option>`;
+        }).join('');
+        document.getElementById('simple-element-picker-add').disabled = !fallback.options.length || fallback.selectedOptions[0]?.disabled;
+    }
+    const groupedElementLabel = definition => `${definition.label || definition.type} — ${definition.category === 'media_files' ? 'Media and files' : definition.category === 'highlights' ? 'Highlights' : 'Text and layout'}`;
+    function openElementPicker(block,rowIndex,columnIndex) {
+        if (!canEditLayoutBlock(block)) return;
+        const column = layoutRows(block)[rowIndex]?.columns?.[columnIndex];
+        if (!column) return;
+        if (column.elements.length>=12) return notify('This column already contains twelve content items.');
+        state.selected=block.uuid;
+        state.expandedSections.add(block.uuid);
+        assignLayoutSelection(block,'column',rowIndex,columnIndex);
+        state.elementPickerTarget={blockUuid:block.uuid,row:rowIndex,column:columnIndex};
+        renderAll();
+        renderElementPicker();
+        const modal=document.getElementById('element-picker-modal');
+        state.modalReturn=document.querySelector(`[data-layout-open-picker][data-layout-row="${rowIndex}"][data-layout-column="${columnIndex}"]`) || document.getElementById('simple-inspector-title');
+        modal.hidden=false;
+        modal.querySelector('[data-layout-pick-element]:not([disabled]),.simple-close')?.focus();
+    }
+    function addLayoutElementFromPicker(type) {
+        const {target,block,column} = elementPickerContext();
+        if (!target || !canEditLayoutBlock(block) || !column || !isStaticLayoutElementType(type)) return;
+        const limit = layoutElementInstanceLimit(type);
+        const issue = layoutColumnCapacityIssue(column,type);
+        if (issue==='total') return notify('This column already contains twelve content items.');
+        if (issue==='type') return notify(`This column can contain up to ${limit} ${layoutElementChoices[type]} ${limit===1?'item':'items'}.`);
+        recordHistory();
+        column.elements.push(newLayoutElement(type));
+        assignLayoutSelection(block,'element',target.row,target.column,column.elements.length-1);
+        state.validationError=null;
+        markDirty('block');
+        document.getElementById('element-picker-modal').hidden=true;
+        state.elementPickerTarget=null;
+        state.modalReturn=null;
+        renderAll();
+        restoreSelectionFocus('inspector');
+    }
+    function renderLayoutContentOverview(block, rows) {
+        const items = [];
+        rows.forEach((row,rowIndex)=>row.columns.slice(0,layoutPresetColumnCount(row.layout)).forEach((column,columnIndex)=>(column.elements||[]).forEach((element,elementIndex)=>{
+            const type = layoutElementType(element);
+            items.push(layoutContextButton('element',rowIndex,columnIndex,elementIndex,layoutElementIcons[type]||'fa-square-o',layoutElementName(element),`Row ${rowIndex+1} · Column ${columnIndex+1}`));
+        })));
+        return `<div class="simple-layout-guide"><strong>Edit page content</strong>Choose an item below, in Page Structure, or directly in the preview. Layout controls stay hidden until you choose Customize layout.</div><div class="simple-layout-content-overview">${items.length?items.join(''):'<p class="simple-layout-empty">This section has no content yet. Choose Customize layout to add its first row and column.</p>'}</div>`;
+    }
+    function renderLayoutStructureOverview(block, rows) {
+        return `<div class="simple-layout-guide"><strong>Customize rows and columns</strong>Select a row to change its column design, or use the plus buttons in the preview to insert a row exactly where you need it.</div><div class="simple-layout-context-list">${rows.map((row,rowIndex)=>layoutContextButton('row',rowIndex,-1,-1,'fa-columns',`Row ${rowIndex+1}`,`${layoutPresetChoices[row.layout]} · ${layoutPresetColumnCount(row.layout)} ${layoutPresetColumnCount(row.layout)===1?'column':'columns'}`)).join('')}</div>${rows.length?'':'<p class="simple-layout-empty">This visual layout has no rows yet.</p>'}<button class="simple-btn simple-layout-add-row" type="button" id="simple-layout-add-row" ${rows.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add row</button><p class="simple-layout-limit">${rows.length} of 12 rows used</p>`;
+    }
+    function renderLayoutRowContext(block, selection, rows) {
+        const {row,rowIndex} = selection;
+        const preset = layoutChoice(row.layout,layoutPresetChoices,'full');
+        const count = layoutPresetColumnCount(preset);
+        return `<p class="simple-layout-selected-summary"><strong>Editing Row ${rowIndex+1}</strong><br>${escapeHtml(layoutPresetChoices[preset])}. Choose a visual layout or select a column to work with its content.</p><div class="simple-layout-context-actions" role="group" aria-label="Arrange row ${rowIndex+1}"><button class="simple-btn" type="button" data-layout-row-action="up" data-layout-row="${rowIndex}" ${rowIndex===0?'disabled':''}>↑ Move up</button><button class="simple-btn" type="button" data-layout-row-action="down" data-layout-row="${rowIndex}" ${rowIndex===rows.length-1?'disabled':''}>↓ Move down</button><button class="simple-btn" type="button" data-layout-row-action="duplicate" data-layout-row="${rowIndex}" ${rows.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i> Duplicate</button><button class="simple-btn simple-btn--danger" type="button" data-layout-row-action="remove" data-layout-row="${rowIndex}"><i class="fa fa-trash" aria-hidden="true"></i> Delete</button></div>${renderLayoutPresetChooser(rowIndex,preset)}<div class="simple-layout-row-settings">${layoutRowSelect(rowIndex,'width','Content width',layoutChoice(row.width,layoutWidthChoices,'standard'),layoutWidthChoices)}${layoutRowSelect(rowIndex,'background','Background',layoutChoice(row.background,layoutBackgroundChoices,'default'),layoutBackgroundChoices)}${layoutRowSelect(rowIndex,'spacing','Space inside row',layoutChoice(row.spacing,layoutSpacingChoices,'standard'),layoutSpacingChoices)}</div><h3 style="font:700 14px 'Literata',serif">Columns in this row</h3><div class="simple-layout-context-list">${row.columns.slice(0,count).map((column,columnIndex)=>layoutContextButton('column',rowIndex,columnIndex,-1,'fa-columns',`Column ${columnIndex+1}`,`${(column.elements||[]).length} ${(column.elements||[]).length===1?'item':'items'}`)).join('')}</div>`;
+    }
+    function renderLayoutColumnContext(block, selection) {
+        const {row,column,rowIndex,columnIndex} = selection;
+        const elements = Array.isArray(column.elements) ? column.elements : (column.elements=[]);
+        return `<p class="simple-layout-selected-summary"><strong>Editing Column ${columnIndex+1}</strong><br>Row ${rowIndex+1} · ${elements.length} of 12 content items</p><div class="simple-layout-context-list">${elements.map((element,elementIndex)=>{const type=layoutElementType(element);return layoutContextButton('element',rowIndex,columnIndex,elementIndex,layoutElementIcons[type]||'fa-square-o',layoutElementName(element),layoutElementChoices[type]);}).join('')}</div>${elements.length?'':'<p class="simple-layout-empty">This column is empty. Add its first content item below.</p>'}${renderLayoutAddToColumn(rowIndex,columnIndex,elements.length)}`;
+    }
+    function renderLayoutElementContext(block, selection) {
+        const {row,column,element,rowIndex,columnIndex,elementIndex} = selection;
+        const elements = Array.isArray(column.elements) ? column.elements : [];
+        return `<p class="simple-layout-selected-summary"><strong>Editing ${escapeHtml(layoutElementChoices[layoutElementType(element)])}</strong><br>Row ${rowIndex+1} · Column ${columnIndex+1}. Changes appear in the preview immediately.</p>${renderLayoutElementEditor(block,element,rowIndex,columnIndex,elementIndex,layoutPresetColumnCount(row.layout),elements,{contentOnly:state.editorMode==='content',forceOpen:true})}`;
+    }
     function renderLayoutEditor(block) {
+        const guard=layoutLoadGuard(block);
+        if (guard.blocked) return layoutRepairNotice(guard);
         const rows = layoutRows(block);
-        return `<div class="simple-layout-guide"><strong>Build with rows and columns</strong>Choose a column layout for each row, then place headings, text, media, buttons, dividers, and space inside its columns. Arrow buttons provide full keyboard control.</div>${rows.map((row,rowIndex)=>renderLayoutRowEditor(block,row,rowIndex,rows)).join('')}${rows.length? '':'<p class="simple-layout-empty">This visual layout has no rows yet.</p>'}<button class="simple-btn simple-layout-add-row" type="button" id="simple-layout-add-row" ${rows.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add row</button><p class="simple-layout-limit">${rows.length} of 12 rows used</p>`;
+        const selection = resolveLayoutSelection(block);
+        if (state.editorMode === 'content') {
+            if (selection.kind === 'element') return renderLayoutElementContext(block,selection);
+            if (selection.kind === 'column') return `<div class="simple-layout-guide"><strong>Add content</strong>Choose what you want to place in Row ${selection.rowIndex+1}, Column ${selection.columnIndex+1}. You can keep the safe column layout unchanged.</div>${renderLayoutColumnContext(block,selection)}`;
+            return renderLayoutContentOverview(block,rows);
+        }
+        if (selection.kind === 'row') return renderLayoutRowContext(block,selection,rows);
+        if (selection.kind === 'column') return renderLayoutColumnContext(block,selection);
+        if (selection.kind === 'element') return renderLayoutElementContext(block,selection);
+        return renderLayoutStructureOverview(block,rows);
     }
     function renderEssentialFields(block) {
         const content = block.content || (block.content = {});
@@ -1100,10 +1935,24 @@
     function renderInspector() {
         const block = current();
         if (!block) { document.getElementById('simple-inspector-title').textContent='Edit section'; document.getElementById('simple-inspector-type').textContent='No section selected'; inspector.innerHTML='<div class="simple-empty" style="padding:50px 10px">Add a section or select one from the page preview.</div>'; return; }
+        const layoutBlocked = layoutIsBlocked(block);
         const sharedContentReadOnly = block.is_reusable && !permissions.editReusable;
         const editorBlock = blockForEditorRender(block);
-        document.getElementById('simple-inspector-title').textContent = block.label || typeLabels[block.type] || 'Edit section';
-        document.getElementById('simple-inspector-type').textContent = typeLabels[block.type] || block.type;
+        const layoutSelection = layoutBlocked ? {kind:'section',row:null,column:null,element:null,rowIndex:-1,columnIndex:-1,elementIndex:-1} : resolveLayoutSelection(block);
+        let inspectorTitle = block.label || typeLabels[block.type] || 'Edit section';
+        let inspectorType = typeLabels[block.type] || block.type;
+        if (block.type === 'layout' && layoutSelection.kind === 'row') {
+            inspectorTitle = `Row ${layoutSelection.rowIndex+1}`;
+            inspectorType = `${layoutPresetColumnCount(layoutSelection.row.layout)} ${layoutPresetColumnCount(layoutSelection.row.layout)===1?'column':'columns'}`;
+        } else if (block.type === 'layout' && layoutSelection.kind === 'column') {
+            inspectorTitle = `Column ${layoutSelection.columnIndex+1}`;
+            inspectorType = `Row ${layoutSelection.rowIndex+1}`;
+        } else if (block.type === 'layout' && layoutSelection.kind === 'element') {
+            inspectorTitle = layoutElementName(layoutSelection.element);
+            inspectorType = layoutElementChoices[layoutElementType(layoutSelection.element)];
+        }
+        document.getElementById('simple-inspector-title').textContent = inspectorTitle;
+        document.getElementById('simple-inspector-type').textContent = inspectorType;
         const duplicateAction = permissions.create ? '<button class="simple-btn" type="button" id="simple-duplicate"><i class="fa fa-copy"></i> Duplicate section</button>' : '';
         const deleteAction = permissions.delete ? '<button class="simple-btn simple-btn--danger" type="button" id="simple-delete"><i class="fa fa-trash"></i> Move to trash</button>' : '';
         const actionGroup = duplicateAction || deleteAction ? `<div class="simple-option-actions">${duplicateAction}${deleteAction}</div>` : '';
@@ -1115,16 +1964,20 @@
                 ? `<div class="simple-shared"><strong>Shared section:</strong> Saving content changes updates “${escapeHtml(block.reusable_name || block.label)}” on every page using it. ${permissions.edit?'<button class="simple-btn" type="button" id="simple-detach-reusable"><i class="fa fa-unlink" aria-hidden="true"></i> Detach for this page</button>':''}</div>`
                 : `<div class="simple-shared"><strong>Shared content is read only for your role.</strong> Ask a Reusable Sections editor to update “${escapeHtml(block.reusable_name || block.label)}” everywhere, or detach a local copy that you can edit only on this page. ${permissions.edit?'<button class="simple-btn" type="button" id="simple-detach-reusable"><i class="fa fa-unlink" aria-hidden="true"></i> Detach for local editing</button>':''}</div>`)
             : '';
-        const reusableAction = !block.is_reusable && permissions.create
+        const reusableAction = !layoutBlocked && layoutSelection.kind === 'section' && !block.is_reusable && permissions.create
             ? '<div class="simple-shared"><strong>Reuse this section on other pages.</strong> Save it to the shared library with a clear name. <button class="simple-btn" type="button" id="simple-promote-reusable"><i class="fa fa-share-alt" aria-hidden="true"></i> Save as reusable</button></div>'
             : '';
+        const validationNotice = state.validationError?.blockUuid === block.uuid
+            ? `<div class="simple-validation-error" id="simple-validation-error" role="alert" tabindex="-1"><strong>Please fix this content</strong>${escapeHtml(state.validationError.message)}</div>`
+            : '';
         const sectionDesignControls = block.type === 'layout' ? '' : `${renderSectionPresentationField(editorBlock)}${renderSectionDesignFields(editorBlock)}`;
-        inspector.innerHTML = `${sharedNotice}${reusableAction}${sectionDesignControls}${renderEssentialFields(editorBlock)}<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label><fieldset class="simple-placement-options"><legend>Device visibility and schedule</legend><label class="simple-check"><input id="simple-block-desktop" type="checkbox" ${block.show_on_desktop !== false ? 'checked' : ''}> Show on desktop</label><label class="simple-check"><input id="simple-block-mobile" type="checkbox" ${block.show_on_mobile !== false ? 'checked' : ''}> Show on mobile</label><label class="simple-field"><span>Show from (optional)</span><input id="simple-block-available-from" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_from))}"></label><label class="simple-field"><span>Show until (optional)</span><input id="simple-block-available-until" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_until))}"><small>Leave both dates empty to keep the section available whenever the page is published.</small></label></fieldset>${actionGroup}${editNote}</div></details>`;
-        if (!permissions.edit || sharedContentReadOnly) {
+        const sectionOptions = !layoutBlocked && (block.type !== 'layout' || layoutSelection.kind === 'section') ? `<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label><fieldset class="simple-placement-options"><legend>Device visibility and schedule</legend><label class="simple-check"><input id="simple-block-desktop" type="checkbox" ${block.show_on_desktop !== false ? 'checked' : ''}> Show on desktop</label><label class="simple-check"><input id="simple-block-mobile" type="checkbox" ${block.show_on_mobile !== false ? 'checked' : ''}> Show on mobile</label><label class="simple-field"><span>Show from (optional)</span><input id="simple-block-available-from" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_from))}"></label><label class="simple-field"><span>Show until (optional)</span><input id="simple-block-available-until" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_until))}"><small>Leave both dates empty to keep the section available whenever the page is published.</small></label></fieldset>${actionGroup}${editNote}</div></details>` : '';
+        inspector.innerHTML = `${validationNotice}${sharedNotice}${reusableAction}${sectionDesignControls}${renderEssentialFields(editorBlock)}${sectionOptions}`;
+        if (!permissions.edit || sharedContentReadOnly || layoutBlocked) {
             inspector.querySelectorAll('input,textarea,select,button,[contenteditable="true"]').forEach(control => {
-                const pageOnlyControl = sharedContentReadOnly && control.matches('#simple-block-enabled,#simple-block-desktop,#simple-block-mobile,#simple-block-available-from,#simple-block-available-until,#simple-duplicate,#simple-delete,#simple-detach-reusable,[data-hero-nav]');
-                const permittedReadOnlyAction = !permissions.edit && control.matches('#simple-duplicate,#simple-delete,#simple-promote-reusable,[data-hero-nav]');
-                if (pageOnlyControl || permittedReadOnlyAction) return;
+                const pageOnlyControl = sharedContentReadOnly && control.matches('#simple-block-enabled,#simple-block-desktop,#simple-block-mobile,#simple-block-available-from,#simple-block-available-until,#simple-duplicate,#simple-delete,#simple-detach-reusable,[data-hero-nav],[data-layout-inspector-select]');
+                const permittedReadOnlyAction = !permissions.edit && control.matches('#simple-duplicate,#simple-delete,#simple-promote-reusable,[data-hero-nav],[data-layout-inspector-select]');
+                if (!layoutBlocked && (pageOnlyControl || permittedReadOnlyAction)) return;
                 if (control.hasAttribute('contenteditable')) control.removeAttribute('contenteditable');
                 else control.disabled = true;
             });
@@ -1135,20 +1988,14 @@
         const preset = layoutChoice(nextPreset, layoutPresetChoices, 'full');
         const desiredCount = layoutPresetColumnCount(preset);
         const currentColumns = Array.isArray(row.columns) ? row.columns : [];
-        currentColumns.forEach(column => { if (!Array.isArray(column.elements)) column.elements = []; });
         if (currentColumns.length > desiredCount) {
-            const kept = currentColumns.slice(0,desiredCount);
-            const displaced = currentColumns.slice(desiredCount).flatMap(column => column.elements);
-            const freeSlots = kept.reduce((total,column) => total + Math.max(0,12-column.elements.length),0);
-            if (displaced.length > freeSlots) return false;
-            displaced.forEach(element => {
-                const destination = [...kept].reverse().find(column => column.elements.length < 12);
-                destination.elements.push(element);
-            });
-            row.columns = kept;
+            const plannedColumns = planLayoutColumnCollapse(currentColumns,desiredCount);
+            if (!plannedColumns) return false;
+            row.columns = plannedColumns;
         } else {
-            while (currentColumns.length < desiredCount) currentColumns.push({elements:[]});
-            row.columns = currentColumns;
+            const expandedColumns = currentColumns.map(column=>({...column,elements:[...layoutColumnElements(column)]}));
+            while (expandedColumns.length < desiredCount) expandedColumns.push({id:newLayoutId(),elements:[]});
+            row.columns = expandedColumns;
         }
         row.layout = preset;
         return true;
@@ -1161,6 +2008,7 @@
         return {rowIndex,columnIndex,elementIndex,row:rows[rowIndex],column:rows[rowIndex]?.columns?.[columnIndex],element:rows[rowIndex]?.columns?.[columnIndex]?.elements?.[elementIndex]};
     }
     function wireLayoutEditor(block) {
+        if (layoutIsBlocked(block)) return;
         const rows = layoutRows(block);
         inspector.querySelectorAll('[data-layout-element-details]').forEach(details => details.addEventListener('toggle', () => {
             if (details.open) state.layoutOpenElement = details.dataset.layoutElementDetails;
@@ -1183,9 +2031,24 @@
             row[field] = layoutChoice(control.value,choices,field === 'spacing'?'standard':field === 'background'?'default':'standard');
             markDirty('block'); renderPreview();
         }));
+        inspector.querySelectorAll('[data-layout-preset]').forEach(button => button.addEventListener('click', () => {
+            const rowIndex = Number(button.dataset.layoutRow);
+            const row = rows[rowIndex];
+            if (!row || button.dataset.layoutPreset === row.layout) return;
+            const oldPreset = row.layout;
+            recordHistory();
+            if (!reshapeLayoutRow(row,button.dataset.layoutPreset)) {
+                state.undo.pop();
+                row.layout = oldPreset;
+                updateSaveState();
+                return notify('This design has no room for every content item. Move some items before reducing its columns.');
+            }
+            assignLayoutSelection(block,'row',rowIndex);
+            markDirty('block'); renderAll(); restoreSelectionFocus('inspector');
+        }));
         inspector.querySelector('#simple-layout-add-row')?.addEventListener('click', () => {
             if (rows.length >= 12) return notify('A visual layout can contain up to twelve rows.');
-            recordHistory(); rows.push(newLayoutRow()); state.layoutOpenElement = null; markDirty('block'); renderAll();
+            recordHistory(); rows.push(newLayoutRow()); assignLayoutSelection(block,'row',rows.length-1); markDirty('block'); renderAll(); restoreSelectionFocus('inspector');
         });
         inspector.querySelectorAll('[data-layout-row-action]').forEach(button => button.addEventListener('click', () => {
             const index = Number(button.dataset.layoutRow);
@@ -1198,23 +2061,13 @@
             }
             if (action === 'duplicate') {
                 if (rows.length >= 12) return notify('A visual layout can contain up to twelve rows.');
-                recordHistory(); rows.splice(index+1,0,duplicateLayoutRow(rows[index])); state.layoutOpenElement = null; markDirty('block'); renderAll(); return;
+                recordHistory(); rows.splice(index+1,0,duplicateLayoutRow(rows[index])); assignLayoutSelection(block,'row',index+1); markDirty('block'); renderAll(); return;
             }
             if (action === 'remove') {
-                recordHistory(); rows.splice(index,1); state.layoutOpenElement = null; markDirty('block'); renderAll(); notify('Row removed. Use Undo if you need it back.');
+                recordHistory(); rows.splice(index,1); assignLayoutSelection(block); markDirty('block'); renderAll(); notify('Row removed. Use Undo if you need it back.');
             }
         }));
-        inspector.querySelectorAll('[data-layout-add-element]').forEach(button => button.addEventListener('click', () => {
-            const rowIndex = Number(button.dataset.layoutRow);
-            const columnIndex = Number(button.dataset.layoutColumn);
-            const column = rows[rowIndex]?.columns?.[columnIndex];
-            const select = button.closest('.simple-layout-add')?.querySelector('[data-layout-new-element]');
-            if (!column || !select) return;
-            if (column.elements.length >= 12) return notify('A column can contain up to twelve elements.');
-            recordHistory(); column.elements.push(newLayoutElement(select.value));
-            state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${column.elements.length-1}`;
-            markDirty('block'); renderAll();
-        }));
+        inspector.querySelectorAll('[data-layout-open-picker]').forEach(button => button.addEventListener('click', () => openElementPicker(block,Number(button.dataset.layoutRow),Number(button.dataset.layoutColumn))));
         inspector.querySelectorAll('[data-layout-element-action]').forEach(button => button.addEventListener('click', () => {
             const {rowIndex,columnIndex,elementIndex,row,column,element} = layoutElementFromControl(block,button);
             if (!row || !column || !element) return;
@@ -1223,35 +2076,69 @@
                 const target = action === 'up' ? elementIndex-1 : elementIndex+1;
                 if (target < 0 || target >= column.elements.length) return;
                 recordHistory(); [column.elements[elementIndex],column.elements[target]] = [column.elements[target],column.elements[elementIndex]];
-                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${target}`; markDirty('block'); renderAll(); return;
+                assignLayoutSelection(block,'element',rowIndex,columnIndex,target); markDirty('block'); renderAll(); return;
             }
             if (action === 'left' || action === 'right') {
                 const targetColumnIndex = action === 'left' ? columnIndex-1 : columnIndex+1;
                 const targetColumn = row.columns[targetColumnIndex];
-                if (!targetColumn || targetColumn.elements.length >= 12) return notify('The adjacent column is full.');
+                const type = layoutElementType(element);
+                const issue = targetColumn ? layoutColumnCapacityIssue(targetColumn,type) : 'total';
+                if (issue==='total') return notify('The adjacent column is full.');
+                if (issue==='type') return notify(`The adjacent column can contain up to ${layoutElementInstanceLimit(type)} ${layoutElementChoices[type]} ${layoutElementInstanceLimit(type)===1?'item':'items'}.`);
                 recordHistory(); column.elements.splice(elementIndex,1); targetColumn.elements.push(element);
-                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${targetColumnIndex}:${targetColumn.elements.length-1}`; markDirty('block'); renderAll(); return;
+                assignLayoutSelection(block,'element',rowIndex,targetColumnIndex,targetColumn.elements.length-1); markDirty('block'); renderAll(); return;
             }
             if (action === 'duplicate') {
-                if (column.elements.length >= 12) return notify('A column can contain up to twelve elements.');
-                recordHistory(); const copy = clone(element); copy.id = newLayoutId(); column.elements.splice(elementIndex+1,0,copy);
-                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${elementIndex+1}`; markDirty('block'); renderAll(); return;
+                const type=layoutElementType(element),limit=layoutElementInstanceLimit(type),issue=layoutColumnCapacityIssue(column,type);
+                if (issue==='total') return notify('A column can contain up to twelve content items.');
+                if (issue==='type') return notify(`This column can contain up to ${limit} ${layoutElementChoices[type]} ${limit===1?'item':'items'}.`);
+                recordHistory(); const copy = clone(element); copy.id = newLayoutId(); ensureLayoutElementIds(copy,true); column.elements.splice(elementIndex+1,0,copy);
+                assignLayoutSelection(block,'element',rowIndex,columnIndex,elementIndex+1); markDirty('block'); renderAll(); return;
             }
             if (action === 'remove') {
-                recordHistory(); column.elements.splice(elementIndex,1); state.layoutOpenElement = ''; markDirty('block'); renderAll(); notify('Element removed. Use Undo if you need it back.');
+                recordHistory(); column.elements.splice(elementIndex,1); assignLayoutSelection(block,'column',rowIndex,columnIndex); markDirty('block'); renderAll(); notify('Content item removed. Use Undo if you need it back.');
             }
         }));
         inspector.querySelectorAll('[data-layout-element-field]').forEach(control => control.addEventListener('input', () => {
             const {element} = layoutElementFromControl(block,control);
             if (!element) return;
-            element[control.dataset.layoutElementField] = control.value;
+            element[control.dataset.layoutElementField] = control.type==='checkbox' ? control.checked : control.value;
+            state.validationError=null;
             markDirty('block'); renderPreview();
         }));
         inspector.querySelectorAll('[data-layout-rerender]').forEach(control => control.addEventListener('change', () => { renderInspector(); renderPreview(); }));
         inspector.querySelectorAll('[data-layout-rich]').forEach(editor => editor.addEventListener('input', () => {
             const {element} = layoutElementFromControl(block,editor);
             if (!element) return;
-            element.body = editor.innerHTML; markDirty('block'); renderPreview();
+            element[editor.dataset.layoutRichField||'body'] = editor.innerHTML; state.validationError=null; markDirty('block'); renderPreview();
+        }));
+        inspector.querySelectorAll('[data-layout-item-field]').forEach(control => control.addEventListener('input', () => {
+            const {element}=layoutElementFromControl(block,control),item=element?.items?.[Number(control.dataset.layoutItem)];
+            if(!item)return;
+            item[control.dataset.layoutItemField]=control.type==='checkbox'?control.checked:control.value;
+            state.validationError=null;markDirty('block');renderPreview();
+        }));
+        inspector.querySelectorAll('[data-layout-item-rich]').forEach(editor => editor.addEventListener('input', () => {
+            const {element}=layoutElementFromControl(block,editor),item=element?.items?.[Number(editor.dataset.layoutItem)];
+            if(!item)return;
+            item[editor.dataset.layoutItemField]=editor.innerHTML;state.validationError=null;markDirty('block');renderPreview();
+        }));
+        inspector.querySelectorAll('[data-layout-item-add]').forEach(button=>button.addEventListener('click',()=>{
+            const {element}=layoutElementFromControl(block,button),field=button.dataset.layoutItemAdd||'items';
+            if(!element)return;
+            if(!Array.isArray(element[field]))element[field]=[];
+            const max=Math.max(1,Number(layoutElementCatalog[element.type]?.fields?.[field]?.bounds?.max_items)||12);
+            if(element[field].length>=max)return notify(`This list can contain up to ${max} items.`);
+            recordHistory();element[field].push(newLayoutRepeaterItem(element,field));state.validationError=null;markDirty('block');renderAll();
+        }));
+        inspector.querySelectorAll('[data-layout-item-action]').forEach(button=>button.addEventListener('click',()=>{
+            const {element}=layoutElementFromControl(block,button),items=element?.items,itemIndex=Number(button.dataset.layoutItem),action=button.dataset.layoutItemAction;
+            if(!Array.isArray(items)||!items[itemIndex])return;
+            if(action==='up'||action==='down'){
+                const target=action==='up'?itemIndex-1:itemIndex+1;if(target<0||target>=items.length)return;
+                recordHistory();[items[itemIndex],items[target]]=[items[target],items[itemIndex]];
+            }else if(action==='remove'){recordHistory();items.splice(itemIndex,1);}
+            state.validationError=null;markDirty('block');renderAll();
         }));
         inspector.querySelectorAll('[data-layout-format]').forEach(button => button.addEventListener('click', event => {
             event.preventDefault();
@@ -1263,11 +2150,26 @@
             } else document.execCommand(button.dataset.layoutFormat,false,null);
             editor?.dispatchEvent(new Event('input',{bubbles:true}));
         }));
-        inspector.querySelectorAll('[data-layout-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:'path'})));
+        inspector.querySelectorAll('[data-layout-clear-image]').forEach(button => button.addEventListener('click', () => {
+            const {element} = layoutElementFromControl(block,button);
+            const field = button.dataset.layoutImageField || 'image';
+            if (!element || !['card','quote'].includes(layoutElementType(element)) || field !== 'image' || !String(element[field] || '').trim()) return;
+            recordHistory();
+            element[field] = '';
+            state.validationError = null;
+            markDirty('block');
+            renderInspector();
+            renderPreview();
+            notify('Image removed. Use Undo if you need it back.');
+        }));
+        inspector.querySelectorAll('[data-layout-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:button.dataset.layoutImageField||'path'})));
+        inspector.querySelectorAll('[data-layout-item-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'layout-item',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),item:Number(button.dataset.layoutItem),key:'path'})));
         inspector.querySelectorAll('[data-layout-choose-video]').forEach(button => button.addEventListener('click', () => openVideoMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:'source'})));
+        inspector.querySelectorAll('[data-layout-choose-file]').forEach(button => button.addEventListener('click', () => openDocumentMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:'path'})));
     }
     function wireInspector(block) {
         inspector.querySelectorAll('[data-hero-nav]').forEach(button => button.addEventListener('click', () => { state.heroSlide += button.dataset.heroNav === 'next' ? 1 : -1; renderInspector(); renderPreview(); }));
+        inspector.querySelectorAll('[data-layout-inspector-select]').forEach(button => button.addEventListener('click', () => selectLayoutNode(block,button.dataset.layoutInspectorSelect,Number(button.dataset.layoutRow),Number(button.dataset.layoutColumn ?? -1),Number(button.dataset.layoutElement ?? -1),{focus:'inspector'})));
         if (permissions.edit) {
             const enabled = inspector.querySelector('#simple-block-enabled');
             if (enabled) {
@@ -1341,7 +2243,7 @@
             inspector.querySelectorAll('[data-rich-key]').forEach(editor => editor.addEventListener('input', () => { block.content[editor.dataset.richKey] = editor.innerHTML; markDirty('block'); renderPreview(); }));
             inspector.querySelectorAll('[data-slide-key]').forEach(input => input.addEventListener('input', () => { const key=input.dataset.slideKey;heroSlides(block)[state.heroSlide][key] = key==='overlay_opacity'?Number(input.value):input.value; markDirty('block'); renderPreview(); }));
             inspector.querySelectorAll('[data-stat-index]').forEach(input => input.addEventListener('input', () => { block.content.items[Number(input.dataset.statIndex)][input.dataset.statKey] = input.value; markDirty('block'); renderPreview(); }));
-            inspector.querySelectorAll('[data-card-index]').forEach(input => input.addEventListener('input', () => { block.content.items[Number(input.dataset.cardIndex)][input.dataset.cardKey] = input.value; markDirty('block'); renderPreview(); }));
+            inspector.querySelectorAll('[data-card-index]').forEach(input => input.addEventListener('input', () => { block.content.items[Number(input.dataset.cardIndex)][input.dataset.cardKey] = input.type === 'checkbox' ? input.checked : input.value; markDirty('block'); renderPreview(); }));
             inspector.querySelectorAll('[data-link-picker]').forEach(picker => picker.addEventListener('change', () => { if(picker.dataset.historyReady!=='true')recordHistory(); if (picker.value === '__custom') return document.getElementById(picker.dataset.linkPicker)?.focus(); const input=document.getElementById(picker.dataset.linkPicker); if(!input)return; input.value=picker.value; input.dispatchEvent(new Event('input',{bubbles:true})); }));
             inspector.querySelectorAll('[data-format]').forEach(button => button.addEventListener('click', () => { const editor=inspector.querySelector('[contenteditable]'); editor?.focus(); if(button.dataset.format==='createLink'){const url=prompt('Enter the link address:','https://');if(url)document.execCommand('createLink',false,url)}else document.execCommand(button.dataset.format,false,null); editor?.dispatchEvent(new Event('input',{bubbles:true})); }));
             inspector.querySelectorAll('[data-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:button.dataset.slideImage?'slide':'content',key:button.dataset.chooseImage})));
@@ -1365,9 +2267,9 @@
             inspector.querySelector('#simple-stat-animation-enabled')?.addEventListener('change',event=>{const options=inspector.querySelector('#simple-stat-animation-options');if(options)options.disabled=!event.target.checked});
             inspector.querySelectorAll('[data-stat-move]').forEach(button=>button.addEventListener('click',()=>{const index=Number(button.dataset.statIndex);const target=button.dataset.statMove==='up'?index-1:index+1;if(target<0||target>=block.content.items.length)return;recordHistory();[block.content.items[index],block.content.items[target]]=[block.content.items[target],block.content.items[index]];markDirty('block');renderAll()}));
             inspector.querySelectorAll('[data-remove-stat]').forEach(button=>button.addEventListener('click',()=>{recordHistory();block.content.items.splice(Number(button.dataset.removeStat),1);markDirty('block');renderAll()}));
-            inspector.querySelector('#add-card')?.addEventListener('click',()=>{const items=block.content.items||(block.content.items=[]);if(items.length>=60)return notify('A section can contain up to sixty items.');recordHistory();const labels={partners:'New partner',faq:'New question',timeline:'New milestone',gallery:'New photo'};const heading=labels[block.type]||'New card';items.push({eyebrow:'',heading,body:'',image:'',image_alt:['cards','partners','gallery'].includes(block.type)?heading:'',icon:'',url:'',link_label:'Learn more'});markDirty('block');renderAll()});
-            inspector.querySelectorAll('[data-card-move]').forEach(button=>button.addEventListener('click',()=>{const index=Number(button.dataset.cardIndex);const target=button.dataset.cardMove==='up'?index-1:index+1;if(target<0||target>=block.content.items.length)return;recordHistory();[block.content.items[index],block.content.items[target]]=[block.content.items[target],block.content.items[index]];markDirty('block');renderAll()}));
-            inspector.querySelectorAll('[data-remove-card]').forEach(button=>button.addEventListener('click',()=>{recordHistory();block.content.items.splice(Number(button.dataset.removeCard),1);markDirty('block');renderAll()}));
+            inspector.querySelector('#add-card')?.addEventListener('click',()=>{const items=block.content.items||(block.content.items=[]);if(items.length>=60)return notify('A section can contain up to sixty items.');recordHistory();const labels={partners:'New partner',faq:'New question',timeline:'New milestone',gallery:'New photo'};const heading=labels[block.type]||'New card';items.push({eyebrow:'',heading,body:'',image:'',image_alt:['cards','partners','gallery'].includes(block.type)?heading:'',icon:'',url:'',link_label:'Learn more'});state.cardIndexes[block.uuid]=items.length-1;markDirty('block');renderAll();revealSelectedCard(items.length-1)});
+            inspector.querySelectorAll('[data-card-move]').forEach(button=>button.addEventListener('click',()=>{const index=Number(button.dataset.cardIndex);const target=button.dataset.cardMove==='up'?index-1:index+1;if(target<0||target>=block.content.items.length)return;recordHistory();const selected=selectedCardIndex(block,block.content.items);[block.content.items[index],block.content.items[target]]=[block.content.items[target],block.content.items[index]];if(selected===index)state.cardIndexes[block.uuid]=target;else if(selected===target)state.cardIndexes[block.uuid]=index;markDirty('block');renderAll();revealSelectedCard(selectedCardIndex(block,block.content.items))}));
+            inspector.querySelectorAll('[data-remove-card]').forEach(button=>button.addEventListener('click',()=>{const index=Number(button.dataset.removeCard);recordHistory();const selected=selectedCardIndex(block,block.content.items);block.content.items.splice(index,1);state.cardIndexes[block.uuid]=index<selected?selected-1:Math.min(selected,Math.max(block.content.items.length-1,0));markDirty('block');renderAll();if(block.content.items.length)revealSelectedCard(selectedCardIndex(block,block.content.items))}));
             inspector.querySelector('#simple-block-label')?.addEventListener('input',event=>{block.label=event.target.value;markDirty('block');renderList();renderPreview()});
         }
         inspector.querySelector('#simple-duplicate')?.addEventListener('click',duplicateSection);
@@ -1376,13 +2278,51 @@
         inspector.querySelector('#simple-detach-reusable')?.addEventListener('click',detachReusableSection);
     }
 
+    const navigatorKey = (block,kind='section',rowId='',columnId='',elementId='') => [block.uuid,kind,rowId,columnId,elementId].join('|');
+    function renderNavigatorElement(block,row,column,element,rowIndex,columnIndex,elementIndex,selection) {
+        const type = layoutElementType(element);
+        const rowId = layoutRowIdentity(row,rowIndex);
+        const columnId = layoutColumnIdentity(row,column,columnIndex,rowIndex);
+        const elementId = layoutElementIdentity(row,column,element,elementIndex,rowIndex,columnIndex);
+        const key = navigatorKey(block,'element',rowId,columnId,elementId);
+        const selected = block.uuid === state.selected && selection.kind === 'element' && state.selectedLayout.elementId === elementId;
+        return `<li><button type="button" class="simple-navigator-node${selected?' is-selected':''}" data-navigator-kind="element" data-navigator-key="${escapeHtml(key)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-current="${selected?'true':'false'}"><i class="fa ${layoutElementIcons[type]||'fa-square-o'}" aria-hidden="true"></i><span>${escapeHtml(layoutElementName(element))}</span></button></li>`;
+    }
+    function renderLayoutNavigator(block) {
+        if (!state.expandedSections.has(block.uuid)) return '';
+        const guard=layoutLoadGuard(block);
+        if (guard.blocked) return `<div class="simple-navigator-tree simple-layout-load-guard" data-layout-load-guard><strong>Layout locked</strong><small>${escapeHtml(guard.detail)} Nothing was changed.</small></div>`;
+        const rows = layoutRows(block);
+        const selection = block.uuid === state.selected ? resolveLayoutSelection(block) : {kind:'section'};
+        if (state.editorMode === 'content') {
+            const elements = rows.flatMap((row,rowIndex)=>row.columns.slice(0,layoutPresetColumnCount(row.layout)).flatMap((column,columnIndex)=>(column.elements||[]).map((element,elementIndex)=>renderNavigatorElement(block,row,column,element,rowIndex,columnIndex,elementIndex,selection))));
+            return `<ul class="simple-navigator-tree simple-navigator-content-tree" id="simple-navigator-${escapeHtml(block.uuid)}">${elements.length?elements.join(''):'<li><span class="simple-layout-element-note">No editable content in this section yet.</span></li>'}</ul>`;
+        }
+        return `<ul class="simple-navigator-tree simple-navigator-structure" id="simple-navigator-${escapeHtml(block.uuid)}">${rows.map((row,rowIndex)=>{
+            const rowId = layoutRowIdentity(row,rowIndex);
+            const rowSelected = block.uuid===state.selected && selection.kind==='row' && state.selectedLayout.rowId===rowId;
+            const rowKey = navigatorKey(block,'row',rowId);
+            const count = layoutPresetColumnCount(row.layout);
+            return `<li><button type="button" class="simple-navigator-node${rowSelected?' is-selected':''}" data-navigator-kind="row" data-navigator-key="${escapeHtml(rowKey)}" data-layout-row="${rowIndex}" aria-current="${rowSelected?'true':'false'}"><i class="fa fa-columns" aria-hidden="true"></i><span>Row ${rowIndex+1}</span><small>${count} ${count===1?'column':'columns'}</small></button><ul class="simple-navigator-tree">${row.columns.slice(0,count).map((column,columnIndex)=>{
+                const columnId = layoutColumnIdentity(row,column,columnIndex,rowIndex);
+                const columnSelected = block.uuid===state.selected && selection.kind==='column' && state.selectedLayout.columnId===columnId;
+                const columnKey = navigatorKey(block,'column',rowId,columnId);
+                return `<li><button type="button" class="simple-navigator-node${columnSelected?' is-selected':''}" data-navigator-kind="column" data-navigator-key="${escapeHtml(columnKey)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" aria-current="${columnSelected?'true':'false'}"><i class="fa fa-square-o" aria-hidden="true"></i><span>Column ${columnIndex+1}</span><small>${(column.elements||[]).length}</small></button><ul class="simple-navigator-tree">${(column.elements||[]).map((element,elementIndex)=>renderNavigatorElement(block,row,column,element,rowIndex,columnIndex,elementIndex,selection)).join('')}</ul></li>`;
+            }).join('')}</ul></li>`;
+        }).join('')}</ul>`;
+    }
     function renderList() {
         list.innerHTML = state.blocks.length ? state.blocks.map((block,index) => {
-            const dragHandle = permissions.edit ? `<button class="simple-drag" type="button" aria-label="Drag ${escapeHtml(block.label)} to reorder">⋮⋮</button>` : '<span class="simple-drag-placeholder" aria-hidden="true"></span>';
-            const orderActions = permissions.edit ? `<button type="button" data-move="up" data-index="${index}" aria-label="Move ${escapeHtml(block.label)} up" ${index===0?'disabled':''}>↑</button><button type="button" data-move="down" data-index="${index}" aria-label="Move ${escapeHtml(block.label)} down" ${index===state.blocks.length-1?'disabled':''}>↓</button>` : '';
-            const deleteAction = permissions.delete ? `<button type="button" data-delete-section="${block.uuid}" aria-label="Move ${escapeHtml(block.label)} to trash" title="Move to trash"><i class="fa fa-trash" aria-hidden="true"></i></button>` : '';
+            const label = block.label || typeLabels[block.type] || block.type;
+            const dragHandle = permissions.edit ? `<button class="simple-drag" type="button" aria-label="Drag ${escapeHtml(label)} to reorder">⋮⋮</button>` : '<span class="simple-drag-placeholder" aria-hidden="true"></span>';
+            const orderActions = permissions.edit ? `<button type="button" data-move="up" data-index="${index}" aria-label="Move ${escapeHtml(label)} up" ${index===0?'disabled':''}>↑</button><button type="button" data-move="down" data-index="${index}" aria-label="Move ${escapeHtml(label)} down" ${index===state.blocks.length-1?'disabled':''}>↓</button>` : '';
+            const deleteAction = permissions.delete ? `<button type="button" data-delete-section="${block.uuid}" aria-label="Move ${escapeHtml(label)} to trash" title="Move to trash"><i class="fa fa-trash" aria-hidden="true"></i></button>` : '';
             const actions = orderActions || deleteAction ? `<span class="simple-order">${orderActions}${deleteAction}</span>` : '<span class="simple-order" aria-hidden="true"></span>';
-            return `<li class="simple-section-item ${block.uuid===state.selected?'is-selected':''}" data-section="${block.uuid}">${dragHandle}<button class="simple-select" type="button" data-select="${block.uuid}" aria-pressed="${block.uuid===state.selected}" title="Select ${escapeHtml(block.label || typeLabels[block.type])}"><strong>${escapeHtml(block.label || typeLabels[block.type])}</strong><small>${escapeHtml(typeLabels[block.type] || block.type)}${block.is_enabled?'':' · Hidden'}</small></button>${actions}</li>`;
+            const hasChildren = block.type === 'layout';
+            const expanded = hasChildren && state.expandedSections.has(block.uuid);
+            const toggle = hasChildren ? `<button type="button" class="simple-navigator-toggle" data-expand-section="${block.uuid}" aria-expanded="${expanded}" aria-controls="simple-navigator-${block.uuid}" aria-label="${expanded?'Collapse':'Expand'} ${escapeHtml(label)}"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>` : '<span class="simple-navigator-toggle-placeholder" aria-hidden="true"></span>';
+            const sectionSelected = block.uuid===state.selected && resolveLayoutSelection(block).kind==='section';
+            return `<li class="simple-section-item ${block.uuid===state.selected?'is-selected':''}" data-section="${block.uuid}"><div class="simple-section-row">${dragHandle}${toggle}<button class="simple-select" type="button" data-select="${block.uuid}" data-navigator-key="${escapeHtml(navigatorKey(block))}" aria-pressed="${sectionSelected}" title="Select ${escapeHtml(block.label || typeLabels[block.type])}"><strong>${escapeHtml(label)}</strong><small>${escapeHtml(typeLabels[block.type] || block.type)}${block.is_enabled?'':' · Hidden'}</small></button>${actions}</div>${hasChildren&&expanded?renderLayoutNavigator(block):''}</li>`;
         }).join('') : '<li class="simple-empty" style="padding:25px 5px">This page has no sections yet.</li>';
         wireOrdering();
     }
@@ -1396,8 +2336,9 @@
         const from = block.available_from ? Date.parse(String(block.available_from).replace(' ', 'T')) : NaN;
         const until = block.available_until ? Date.parse(String(block.available_until).replace(' ', 'T')) : NaN;
         const outsideSchedule = (Number.isFinite(from) && from > Date.now()) || (Number.isFinite(until) && until < Date.now());
-        const classes = `simple-preview-block${designClasses(block)} simple-preview-block--presentation-${normalizedSectionPresentation(content.section_presentation)}${extraClasses}${block.uuid===state.selected?' is-selected':''}${block.is_enabled?'':' is-hidden'}${outsideSchedule?' is-outside-schedule':''}`;
-        return `class="${classes}" data-preview-block="${escapeHtml(block.uuid)}" data-preview-type="${escapeHtml(block.type)}" data-label="${escapeHtml(block.label || typeLabels[block.type] || block.type)}" data-hide-desktop="${block.show_on_desktop === false}" data-hide-mobile="${block.show_on_mobile === false}" data-outside-schedule="${outsideSchedule}"`;
+        const sectionIsSelected = block.uuid===state.selected && (block.type!=='layout' || resolveLayoutSelection(block).kind==='section');
+        const classes = `simple-preview-block${designClasses(block)} simple-preview-block--presentation-${normalizedSectionPresentation(content.section_presentation)}${extraClasses}${sectionIsSelected?' is-selected':''}${block.is_enabled?'':' is-hidden'}${outsideSchedule?' is-outside-schedule':''}`;
+        return `class="${classes}" data-preview-block="${escapeHtml(block.uuid)}" data-preview-type="${escapeHtml(block.type)}" data-label="${escapeHtml(block.label || typeLabels[block.type] || block.type)}" data-hide-desktop="${block.show_on_desktop === false}" data-hide-mobile="${block.show_on_mobile === false}" data-outside-schedule="${outsideSchedule}" tabindex="0"`;
     }
     function previewHeading(block, options = {}) {
         const content = block.content || {};
@@ -1415,45 +2356,91 @@
         const language = locale === 'bn' ? 'bn-BD' : 'en-US';
         return {day:new Intl.DateTimeFormat(language,{day:'2-digit'}).format(date),month:new Intl.DateTimeFormat(language,{month:'short'}).format(date)};
     }
-    function previewLayoutElement(element, rowIndex, columnIndex, elementIndex) {
-        const type = layoutChoice(element?.type,layoutElementChoices,'heading');
+    function previewLayoutElement(block, row, column, element, rowIndex, columnIndex, elementIndex) {
+        const type = layoutElementType(element);
         const path = `rows.${rowIndex}.columns.${columnIndex}.elements.${elementIndex}`;
+        const elementId = layoutElementIdentity(row,column,element,elementIndex,rowIndex,columnIndex);
+        const selected = block.uuid===state.selected && state.selectedLayout?.kind==='element' && state.selectedLayout.elementId===elementId;
+        let content = '';
         if (type === 'heading') {
             const level = layoutChoice(element.level,layoutHeadingChoices,'h2');
-            return inlineElement(level,element.text||'New heading',`${path}.text`,'heading text',{single:true});
+            content = inlineElement(level,element.text||'New heading',`${path}.text`,'heading text',{single:true});
         }
-        if (type === 'rich_text') return `<div class="simple-layout-preview-rich">${safeLayoutRichHtml(element.body||'')}</div>`;
-        if (type === 'image') {
+        else if (type === 'rich_text') content = `<div class="simple-layout-preview-rich">${safeLayoutRichHtml(element.body||'')}</div>`;
+        else if (type === 'image') {
             const image = safeImage(element.path);
-            return image ? `<figure class="simple-layout-preview-media"><img src="${escapeHtml(image)}" alt="${escapeHtml(element.alt||'')}">${element.caption?`<figcaption>${escapeHtml(element.caption)}</figcaption>`:''}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-picture-o" aria-hidden="true"></i><span>Choose an image for this element</span></div>`;
+            content = image ? `<figure class="simple-layout-preview-media"><img src="${escapeHtml(image)}" alt="${escapeHtml(element.alt||'')}">${element.caption?`<figcaption>${escapeHtml(element.caption)}</figcaption>`:''}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-picture-o" aria-hidden="true"></i><span>Choose an image for this content</span></div>`;
         }
-        if (type === 'video') {
+        else if (type === 'video') {
             const sourceType = element.source_type === 'youtube' ? 'youtube' : 'upload';
             const source = sourceType === 'youtube' ? explicitHttpsYoutubeEmbedUrl(element.source) : safeImage(element.source);
             const title = element.title || 'Video';
             const media = sourceType === 'youtube' && source
                 ? `<iframe src="${escapeHtml(source)}" title="${escapeHtml(title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
                 : source ? `<video src="${escapeHtml(source)}" aria-label="${escapeHtml(title)}" controls preload="metadata"></video>` : '';
-            return media ? `<figure class="simple-layout-preview-media">${media}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-play-circle" aria-hidden="true"></i><span>Choose a video for this element</span></div>`;
+            content = media ? `<figure class="simple-layout-preview-media">${media}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-play-circle" aria-hidden="true"></i><span>Choose a video for this content</span></div>`;
         }
-        if (type === 'button') {
+        else if (type === 'button') {
             const style = layoutChoice(element.style,layoutButtonStyleChoices,'primary');
-            return inlineElement('span',element.label||'Button',`${path}.label`,'button text',{className:`simple-layout-preview-button simple-layout-preview-button--${style}`,single:true});
+            content = inlineElement('span',element.label||'Button',`${path}.label`,'button text',{className:`simple-layout-preview-button simple-layout-preview-button--${style}`,single:true});
         }
-        if (type === 'divider') return '<hr class="simple-layout-preview-divider">';
-        const size = layoutChoice(element.size,layoutSpacerSizeChoices,'medium');
-        return `<div class="simple-layout-preview-spacer simple-layout-preview-spacer--${size}" role="img" aria-label="${escapeHtml(layoutSpacerSizeChoices[size])} spacer"><span class="simple-layout-sr">${escapeHtml(layoutSpacerSizeChoices[size])} spacer</span></div>`;
+        else if (type === 'icon') {
+            const size=layoutChoice(element.size,layoutIconSizeChoices,'medium'),style=layoutChoice(element.style,layoutIconStyleChoices,'soft'),accessible=element.decorative===false?String(element.accessible_label||'').trim():'';
+            content=`<span class="simple-layout-preview-icon simple-layout-preview-icon--${size} simple-layout-preview-icon--${style}" ${accessible?`role="img" aria-label="${escapeHtml(accessible)}"`:'aria-hidden="true"'}>${previewIcon(element.icon,'fa-heart')}</span>`;
+        }
+        else if (type === 'file') {
+            content = element.path ? `<span class="simple-layout-preview-file"><i class="fa fa-file-text-o" aria-hidden="true"></i><span><strong>${escapeHtml(element.label||'Download file')}</strong>${element.description?`<small>${escapeHtml(element.description)}</small>`:''}</span><i class="fa fa-download" aria-hidden="true"></i></span>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-file-o" aria-hidden="true"></i><span>Choose a public file</span></div>`;
+        }
+        else if (type === 'card') {
+            const image=safeImage(element.image),style=layoutChoice(element.style,layoutCardStyleChoices,'standard');
+            content=`<article class="simple-layout-preview-card simple-layout-preview-card--${style}">${image?`<img src="${escapeHtml(image)}" alt="${escapeHtml(element.image_alt||'')}">`:element.icon?`<span class="simple-layout-preview-card__icon">${previewIcon(element.icon,'fa-star')}</span>`:''}<div class="simple-layout-preview-card__copy">${element.eyebrow?`<small>${escapeHtml(element.eyebrow)}</small>`:''}<strong>${escapeHtml(element.heading||'New card')}</strong>${element.body?`<p>${escapeHtml(element.body)}</p>`:''}${element.url&&element.link_label?`<em>${escapeHtml(element.link_label)} <span aria-hidden="true">→</span></em>`:''}</div></article>`;
+        }
+        else if (type === 'stat') {
+            const emphasis=layoutChoice(element.emphasis,layoutStatEmphasisChoices,'standard');
+            content=`<div class="simple-layout-preview-stat simple-layout-preview-stat--${emphasis}">${element.icon?previewIcon(element.icon,'fa-bar-chart'):''}<strong>${escapeHtml(element.value||'0')}</strong><span>${escapeHtml(element.label||'People reached')}</span></div>`;
+        }
+        else if (type === 'quote') {
+            const image=safeImage(element.image),style=layoutChoice(element.style,layoutQuoteStyleChoices,'standard');
+            content=`<figure class="simple-layout-preview-quote simple-layout-preview-quote--${style}">${image?`<img src="${escapeHtml(image)}" alt="${escapeHtml(element.image_alt||'')}">`:''}<blockquote>${escapeHtml(element.quote||'Add a meaningful quotation.')}</blockquote>${element.attribution||element.role?`<figcaption>${element.attribution?`<strong>${escapeHtml(element.attribution)}</strong>`:''}${element.role?`<span>${escapeHtml(element.role)}</span>`:''}</figcaption>`:''}</figure>`;
+        }
+        else if (type === 'gallery') {
+            const items=(Array.isArray(element.items)?element.items:[]).filter(item=>safeImage(item?.path)).slice(0,12),columns=layoutChoice(element.columns,layoutGalleryColumnChoices,'3');
+            content=items.length?`<div class="simple-layout-preview-gallery simple-layout-preview-gallery--${columns}">${items.map(item=>`<figure><img src="${escapeHtml(safeImage(item.path))}" alt="${escapeHtml(item.alt||'')}">${item.caption?`<figcaption>${escapeHtml(item.caption)}</figcaption>`:''}</figure>`).join('')}</div>`:`<div class="simple-layout-preview-media-placeholder"><i class="fa fa-th" aria-hidden="true"></i><span>Add photos to this gallery</span></div>`;
+        }
+        else if (type === 'accordion') {
+            const items=(Array.isArray(element.items)?element.items:[]).filter(item=>String(item?.question||'').trim()).slice(0,12);
+            content=items.length?`<div class="simple-layout-preview-accordion">${items.map((item,itemIndex)=>`<details ${itemIndex===0?'open':''} data-layout-preview-interactive><summary data-layout-preview-interactive>${escapeHtml(item.question)}</summary>${item.answer?`<div class="simple-layout-preview-accordion__answer">${safeLayoutRichHtml(item.answer)}</div>`:''}</details>`).join('')}</div>`:`<div class="simple-layout-preview-placeholder">Add a question and answer</div>`;
+        }
+        else if (type === 'timeline') {
+            const items=(Array.isArray(element.items)?element.items:[]).filter(item=>item&&(item.date_label||item.heading||item.body)).slice(0,12),style=layoutChoice(element.style,layoutTimelineStyleChoices,'timeline');
+            content=items.length?`<ol class="simple-layout-preview-timeline simple-layout-preview-timeline--${style}">${items.map((item,itemIndex)=>`<li><span class="simple-layout-preview-timeline__marker">${item.icon?previewIcon(item.icon,'fa-circle-o'):`${itemIndex+1}`}</span><div>${item.date_label?`<small>${escapeHtml(item.date_label)}</small>`:''}${item.heading?`<h4>${escapeHtml(item.heading)}</h4>`:''}${item.body?`<p>${escapeHtml(item.body)}</p>`:''}</div></li>`).join('')}</ol>`:`<div class="simple-layout-preview-placeholder">Add a milestone or step</div>`;
+        }
+        else if (type === 'callout') {
+            const tone=layoutChoice(element.tone,layoutCalloutToneChoices,'accent');
+            content=`<aside class="simple-layout-preview-callout simple-layout-preview-callout--${tone}">${element.icon?`<span class="simple-layout-preview-callout__icon">${previewIcon(element.icon,'fa-info-circle')}</span>`:''}<div>${element.eyebrow?`<small>${escapeHtml(element.eyebrow)}</small>`:''}<h4>${escapeHtml(element.heading||'Important information')}</h4>${element.body?`<div>${safeLayoutRichHtml(element.body)}</div>`:''}${element.url&&element.link_label?`<em>${escapeHtml(element.link_label)} <span aria-hidden="true">→</span></em>`:''}</div></aside>`;
+        }
+        else if (type === 'divider') content = '<hr class="simple-layout-preview-divider">';
+        else if (type === 'spacer') {
+            const size = layoutChoice(element.size,layoutSpacerSizeChoices,'medium');
+            content = `<div class="simple-layout-preview-spacer simple-layout-preview-spacer--${size}" role="img" aria-label="${escapeHtml(layoutSpacerSizeChoices[size])} spacer"><span class="simple-layout-sr">${escapeHtml(layoutSpacerSizeChoices[size])} spacer</span></div>`;
+        }
+        return `<div class="simple-layout-preview-element${selected?' is-layout-selected':''}" data-layout-node="element" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-id="${escapeHtml(elementId)}" data-node-label="${escapeHtml(layoutElementChoices[type])}" tabindex="0" role="group" aria-label="Edit ${escapeHtml(layoutElementName(element))}">${content}</div>`;
     }
-    function previewLayoutRow(row, rowIndex) {
+    function previewLayoutRow(block, row, rowIndex) {
         const preset = layoutChoice(row.layout,layoutPresetChoices,'full');
         const width = layoutChoice(row.width,layoutWidthChoices,'standard');
         const background = layoutChoice(row.background,layoutBackgroundChoices,'default');
         const spacing = layoutChoice(row.spacing,layoutSpacingChoices,'standard');
         const columnCount = layoutPresetColumnCount(preset);
         const columns = row.columns.slice(0,columnCount);
-        return `<section class="simple-layout-preview-row simple-layout-preview-row--${preset.replaceAll('_','-')} simple-layout-preview-row--background-${background} simple-layout-preview-row--spacing-${spacing}" aria-label="Layout row ${rowIndex+1}, ${escapeHtml(layoutPresetChoices[preset])}"><div class="simple-layout-preview-row__inner simple-layout-preview-row--width-${width}"><div class="simple-layout-preview-columns">${columns.map((column,columnIndex)=>{
+        const rowId = layoutRowIdentity(row,rowIndex);
+        const rowSelected = block.uuid===state.selected && state.selectedLayout?.kind==='row' && state.selectedLayout.rowId===rowId;
+        return `<section class="simple-layout-preview-row simple-layout-preview-row--${preset.replaceAll('_','-')} simple-layout-preview-row--background-${background} simple-layout-preview-row--spacing-${spacing}${rowSelected?' is-layout-selected':''}" data-layout-node="row" data-layout-row="${rowIndex}" data-layout-row-id="${escapeHtml(rowId)}" data-node-label="Row ${rowIndex+1}" tabindex="${state.editorMode==='layout'?'0':'-1'}" aria-label="Layout row ${rowIndex+1}, ${escapeHtml(layoutPresetChoices[preset])}"><div class="simple-layout-preview-row__inner simple-layout-preview-row--width-${width}"><div class="simple-layout-preview-columns">${columns.map((column,columnIndex)=>{
             const elements = Array.isArray(column.elements) ? column.elements : [];
-            return `<div class="simple-layout-preview-column" role="group" aria-label="Row ${rowIndex+1}, column ${columnIndex+1}">${elements.length?elements.map((element,elementIndex)=>previewLayoutElement(element,rowIndex,columnIndex,elementIndex)).join(''):`<div class="simple-layout-preview-placeholder">Column ${columnIndex+1}<br>Add an element in the editor panel</div>`}</div>`;
+            const columnId = layoutColumnIdentity(row,column,columnIndex,rowIndex);
+            const columnSelected = block.uuid===state.selected && state.selectedLayout?.kind==='column' && state.selectedLayout.columnId===columnId;
+            const addButton = canEditLayoutBlock(block) && elements.length<12 ? `<button type="button" class="simple-layout-preview-inserter" data-preview-layout-action="add-content" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}"><i class="fa fa-plus" aria-hidden="true"></i> Add content</button>` : '';
+            return `<div class="simple-layout-preview-column${columnSelected?' is-layout-selected':''}" data-layout-node="column" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-column-id="${escapeHtml(columnId)}" data-node-label="Column ${columnIndex+1}" tabindex="${state.editorMode==='layout'?'0':'-1'}" role="group" aria-label="Row ${rowIndex+1}, column ${columnIndex+1}">${elements.length?elements.map((element,elementIndex)=>previewLayoutElement(block,row,column,element,rowIndex,columnIndex,elementIndex)).join(''):`<div class="simple-layout-preview-placeholder">Column ${columnIndex+1}<br>No content yet</div>`}${addButton}</div>`;
         }).join('')}</div></div></section>`;
     }
     function previewBlock(block) {
@@ -1461,8 +2448,12 @@
         const c = block.content || {};
 
         if (block.type === 'layout') {
+            const guard=layoutLoadGuard(block);
+            if (guard.blocked) return `<section ${previewSectionMeta(block)}><div class="simple-layout-preview">${layoutRepairNotice(guard,true)}</div></section>`;
             const rows = layoutRows(block);
-            return `<section ${previewSectionMeta(block)}><div class="simple-layout-preview" aria-label="Visual layout preview">${rows.length?rows.map((row,rowIndex)=>previewLayoutRow(row,rowIndex)).join(''):'<div class="simple-layout-preview-placeholder">Add a row to begin this visual layout.</div>'}</div></section>`;
+            const rowInserter = index => canEditLayoutBlock(block) ? `<button type="button" class="simple-layout-preview-inserter simple-layout-preview-row-inserter" data-preview-layout-action="add-row" data-layout-row-insert="${index}"><i class="fa fa-plus" aria-hidden="true"></i> Add row here</button>` : '';
+            const rowsMarkup = rows.length ? `${rows.map((row,rowIndex)=>`${rowInserter(rowIndex)}${previewLayoutRow(block,row,rowIndex)}`).join('')}${rowInserter(rows.length)}` : `${rowInserter(0)}<div class="simple-layout-preview-placeholder">Add a row to begin this visual layout.</div>`;
+            return `<section ${previewSectionMeta(block)}><div class="simple-layout-preview" aria-label="Visual layout preview">${rowsMarkup}</div></section>`;
         }
 
         if (block.type === 'hero') {
@@ -1513,7 +2504,8 @@
         if(block.type==='cards') {
             const manual = contentSource(block) === 'manual';
             const items = manual ? (Array.isArray(c.items)?c.items:[]) : managedPagePreviewItems(block);
-            return `<section ${previewSectionMeta(block)}>${previewHeading(block,{viewAll:true})}<div class="simple-preview-cards">${items.map((item,index)=>`<article class="simple-preview-card">${previewItemImage(item)?`<img src="${escapeHtml(previewItemImage(item))}" alt="${escapeHtml(item.image_alt||previewItemName(item))}">`:`<span class="simple-preview-card__placeholder">${previewIcon(item.icon,'fa-compass')}</span>`}<div>${item.location?`<small>${previewIcon('map','fa-map-marker')} ${escapeHtml(item.location)}</small>`:item.eyebrow?`<small>${escapeHtml(item.eyebrow)}</small>`:''}${manual?inlineElement('h3',previewItemName(item)||'Item',`items.${index}.heading`,'item heading',{single:true}):`<h3>${escapeHtml(previewItemName(item)||'Published item')}</h3>`}${item.body?manual?inlineElement('p',plainText(item.body),`items.${index}.body`,'item description'):`<p>${escapeHtml(plainText(item.body))}</p>`:''}${item.status?`<span class="simple-preview-card__status">${escapeHtml(item.status)}</span>`:''}<span class="simple-preview-card__link">${escapeHtml(item.link_label||c.item_link_label||'Learn more')} →</span></div></article>`).join('')}</div>${items.length?'':previewEmpty(c,'Add cards here or select managed content in the editor panel.')}</section>`;
+            const activeCardIndex = selectedCardIndex(block, items);
+            return `<section ${previewSectionMeta(block)}>${previewHeading(block,{viewAll:true})}<div class="simple-preview-cards">${items.map((item,index)=>`<article class="simple-preview-card${cardUsesFullRow(block,item,index,items)?' simple-preview-card--full-width':''}${manual&&index===activeCardIndex&&block.uuid===state.selected?' is-card-selected':''}" ${manual?`data-preview-card-index="${index}"`:''}>${manual?`<button type="button" class="simple-preview-card__edit" data-preview-card-select aria-label="Edit card ${index+1}: ${escapeHtml(previewItemName(item)||'Untitled card')}" aria-pressed="${index===activeCardIndex&&block.uuid===state.selected?'true':'false'}"><i class="fa fa-pencil" aria-hidden="true"></i> Edit card</button>`:''}${previewItemImage(item)?`<img src="${escapeHtml(previewItemImage(item))}" alt="${escapeHtml(item.image_alt||previewItemName(item))}">`:`<span class="simple-preview-card__placeholder">${previewIcon(item.icon,'fa-compass')}</span>`}<div>${item.location?`<small>${previewIcon('map','fa-map-marker')} ${escapeHtml(item.location)}</small>`:item.eyebrow?`<small>${escapeHtml(item.eyebrow)}</small>`:''}${manual?inlineElement('h3',previewItemName(item)||'Item',`items.${index}.heading`,'item heading',{single:true}):`<h3>${escapeHtml(previewItemName(item)||'Published item')}</h3>`}${item.body?manual?inlineElement('p',plainText(item.body),`items.${index}.body`,'item description'):`<p>${escapeHtml(plainText(item.body))}</p>`:''}${item.status?`<span class="simple-preview-card__status">${escapeHtml(item.status)}</span>`:''}${safeManageUrl(item.url)?`<span class="simple-preview-card__link">${escapeHtml(item.link_label||c.item_link_label||'Learn more')} →</span>`:''}</div></article>`).join('')}</div>${items.length?'':previewEmpty(c,'Add cards here or select managed content in the editor panel.')}</section>`;
         }
 
         if(block.type==='causes') {
@@ -1600,13 +2592,65 @@
             element.addEventListener('click', event => event.stopPropagation());
             element.addEventListener('focus', () => {
                 const section=element.closest('[data-preview-block]'); const uuid=section?.dataset.previewBlock;
-                if(uuid && uuid!==state.selected){state.selected=uuid;state.heroSlide=0;renderList();renderInspector();preview.querySelectorAll('[data-preview-block]').forEach(item=>item.classList.toggle('is-selected',item.dataset.previewBlock===uuid));}
+                const card=element.closest('[data-preview-card-index]');
+                const layoutNode=element.closest('[data-layout-node="element"]');
+                const layoutBlock=state.blocks.find(item=>item.uuid===uuid);
+                if(uuid&&card&&(uuid!==state.selected||Number(card.dataset.previewCardIndex)!==Number(state.cardIndexes[uuid]??0)))selectPreviewCard(uuid,Number(card.dataset.previewCardIndex));
+                else if(layoutNode&&layoutBlock?.type==='layout')selectLayoutNode(layoutBlock,'element',Number(layoutNode.dataset.layoutRow),Number(layoutNode.dataset.layoutColumn),Number(layoutNode.dataset.layoutElement),{preservePreview:true});
+                else if(uuid && uuid!==state.selected){state.selected=uuid;state.heroSlide=0;assignLayoutSelection(layoutBlock);renderList();renderInspector();renderBreadcrumb();syncPreviewSelection();}
                 recordHistory();
             });
             element.addEventListener('input', () => { const block=state.blocks.find(item=>item.uuid===element.closest('[data-preview-block]')?.dataset.previewBlock); if(!block)return; setInlineValue(block,(element.dataset.inlinePath || ''),element.textContent.trim()); markDirty('block'); });
             element.addEventListener('blur', () => renderInspector());
             element.addEventListener('keydown', event => { if(element.dataset.inlineSingle==='true' && event.key==='Enter'){event.preventDefault();element.blur();} });
         });
+    }
+    function wireCardPreviewSelection() {
+        preview.querySelectorAll('[data-preview-card-index]').forEach(card => {
+            card.addEventListener('click', event => {
+                if (event.target.closest('[data-inline-path]')) return;
+                if (event.target.closest('[data-preview-card-select]')) event.preventDefault();
+                event.stopPropagation();
+                const uuid = card.closest('[data-preview-block]')?.dataset.previewBlock;
+                selectPreviewCard(uuid, Number(card.dataset.previewCardIndex));
+            });
+        });
+    }
+    function wireLayoutPreviewSelection() {
+        preview.querySelectorAll('[data-layout-node]').forEach(node => {
+            const choose = event => {
+                if (event.target.closest('[data-preview-layout-action],[data-inline-path]')) return;
+                const kind = node.dataset.layoutNode;
+                const interactive = event.target.closest('[data-layout-preview-interactive]');
+                if (!interactive) event.preventDefault();
+                event.stopPropagation();
+                const uuid = node.closest('[data-preview-block]')?.dataset.previewBlock;
+                const block = state.blocks.find(item=>item.uuid===uuid);
+                if (kind !== 'element' && state.editorMode !== 'layout') {
+                    selectSection(uuid,{force:true,focus:'inspector'});
+                    return;
+                }
+                selectLayoutNode(block,kind,Number(node.dataset.layoutRow),Number(node.dataset.layoutColumn ?? -1),Number(node.dataset.layoutElement ?? -1),{focus:'inspector'});
+            };
+            node.addEventListener('click',choose);
+            node.addEventListener('keydown',event=>{if(event.target===node&&['Enter',' '].includes(event.key))choose(event)});
+        });
+        preview.querySelectorAll('[data-preview-layout-action]').forEach(button => button.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            const uuid = button.closest('[data-preview-block]')?.dataset.previewBlock;
+            const block = state.blocks.find(item=>item.uuid===uuid);
+            if (!block || block.type!=='layout') return;
+            if (button.dataset.previewLayoutAction === 'add-content') {
+                openElementPicker(block,Number(button.dataset.layoutRow),Number(button.dataset.layoutColumn));
+                return;
+            }
+            if (!canEditLayoutBlock(block)) return;
+            const rows = layoutRows(block);
+            if (rows.length >= 12) return notify('A visual layout can contain up to twelve rows.');
+            const insertAt = Math.min(Math.max(Number(button.dataset.layoutRowInsert)||0,0),rows.length);
+            state.selected=block.uuid; state.expandedSections.add(block.uuid); recordHistory(); rows.splice(insertAt,0,newLayoutRow()); assignLayoutSelection(block,'row',insertAt); markDirty('block'); renderAll(); restoreSelectionFocus('inspector');
+        }));
     }
     function wireTestimonialPreview() {
         preview.querySelectorAll('[data-testimonial-index],[data-testimonial-step]').forEach(button => {
@@ -1646,15 +2690,55 @@
                 });
             });
         }
-        preview.querySelectorAll('[data-preview-block]').forEach(section=>section.addEventListener('click',event=>{if(!event.target.closest('[data-inline-path]'))selectSection(section.dataset.previewBlock)}));
+        preview.querySelectorAll('[data-preview-block]').forEach(section=>{
+            const choose=event=>{if(!event.target.closest('[data-inline-path],[data-layout-node],[data-preview-layout-action]'))selectSection(section.dataset.previewBlock,{force:true,focus:'inspector'})};
+            section.addEventListener('click',choose);
+            section.addEventListener('keydown',event=>{if(event.target===section&&['Enter',' '].includes(event.key)){event.preventDefault();selectSection(section.dataset.previewBlock,{force:true,focus:'inspector'})}});
+        });
+        wireLayoutPreviewSelection();
+        wireCardPreviewSelection();
         wireTestimonialPreview();
         if(permissions.edit)wireInlinePreview();
     }
-    function renderAll(){renderList();renderPreview();renderInspector()}
+    function renderBreadcrumb() {
+        const breadcrumb = document.getElementById('simple-selection-breadcrumb');
+        const block = current();
+        if (!breadcrumb) return;
+        if (!block) { breadcrumb.innerHTML='<span>Page</span><i class="fa fa-chevron-right" aria-hidden="true"></i><span>Nothing selected</span>'; return; }
+        const selection = resolveLayoutSelection(block);
+        const crumbs = [{kind:'section',label:block.label||typeLabels[block.type]||'Section'}];
+        if (block.type==='layout' && selection.row) crumbs.push({kind:'row',label:`Row ${selection.rowIndex+1}`,row:selection.rowIndex});
+        if (block.type==='layout' && selection.column) crumbs.push({kind:'column',label:`Column ${selection.columnIndex+1}`,row:selection.rowIndex,column:selection.columnIndex});
+        if (block.type==='layout' && selection.element) crumbs.push({kind:'element',label:layoutElementChoices[layoutElementType(selection.element)],row:selection.rowIndex,column:selection.columnIndex,element:selection.elementIndex});
+        breadcrumb.innerHTML = `<span><i class="fa fa-file-o" aria-hidden="true"></i> Page</span>${crumbs.map((crumb,index)=>`<i class="fa fa-chevron-right" aria-hidden="true"></i><button type="button" data-breadcrumb-kind="${crumb.kind}" ${Number.isInteger(crumb.row)?`data-layout-row="${crumb.row}"`:''} ${Number.isInteger(crumb.column)?`data-layout-column="${crumb.column}"`:''} ${Number.isInteger(crumb.element)?`data-layout-element="${crumb.element}"`:''} aria-current="${index===crumbs.length-1?'page':'false'}">${escapeHtml(crumb.label)}</button>`).join('')}`;
+    }
+    function syncModeUi() {
+        const editor = document.getElementById('simple-editor');
+        editor.dataset.editorMode = state.editorMode;
+        document.querySelectorAll('[data-editor-mode]').forEach(button=>{const active=button.dataset.editorMode===state.editorMode;button.classList.toggle('is-active',active);button.setAttribute('aria-pressed',String(active))});
+        const tip = document.getElementById('simple-canvas-tip');
+        if (tip) {
+            tip.dataset.mode = state.editorMode;
+            const text = tip.querySelector('span');
+            if (text) text.textContent = permissions.edit ? (state.editorMode==='content'?'Click text or another content item to edit it':'Click a row, column, or content item to customize the layout') : 'Previewing the page in read-only mode';
+        }
+    }
+    function setEditorMode(mode) {
+        const next = mode === 'layout' ? 'layout' : 'content';
+        if (next === state.editorMode) return;
+        state.editorMode = next;
+        const block = current();
+        const selection = resolveLayoutSelection(block);
+        if (next === 'content' && ['row'].includes(selection.kind)) assignLayoutSelection(block);
+        renderAll();
+        document.querySelector(`[data-editor-mode="${next}"]`)?.focus();
+    }
+    function renderAll(){syncModeUi();renderList();renderPreview();renderInspector();renderBreadcrumb();syncPreviewSelection()}
 
     async function saveChanges(){
         if(!permissions.edit||state.busy)return;
         if(!hasDirty())return notify('Everything is already saved.');
+        if(!hasSavableDirty())return notify('This visual layout is locked so its saved content stays safe. You can still edit and save another section.');
         state.busy=true;
         document.querySelectorAll('[data-save-changes]').forEach(button=>button.disabled=true);
         try{
@@ -1675,7 +2759,8 @@
                 if(bannerSelect&&bannerId!=='__keep_current')body.page.banner_id=bannerId?Number(bannerId):null;
                 if(thumbnailAssetUuid!=='__keep_current')body.page.thumbnail_asset_uuid=thumbnailAssetUuid||null;
             }
-            if(state.dirtyBlocks.size)body.blocks=state.blocks.filter(block=>state.dirtyBlocks.has(block.uuid)).map(block=>{
+            const savableDirtyBlocks=state.blocks.filter(block=>state.dirtyBlocks.has(block.uuid)&&!layoutIsBlocked(block));
+            if(savableDirtyBlocks.length)body.blocks=savableDirtyBlocks.map(block=>{
                 syncHeroFirstSlide(block);
                 return {uuid:block.uuid,label:block.label,content:block.content||{},is_enabled:!!block.is_enabled,show_on_desktop:block.show_on_desktop!==false,show_on_mobile:block.show_on_mobile!==false,available_from:block.available_from||null,available_until:block.available_until||null,expected_reusable_version:block.reusable_version};
             });
@@ -1685,11 +2770,17 @@
                 body.convert_legacy_content=true;
             }
             const payload=await request(routes.simpleSave,'PUT',body);
+            state.validationError=null;
             acceptConvertedLegacyBlock(payload);
             (payload.blocks||[]).forEach(saved=>{const block=state.blocks.find(item=>item.uuid===saved.uuid);if(block)Object.assign(block,saved)});
             if(payload.page){document.getElementById('simple-page-heading').textContent=payload.page.name;document.getElementById('simple-page-name').value=payload.page.name;document.getElementById('simple-page-zakat-eligible').checked=!!payload.page.is_zakat_eligible;document.getElementById('simple-page-funding-project').checked=!!payload.page.is_funding_project;syncFundingProjectControls()}
-            state.dirtyBlocks=new Set();state.dirtyPage=false;state.dirtyOrder=false;state.undo=[];state.redo=[];clearDraft();updateSaveState();renderAll();notify(payload.message);
-        }catch(error){notify(error.message)}finally{state.busy=false;updateSaveState()}
+            const submittedBlockUuids=new Set(savableDirtyBlocks.map(block=>block.uuid));
+            state.dirtyBlocks=new Set([...state.dirtyBlocks].filter(uuid=>!submittedBlockUuids.has(uuid)));
+            if(body.page)state.dirtyPage=false;
+            if(body.order)state.dirtyOrder=false;
+            if(!hasDirty()){state.undo=[];state.redo=[];clearDraft()}else scheduleDraft();
+            updateSaveState();renderAll();notify(payload.message);
+        }catch(error){if(!focusLayoutValidationError(error))notify(error.message)}finally{state.busy=false;updateSaveState()}
     }
     async function addSection(type){if(!permissions.create)return;const convert=legacyContentNeedsConversion;if(convert&&!confirmLegacyContentConversion('add a new section'))return;try{const payload=await request(routes.storeBlock,'POST',{locale,type,is_enabled:false,convert_legacy_content:convert});acceptConvertedLegacyBlock(payload);payload.block.is_enabled=true;state.blocks.push(payload.block);state.selected=payload.block.uuid;state.heroSlide=0;state.dirtyBlocks.add(payload.block.uuid);updateSaveState();scheduleDraft();closeModal(document.getElementById('add-section-modal'));renderAll();notify(convert?payload.message:'Section added as a draft. Add your content, then choose Save changes to show it on the website.')}catch(error){notify(error.message)}}
     function renderReusableLibrary(){
@@ -1842,7 +2933,17 @@
     }
     function wireOrdering() {
         let dragState = null;
-        list.querySelectorAll('[data-select]').forEach(button => button.addEventListener('click', () => selectSection(button.dataset.select)));
+        list.querySelectorAll('[data-select]').forEach(button => button.addEventListener('click', () => selectSection(button.dataset.select,{force:true,focus:'navigator'})));
+        list.querySelectorAll('[data-expand-section]').forEach(button => button.addEventListener('click', () => {
+            const uuid = button.dataset.expandSection;
+            if (state.expandedSections.has(uuid)) state.expandedSections.delete(uuid); else state.expandedSections.add(uuid);
+            renderList();
+            requestAnimationFrame(()=>list.querySelector(`[data-expand-section="${uuid}"]`)?.focus());
+        }));
+        list.querySelectorAll('[data-navigator-kind]').forEach(button => button.addEventListener('click', () => {
+            const block = state.blocks.find(item=>item.uuid===button.closest('[data-section]')?.dataset.section);
+            selectLayoutNode(block,button.dataset.navigatorKind,Number(button.dataset.layoutRow),Number(button.dataset.layoutColumn ?? -1),Number(button.dataset.layoutElement ?? -1),{focus:'navigator'});
+        }));
         list.querySelectorAll('[data-delete-section]').forEach(button => button.addEventListener('click', event => {
             event.stopPropagation();
             deleteSection(button.dataset.deleteSection, event.currentTarget);
@@ -1905,12 +3006,15 @@
     }
     function openMedia(target){if(!permissions.edit)return;state.mediaTarget={...target,modalId:'media-modal'};state.modalReturn=document.activeElement;document.getElementById('media-modal').hidden=false;document.querySelector('#media-modal .simple-close').focus()}
     function openVideoMedia(target){if(!permissions.edit)return;state.mediaTarget={...target,modalId:'video-media-modal'};state.modalReturn=document.activeElement;document.getElementById('video-media-modal').hidden=false;document.querySelector('#video-media-modal .simple-close').focus()}
-    function closeModal(modal){modal.hidden=true;state.modalReturn?.focus();state.modalReturn=null}
-    function chooseMedia(url){if(!permissions.edit)return;const block=current();if(!block||!state.mediaTarget)return;recordHistory();const target=state.mediaTarget;if(target.kind==='slide')heroSlides(block)[state.heroSlide][target.key]=url;else if(target.kind==='card')block.content.items[target.index][target.key]=url;else if(target.kind==='layout'){const element=block.content?.rows?.[target.row]?.columns?.[target.column]?.elements?.[target.element];if(!element)return;element[target.key]=url}else block.content[target.key]=url;markDirty('block');closeModal(document.getElementById(target.modalId||'media-modal'));renderAll()}
+    function openDocumentMedia(target){if(!permissions.edit)return;state.mediaTarget={...target,modalId:'document-media-modal'};state.modalReturn=document.activeElement;document.getElementById('document-media-modal').hidden=false;document.querySelector('#document-media-modal .simple-close').focus()}
+    function closeModal(modal){if(!modal)return;modal.hidden=true;if(modal.id==='element-picker-modal')state.elementPickerTarget=null;if(['media-modal','video-media-modal','document-media-modal'].includes(modal.id))state.mediaTarget=null;state.modalReturn?.focus();state.modalReturn=null}
+    function chooseMedia(url){if(!permissions.edit)return;const block=current();if(!block||!state.mediaTarget)return;recordHistory();const target=state.mediaTarget;if(target.kind==='slide')heroSlides(block)[state.heroSlide][target.key]=url;else if(target.kind==='card')block.content.items[target.index][target.key]=url;else if(target.kind==='layout'){const element=block.content?.rows?.[target.row]?.columns?.[target.column]?.elements?.[target.element];if(!element)return;element[target.key]=url}else if(target.kind==='layout-item'){const item=block.content?.rows?.[target.row]?.columns?.[target.column]?.elements?.[target.element]?.items?.[target.item];if(!item)return;item[target.key]=url}else block.content[target.key]=url;state.validationError=null;markDirty('block');const modal=document.getElementById(target.modalId||'media-modal');closeModal(modal);renderAll()}
     document.getElementById('simple-media-grid').addEventListener('click',event=>{const option=event.target.closest('[data-media-url]');if(option)chooseMedia(option.dataset.mediaUrl)});
     document.getElementById('simple-video-grid').addEventListener('click',event=>{const option=event.target.closest('[data-video-media-url]');if(option)chooseMedia(option.dataset.videoMediaUrl)});
+    document.getElementById('simple-document-grid').addEventListener('click',event=>{const option=event.target.closest('[data-document-media-url]');if(option)chooseMedia(option.dataset.documentMediaUrl)});
     document.getElementById('simple-media-upload')?.addEventListener('change',async event=>{if(!permissions.create||!permissions.edit)return;const file=event.target.files[0];if(!file)return;const form=new FormData();form.append('locale',locale);form.append('file',file);try{const payload=await request(routes.media,'POST',form,true);const grid=document.getElementById('simple-media-grid');grid.insertAdjacentHTML('afterbegin',`<button class="simple-media-option" type="button" data-media-url="${escapeHtml(payload.asset.url)}"><img src="${escapeHtml(payload.asset.url)}" alt=""></button>`);chooseMedia(payload.asset.url);notify(payload.message)}catch(error){notify(error.message)}finally{event.target.value=''}});
     document.getElementById('simple-video-upload')?.addEventListener('change',async event=>{if(!permissions.create||!permissions.edit)return;const file=event.target.files[0];if(!file)return;if(!/^video\/(mp4|webm)$/.test(file.type)){notify('Choose a supported MP4 or WebM video.');event.target.value='';return}const form=new FormData();form.append('locale',locale);form.append('file',file);form.append('media_kind','video');try{const payload=await request(routes.media,'POST',form,true);const grid=document.getElementById('simple-video-grid');grid.querySelector('.simple-empty')?.remove();grid.insertAdjacentHTML('afterbegin',`<button class="simple-media-option" type="button" data-video-media-url="${escapeHtml(payload.asset.url)}" aria-label="Choose ${escapeHtml(payload.asset.original_name)}"><video src="${escapeHtml(payload.asset.url)}" muted preload="metadata" aria-hidden="true"></video></button>`);chooseMedia(payload.asset.url);notify(payload.message)}catch(error){notify(error.message)}finally{event.target.value=''}});
+    document.getElementById('simple-document-upload')?.addEventListener('change',async event=>{if(!permissions.create||!permissions.edit)return;const file=event.target.files[0];if(!file)return;const supported=/\.(?:pdf|docx?|xlsx?)$/i.test(file.name)&&(!file.type||['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type));if(!supported){notify('Choose a PDF, Word, or Excel file.');event.target.value='';return}const form=new FormData();form.append('locale',locale);form.append('file',file);form.append('media_kind','document');try{const payload=await request(routes.media,'POST',form,true);const grid=document.getElementById('simple-document-grid');grid.querySelector('.simple-empty')?.remove();grid.insertAdjacentHTML('afterbegin',`<button class="simple-document-option" type="button" data-document-media-url="${escapeHtml(payload.asset.url)}" aria-label="Choose ${escapeHtml(payload.asset.original_name)}"><i class="fa fa-file-text-o" aria-hidden="true"></i><span><strong>${escapeHtml(payload.asset.original_name)}</strong><small>${escapeHtml(payload.asset.mime_type||'Public document')}</small></span></button>`);chooseMedia(payload.asset.url);notify(payload.message)}catch(error){notify(error.message)}finally{event.target.value=''}});
 
     document.querySelectorAll('[data-save-changes]').forEach(button=>button.addEventListener('click',saveChanges));
     function refreshSimplePageThumbnailPreview(){const select=document.getElementById('simple-page-thumbnail'),image=document.getElementById('simple-page-thumbnail-preview'),url=select.selectedOptions[0]?.dataset.url||'';image.src=url;image.hidden=url===''}
@@ -1921,7 +3025,13 @@
     document.getElementById('open-reusable-library')?.addEventListener('click',()=>{if(!permissions.edit||!reusableSections.length)return;state.modalReturn=document.activeElement;const modal=document.getElementById('reusable-library-modal');modal.hidden=false;modal.querySelector('[data-attach-reusable]')?.focus()});
     document.getElementById('simple-promote-reusable-form')?.addEventListener('submit',promoteReusableSection);
     document.querySelectorAll('[data-add-section]').forEach(button=>button.addEventListener('click',()=>addSection(button.dataset.addSection)));
+    document.getElementById('simple-element-picker')?.addEventListener('click',event=>{const button=event.target.closest('[data-layout-pick-element]');if(button&&!button.disabled)addLayoutElementFromPicker(button.dataset.layoutPickElement)});
+    document.getElementById('simple-element-picker-select')?.addEventListener('change',event=>{const button=document.getElementById('simple-element-picker-add');button.disabled=!event.target.value||event.target.selectedOptions[0]?.disabled});
+    document.getElementById('simple-element-picker-add')?.addEventListener('click',()=>addLayoutElementFromPicker(document.getElementById('simple-element-picker-select').value));
     document.querySelectorAll('[data-close-modal]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('add-section-modal'))));document.querySelectorAll('[data-close-media]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('media-modal'))));document.querySelectorAll('[data-close-video-media]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('video-media-modal'))));
+    document.querySelectorAll('[data-close-document-media]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('document-media-modal'))));
+    document.querySelectorAll('[data-close-element-picker]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('element-picker-modal'))));
+    document.querySelectorAll('[data-close-help]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('simple-help-modal'))));
     document.querySelectorAll('[data-close-reusable-library]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('reusable-library-modal'))));
     document.querySelectorAll('[data-close-promote-reusable]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById('promote-reusable-modal'))));
     document.querySelectorAll('[data-cancel-section-delete]').forEach(button=>button.addEventListener('click',()=>closeDeleteConfirmation()));
@@ -1930,8 +3040,17 @@
     document.addEventListener('keydown',event=>{const modal=document.querySelector('.simple-modal:not([hidden])');if(!modal)return;if(event.key==='Escape'){if(modal.id==='simple-delete-modal')closeDeleteConfirmation();else closeModal(modal);return}if(event.key!=='Tab')return;const focusable=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')].filter(item=>item.getClientRects().length);if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}});
     function setPreviewViewport(viewport){document.querySelectorAll('.simple-viewport [data-viewport]').forEach(item=>{const active=item.dataset.viewport===viewport;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});preview.dataset.viewport=viewport}
     document.querySelectorAll('.simple-viewport [data-viewport]').forEach(button=>button.addEventListener('click',()=>setPreviewViewport(button.dataset.viewport)));
+    document.querySelectorAll('[data-editor-mode]').forEach(button=>button.addEventListener('click',()=>setEditorMode(button.dataset.editorMode)));
+    document.getElementById('simple-selection-breadcrumb')?.addEventListener('click',event=>{
+        const button=event.target.closest('[data-breadcrumb-kind]');
+        if(!button)return;
+        const block=current();
+        if(!block)return;
+        if(button.dataset.breadcrumbKind==='section')selectSection(block.uuid,{force:true,focus:'inspector'});
+        else selectLayoutNode(block,button.dataset.breadcrumbKind,Number(button.dataset.layoutRow),Number(button.dataset.layoutColumn??-1),Number(button.dataset.layoutElement??-1),{focus:'inspector'});
+    });
     if(window.matchMedia('(max-width:520px)').matches)setPreviewViewport('mobile');else if(window.matchMedia('(max-width:880px)').matches)setPreviewViewport('tablet');
-    document.getElementById('simple-help').addEventListener('click',()=>notify(permissions.edit?'Click text in the preview to edit it directly, or use the fields on the right. Your draft is backed up automatically until you save.':'This is a read-only preview. Ask an administrator for Page Builder edit access to make changes.'));
+    document.getElementById('simple-help').addEventListener('click',()=>{state.modalReturn=document.activeElement;const modal=document.getElementById('simple-help-modal');modal.hidden=false;modal.querySelector('.simple-close')?.focus()});
     document.addEventListener('keydown',event=>{if(!permissions.edit||!(event.ctrlKey||event.metaKey)||event.altKey||!['z','y'].includes(event.key.toLowerCase())||event.target.matches('input,textarea,select,[contenteditable="true"]'))return;event.preventDefault();if(event.key.toLowerCase()==='y'||event.shiftKey)redoChange();else undoChange()});
     window.addEventListener('beforeunload',event=>{if(!hasDirty()||state.leaving)return;event.preventDefault();event.returnValue='' });
     document.addEventListener('click',event=>{const link=event.target.closest('a[href]');if(!link||!hasDirty()||link.target==='_blank')return;if(!confirm('Leave this page and discard your unsaved changes?'))event.preventDefault();else{state.leaving=true;clearDraft()}},true);

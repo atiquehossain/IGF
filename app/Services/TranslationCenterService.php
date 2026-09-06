@@ -22,6 +22,7 @@ use App\Models\Testimonial;
 use App\Models\TranslationLocale;
 use App\Models\TranslationString;
 use App\Models\VolunteerCause;
+use App\Support\PageBuilderElementManifest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +96,8 @@ class TranslationCenterService
         private SiteSettingService $settings,
         private ContentSanitizer $sanitizer,
         private PageCategoryTranslationMapper $categoryMapper,
-        private PageEditorVersionService $editorVersions
+        private PageEditorVersionService $editorVersions,
+        private LayoutBlockContentService $layoutBlocks
     ) {
     }
 
@@ -158,6 +160,12 @@ class TranslationCenterService
      */
     public function prepareBlockTranslationContent(array $content): array
     {
+        if ($this->isLayoutContent($content)) {
+            $this->assertSupportedLayoutTranslationStructure($content);
+
+            return $this->blankLayoutTranslationValues($content);
+        }
+
         return $this->blankTranslatedBlockValues($content);
     }
 
@@ -304,6 +312,7 @@ class TranslationCenterService
                 ->filter(fn (Page $page): bool => !$page->trashed() && $page->language === $targetLocale)
                 ->keyBy('uuid')
                 ->filter(fn (Page $page, string $uuid): bool => $pageSources->has($uuid));
+            $this->assertLayoutsCanFollowPublication($pageSources, $pageTargets);
             $categorySources = $lockedCategories
                 ->filter(fn (Category $category): bool => !$category->trashed() && $category->language === $sourceLocale)
                 ->keyBy('uuid');
@@ -421,6 +430,67 @@ class TranslationCenterService
 
             return $counts;
         });
+    }
+
+    /**
+     * A damaged or newer source or target layout is intentionally absent from
+     * translation rows, but that must never make the locale appear complete
+     * enough to expose stale content. Check both locked page states before any
+     * publication fields are written. Draft/private source plans may still hide
+     * an affected page so an administrator is never trapped with unsafe content.
+     */
+    private function assertLayoutsCanFollowPublication(Collection $sources, Collection $targets): void
+    {
+        foreach ($sources as $source) {
+            if (! $this->pagePublicationCanBecomeVisible($source)) {
+                continue;
+            }
+
+            $target = $targets->get($source->uuid);
+            if (! $target) {
+                continue;
+            }
+
+            $sourceBlocks = $source->blocks()->with('reusableBlock')->get();
+            if ($sourceBlocks->contains(fn (PageBlock $block): bool => $block->type === 'layout'
+                && ! $this->layoutTranslationContentIsEligible($block->resolvedContent()))) {
+                $this->throwUnsafeLayoutPublication();
+            }
+
+            $targetBlocks = $target->blocks()->with('reusableBlock')->get();
+            $targetBlocksByTranslationKey = $targetBlocks->keyBy(
+                fn (PageBlock $block): string => (string) ($block->translation_key ?: $block->uuid)
+            );
+
+            foreach ($sourceBlocks->where('type', 'layout') as $sourceBlock) {
+                $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
+                $targetBlock = $targetBlocksByTranslationKey->get($translationKey);
+                if ($targetBlock
+                    && ($targetBlock->type !== 'layout'
+                        || ! $this->layoutTranslationContentIsEligible($targetBlock->resolvedContent()))) {
+                    $this->throwUnsafeLayoutPublication();
+                }
+            }
+
+            if ($targetBlocks->contains(fn (PageBlock $block): bool => $block->type === 'layout'
+                && ! $this->layoutTranslationContentIsEligible($block->resolvedContent()))) {
+                $this->throwUnsafeLayoutPublication();
+            }
+        }
+    }
+
+    private function pagePublicationCanBecomeVisible(Page $page): bool
+    {
+        return (bool) $page->status
+            && in_array((string) $page->publication_status, ['published', 'scheduled'], true)
+            && (string) $page->visibility !== 'private';
+    }
+
+    private function throwUnsafeLayoutPublication(): never
+    {
+        throw ValidationException::withMessages([
+            'translations' => 'This language cannot be published because one visual section needed for translation is damaged or was saved by a newer editor. Repair or replace that section in the Page Builder, then try again. Nothing was published.',
+        ]);
     }
 
     private function assertFundingDestinationsRemainAvailable(
@@ -690,9 +760,20 @@ class TranslationCenterService
             foreach ($source->blocks as $block) {
                 $translationKey = (string) ($block->translation_key ?: $block->uuid);
                 $targetBlock = $targetBlocks->get($translationKey);
-                if ($block->type === 'layout' && $this->layoutHasStableIds($block->resolvedContent())) {
+                if ($block->type === 'layout') {
+                    $sourceContent = $block->resolvedContent();
+                    if (! $this->layoutTranslationContentIsEligible($sourceContent)
+                        || ($targetBlock instanceof PageBlock
+                            && ($targetBlock->type !== 'layout'
+                                || ! $this->layoutTranslationContentIsEligible($targetBlock->resolvedContent())))) {
+                        // A layout whose schema, closed structure, or stable
+                        // identities cannot be trusted must never fall through
+                        // to generic position-based translation rows.
+                        continue;
+                    }
+
                     $targetContent = $targetBlock?->reusable_block_id ? [] : ($targetBlock?->content ?? []);
-                    foreach ($this->flattenLayoutContent($block->resolvedContent()) as $entry) {
+                    foreach ($this->flattenLayoutContent($sourceContent) as $entry) {
                         $rows->push($this->row(
                             [
                                 'type' => 'block',
@@ -705,7 +786,7 @@ class TranslationCenterService
                             ],
                             'pages',
                             'Page · ' . $source->name . ' / ' . ($block->resolvedLabel() ?: config("page-builder.block_types.{$block->type}", Str::headline($block->type))),
-                            Str::headline($entry['field']),
+                            $entry['label'],
                             $entry['value'],
                             $this->layoutTranslationValue(
                                 $targetContent,
@@ -935,24 +1016,101 @@ class TranslationCenterService
         return $result;
     }
 
+    private function assertSupportedLayoutTranslationStructure(array $content): void
+    {
+        try {
+            $this->layoutBlocks->assertStoredVersionTwoIsValid($content, 'translations.layout');
+        } catch (ValidationException) {
+            throw ValidationException::withMessages([
+                'translations' => 'This visual layout cannot be prepared for translation because its saved structure or editor version is not supported. Nothing was changed.',
+            ]);
+        }
+    }
+
+    private function assertPersistableLayoutTranslationDraft(array $content): void
+    {
+        try {
+            // This is deliberately the stored-draft guard, not full authoring
+            // validation: required translated strings are allowed to remain
+            // blank, while aggregate element and document byte limits still
+            // protect every subsequent visit to the visual editor.
+            $this->layoutBlocks->assertStoredVersionTwoIsValid($content, 'translations.layout');
+        } catch (ValidationException) {
+            throw ValidationException::withMessages([
+                'translations' => 'These translations would make this visual layout too large or damage its saved structure. Shorten some wording in this section; nothing was saved.',
+            ]);
+        }
+
+        if (! $this->layoutHasStableIds($content)) {
+            $this->throwStalePrecondition();
+        }
+    }
+
+    private function layoutTranslationContentIsEligible(array $content): bool
+    {
+        try {
+            $this->layoutBlocks->assertStoredVersionTwoIsValid($content, 'translations.layout');
+        } catch (ValidationException) {
+            return false;
+        }
+
+        return $this->layoutHasStableIds($content);
+    }
+
     private function layoutHasStableIds(array $content): bool
     {
         $rowIds = [];
+        $columnIds = [];
         $elementIds = [];
+        $subitemIds = [];
+        $requiresColumnIds = (int) ($content['schema_version'] ?? 1) >= 2;
         foreach ((array) ($content['rows'] ?? []) as $row) {
             $rowId = is_array($row) ? (string) ($row['id'] ?? '') : '';
-            if (!Str::isUuid($rowId) || isset($rowIds[$rowId])) {
+            $rowIdentity = strtolower($rowId);
+            if (! Str::isUuid($rowId) || isset($rowIds[$rowIdentity])) {
                 return false;
             }
-            $rowIds[$rowId] = true;
+            $rowIds[$rowIdentity] = true;
 
             foreach ((array) data_get($row, 'columns', []) as $column) {
+                $columnId = is_array($column) ? (string) ($column['id'] ?? '') : '';
+                $columnIdentity = strtolower($columnId);
+                if ($requiresColumnIds
+                    && (! Str::isUuid($columnId) || isset($columnIds[$columnIdentity]))) {
+                    return false;
+                }
+                if (Str::isUuid($columnId)) {
+                    $columnIds[$columnIdentity] = true;
+                }
+
                 foreach ((array) data_get($column, 'elements', []) as $element) {
                     $elementId = is_array($element) ? (string) ($element['id'] ?? '') : '';
-                    if (!Str::isUuid($elementId) || isset($elementIds[$elementId])) {
+                    $elementIdentity = strtolower($elementId);
+                    if (! Str::isUuid($elementId) || isset($elementIds[$elementIdentity])) {
                         return false;
                     }
-                    $elementIds[$elementId] = true;
+                    $elementIds[$elementIdentity] = true;
+
+                    $definition = is_array($element) ? $this->layoutElementDefinition($element) : null;
+                    if ($definition === null) {
+                        return false;
+                    }
+                    foreach ((array) ($definition['fields'] ?? []) as $field => $fieldDefinition) {
+                        if (($fieldDefinition['kind'] ?? null) !== 'repeater') {
+                            continue;
+                        }
+                        $identityField = (string) ($fieldDefinition['item_identity'] ?? '');
+                        foreach ((array) ($element[$field] ?? []) as $item) {
+                            $itemId = is_array($item) ? (string) ($item[$identityField] ?? '') : '';
+                            $itemIdentity = strtolower($itemId);
+                            if ($identityField === ''
+                                || ! Str::isUuid($itemId)
+                                || isset($subitemIds[$itemIdentity])) {
+                                return false;
+                            }
+                            $subitemIds[$itemIdentity] = true;
+                        }
+                    }
                 }
             }
         }
@@ -961,7 +1119,7 @@ class TranslationCenterService
     }
 
     /**
-     * @return list<array{row_id:string,element_id:string,field:string,value:string}>
+     * @return list<array{row_id:string,element_id:string,field:string,label:string,value:string}>
      */
     private function flattenLayoutContent(array $content): array
     {
@@ -974,17 +1132,11 @@ class TranslationCenterService
                         continue;
                     }
                     $elementId = (string) ($element['id'] ?? '');
-                    foreach ($element as $field => $value) {
-                        if (!is_string($value)
-                            || trim(strip_tags($value)) === ''
-                            || !$this->isTranslatableBlockKey((string) $field)) {
-                            continue;
-                        }
+                    foreach ($this->layoutElementTranslationFields($element) as $field) {
                         $entries[] = [
                             'row_id' => $rowId,
                             'element_id' => $elementId,
-                            'field' => (string) $field,
-                            'value' => $value,
+                            ...$field,
                         ];
                     }
                 }
@@ -1007,7 +1159,7 @@ class TranslationCenterService
             foreach ((array) ($row['columns'] ?? []) as $column) {
                 foreach ((array) data_get($column, 'elements', []) as $element) {
                     if (is_array($element) && (string) ($element['id'] ?? '') === $elementId) {
-                        return is_string($element[$field] ?? null) ? (string) $element[$field] : '';
+                        return $this->layoutElementTranslationValue($element, $field);
                     }
                 }
             }
@@ -1020,9 +1172,102 @@ class TranslationCenterService
             foreach ((array) data_get($row, 'columns', []) as $column) {
                 foreach ((array) data_get($column, 'elements', []) as $element) {
                     if (is_array($element) && (string) ($element['id'] ?? '') === $elementId) {
-                        return is_string($element[$field] ?? null) ? (string) $element[$field] : '';
+                        return $this->layoutElementTranslationValue($element, $field);
                     }
                 }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @return list<array{field:string,label:string,value:string}>
+     */
+    private function layoutElementTranslationFields(array $element, bool $includeEmpty = false): array
+    {
+        $definition = $this->layoutElementDefinition($element);
+        if ($definition === null) {
+            return [];
+        }
+
+        $entries = [];
+        foreach ($definition['fields'] as $field => $fieldDefinition) {
+            if (($fieldDefinition['kind'] ?? null) !== 'repeater') {
+                $value = $element[$field] ?? null;
+                if (! ($fieldDefinition['translatable'] ?? false)
+                    || ! is_string($value)
+                    || (! $includeEmpty && trim(strip_tags($value)) === '')) {
+                    continue;
+                }
+                $entries[] = [
+                    'field' => (string) $field,
+                    'label' => (string) ($fieldDefinition['label'] ?? Str::headline((string) $field)),
+                    'value' => $value,
+                ];
+                continue;
+            }
+
+            $identityField = (string) ($fieldDefinition['item_identity'] ?? '');
+            foreach ((array) ($element[$field] ?? []) as $item) {
+                if (! is_array($item) || ! Str::isUuid((string) ($item[$identityField] ?? ''))) {
+                    continue;
+                }
+                $itemId = (string) $item[$identityField];
+                foreach ((array) ($fieldDefinition['item_fields'] ?? []) as $itemField => $itemDefinition) {
+                    $value = $item[$itemField] ?? null;
+                    if (! ($itemDefinition['translatable'] ?? false)
+                        || ! is_string($value)
+                        || (! $includeEmpty && trim(strip_tags($value)) === '')) {
+                        continue;
+                    }
+                    $entries[] = [
+                        'field' => "{$field}.{$itemId}.{$itemField}",
+                        'label' => (string) ($itemDefinition['label'] ?? Str::headline((string) $itemField)),
+                        'value' => $value,
+                    ];
+                }
+            }
+        }
+
+        return $entries;
+    }
+
+    private function layoutElementTranslationValue(array $element, string $fieldPath): string
+    {
+        $definition = $this->layoutElementDefinition($element);
+        if ($definition === null) {
+            return '';
+        }
+
+        $segments = explode('.', $fieldPath);
+        if (count($segments) === 1) {
+            $fieldDefinition = $definition['fields'][$segments[0]] ?? null;
+            $value = $element[$segments[0]] ?? null;
+
+            return is_array($fieldDefinition)
+                && ($fieldDefinition['translatable'] ?? false)
+                && is_string($value)
+                    ? $value
+                    : '';
+        }
+
+        if (count($segments) !== 3) {
+            return '';
+        }
+        [$field, $itemId, $itemField] = $segments;
+        $fieldDefinition = $definition['fields'][$field] ?? null;
+        if (! is_array($fieldDefinition) || ($fieldDefinition['kind'] ?? null) !== 'repeater') {
+            return '';
+        }
+        $itemDefinition = $fieldDefinition['item_fields'][$itemField] ?? null;
+        if (! is_array($itemDefinition) || ! ($itemDefinition['translatable'] ?? false)) {
+            return '';
+        }
+        $identityField = (string) ($fieldDefinition['item_identity'] ?? '');
+        foreach ((array) ($element[$field] ?? []) as $item) {
+            if (is_array($item) && (string) ($item[$identityField] ?? '') === $itemId) {
+                return is_string($item[$itemField] ?? null) ? (string) $item[$itemField] : '';
             }
         }
 
@@ -1387,8 +1632,16 @@ class TranslationCenterService
         $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
         $targetBlock = $targetPage->blocks()->where('translation_key', $translationKey)->firstOrFail();
 
-        if ($sourceBlock->type === 'layout'
-            && isset($identity['layout_row_id'], $identity['layout_element_id'], $identity['field'])) {
+        if ($sourceBlock->type === 'layout') {
+            if (! isset($identity['layout_row_id'], $identity['layout_element_id'], $identity['field'])
+                || $targetBlock->type !== 'layout'
+                || ! $this->layoutTranslationContentIsEligible($sourceBlock->resolvedContent())
+                || ! $this->layoutTranslationContentIsEligible($targetBlock->resolvedContent())) {
+                // Never let a stale/future layout identity reach the generic
+                // dot-path writer below. That writer has no identity contract.
+                $this->throwStalePrecondition();
+            }
+
             $content = $this->reconcileLayoutTranslationContent(
                 $sourceBlock->resolvedContent(),
                 $targetBlock->content ?? []
@@ -1402,7 +1655,9 @@ class TranslationCenterService
             )) {
                 $this->throwStalePrecondition();
             }
-            $targetBlock->update(['content' => $this->sanitizer->sanitizeBlockContent($content)]);
+            $content = $this->sanitizer->sanitizeBlockContent($content);
+            $this->assertPersistableLayoutTranslationDraft($content);
+            $targetBlock->update(['content' => $content]);
 
             return [(string) $targetPage->uuid];
         }
@@ -1429,7 +1684,8 @@ class TranslationCenterService
             ->where('language', $sourceLocale)
             ->firstOrFail();
         $sourceBlock = $sourcePage->blocks()->whereKey($identity['source_block_id'])->firstOrFail();
-        if ($sourceBlock->type !== 'layout' || !$this->layoutHasStableIds($sourceBlock->resolvedContent())) {
+        if ($sourceBlock->type !== 'layout'
+            || ! $this->layoutTranslationContentIsEligible($sourceBlock->resolvedContent())) {
             return null;
         }
 
@@ -1438,12 +1694,19 @@ class TranslationCenterService
             ->where('uuid', $sourcePage->uuid)
             ->where('language', $targetLocale)
             ->first();
-        $targetBlockExisted = $existingTargetPage?->blocks()
+        $existingTargetBlock = $existingTargetPage?->blocks()
             ->where('translation_key', $translationKey)
-            ->exists() ?? false;
+            ->first();
+        if ($existingTargetBlock instanceof PageBlock
+            && ($existingTargetBlock->type !== 'layout'
+                || ! $this->layoutTranslationContentIsEligible($existingTargetBlock->resolvedContent()))) {
+            return null;
+        }
+
         $targetPage = $this->ensureTargetPage($sourcePage, $targetLocale);
         $targetBlock = $targetPage->blocks()->where('translation_key', $translationKey)->firstOrFail();
-        if ($targetBlockExisted && !$this->synchronizeTargetLayoutBlock($sourceBlock, $targetBlock)) {
+        if ($existingTargetBlock instanceof PageBlock
+            && ! $this->synchronizeTargetLayoutBlock($sourceBlock, $targetBlock)) {
             return null;
         }
 
@@ -1463,7 +1726,7 @@ class TranslationCenterService
 
         foreach ($sourcePage->blocks()->where('type', 'layout')->orderBy('id')->get() as $sourceBlock) {
             $sourceContent = $sourceBlock->resolvedContent();
-            if (!$this->layoutHasStableIds($sourceContent)) {
+            if (! $this->layoutTranslationContentIsEligible($sourceContent)) {
                 continue;
             }
 
@@ -1494,12 +1757,21 @@ class TranslationCenterService
 
     private function synchronizeTargetLayoutBlock(PageBlock $sourceBlock, PageBlock $targetBlock): bool
     {
+        if ($sourceBlock->type !== 'layout'
+            || $targetBlock->type !== 'layout'
+            || $targetBlock->reusable_block_id !== null
+            || ! $this->layoutTranslationContentIsEligible($sourceBlock->resolvedContent())
+            || ! $this->layoutTranslationContentIsEligible($targetBlock->content ?? [])) {
+            return false;
+        }
+
         $content = $this->sanitizer->sanitizeBlockContent(
             $this->reconcileLayoutTranslationContent(
                 $sourceBlock->resolvedContent(),
                 $targetBlock->content ?? []
             )
         );
+        $this->assertPersistableLayoutTranslationDraft($content);
 
         if ($content === ($targetBlock->content ?? [])) {
             return false;
@@ -1512,6 +1784,11 @@ class TranslationCenterService
 
     private function reconcileLayoutTranslationContent(array $source, array $target): array
     {
+        if (! $this->layoutTranslationContentIsEligible($source)
+            || ! $this->layoutTranslationContentIsEligible($target)) {
+            $this->throwStalePrecondition();
+        }
+
         $translations = [];
         foreach ((array) ($target['rows'] ?? []) as $row) {
             foreach ((array) data_get($row, 'columns', []) as $column) {
@@ -1520,13 +1797,8 @@ class TranslationCenterService
                         continue;
                     }
                     $elementId = (string) $element['id'];
-                    foreach ($element as $field => $value) {
-                        if (is_string($value) && $this->isTranslatableBlockKey((string) $field)) {
-                            $translations[$elementId][(string) $field] =
-                                ($element['type'] ?? null) === 'rich_text' && $field === 'body'
-                                    ? $this->sanitizer->sanitizeLayoutRichText($value)
-                                    : $value;
-                        }
+                    foreach ($this->layoutElementTranslationFields($element, true) as $entry) {
+                        $translations[$elementId][$entry['field']] = $entry['value'];
                     }
                 }
             }
@@ -1537,12 +1809,8 @@ class TranslationCenterService
             foreach ($row['columns'] as &$column) {
                 foreach ($column['elements'] as &$element) {
                     $saved = $translations[(string) ($element['id'] ?? '')] ?? [];
-                    foreach ($element as $field => $value) {
-                        if (is_string($value)
-                            && $this->isTranslatableBlockKey((string) $field)
-                            && array_key_exists($field, $saved)) {
-                            $element[$field] = $saved[$field];
-                        }
+                    foreach ($saved as $field => $value) {
+                        $this->setLayoutElementTranslationValue($element, (string) $field, (string) $value);
                     }
                 }
                 unset($element);
@@ -1561,7 +1829,7 @@ class TranslationCenterService
         string $field,
         string $value
     ): bool {
-        if (!$this->isTranslatableBlockKey($field)) {
+        if (!isset($content['rows']) || !is_array($content['rows'])) {
             return false;
         }
 
@@ -1575,14 +1843,8 @@ class TranslationCenterService
                         if ((string) ($element['id'] ?? '') !== $elementId) {
                             continue;
                         }
-                        if (!array_key_exists($field, $element) || !is_string($element[$field])) {
-                            return false;
-                        }
-                        $element[$field] = ($element['type'] ?? null) === 'rich_text' && $field === 'body'
-                            ? $this->sanitizer->sanitizeLayoutRichText($value)
-                            : $value;
 
-                        return true;
+                        return $this->setLayoutElementTranslationValue($element, $field, $value);
                     }
                     unset($element);
                 }
@@ -1592,6 +1854,83 @@ class TranslationCenterService
         }
 
         return false;
+    }
+
+    private function setLayoutElementTranslationValue(array &$element, string $fieldPath, string $value): bool
+    {
+        $definition = $this->layoutElementDefinition($element);
+        if ($definition === null) {
+            return false;
+        }
+
+        $segments = explode('.', $fieldPath);
+        if (count($segments) === 1) {
+            $field = $segments[0];
+            $fieldDefinition = $definition['fields'][$field] ?? null;
+            if (!is_array($fieldDefinition)
+                || !($fieldDefinition['translatable'] ?? false)
+                || !array_key_exists($field, $element)
+                || !is_string($element[$field])) {
+                return false;
+            }
+            $element[$field] = $this->sanitizeLayoutTranslationValue($value, $fieldDefinition);
+
+            return true;
+        }
+
+        if (count($segments) !== 3) {
+            return false;
+        }
+        [$field, $itemId, $itemField] = $segments;
+        $fieldDefinition = $definition['fields'][$field] ?? null;
+        if (!is_array($fieldDefinition)
+            || ($fieldDefinition['kind'] ?? null) !== 'repeater'
+            || !is_array($element[$field] ?? null)) {
+            return false;
+        }
+        $itemDefinition = $fieldDefinition['item_fields'][$itemField] ?? null;
+        if (!is_array($itemDefinition) || !($itemDefinition['translatable'] ?? false)) {
+            return false;
+        }
+        $identityField = (string) ($fieldDefinition['item_identity'] ?? '');
+        if ($identityField === '' || !Str::isUuid($itemId)) {
+            return false;
+        }
+
+        foreach ($element[$field] as &$item) {
+            if (!is_array($item) || (string) ($item[$identityField] ?? '') !== $itemId) {
+                continue;
+            }
+            if (!array_key_exists($itemField, $item) || !is_string($item[$itemField])) {
+                unset($item);
+
+                return false;
+            }
+            $item[$itemField] = $this->sanitizeLayoutTranslationValue($value, $itemDefinition);
+            unset($item);
+
+            return true;
+        }
+        unset($item);
+
+        return false;
+    }
+
+    private function sanitizeLayoutTranslationValue(string $value, array $fieldDefinition): string
+    {
+        $sanitized = ($fieldDefinition['kind'] ?? null) === 'rich_text'
+            ? $this->sanitizer->sanitizeLayoutRichText($value)
+            : trim(strip_tags(str_replace("\0", '', $value)));
+        $maxLength = (int) data_get($fieldDefinition, 'bounds.max_length', 0);
+
+        if ($maxLength > 0 && Str::length($sanitized) > $maxLength) {
+            $label = Str::lower((string) ($fieldDefinition['label'] ?? 'text'));
+            throw ValidationException::withMessages([
+                'translations' => "The translated {$label} may not exceed {$maxLength} characters after formatting is cleaned. Nothing was saved.",
+            ]);
+        }
+
+        return $sanitized;
     }
 
     private function saveMenu(array $identity, string $sourceLocale, string $targetLocale, string $value): void
@@ -1714,12 +2053,25 @@ class TranslationCenterService
         $existing = $target->blocks()->get()->keyBy('translation_key');
         foreach ($source->blocks()->get() as $sourceBlock) {
             $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
+            $sourceContent = $sourceBlock->resolvedContent();
+            if ($sourceBlock->type === 'layout'
+                && ! $this->layoutTranslationContentIsEligible($sourceContent)) {
+                // Do not create, detach, or rewrite a target from a layout the
+                // current editor cannot safely identify.
+                continue;
+            }
+
             if ($existing->has($translationKey)) {
                 $existingTarget = $existing->get($translationKey);
                 if ($existingTarget?->reusable_block_id) {
+                    if ($sourceBlock->type === 'layout'
+                        && ($existingTarget->type !== 'layout'
+                            || ! $this->layoutTranslationContentIsEligible($existingTarget->resolvedContent()))) {
+                        continue;
+                    }
                     $existingTarget->update([
                         'reusable_block_id' => null,
-                        'content' => $this->prepareBlockTranslationContent($sourceBlock->resolvedContent()),
+                        'content' => $this->prepareBlockTranslationContent($sourceContent),
                         'settings' => $sourceBlock->resolvedSettings(),
                     ]);
                 }
@@ -1730,7 +2082,7 @@ class TranslationCenterService
             $copy->uuid = (string) Str::uuid();
             $copy->translation_key = $translationKey;
             $copy->reusable_block_id = null;
-            $copy->content = $this->prepareBlockTranslationContent($sourceBlock->resolvedContent());
+            $copy->content = $this->prepareBlockTranslationContent($sourceContent);
             $copy->settings = $sourceBlock->resolvedSettings();
             $copy->save();
         }
@@ -1750,6 +2102,83 @@ class TranslationCenterService
                 $content[$key] = '';
             }
         }
+
+        return $content;
+    }
+
+    private function isLayoutContent(array $content): bool
+    {
+        return array_key_exists('rows', $content) || array_key_exists('schema_version', $content);
+    }
+
+    /** @return array<string, mixed>|null */
+    private function layoutElementDefinition(array $element): ?array
+    {
+        $type = is_string($element['type'] ?? null) ? $element['type'] : '';
+        if ($type === '' || !PageBuilderElementManifest::has($type)) {
+            return null;
+        }
+
+        $definition = PageBuilderElementManifest::get($type);
+
+        return ($definition['mode'] ?? null) === 'static' ? $definition : null;
+    }
+
+    private function blankLayoutTranslationValues(array $content): array
+    {
+        foreach ($content['rows'] as &$row) {
+            if (!is_array($row) || !is_array($row['columns'] ?? null)) {
+                continue;
+            }
+            foreach ($row['columns'] as &$column) {
+                if (!is_array($column) || !is_array($column['elements'] ?? null)) {
+                    continue;
+                }
+                foreach ($column['elements'] as &$element) {
+                    if (!is_array($element)) {
+                        continue;
+                    }
+                    $definition = $this->layoutElementDefinition($element);
+                    if ($definition === null) {
+                        // Preserve translation-draft safety for legacy or future
+                        // element types that are not yet part of this contract.
+                        $element = $this->blankTranslatedBlockValues($element);
+                        continue;
+                    }
+
+                    foreach ($definition['fields'] as $field => $fieldDefinition) {
+                        if (($fieldDefinition['kind'] ?? null) !== 'repeater') {
+                            if (($fieldDefinition['translatable'] ?? false)
+                                && is_string($element[$field] ?? null)) {
+                                $element[$field] = '';
+                            }
+                            continue;
+                        }
+
+                        $items = $element[$field] ?? null;
+                        if (!is_array($items)) {
+                            continue;
+                        }
+                        foreach ($items as &$item) {
+                            if (!is_array($item)) {
+                                continue;
+                            }
+                            foreach ((array) ($fieldDefinition['item_fields'] ?? []) as $itemField => $itemDefinition) {
+                                if (($itemDefinition['translatable'] ?? false)
+                                    && is_string($item[$itemField] ?? null)) {
+                                    $item[$itemField] = '';
+                                }
+                            }
+                        }
+                        unset($item);
+                        $element[$field] = $items;
+                    }
+                }
+                unset($element);
+            }
+            unset($column);
+        }
+        unset($row);
 
         return $content;
     }

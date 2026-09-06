@@ -137,6 +137,7 @@ jobs:
       - name: Prepare isolated browser-test environment
         run: |
           cp .env.cypress.example .env.cypress
+          php artisan key:generate --env=cypress --force
           runtime_value="$(openssl rand -hex 24)"
           echo "LOCAL_ADMIN_PASSWORD=${runtime_value}" >> "$GITHUB_ENV"
           echo "CYPRESS_ADMIN_PASSWORD=${runtime_value}" >> "$GITHUB_ENV"

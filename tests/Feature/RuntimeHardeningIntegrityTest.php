@@ -297,6 +297,7 @@ class RuntimeHardeningIntegrityTest extends TestCase
         $this->assertStringContainsString("baseUrl: 'http://127.0.0.1:8001/'", $cypressConfig);
         $this->assertStringContainsString('allowCypressEnv: false', $cypressConfig);
         $this->assertStringContainsString('browser-smoke:', $workflow);
+        $this->assertStringContainsString('php artisan key:generate --env=cypress --force', $workflow);
         $this->assertStringContainsString('npm run cypress:smoke', $workflow);
         $this->assertStringContainsString('name: Isolated administrator browser smoke', $pipeline);
         $this->assertStringContainsString('CYPRESS_ADMIN_PASSWORD="$runtime_value"', $pipeline);

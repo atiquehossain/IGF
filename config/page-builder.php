@@ -19,6 +19,7 @@ return [
         'video' => 'Video',
         'cta' => 'Call to action',
         'newsletter' => 'Newsletter signup',
+        'layout' => 'Visual layout',
         'spacer' => 'Spacing',
         'custom_html' => 'Custom HTML',
     ],
@@ -41,6 +42,97 @@ return [
         'video' => ['label' => 'Video', 'icon' => 'fa-play-circle', 'description' => 'Embed a YouTube or Vimeo video, or play an uploaded video.'],
         'cta' => ['label' => 'Call to action', 'icon' => 'fa-bullhorn', 'description' => 'Invite visitors to donate, volunteer, or learn more.'],
         'newsletter' => ['label' => 'Newsletter signup', 'icon' => 'fa-envelope', 'description' => 'Let visitors subscribe for updates.'],
+        'layout' => ['label' => 'Visual layout', 'icon' => 'fa-columns', 'description' => 'Build controlled rows and columns, then place text, media, buttons, dividers, or spacing inside them.'],
+    ],
+
+    /*
+     * Visual layout is intentionally a closed design system. The editor and
+     * validator share these tokens, so a saved page can never introduce an
+     * arbitrary grid, class name, colour, or element type.
+     */
+    'layout' => [
+        'limits' => [
+            'payload_bytes' => 524288,
+            'rows' => 12,
+            'columns' => 4,
+            'elements_per_column' => 12,
+        ],
+        'presets' => [
+            'full' => [
+                'label' => 'One column',
+                'columns' => 1,
+                'widths' => ['1fr'],
+            ],
+            'halves' => [
+                'label' => 'Two equal columns',
+                'columns' => 2,
+                'widths' => ['1fr', '1fr'],
+            ],
+            'thirds' => [
+                'label' => 'Three equal columns',
+                'columns' => 3,
+                'widths' => ['1fr', '1fr', '1fr'],
+            ],
+            'quarter' => [
+                'label' => 'Four equal columns',
+                'columns' => 4,
+                'widths' => ['1fr', '1fr', '1fr', '1fr'],
+            ],
+            'third_two_thirds' => [
+                'label' => 'One third / two thirds',
+                'columns' => 2,
+                'widths' => ['1fr', '2fr'],
+            ],
+            'two_thirds_third' => [
+                'label' => 'Two thirds / one third',
+                'columns' => 2,
+                'widths' => ['2fr', '1fr'],
+            ],
+        ],
+        'widths' => [
+            'standard' => 'Standard',
+            'wide' => 'Wide',
+            'full' => 'Full width',
+        ],
+        'backgrounds' => [
+            'default' => ['label' => 'Default', 'swatch' => '#ffffff'],
+            'soft' => ['label' => 'Soft', 'swatch' => '#f7f3ef'],
+            'accent' => ['label' => 'Accent', 'swatch' => '#fff0e4'],
+            'dark' => ['label' => 'Dark', 'swatch' => '#231f20'],
+        ],
+        'spacings' => [
+            'compact' => 'Compact',
+            'standard' => 'Standard',
+            'generous' => 'Generous',
+        ],
+        'element_types' => [
+            'heading' => 'Heading',
+            'rich_text' => 'Rich text',
+            'image' => 'Image',
+            'video' => 'Video',
+            'button' => 'Button',
+            'divider' => 'Divider',
+            'spacer' => 'Spacer',
+        ],
+        'heading_levels' => [
+            'h2' => 'Heading 2',
+            'h3' => 'Heading 3',
+            'h4' => 'Heading 4',
+        ],
+        'video_source_types' => [
+            'upload' => 'Uploaded video',
+            'youtube' => 'YouTube',
+        ],
+        'button_styles' => [
+            'primary' => 'Primary',
+            'secondary' => 'Secondary',
+            'text' => 'Text link',
+        ],
+        'spacer_sizes' => [
+            'small' => 'Small',
+            'medium' => 'Medium',
+            'large' => 'Large',
+        ],
     ],
 
     /*
@@ -278,6 +370,27 @@ return [
             'heading' => 'Stories worth sharing',
             'body' => 'Receive field updates and opportunities to help.',
             'button_label' => 'Subscribe',
+        ],
+        'layout' => [
+            'rows' => [[
+                'layout' => 'full',
+                'width' => 'standard',
+                'background' => 'default',
+                'spacing' => 'standard',
+                'columns' => [[
+                    'elements' => [
+                        [
+                            'type' => 'heading',
+                            'text' => 'Section heading',
+                            'level' => 'h2',
+                        ],
+                        [
+                            'type' => 'rich_text',
+                            'body' => '<p>Add your content here.</p>',
+                        ],
+                    ],
+                ]],
+            ]],
         ],
         'spacer' => ['size' => 'medium'],
         'custom_html' => ['html' => ''],

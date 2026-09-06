@@ -53,6 +53,11 @@ class ContentSanitizer
         'th' => ['colspan', 'rowspan', 'scope'],
     ];
 
+    private const LAYOUT_RICH_TEXT_TAGS = [
+        'a', 'b', 'blockquote', 'br', 'em', 'h3', 'h4', 'li', 'ol', 'p',
+        'strong', 'u', 'ul',
+    ];
+
     public function sanitizeHtml(?string $html): string
     {
         $html = trim((string) $html);
@@ -132,6 +137,78 @@ class ContentSanitizer
         return trim($safeHtml);
     }
 
+    /**
+     * The controlled layout editor only authors text formatting, lists and
+     * links. Media and layout containers have dedicated managed elements, so
+     * accepting them inside v-html would bypass that closed schema.
+     */
+    public function sanitizeLayoutRichText(?string $html): string
+    {
+        $html = trim((string) $html);
+        if ($html === '') {
+            return '';
+        }
+
+        $previousErrors = libxml_use_internal_errors(true);
+        $document = new DOMDocument('1.0', 'UTF-8');
+        $document->loadHTML(
+            '<?xml encoding="UTF-8"><div id="igf-layout-sanitizer-root">' . $html . '</div>',
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+        );
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrors);
+
+        $xpath = new DOMXPath($document);
+        $root = $xpath->query('//*[@id="igf-layout-sanitizer-root"]')->item(0);
+        if (!$root instanceof DOMElement) {
+            return '';
+        }
+
+        $elements = [];
+        foreach ($xpath->query('.//*', $root) as $element) {
+            if ($element instanceof DOMElement) {
+                $elements[] = $element;
+            }
+        }
+
+        foreach ($elements as $element) {
+            if (!$element->parentNode) {
+                continue;
+            }
+
+            $tag = strtolower($element->tagName);
+            if (!in_array($tag, self::LAYOUT_RICH_TEXT_TAGS, true)) {
+                $this->removeElement(
+                    $element,
+                    in_array($tag, ['script', 'style', 'template', 'iframe', 'object', 'embed', 'svg', 'math'], true)
+                );
+                continue;
+            }
+
+            foreach (iterator_to_array($element->attributes) as $attribute) {
+                $name = strtolower($attribute->name);
+                if ($tag !== 'a' || $name !== 'href') {
+                    $element->removeAttribute($attribute->name);
+                    continue;
+                }
+
+                $safeUrl = $this->sanitizeLayoutRichTextUrl($attribute->value);
+                if ($safeUrl === '') {
+                    $element->removeAttribute($attribute->name);
+                } else {
+                    $element->setAttribute('href', $safeUrl);
+                }
+            }
+        }
+
+        $safeHtml = '';
+        foreach (iterator_to_array($root->childNodes) as $child) {
+            $safeHtml .= $document->saveHTML($child);
+        }
+
+        return trim($safeHtml);
+    }
+
     public function sanitizeCss(?string $css): string
     {
         $css = mb_substr((string) $css, 0, 50000);
@@ -192,6 +269,35 @@ class ContentSanitizer
         }
 
         return in_array($scheme, ['http', 'https', 'mailto', 'tel'], true) ? $url : '';
+    }
+
+    private function sanitizeLayoutRichTextUrl(mixed $url): string
+    {
+        $safeUrl = $this->sanitizeUrl($url);
+        if ($safeUrl === '') {
+            return '';
+        }
+        if (str_starts_with($safeUrl, '#')) {
+            return $safeUrl;
+        }
+        if (str_starts_with($safeUrl, '/') && !str_starts_with($safeUrl, '//')) {
+            return $safeUrl;
+        }
+        if (filter_var($safeUrl, FILTER_VALIDATE_URL) === false) {
+            return '';
+        }
+
+        $parts = parse_url($safeUrl);
+        if (!is_array($parts)
+            || strtolower((string) ($parts['scheme'] ?? '')) !== 'https'
+            || empty($parts['host'])
+            || isset($parts['user'])
+            || isset($parts['pass'])
+            || (isset($parts['port']) && (int) $parts['port'] !== 443)) {
+            return '';
+        }
+
+        return $safeUrl;
     }
 
     public function sanitizeBlockContent(?array $content): array

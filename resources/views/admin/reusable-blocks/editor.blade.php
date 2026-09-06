@@ -18,8 +18,9 @@
     .reuse-workspace{--orange:#ff7500;--brown:#9c4500;--ink:#191c1d;--muted:#68635f;--line:#e2dcd6;max-width:1480px;margin:24px auto;padding:0 22px;color:var(--ink)}
     .reuse-workspace *{box-sizing:border-box}.reuse-workspace__head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}.reuse-workspace__title{display:flex;min-width:0;align-items:center;gap:14px}.reuse-workspace__back,.reuse-btn{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#393532;font-weight:800;text-decoration:none!important;cursor:pointer}.reuse-workspace__back{width:44px;flex:0 0 44px;padding:0}.reuse-workspace h1{overflow:hidden;margin:0;font:700 clamp(27px,3vw,42px)/1.08 Georgia,serif;text-overflow:ellipsis;white-space:nowrap}.reuse-workspace__title p{margin:5px 0 0;color:var(--muted);font-size:13px}.reuse-head-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}.reuse-btn--primary{border-color:var(--brown);background:var(--brown);color:#fff}.reuse-btn--primary:hover{background:#783300;color:#fff}.reuse-btn:disabled{cursor:not-allowed;opacity:.48}.reuse-grid{display:grid;grid-template-columns:minmax(360px,520px) minmax(480px,1fr);align-items:start;gap:20px}.reuse-card{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 8px 24px rgba(35,28,23,.05)}.reuse-card__head{padding:18px 20px;border-bottom:1px solid var(--line);background:#fcfbfa}.reuse-card__head h2{margin:0;font:700 21px Georgia,serif}.reuse-card__head p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.reuse-card__body{padding:20px}.reuse-field{display:grid;gap:6px;margin:0 0 16px}.reuse-field>label,.reuse-field>span,.reuse-field legend{color:#4d4844;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.reuse-field input,.reuse-field textarea,.reuse-field select,.reuse-rich{width:100%;min-height:44px;padding:10px 11px;border:1px solid #d8d0c9;border-radius:8px;background:#fff;color:var(--ink);font:14px/1.45 Arial,sans-serif}.reuse-field textarea{min-height:96px;resize:vertical}.reuse-field input:focus,.reuse-field textarea:focus,.reuse-field select:focus,.reuse-rich:focus{border-color:var(--orange);outline:3px solid rgba(255,117,0,.14)}.reuse-field small{color:var(--muted);font-size:11px;line-height:1.45}.reuse-check{display:flex;min-height:44px;align-items:flex-start;gap:9px;margin:0 0 14px;color:#3e3a37;font-size:13px;line-height:1.45}.reuse-check input{width:19px;height:19px;flex:0 0 auto;margin-top:1px;accent-color:var(--orange)}.reuse-rich-toolbar{display:flex;gap:5px;padding:6px;border:1px solid #d8d0c9;border-bottom:0;border-radius:8px 8px 0 0;background:#f7f4f1}.reuse-rich-toolbar button{min-width:44px;min-height:40px;border:1px solid #ded7d1;border-radius:6px;background:#fff;font-weight:900}.reuse-rich{min-height:130px;border-radius:0 0 8px 8px;overflow:auto}.reuse-repeat{display:grid;gap:10px}.reuse-repeat-item,.reuse-object{padding:13px;border:1px solid var(--line);border-radius:10px;background:#faf9f7}.reuse-repeat-item>summary,.reuse-object>summary{display:flex;min-height:32px;align-items:center;justify-content:space-between;gap:10px;font-weight:850;cursor:pointer}.reuse-repeat-actions{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.reuse-repeat-actions button{min-height:40px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;font-size:12px;font-weight:800}.reuse-repeat-actions .is-danger{color:#a32b23}.reuse-section-group{margin:0 0 18px;padding:0;border:0}.reuse-section-group>legend{width:100%;margin:0 0 12px;padding:0;color:#2b2826;font:700 17px Georgia,serif;text-transform:none;letter-spacing:0}.reuse-media-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.reuse-media-preview{display:block;width:100%;max-height:180px;margin-top:8px;border-radius:9px;object-fit:contain;background:#f1efed}.reuse-notice{margin:0 0 18px;padding:14px 16px;border:1px solid #d8e3ef;border-radius:10px;background:#f4f8fc;color:#30475e;line-height:1.55}.reuse-notice--impact{border-color:#efc18f;background:#fff5e9;color:#66380d}.reuse-notice--safe{border-color:#b9dfc7;background:#f0faf4;color:#235b38}.reuse-notice strong{display:block;margin-bottom:3px}.reuse-impact-list{display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none}.reuse-impact-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,.72)}.reuse-impact-item strong,.reuse-impact-item small{display:block}.reuse-impact-item small{margin-top:2px;color:#6a5a4c}.reuse-impact-actions{display:flex;gap:5px}.reuse-impact-actions a{display:inline-flex;min-height:40px;align-items:center;padding:6px 9px;border:1px solid #dfc6ae;border-radius:7px;background:#fff;color:#6f3608;font-size:11px;font-weight:850;text-decoration:none}.reuse-save{position:sticky;z-index:8;bottom:0;margin:20px -20px -20px;padding:15px 20px;border-top:1px solid var(--line);background:rgba(255,255,255,.96);backdrop-filter:blur(8px)}.reuse-save__row{display:flex;align-items:center;justify-content:space-between;gap:12px}.reuse-save-state{color:var(--muted);font-size:12px;font-weight:750}.reuse-save-state.is-error{color:#a32920}.reuse-save-state.is-success{color:#24713f}.reuse-preview-card{position:sticky;top:18px}.reuse-preview-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:#fcfbfa}.reuse-viewport{display:flex;gap:4px;padding:3px;border-radius:8px;background:#eeece9}.reuse-viewport button{display:grid;width:44px;height:44px;place-items:center;border:0;border-radius:6px;background:transparent;color:#6d6762}.reuse-viewport button.is-active{background:#fff;color:var(--brown);box-shadow:0 1px 5px rgba(0,0,0,.12)}.reuse-preview-shell{display:flex;min-height:690px;padding:14px;justify-content:center;overflow:auto;background:#efeeec}.reuse-preview-frame{width:100%;height:660px;border:1px solid #d7d0ca;border-radius:9px;background:#fff;transition:width .18s}.reuse-preview-frame.is-tablet{width:min(100%,768px)}.reuse-preview-frame.is-mobile{width:min(100%,390px)}.reuse-preview-help{padding:10px 14px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}.reuse-errors{margin:0 0 18px;padding:14px 18px;border:1px solid #e8b8b4;border-radius:10px;background:#fff1f0;color:#8f2b25}.reuse-errors ul{margin:6px 0 0;padding-left:20px}.reuse-read-only{margin-bottom:18px}.reuse-advanced{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.reuse-advanced>summary{min-height:44px;color:var(--brown);font-weight:850;cursor:pointer}.reuse-empty{padding:20px;border:1px dashed #d8d0c9;border-radius:9px;color:var(--muted);text-align:center}.reuse-editor-help{margin:-7px 0 17px;color:var(--muted);font-size:11px;line-height:1.5}
     .reuse-managed-options{display:grid;gap:8px;padding:11px;border:1px solid var(--line);border-radius:9px;background:#faf9f7}.reuse-managed-option{display:flex;min-height:44px;align-items:flex-start;gap:9px;padding:8px;border-radius:7px;background:#fff}.reuse-managed-option input{width:18px;height:18px;flex:0 0 auto;margin-top:2px;accent-color:var(--orange)}.reuse-managed-option strong,.reuse-managed-option small{display:block}.reuse-managed-option small{margin-top:2px}
+    .reuse-layout-guide{margin:0 0 16px;padding:13px 14px;border-left:4px solid var(--orange);border-radius:8px;background:#fff6ed;color:#5d493b;font-size:12px;line-height:1.55}.reuse-layout-guide strong{display:block;margin-bottom:3px;color:var(--brown);font-size:13px}.reuse-layout-row{margin:0 0 14px;border:1px solid #dcd3cb;border-radius:11px;background:#f8f6f4}.reuse-layout-row__head,.reuse-layout-element__head{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px}.reuse-layout-row__title strong,.reuse-layout-row__title small{display:block}.reuse-layout-row__title strong{font-size:13px}.reuse-layout-row__title small{margin-top:3px;color:var(--muted);font-size:10px}.reuse-layout-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}.reuse-layout-actions button{display:grid;min-width:44px;min-height:44px;padding:6px;place-items:center;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--brown);cursor:pointer}.reuse-layout-actions button:disabled{cursor:not-allowed;opacity:.35}.reuse-layout-actions button[data-layout-row-action=remove],.reuse-layout-actions button[data-layout-element-action=remove]{color:#a32b23}.reuse-layout-row__body{padding:13px;border-top:1px solid var(--line)}.reuse-layout-row__settings{display:grid;grid-template-columns:1fr 1fr;gap:0 9px}.reuse-layout-row__settings .reuse-field:first-child{grid-column:1/-1}.reuse-layout-columns{display:grid;gap:11px}.reuse-layout-column{padding:11px;border:1px dashed #d1c5ba;border-radius:9px;background:#fff}.reuse-layout-column__head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.reuse-layout-column__head strong{font-size:12px}.reuse-layout-column__head small{color:var(--muted);font-size:10px}.reuse-layout-element{margin-bottom:9px;border:1px solid var(--line);border-radius:8px;background:#faf9f8}.reuse-layout-element__head{align-items:flex-start;padding:7px 8px}.reuse-layout-element__title{display:flex;min-width:0;align-items:center;gap:7px;padding-top:8px;font-size:11px;font-weight:850}.reuse-layout-element__title>span{overflow:hidden;text-overflow:ellipsis}.reuse-layout-element__title i{display:grid;width:29px;height:29px;flex:0 0 auto;place-items:center;border-radius:6px;background:#fff0e4;color:var(--brown)}.reuse-layout-element details>summary{display:flex;min-height:44px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);color:var(--brown);font-size:11px;font-weight:850;cursor:pointer;list-style:none}.reuse-layout-element details>summary::-webkit-details-marker{display:none}.reuse-layout-element details>summary::after{margin-left:auto;content:'+';font-size:17px}.reuse-layout-element details[open]>summary::after{content:'\2212'}.reuse-layout-element__body{padding:11px;border-top:1px solid var(--line)}.reuse-layout-element__note{margin:0;color:var(--muted);font-size:11px;line-height:1.5}.reuse-layout-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:9px}.reuse-layout-add select{min-width:0;min-height:44px;padding:8px;border:1px solid #d8d0c9;border-radius:7px;background:#fff}.reuse-layout-add-row{width:100%}.reuse-layout-empty{margin:0 0 9px;padding:14px 9px;border:1px dashed #d8d0c9;border-radius:8px;color:var(--muted);font-size:11px;text-align:center}.reuse-layout-limit{margin:9px 0 0;color:var(--muted);font-size:11px;text-align:center}.reuse-layout-status{min-height:20px;margin:0 0 8px;color:#8b3d00;font-size:11px;font-weight:750}.reuse-layout-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(1px,1px,1px,1px)!important;white-space:nowrap!important}.reuse-layout-media-select{margin-top:7px}.reuse-layout-thumbnail{display:block;width:100%;max-height:150px;margin-top:8px;border-radius:8px;object-fit:contain;background:#f0eeeb}
     @media(max-width:1120px){.reuse-grid{grid-template-columns:1fr}.reuse-preview-card{position:static}.reuse-preview-shell{min-height:570px}.reuse-preview-frame{height:540px}}
-    @media(max-width:700px){.reuse-workspace{padding:0 12px}.reuse-workspace__head{align-items:flex-start;flex-direction:column}.reuse-head-actions,.reuse-head-actions .reuse-btn{width:100%}.reuse-workspace h1{white-space:normal}.reuse-card__body{padding:15px}.reuse-save{margin-right:-15px;margin-left:-15px;padding:14px 15px}.reuse-save__row{align-items:stretch;flex-direction:column}.reuse-impact-item{grid-template-columns:1fr}.reuse-preview-shell{padding:8px}.reuse-media-row{grid-template-columns:1fr}}
+    @media(max-width:700px){.reuse-workspace{padding:0 12px}.reuse-workspace__head{align-items:flex-start;flex-direction:column}.reuse-head-actions,.reuse-head-actions .reuse-btn{width:100%}.reuse-workspace h1{white-space:normal}.reuse-card__body{padding:15px}.reuse-save{margin-right:-15px;margin-left:-15px;padding:14px 15px}.reuse-save__row{align-items:stretch;flex-direction:column}.reuse-impact-item{grid-template-columns:1fr}.reuse-preview-shell{padding:8px}.reuse-media-row,.reuse-layout-row__settings,.reuse-layout-add{grid-template-columns:1fr}.reuse-layout-row__settings .reuse-field:first-child{grid-column:auto}.reuse-layout-row__head,.reuse-layout-element__head{align-items:stretch;flex-direction:column}.reuse-layout-actions{justify-content:flex-start}.reuse-layout-add .reuse-btn{width:100%}}
 </style>
 
 <main class="reuse-workspace" id="reusable-section-workspace">
@@ -144,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewFrame = document.getElementById('reusable-preview-frame');
     let dirty = false;
     let busy = false;
+    let layoutOpenPath = null;
 
     const labels = {
         eyebrow:'Small heading',heading:'Heading',body:'Body text',description:'Description',image:'Image',image_alt:'Image description',poster:'Poster image',caption:'Caption',video_url:'Video link',youtube_url:'YouTube link',image_position:'Media position',primary_label:'Main button text',primary_url:'Main button destination',secondary_label:'Second button text',secondary_url:'Second button destination',report_label:'Report link text',report_url:'Report link destination',link_label:'Link text',link_url:'Link destination',view_all_label:'View-all link text',view_all_url:'View-all destination',item_link_label:'Item link text',empty_state:'Empty-state message',email_label:'Email field label',email_placeholder:'Email placeholder',button_label:'Button text',consent_text:'Consent wording',privacy_label:'Privacy link text',privacy_url:'Privacy page',section_presentation:'Section background style',section_spacing:'Section spacing',content_alignment:'Content alignment',column_count:'Columns',content_source:'Content source',selection_mode:'Item selection',selected_items:'Selected managed content',sort:'Item order',limit:'Maximum items',presentation:'Program card style',layout:'Layout',project_uuid:'Connected project',autoplay:'Rotate automatically',pause_on_hover:'Pause when pointed at',interval:'Time per slide',overlay_opacity:'Image darkness',animation_enabled:'Animate numbers',animation_type:'Animation style',animation_duration:'Animation speed',animation_delay:'Delay between numbers',items:'Items',slides:'Slides',features:'Features',icon:'Icon',html:'Custom HTML',variant:'Special layout',locale:'Language'
@@ -167,6 +169,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageKeys = new Set(['image','poster','photo','logo','thumbnail']);
     const urlKeys = new Set(['url','link_url','primary_url','secondary_url','report_url','view_all_url','privacy_url','video_url','youtube_url']);
     const orderedKeys = ['section_presentation','section_spacing','content_alignment','column_count','eyebrow','heading','body','description','media_type','image','image_alt','video_url','youtube_url','poster','caption','image_position','primary_label','primary_url','secondary_label','secondary_url','report_label','report_url','content_source','selection_mode','selected_items','sort','limit','presentation','layout','project_uuid','item_link_label','view_all_label','view_all_url','empty_state','autoplay','interval','pause_on_hover','animation_enabled','animation_type','animation_duration','animation_delay','items','slides'];
+    const layoutConfig = @json(config('page-builder.layout', []));
+    const fallbackLayoutPresets = Object.freeze({
+        full:{label:'One column',columns:1},
+        halves:{label:'Two equal columns',columns:2},
+        thirds:{label:'Three equal columns',columns:3},
+        quarter:{label:'Four equal columns',columns:4},
+        third_two_thirds:{label:'One third / two thirds',columns:2},
+        two_thirds_third:{label:'Two thirds / one third',columns:2},
+    });
+    const configuredLayoutLabel = (configured, fallback) => {
+        const label = typeof configured === 'string' ? configured : configured?.label;
+        return typeof label === 'string' && label.trim() ? label : fallback;
+    };
+    const layoutChoiceMap = (configured, fallback) => Object.fromEntries(Object.entries(fallback).map(([token,label]) => [token, configuredLayoutLabel(configured?.[token], label)]));
+    const layoutPresets = Object.fromEntries(Object.entries(fallbackLayoutPresets).map(([token,preset]) => {
+        const configured = layoutConfig.presets?.[token];
+        const columns = Number(typeof configured === 'object' ? configured.columns : 0);
+        return [token,{label:configuredLayoutLabel(configured,preset.label),columns:Number.isInteger(columns)&&columns>=1&&columns<=4?columns:preset.columns}];
+    }));
+    const layoutPresetChoices = Object.fromEntries(Object.entries(layoutPresets).map(([token,preset]) => [token,preset.label]));
+    const layoutWidthChoices = layoutChoiceMap(layoutConfig.widths,{standard:'Standard page width',wide:'Wide',full:'Full width'});
+    const layoutBackgroundChoices = layoutChoiceMap(layoutConfig.backgrounds,{default:'Default',soft:'Soft neutral',accent:'Accent',dark:'Dark'});
+    const layoutSpacingChoices = layoutChoiceMap(layoutConfig.spacings,{compact:'Compact',standard:'Standard',generous:'Generous'});
+    const layoutElementChoices = layoutChoiceMap(layoutConfig.element_types,{heading:'Heading',rich_text:'Formatted text',image:'Image',video:'Video',button:'Button',divider:'Divider',spacer:'Space'});
+    const layoutHeadingChoices = layoutChoiceMap(layoutConfig.heading_levels,{h2:'Large heading',h3:'Medium heading',h4:'Small heading'});
+    const layoutVideoSourceChoices = layoutChoiceMap(layoutConfig.video_source_types,{upload:'Uploaded video',youtube:'YouTube video'});
+    const layoutButtonStyleChoices = layoutChoiceMap(layoutConfig.button_styles,{primary:'Primary',secondary:'Secondary',text:'Text link'});
+    const layoutSpacerSizeChoices = layoutChoiceMap(layoutConfig.spacer_sizes,{small:'Small',medium:'Medium',large:'Large'});
+    const layoutElementIcons = Object.freeze({heading:'fa-header',rich_text:'fa-align-left',image:'fa-picture-o',video:'fa-play-circle',button:'fa-hand-pointer-o',divider:'fa-minus',spacer:'fa-arrows-v'});
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
@@ -180,6 +211,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const href = element.tagName === 'A' ? element.getAttribute('href') || '' : '';
             [...element.attributes].forEach(attribute => element.removeAttribute(attribute.name));
             if (element.tagName === 'A' && /^(?:https?:\/\/|\/(?!\/)|mailto:|tel:)/i.test(href)) element.setAttribute('href', href);
+        });
+        return template.innerHTML;
+    }
+    function safeLayoutRichHtml(value) {
+        const template = document.createElement('template');
+        template.innerHTML = String(value || '');
+        const allowed = new Set(['A','B','BLOCKQUOTE','BR','EM','H3','H4','LI','OL','P','STRONG','U','UL']);
+        [...template.content.querySelectorAll('*')].forEach(element => {
+            if (!allowed.has(element.tagName)) { element.replaceWith(...element.childNodes); return; }
+            const href = element.tagName === 'A' ? String(element.getAttribute('href') || '').trim() : '';
+            [...element.attributes].forEach(attribute => element.removeAttribute(attribute.name));
+            if (element.tagName !== 'A' || !href || /[\\\u0000-\u0020\u007f]/.test(href)) return;
+            const internal = href.startsWith('#') || (href.startsWith('/') && !href.startsWith('//'));
+            let secureExternal = false;
+            if (!internal) {
+                try {
+                    const parsed = new URL(href);
+                    secureExternal = parsed.protocol === 'https:' && !!parsed.hostname && !parsed.username && !parsed.password && (!parsed.port || parsed.port === '443');
+                } catch (error) {
+                    secureExternal = false;
+                }
+            }
+            if (!internal && !secureExternal) return;
+            element.setAttribute('href', href);
+            if (secureExternal) {
+                element.setAttribute('target', '_blank');
+                element.setAttribute('rel', 'noopener noreferrer');
+            }
         });
         return template.innerHTML;
     }
@@ -203,6 +262,110 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof value === 'boolean') return false;
         if (typeof value === 'number') return key === 'overlay_opacity' ? 64 : 0;
         return '';
+    }
+    const layoutChoice = (value, choices, fallback) => Object.prototype.hasOwnProperty.call(choices, String(value || '')) ? String(value) : fallback;
+    const layoutColumnCount = preset => layoutPresets[layoutChoice(preset,layoutPresetChoices,'full')].columns;
+    const validLayoutId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+    function newLayoutId() {
+        if (typeof window.crypto?.randomUUID === 'function') return window.crypto.randomUUID();
+        const bytes = new Uint8Array(16);
+        if (typeof window.crypto?.getRandomValues === 'function') window.crypto.getRandomValues(bytes);
+        else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = [...bytes].map(byte => byte.toString(16).padStart(2,'0')).join('');
+        return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+    }
+    const cloneLayoutValue = value => typeof window.structuredClone === 'function' ? window.structuredClone(value) : JSON.parse(JSON.stringify(value));
+    function uniqueLayoutId(candidate, used) {
+        let id = validLayoutId(candidate) && !used.has(String(candidate)) ? String(candidate) : newLayoutId();
+        while (used.has(id)) id = newLayoutId();
+        used.add(id);
+        return id;
+    }
+    function normalizedLayoutElement(element, usedIds) {
+        const source = element && typeof element === 'object' && !Array.isArray(element) ? element : {};
+        const type = layoutChoice(source.type,layoutElementChoices,'heading');
+        const base = {id:uniqueLayoutId(source.id,usedIds),type};
+        if (type === 'rich_text') return {...base,body:String(source.body ?? '')};
+        if (type === 'image') return {...base,path:String(source.path ?? ''),alt:String(source.alt ?? ''),caption:String(source.caption ?? '')};
+        if (type === 'video') return {...base,source_type:layoutChoice(source.source_type,layoutVideoSourceChoices,'upload'),source:String(source.source ?? ''),title:String(source.title ?? '')};
+        if (type === 'button') return {...base,label:String(source.label ?? ''),url:String(source.url ?? ''),style:layoutChoice(source.style,layoutButtonStyleChoices,'primary')};
+        if (type === 'divider') return base;
+        if (type === 'spacer') return {...base,size:layoutChoice(source.size,layoutSpacerSizeChoices,'medium')};
+        return {...base,text:String(source.text ?? ''),level:layoutChoice(source.level,layoutHeadingChoices,'h2')};
+    }
+    function layoutRows() {
+        const usedRows = new Set();
+        const usedElements = new Set();
+        const rawRows = Array.isArray(content.rows) ? content.rows : [];
+        content.rows = rawRows.filter(row => row && typeof row === 'object' && !Array.isArray(row)).slice(0,12).map(rawRow => {
+            const preset = layoutChoice(rawRow.layout,layoutPresetChoices,'full');
+            const count = layoutColumnCount(preset);
+            const sourceColumns = Array.isArray(rawRow.columns)
+                ? rawRow.columns.filter(column => column && typeof column === 'object' && !Array.isArray(column))
+                : [];
+            const columns = Array.from({length:count},(_,index) => ({elements:Array.isArray(sourceColumns[index]?.elements) ? [...sourceColumns[index].elements] : []}));
+            sourceColumns.slice(count).forEach(column => {
+                (Array.isArray(column.elements) ? column.elements : []).forEach(element => {
+                    const destination = [...columns].reverse().find(candidate => candidate.elements.length < 12);
+                    if (destination) destination.elements.push(element);
+                });
+            });
+            columns.forEach(column => {
+                column.elements = column.elements.slice(0,12).map(element => normalizedLayoutElement(element,usedElements));
+            });
+            return {
+                id:uniqueLayoutId(rawRow.id,usedRows),
+                layout:preset,
+                width:layoutChoice(rawRow.width,layoutWidthChoices,'standard'),
+                background:layoutChoice(rawRow.background,layoutBackgroundChoices,'default'),
+                spacing:layoutChoice(rawRow.spacing,layoutSpacingChoices,'standard'),
+                columns,
+            };
+        });
+        return content.rows;
+    }
+    const newLayoutRow = () => ({id:newLayoutId(),layout:'full',width:'standard',background:'default',spacing:'standard',columns:[{elements:[]}]});
+    function newLayoutElement(type) {
+        const selected = layoutChoice(type,layoutElementChoices,'heading');
+        const id = newLayoutId();
+        if (selected === 'rich_text') return {id,type:selected,body:'<p>Add your text here.</p>'};
+        if (selected === 'image') return {id,type:selected,path:'',alt:'',caption:''};
+        if (selected === 'video') return {id,type:selected,source_type:'upload',source:'',title:''};
+        if (selected === 'button') return {id,type:selected,label:'Learn more',url:'',style:'primary'};
+        if (selected === 'divider') return {id,type:selected};
+        if (selected === 'spacer') return {id,type:selected,size:'medium'};
+        return {id,type:'heading',text:'New heading',level:'h2'};
+    }
+    function duplicateLayoutRow(row) {
+        const copy = cloneLayoutValue(row);
+        copy.id = newLayoutId();
+        copy.columns.forEach(column => column.elements.forEach(element => { element.id = newLayoutId(); }));
+        return copy;
+    }
+    function reshapeLayoutRow(row, nextPreset) {
+        const preset = layoutChoice(nextPreset,layoutPresetChoices,'full');
+        const desired = layoutColumnCount(preset);
+        const current = Array.isArray(row.columns) ? row.columns : [];
+        current.forEach(column => { if (!Array.isArray(column.elements)) column.elements = []; });
+        if (current.length > desired) {
+            const kept = current.slice(0,desired);
+            const displaced = current.slice(desired).flatMap(column => column.elements);
+            const free = kept.reduce((total,column) => total + Math.max(0,12-column.elements.length),0);
+            if (displaced.length > free) return false;
+            displaced.forEach(element => [...kept].reverse().find(column => column.elements.length < 12).elements.push(element));
+            row.columns = kept;
+        } else {
+            while (current.length < desired) current.push({elements:[]});
+            row.columns = current;
+        }
+        row.layout = preset;
+        return true;
+    }
+    function layoutStatus(message = '') {
+        const status = document.getElementById('reusable-layout-status');
+        if (status) status.textContent = message;
     }
     function arrayTemplate(path, value) {
         if (value.length) return value[0];
@@ -285,13 +448,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
         return `<div class="reuse-field"><span>${escapeHtml(label)}</span><div class="reuse-repeat">${items || '<div class="reuse-empty">No items yet.</div>'}</div>${canEdit?`<button class="reuse-btn" type="button" data-array-action="add" data-root="${rootName}" data-path="${pathToken(path)}"><i class="fa fa-plus" aria-hidden="true"></i> Add ${escapeHtml(key==='slides'?'slide':'item')}</button>`:''}</div>`;
     }
+    const layoutOptionsHtml = (choices,selected) => Object.entries(choices).map(([value,label]) => `<option value="${escapeHtml(value)}" ${String(selected)===value?'selected':''}>${escapeHtml(label)}</option>`).join('');
+    const layoutDisabled = () => canEdit ? '' : ' disabled';
+    function layoutRowSelect(rowIndex, field, label, value, choices, help = '') {
+        return `<div class="reuse-field"><label>${escapeHtml(label)}</label><select data-layout-row="${rowIndex}" data-layout-row-field="${escapeHtml(field)}"${layoutDisabled()}>${layoutOptionsHtml(choices,value)}</select>${help?`<small>${escapeHtml(help)}</small>`:''}</div>`;
+    }
+    function layoutElementInput(rowIndex,columnIndex,elementIndex,field,label,value,options={}) {
+        const attributes = `data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}"`;
+        const maxlength = options.max ? ` maxlength="${options.max}"` : '';
+        const required = options.required ? ' required' : '';
+        const disabled = layoutDisabled();
+        const control = options.textarea
+            ? `<textarea ${attributes}${maxlength}${required}${disabled}>${escapeHtml(value||'')}</textarea>`
+            : `<input ${attributes} type="${options.type||'text'}" value="${escapeHtml(value||'')}"${maxlength}${required}${disabled}>`;
+        return `<div class="reuse-field"><label>${escapeHtml(label)}</label>${control}${options.help?`<small>${escapeHtml(options.help)}</small>`:''}</div>`;
+    }
+    function layoutElementSelect(rowIndex,columnIndex,elementIndex,field,label,value,choices,rerender=false) {
+        return `<div class="reuse-field"><label>${escapeHtml(label)}</label><select data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}"${rerender?' data-layout-rerender':''}${layoutDisabled()}>${layoutOptionsHtml(choices,value)}</select></div>`;
+    }
+    function layoutMediaField(element,rowIndex,columnIndex,elementIndex,kind) {
+        const isImage = kind === 'image';
+        const field = isImage ? 'path' : 'source';
+        const value = String(element[field] || '');
+        const choices = mediaAssets.filter(asset => isImage ? String(asset.mime).startsWith('image/') : ['video/mp4','video/webm'].includes(String(asset.mime)));
+        const fieldId = `reusable-layout-${kind}-${rowIndex}-${columnIndex}-${elementIndex}`;
+        const optionRows = choices.map(asset => `<option value="${escapeHtml(asset.url)}" ${String(asset.url)===value?'selected':''}>${escapeHtml(asset.name)}</option>`).join('');
+        const chooser = choices.length
+            ? `<select class="reuse-layout-media-select" data-layout-media="${kind}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Choose ${isImage?'an image':'a video'} from the Media Library"${layoutDisabled()}><option value="">Choose from Media Library…</option>${optionRows}</select>`
+            : '<small>No suitable media is available yet. Open the Media Library to upload it first.</small>';
+        const preview = isImage && value ? `<img class="reuse-layout-thumbnail" src="${escapeHtml(value)}" alt="" onerror="this.hidden=true">` : '';
+        return `<div class="reuse-field"><label for="${fieldId}">${isImage?'Image':'Uploaded video'}</label><input id="${fieldId}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${field}" value="${escapeHtml(value)}" readonly required${layoutDisabled()}>${chooser}${preview}</div>`;
+    }
+    function layoutElementFields(element,rowIndex,columnIndex,elementIndex) {
+        const type = layoutChoice(element.type,layoutElementChoices,'heading');
+        if (type === 'heading') return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'text','Heading text',element.text,{max:500,required:true})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'level','Heading size',element.level,layoutHeadingChoices)}`;
+        if (type === 'rich_text') {
+            const editorId = `reusable-layout-rich-${rowIndex}-${columnIndex}-${elementIndex}`;
+            return `<div class="reuse-field"><span id="${editorId}-label">Formatted text</span><div class="reuse-rich-toolbar" role="toolbar" aria-label="Format this text"><button type="button" data-layout-format="bold" data-layout-rich-editor="${editorId}" aria-label="Bold"${layoutDisabled()}>B</button><button type="button" data-layout-format="italic" data-layout-rich-editor="${editorId}" aria-label="Italic"${layoutDisabled()}><em>I</em></button><button type="button" data-layout-format="insertUnorderedList" data-layout-rich-editor="${editorId}" aria-label="Bulleted list"${layoutDisabled()}>• List</button><button type="button" data-layout-format="createLink" data-layout-rich-editor="${editorId}" aria-label="Add link"${layoutDisabled()}>Link</button></div><div id="${editorId}" class="reuse-rich" role="textbox" aria-multiline="true" aria-labelledby="${editorId}-label" data-layout-rich data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" ${canEdit?'contenteditable="true"':'aria-readonly="true"'}>${safeLayoutRichHtml(element.body)}</div></div>`;
+        }
+        if (type === 'image') return `${layoutMediaField(element,rowIndex,columnIndex,elementIndex,'image')}${layoutElementInput(rowIndex,columnIndex,elementIndex,'alt','Describe the image',element.alt,{max:255,help:'Describe useful visual information; leave empty only when the image is decorative.'})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'caption','Caption (optional)',element.caption,{max:1000})}`;
+        if (type === 'video') {
+            const sourceType = layoutChoice(element.source_type,layoutVideoSourceChoices,'upload');
+            const source = sourceType === 'upload'
+                ? layoutMediaField(element,rowIndex,columnIndex,elementIndex,'video')
+                : layoutElementInput(rowIndex,columnIndex,elementIndex,'source','YouTube video link',element.source,{max:2048,required:true,help:'Use a complete secure YouTube link.'});
+            return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'source_type','Video source',sourceType,layoutVideoSourceChoices,true)}${source}${layoutElementInput(rowIndex,columnIndex,elementIndex,'title','Video title',element.title,{max:255,required:true,help:'Add a short title for visitors using assistive technology.'})}`;
+        }
+        if (type === 'button') return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','Button text',element.label,{max:120,required:true})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'url','Button destination',element.url,{max:2048,required:true,help:'Use /page-name, #section, or a complete https:// address.'})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Button style',element.style,layoutButtonStyleChoices)}`;
+        if (type === 'spacer') return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'size','Amount of space',element.size,layoutSpacerSizeChoices)}<p class="reuse-layout-element__note">Space automatically becomes smaller on phones.</p>`;
+        return '<p class="reuse-layout-element__note">A divider adds a subtle horizontal line between nearby elements.</p>';
+    }
+    function layoutElementTitle(element) {
+        const type = layoutChoice(element.type,layoutElementChoices,'heading');
+        const temporary = document.createElement('div');
+        temporary.innerHTML = type === 'rich_text' ? element.body : '';
+        const detail = type === 'heading' ? element.text : type === 'rich_text' ? temporary.textContent : type === 'button' ? element.label : type === 'image' ? (element.caption || element.alt) : type === 'video' ? element.title : '';
+        return detail ? `${layoutElementChoices[type]} · ${String(detail).trim().slice(0,34)}` : layoutElementChoices[type];
+    }
+    function renderLayoutElement(element,row,rowIndex,columnIndex,elementIndex,columnCount,columnElements) {
+        const type = layoutChoice(element.type,layoutElementChoices,'heading');
+        const title = layoutElementTitle(element);
+        const path = `${rowIndex}:${columnIndex}:${elementIndex}`;
+        const open = layoutOpenPath === path || (layoutOpenPath === null && rowIndex === 0 && columnIndex === 0 && elementIndex === 0);
+        const leftFull = columnIndex > 0 && row.columns[columnIndex-1].elements.length >= 12;
+        const rightFull = columnIndex < columnCount-1 && row.columns[columnIndex+1].elements.length >= 12;
+        const actions = canEdit ? `<span class="reuse-layout-actions" role="group" aria-label="Arrange ${escapeHtml(layoutElementChoices[type])}">
+            <button type="button" data-layout-element-action="up" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} up" title="Move up" ${elementIndex===0?'disabled':''}>↑</button>
+            <button type="button" data-layout-element-action="down" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} down" title="Move down" ${elementIndex===columnElements.length-1?'disabled':''}>↓</button>
+            <button type="button" data-layout-element-action="left" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the previous column" title="Move to previous column" ${columnIndex===0||leftFull?'disabled':''}>←</button>
+            <button type="button" data-layout-element-action="right" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the next column" title="Move to next column" ${columnIndex===columnCount-1||rightFull?'disabled':''}>→</button>
+            <button type="button" data-layout-element-action="duplicate" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Duplicate ${escapeHtml(layoutElementChoices[type])}" title="Duplicate" ${columnElements.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
+            <button type="button" data-layout-element-action="remove" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Delete ${escapeHtml(layoutElementChoices[type])}" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
+        </span>` : '';
+        return `<article class="reuse-layout-element" aria-label="${escapeHtml(title)}"><header class="reuse-layout-element__head"><span class="reuse-layout-element__title"><i class="fa ${layoutElementIcons[type]||'fa-square-o'}" aria-hidden="true"></i><span>${escapeHtml(title)}</span></span>${actions}</header><details data-layout-element-details="${path}" ${open?'open':''}><summary>Edit content</summary><div class="reuse-layout-element__body">${layoutElementFields(element,rowIndex,columnIndex,elementIndex)}</div></details></article>`;
+    }
+    function renderLayoutRow(row,rowIndex,rows) {
+        const preset = layoutChoice(row.layout,layoutPresetChoices,'full');
+        const columnCount = layoutColumnCount(preset);
+        const rowActions = canEdit ? `<span class="reuse-layout-actions" role="group" aria-label="Arrange row ${rowIndex+1}">
+            <button type="button" data-layout-row-action="up" data-layout-row="${rowIndex}" aria-label="Move row ${rowIndex+1} up" title="Move row up" ${rowIndex===0?'disabled':''}>↑</button>
+            <button type="button" data-layout-row-action="down" data-layout-row="${rowIndex}" aria-label="Move row ${rowIndex+1} down" title="Move row down" ${rowIndex===rows.length-1?'disabled':''}>↓</button>
+            <button type="button" data-layout-row-action="duplicate" data-layout-row="${rowIndex}" aria-label="Duplicate row ${rowIndex+1}" title="Duplicate row" ${rows.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
+            <button type="button" data-layout-row-action="remove" data-layout-row="${rowIndex}" aria-label="Delete row ${rowIndex+1}" title="Delete row"><i class="fa fa-trash" aria-hidden="true"></i></button>
+        </span>` : '';
+        const columns = row.columns.slice(0,columnCount).map((column,columnIndex) => {
+            const elements = Array.isArray(column.elements) ? column.elements : [];
+            const selectId = `reusable-layout-add-${rowIndex}-${columnIndex}`;
+            const add = canEdit ? `<div class="reuse-layout-add"><label class="reuse-layout-sr" for="${selectId}">Element type for row ${rowIndex+1}, column ${columnIndex+1}</label><select id="${selectId}" data-layout-new-element>${layoutOptionsHtml(layoutElementChoices,'heading')}</select><button class="reuse-btn" type="button" data-layout-add-element data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" ${elements.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add element</button></div>` : '';
+            return `<section class="reuse-layout-column" aria-labelledby="reusable-layout-column-${rowIndex}-${columnIndex}"><header class="reuse-layout-column__head"><strong id="reusable-layout-column-${rowIndex}-${columnIndex}">Column ${columnIndex+1}</strong><small>${elements.length} of 12 elements</small></header>${elements.length?elements.map((element,elementIndex)=>renderLayoutElement(element,row,rowIndex,columnIndex,elementIndex,columnCount,elements)).join(''):'<p class="reuse-layout-empty">This column is empty.</p>'}${add}</section>`;
+        }).join('');
+        return `<section class="reuse-layout-row" aria-labelledby="reusable-layout-row-${rowIndex}"><header class="reuse-layout-row__head"><span class="reuse-layout-row__title"><strong id="reusable-layout-row-${rowIndex}">Row ${rowIndex+1}</strong><small>${escapeHtml(layoutPresetChoices[preset])} · ${columnCount} ${columnCount===1?'column':'columns'}</small></span>${rowActions}</header><div class="reuse-layout-row__body"><div class="reuse-layout-row__settings">${layoutRowSelect(rowIndex,'layout','Column layout',preset,layoutPresetChoices,'Changing the preset keeps elements when the remaining columns have enough room.')}${layoutRowSelect(rowIndex,'width','Content width',row.width,layoutWidthChoices)}${layoutRowSelect(rowIndex,'background','Background',row.background,layoutBackgroundChoices)}${layoutRowSelect(rowIndex,'spacing','Space inside row',row.spacing,layoutSpacingChoices)}</div><div class="reuse-layout-columns">${columns}</div></div></section>`;
+    }
+    function renderLayoutEditor() {
+        const rows = layoutRows();
+        const globalFields = ['section_presentation','section_spacing','content_alignment','column_count']
+            .filter(key => Object.prototype.hasOwnProperty.call(content,key))
+            .map(key => fieldHtml('content',content,key,content[key],[key])).join('');
+        return `<div data-e2e="reusable-layout-editor"><div class="reuse-layout-guide"><strong>Build with rows and columns</strong>Choose one of six safe column layouts for each row, then add headings, formatted text, images, videos, buttons, dividers, or space. Machine IDs and code stay hidden.</div>${globalFields}${rows.map((row,rowIndex)=>renderLayoutRow(row,rowIndex,rows)).join('')}${rows.length?'':'<p class="reuse-layout-empty">This visual layout has no rows yet.</p>'}<p class="reuse-layout-status" id="reusable-layout-status" role="status" aria-live="polite"></p>${canEdit?`<button class="reuse-btn reuse-layout-add-row" type="button" id="reusable-layout-add-row" ${rows.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add row</button>`:''}<p class="reuse-layout-limit">${rows.length} of 12 rows used</p></div>`;
+    }
     function renderRoot(element, rootName, root, template = {}) {
         const keys = orderedObjectKeys(root, template);
         element.innerHTML = keys.length ? keys.map(key => fieldHtml(rootName, root, key, root[key], [key])).join('') : '<div class="reuse-empty">This section has no optional display settings.</div>';
         syncHidden();
     }
     function renderAll() {
-        renderRoot(contentRoot, 'content', content, defaults);
+        if (blockType === 'layout') {
+            contentRoot.innerHTML = renderLayoutEditor();
+            syncHidden();
+            wireLayoutEditor();
+        } else {
+            renderRoot(contentRoot, 'content', content, defaults);
+        }
         renderRoot(settingsRoot, 'settings', settings, {});
         wireRichToolbars();
     }
@@ -322,6 +589,152 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (destination) document.execCommand('createLink', false, destination);
             } else document.execCommand(button.dataset.format, false, null);
             editor.dispatchEvent(new Event('input', {bubbles:true}));
+        }));
+    }
+    function layoutElementFromControl(control) {
+        const rowIndex = Number(control.dataset.layoutRow);
+        const columnIndex = Number(control.dataset.layoutColumn);
+        const elementIndex = Number(control.dataset.layoutElement);
+        const rows = layoutRows();
+        const row = rows[rowIndex];
+        const column = row?.columns?.[columnIndex];
+        return {rows,row,column,element:column?.elements?.[elementIndex],rowIndex,columnIndex,elementIndex};
+    }
+    function wireLayoutEditor() {
+        contentRoot.querySelectorAll('[data-layout-element-details]').forEach(details => details.addEventListener('toggle', () => {
+            if (details.open) layoutOpenPath = details.dataset.layoutElementDetails;
+            else if (layoutOpenPath === details.dataset.layoutElementDetails) layoutOpenPath = '';
+        }));
+        if (!canEdit) return;
+        contentRoot.querySelectorAll('[data-layout-row-field]').forEach(control => control.addEventListener('change', () => {
+            const rows = layoutRows();
+            const row = rows[Number(control.dataset.layoutRow)];
+            if (!row) return;
+            const field = control.dataset.layoutRowField;
+            if (field === 'layout') {
+                const previous = row.layout;
+                if (!reshapeLayoutRow(row,control.value)) {
+                    control.value = previous;
+                    layoutStatus('This preset has no room for every element. Move or remove elements before reducing its columns.');
+                    return;
+                }
+                layoutOpenPath = null;
+                markDirty();
+                renderAll();
+                return;
+            }
+            const choices = field === 'width' ? layoutWidthChoices : field === 'background' ? layoutBackgroundChoices : layoutSpacingChoices;
+            row[field] = layoutChoice(control.value,choices,field === 'background' ? 'default' : 'standard');
+            markDirty();
+        }));
+        document.getElementById('reusable-layout-add-row')?.addEventListener('click', () => {
+            const rows = layoutRows();
+            if (rows.length >= 12) return layoutStatus('A visual layout can contain up to twelve rows.');
+            rows.push(newLayoutRow());
+            layoutOpenPath = null;
+            markDirty();
+            renderAll();
+        });
+        contentRoot.querySelectorAll('[data-layout-row-action]').forEach(button => button.addEventListener('click', () => {
+            const rows = layoutRows();
+            const index = Number(button.dataset.layoutRow);
+            const action = button.dataset.layoutRowAction;
+            if (!rows[index]) return;
+            if (action === 'up' || action === 'down') {
+                const target = action === 'up' ? index-1 : index+1;
+                if (target < 0 || target >= rows.length) return;
+                [rows[index],rows[target]] = [rows[target],rows[index]];
+            } else if (action === 'duplicate') {
+                if (rows.length >= 12) return layoutStatus('A visual layout can contain up to twelve rows.');
+                rows.splice(index+1,0,duplicateLayoutRow(rows[index]));
+            } else if (action === 'remove') {
+                if (!window.confirm(`Delete row ${index+1}? It will be removed when you save this reusable section.`)) return;
+                rows.splice(index,1);
+            }
+            layoutOpenPath = null;
+            markDirty();
+            renderAll();
+        }));
+        contentRoot.querySelectorAll('[data-layout-add-element]').forEach(button => button.addEventListener('click', () => {
+            const rows = layoutRows();
+            const rowIndex = Number(button.dataset.layoutRow);
+            const columnIndex = Number(button.dataset.layoutColumn);
+            const column = rows[rowIndex]?.columns?.[columnIndex];
+            const picker = button.closest('.reuse-layout-add')?.querySelector('[data-layout-new-element]');
+            if (!column || !picker) return;
+            if (column.elements.length >= 12) return layoutStatus('A column can contain up to twelve elements.');
+            column.elements.push(newLayoutElement(picker.value));
+            layoutOpenPath = `${rowIndex}:${columnIndex}:${column.elements.length-1}`;
+            markDirty();
+            renderAll();
+        }));
+        contentRoot.querySelectorAll('[data-layout-element-action]').forEach(button => button.addEventListener('click', () => {
+            const {row,column,element,rowIndex,columnIndex,elementIndex} = layoutElementFromControl(button);
+            if (!row || !column || !element) return;
+            const action = button.dataset.layoutElementAction;
+            if (action === 'up' || action === 'down') {
+                const target = action === 'up' ? elementIndex-1 : elementIndex+1;
+                if (target < 0 || target >= column.elements.length) return;
+                [column.elements[elementIndex],column.elements[target]] = [column.elements[target],column.elements[elementIndex]];
+                layoutOpenPath = `${rowIndex}:${columnIndex}:${target}`;
+            } else if (action === 'left' || action === 'right') {
+                const targetColumnIndex = action === 'left' ? columnIndex-1 : columnIndex+1;
+                const targetColumn = row.columns[targetColumnIndex];
+                if (!targetColumn || targetColumn.elements.length >= 12) return layoutStatus('The adjacent column is full.');
+                column.elements.splice(elementIndex,1);
+                targetColumn.elements.push(element);
+                layoutOpenPath = `${rowIndex}:${targetColumnIndex}:${targetColumn.elements.length-1}`;
+            } else if (action === 'duplicate') {
+                if (column.elements.length >= 12) return layoutStatus('A column can contain up to twelve elements.');
+                const copy = cloneLayoutValue(element);
+                copy.id = newLayoutId();
+                column.elements.splice(elementIndex+1,0,copy);
+                layoutOpenPath = `${rowIndex}:${columnIndex}:${elementIndex+1}`;
+            } else if (action === 'remove') {
+                if (!window.confirm(`Delete this ${layoutElementChoices[element.type].toLowerCase()} element?`)) return;
+                column.elements.splice(elementIndex,1);
+                layoutOpenPath = '';
+            }
+            markDirty();
+            renderAll();
+        }));
+        contentRoot.querySelectorAll('[data-layout-element-field]').forEach(control => control.addEventListener('input', () => {
+            const {element} = layoutElementFromControl(control);
+            if (!element) return;
+            element[control.dataset.layoutElementField] = control.value;
+            markDirty();
+        }));
+        contentRoot.querySelectorAll('[data-layout-rerender]').forEach(control => control.addEventListener('change', () => renderAll()));
+        contentRoot.querySelectorAll('[data-layout-rich]').forEach(editor => editor.addEventListener('input', () => {
+            const {element} = layoutElementFromControl(editor);
+            if (!element) return;
+            element.body = editor.innerHTML;
+            markDirty();
+        }));
+        contentRoot.querySelectorAll('[data-layout-format]').forEach(button => button.addEventListener('click', event => {
+            event.preventDefault();
+            const editor = document.getElementById(button.dataset.layoutRichEditor);
+            editor?.focus();
+            if (button.dataset.layoutFormat === 'createLink') {
+                const destination = window.prompt('Enter the link address:','https://');
+                if (destination) document.execCommand('createLink',false,destination);
+            } else document.execCommand(button.dataset.layoutFormat,false,null);
+            editor?.dispatchEvent(new Event('input',{bubbles:true}));
+        }));
+        contentRoot.querySelectorAll('[data-layout-media]').forEach(select => select.addEventListener('change', () => {
+            if (!select.value) return;
+            const {element} = layoutElementFromControl(select);
+            const asset = mediaAssets.find(candidate => String(candidate.url) === String(select.value));
+            if (!element || !asset) return;
+            if (select.dataset.layoutMedia === 'image') {
+                element.path = asset.url;
+                if (!String(element.alt || '').trim() && asset.alt) element.alt = String(asset.alt);
+            } else {
+                element.source_type = 'upload';
+                element.source = asset.url;
+            }
+            markDirty();
+            renderAll();
         }));
     }
 

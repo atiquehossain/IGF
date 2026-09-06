@@ -772,6 +772,95 @@
         <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'gallery_empty_state', 'Published gallery photos will appear here automatically.') }}</p>
       </div>
 
+      <div v-else-if="block.type === 'layout'" class="igf-layout">
+        <div
+          v-for="(row, rowIndex) in layoutRows(block)"
+          :key="row.id || `layout-row-${rowIndex}`"
+          class="igf-layout-row"
+          :class="layoutRowClasses(row)"
+        >
+          <div class="igf-layout-row__inner">
+            <div class="igf-layout-row__columns">
+              <div
+                v-for="(column, columnIndex) in layoutColumns(row)"
+                :key="`layout-column-${row.id || rowIndex}-${columnIndex}`"
+                class="igf-layout-column"
+              >
+                <template
+                  v-for="(element, elementIndex) in layoutElements(column)"
+                  :key="element.id || `layout-element-${rowIndex}-${columnIndex}-${elementIndex}`"
+                >
+                  <component
+                    :is="layoutHeadingTag(element)"
+                    v-if="layoutElementType(element) === 'heading' && element.text"
+                    class="igf-layout-element igf-layout-heading"
+                  >{{ element.text }}</component>
+                  <div
+                    v-else-if="layoutElementType(element) === 'rich_text' && element.body"
+                    class="igf-layout-element igf-layout-copy igf-page-block__copy"
+                    v-html="element.body"
+                  />
+                  <figure
+                    v-else-if="layoutElementType(element) === 'image' && layoutImageUrl(element)"
+                    class="igf-layout-element igf-layout-media"
+                  >
+                    <img
+                      :src="layoutImageUrl(element)"
+                      :srcset="responsiveImage(layoutImageUrl(element), '(max-width: 767px) 100vw, 50vw').webpSrcset || undefined"
+                      :sizes="responsiveImage(layoutImageUrl(element), '(max-width: 767px) 100vw, 50vw').sizes"
+                      :width="responsiveImage(layoutImageUrl(element)).width"
+                      :height="responsiveImage(layoutImageUrl(element)).height"
+                      :alt="element.alt || ''"
+                      loading="lazy"
+                      decoding="async"
+                    >
+                    <figcaption v-if="element.caption">{{ element.caption }}</figcaption>
+                  </figure>
+                  <figure
+                    v-else-if="layoutElementType(element) === 'video' && layoutVideoAvailable(element)"
+                    class="igf-layout-element igf-layout-video"
+                  >
+                    <iframe
+                      v-if="layoutVideoEmbedUrl(element)"
+                      :src="layoutVideoEmbedUrl(element)"
+                      :title="layoutVideoTitle(element)"
+                      loading="lazy"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                    />
+                    <video
+                      v-else
+                      :src="layoutVideoUploadUrl(element)"
+                      :aria-label="layoutVideoTitle(element)"
+                      controls
+                      playsinline
+                      preload="metadata"
+                    >{{ shared.video_unsupported_message }}</video>
+                  </figure>
+                  <a
+                    v-else-if="layoutElementType(element) === 'button' && element.label"
+                    class="igf-layout-element igf-button"
+                    :class="layoutButtonClass(element)"
+                    :href="safeHref(element.url, '#')"
+                  >{{ element.label }} <span v-if="element.style === 'text'" aria-hidden="true">→</span></a>
+                  <hr
+                    v-else-if="layoutElementType(element) === 'divider'"
+                    class="igf-layout-element igf-layout-divider"
+                  >
+                  <div
+                    v-else-if="layoutElementType(element) === 'spacer'"
+                    class="igf-layout-element igf-layout-spacer"
+                    :class="layoutSpacerClass(element)"
+                    aria-hidden="true"
+                  />
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div v-else-if="block.type === 'video'" class="igf-page-block__inner igf-video">
         <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
         <h2>{{ block.content?.heading }}</h2>
@@ -890,6 +979,18 @@ const sectionPresentations = new Set(['standard', 'soft', 'framed', 'contrast'])
 const sectionSpacings = new Set(['compact', 'standard', 'spacious']);
 const contentAlignments = new Set(['left', 'center']);
 const columnCounts = new Set(['auto', '2', '3', '4']);
+const layoutPresetColumns = new Map([
+  ['full', 1],
+  ['halves', 2],
+  ['thirds', 3],
+  ['quarter', 4],
+  ['third_two_thirds', 2],
+  ['two_thirds_third', 2],
+]);
+const layoutWidths = new Set(['standard', 'wide', 'full']);
+const layoutBackgrounds = new Set(['default', 'soft', 'accent', 'dark']);
+const layoutSpacings = new Set(['compact', 'standard', 'generous']);
+const layoutElementTypes = new Set(['heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer']);
 const page = usePage();
 const shared = computed(() => page.props.siteSettings?.shared_blocks || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
@@ -1333,6 +1434,11 @@ function youtubeEmbedUrl(value = '') {
   const id = youtubeVideoId(value);
   return id ? `https://www.youtube-nocookie.com/embed/${id}` : '';
 }
+function explicitHttpsYoutubeEmbedUrl(value = '') {
+  const candidate = String(value || '').trim();
+  if (!/^https:\/\//i.test(candidate)) return '';
+  return youtubeEmbedUrl(candidate);
+}
 function vimeoEmbedUrl(value = '') {
   const parsed = parsedExternalHttpUrl(value);
   if (!parsed) return '';
@@ -1351,6 +1457,78 @@ function safeMediaHref(value) {
   if (!href || href.startsWith('#')) return '';
   const scheme = href.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]?.toLowerCase();
   return scheme && !['http', 'https'].includes(scheme) ? '' : href;
+}
+function normalizedLayoutPreset(row) {
+  const preset = String(row?.layout || 'full').trim().toLowerCase();
+  return layoutPresetColumns.has(preset) ? preset : 'full';
+}
+function layoutRows(block) {
+  const rows = Array.isArray(block?.content?.rows) ? block.content.rows : [];
+  return rows
+    .filter(row => row && typeof row === 'object' && !Array.isArray(row))
+    .slice(0, 12)
+    .filter(row => layoutColumns(row).length > 0);
+}
+function layoutColumns(row) {
+  const columns = Array.isArray(row?.columns) ? row.columns : [];
+  const expected = layoutPresetColumns.get(normalizedLayoutPreset(row)) || 1;
+  const validColumns = columns.filter(column => column && typeof column === 'object' && !Array.isArray(column));
+  return validColumns.length === expected ? validColumns : [];
+}
+function layoutElements(column) {
+  const elements = Array.isArray(column?.elements) ? column.elements : [];
+  return elements
+    .filter(element => element && typeof element === 'object' && !Array.isArray(element) && layoutElementTypes.has(layoutElementType(element)))
+    .slice(0, 12);
+}
+function layoutElementType(element) {
+  return String(element?.type || '').trim().toLowerCase();
+}
+function layoutRowClasses(row) {
+  const width = String(row?.width || 'standard').trim().toLowerCase();
+  const background = String(row?.background || 'default').trim().toLowerCase();
+  const spacing = String(row?.spacing || 'standard').trim().toLowerCase();
+  return [
+    `igf-layout-row--${normalizedLayoutPreset(row)}`,
+    `igf-layout-row--width-${layoutWidths.has(width) ? width : 'standard'}`,
+    `igf-layout-row--background-${layoutBackgrounds.has(background) ? background : 'default'}`,
+    `igf-layout-row--spacing-${layoutSpacings.has(spacing) ? spacing : 'standard'}`,
+  ];
+}
+function layoutHeadingTag(element) {
+  const level = String(element?.level || 'h2').trim().toLowerCase();
+  return ['h2', 'h3', 'h4'].includes(level) ? level : 'h2';
+}
+function layoutImageUrl(element) {
+  return safeMediaHref(element?.path);
+}
+function layoutVideoEmbedUrl(element) {
+  return String(element?.source_type || '').trim().toLowerCase() === 'youtube'
+    ? explicitHttpsYoutubeEmbedUrl(element?.source)
+    : '';
+}
+function layoutVideoUploadUrl(element) {
+  return String(element?.source_type || '').trim().toLowerCase() === 'upload'
+    ? safeMediaHref(element?.source)
+    : '';
+}
+function layoutVideoAvailable(element) {
+  return Boolean(layoutVideoEmbedUrl(element) || layoutVideoUploadUrl(element));
+}
+function layoutVideoTitle(element) {
+  const configured = String(element?.title || '').trim();
+  return configured || String(shared.value.video_embed_title || 'Embedded video').trim() || 'Embedded video';
+}
+function layoutButtonClass(element) {
+  const style = String(element?.style || 'primary').trim().toLowerCase();
+  return {
+    secondary: 'igf-button--outline',
+    text: 'igf-layout-button--text',
+  }[style] || 'igf-button--primary';
+}
+function layoutSpacerClass(element) {
+  const size = String(element?.size || 'medium').trim().toLowerCase();
+  return `igf-layout-spacer--${['small', 'medium', 'large'].includes(size) ? size : 'medium'}`;
 }
 function mediaTextType(block) {
   const type = String(block.content?.media_type || 'image').trim().toLowerCase();
@@ -1763,6 +1941,52 @@ function subscribe() {
 .igf-page-block--spacing-standard { --igf-section-block:clamp(72px,9vw,120px); --igf-section-mobile:68px; --igf-hero-padding-top:clamp(90px,11vw,140px); --igf-hero-padding-bottom:clamp(100px,13vw,160px); --igf-hero-padding-top-mobile:54px; --igf-hero-padding-bottom-mobile:105px; }
 .igf-page-block--spacing-spacious { --igf-section-block:clamp(96px,12vw,156px); --igf-section-mobile:88px; --igf-hero-padding-top:clamp(116px,14vw,176px); --igf-hero-padding-bottom:clamp(130px,16vw,196px); --igf-hero-padding-top-mobile:72px; --igf-hero-padding-bottom-mobile:132px; }
 .igf-page-block__inner { position:relative; z-index:2; width:min(100%,var(--igf-content-width,1240px)); margin:0 auto; }
+.igf-page-block.igf-page-block--layout { padding:0; }
+.igf-layout { position:relative; z-index:2; }
+.igf-layout-row { position:relative; }
+.igf-layout-row--background-default { background:#fff; color:var(--ink); }
+.igf-layout-row--background-soft { background:linear-gradient(135deg,#fffaf5 0%,#f5f1ed 100%); color:var(--ink); }
+.igf-layout-row--background-accent { background:linear-gradient(135deg,#ff7500 0%,#e65d00 100%); color:#fff; }
+.igf-layout-row--background-dark { background:#24211f; color:#fff; }
+.igf-layout-row__inner { width:100%; margin:0 auto; padding-right:clamp(20px,5vw,48px); padding-left:clamp(20px,5vw,48px); }
+.igf-layout-row--width-standard .igf-layout-row__inner { max-width:1240px; }
+.igf-layout-row--width-wide .igf-layout-row__inner { max-width:1480px; }
+.igf-layout-row--width-full .igf-layout-row__inner { max-width:none; }
+.igf-layout-row--spacing-compact .igf-layout-row__inner { padding-top:clamp(32px,5vw,54px); padding-bottom:clamp(32px,5vw,54px); }
+.igf-layout-row--spacing-standard .igf-layout-row__inner { padding-top:clamp(58px,8vw,92px); padding-bottom:clamp(58px,8vw,92px); }
+.igf-layout-row--spacing-generous .igf-layout-row__inner { padding-top:clamp(84px,11vw,132px); padding-bottom:clamp(84px,11vw,132px); }
+.igf-layout-row__columns { display:grid; align-items:start; gap:clamp(24px,4vw,56px); }
+.igf-layout-row--full .igf-layout-row__columns { grid-template-columns:minmax(0,1fr); }
+.igf-layout-row--halves .igf-layout-row__columns { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.igf-layout-row--thirds .igf-layout-row__columns { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.igf-layout-row--quarter .igf-layout-row__columns { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.igf-layout-row--third_two_thirds .igf-layout-row__columns { grid-template-columns:minmax(0,1fr) minmax(0,2fr); }
+.igf-layout-row--two_thirds_third .igf-layout-row__columns { grid-template-columns:minmax(0,2fr) minmax(0,1fr); }
+.igf-layout-column { display:flex; min-width:0; align-items:flex-start; flex-direction:column; }
+.igf-layout-element { width:100%; }
+.igf-layout-heading { max-width:none!important; margin:0 0 20px!important; overflow-wrap:anywhere; }
+.igf-layout-column h4.igf-layout-heading { color:inherit; font:650 var(--igf-heading-3,22px)/1.3 'Literata',Georgia,serif; letter-spacing:-.015em; }
+.igf-layout-copy { margin-bottom:20px; color:inherit; }
+.igf-layout-copy :deep(:last-child) { margin-bottom:0; }
+.igf-layout-media,.igf-layout-video { margin:0 0 24px; }
+.igf-layout-media img { display:block; width:100%; height:auto; border-radius:var(--igf-card-radius,16px); object-fit:cover; box-shadow:var(--igf-card-shadow,0 8px 24px rgba(25,28,29,.1)); }
+.igf-layout-media figcaption { margin-top:9px; color:var(--muted); font-size:13px; line-height:1.5; }
+.igf-layout-video { overflow:hidden; }
+.igf-layout-video :is(iframe,video) { display:block; width:100%; aspect-ratio:16/9; border:0; border-radius:var(--igf-card-radius,16px); background:#171717; object-fit:contain; }
+.igf-layout-column>.igf-button { width:auto; margin:4px 0 20px; }
+.igf-layout-button--text { min-height:44px; justify-content:flex-start; padding:0; border:0; border-radius:0; background:transparent; color:var(--brown); }
+.igf-layout-button--text:hover { transform:none; text-decoration:underline; }
+.igf-layout-divider { height:1px; margin:24px 0; border:0; background:var(--line); }
+.igf-layout-spacer--small { min-height:24px; }
+.igf-layout-spacer--medium { min-height:56px; }
+.igf-layout-spacer--large { min-height:96px; }
+.igf-layout-row--background-accent :is(p,.igf-page-block__copy),.igf-layout-row--background-dark :is(p,.igf-page-block__copy) { color:rgba(255,255,255,.88); }
+.igf-layout-row--background-accent .igf-layout-media figcaption,.igf-layout-row--background-dark .igf-layout-media figcaption { color:rgba(255,255,255,.78); }
+.igf-layout-row--background-accent .igf-layout-copy :deep(a),.igf-layout-row--background-dark .igf-layout-copy :deep(a) { color:#fff; text-decoration:underline; text-underline-offset:3px; }
+.igf-layout-row--background-accent .igf-layout-divider,.igf-layout-row--background-dark .igf-layout-divider { background:rgba(255,255,255,.3); }
+.igf-layout-row--background-accent .igf-button--primary { border-color:#fff; background:#fff; color:#9c4500; }
+.igf-layout-row--background-accent .igf-button--outline,.igf-layout-row--background-dark .igf-button--outline { border-color:#fff; color:#fff; }
+.igf-layout-row--background-dark .igf-layout-button--text,.igf-layout-row--background-accent .igf-layout-button--text { color:#fff; }
 .igf-page-block__eyebrow { margin:0 0 14px; color:var(--brown); font:800 12px/1.25 'Hanken Grotesk',Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; }
 .igf-page-block__eyebrow--inverse { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid rgba(255,117,0,.34); border-radius:12px; background:rgba(255,117,0,.1); color:#ffb070; }
 .igf-page-blocks :is(h1,h2,h3) { color:inherit; font-family:'Literata',Georgia,serif; letter-spacing:-.025em; }
@@ -2277,6 +2501,7 @@ function subscribe() {
   .igf-campus-actions .igf-page-block__actions { grid-template-columns:1fr; }
 }
 @media (max-width:960px) {
+  .igf-layout-row--quarter .igf-layout-row__columns { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-stats { grid-template-columns:repeat(2,1fr); }
   .igf-card-grid { grid-template-columns:repeat(2,1fr); }
   .igf-focus-areas { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -2298,6 +2523,8 @@ function subscribe() {
   .igf-page-block--cta.igf-page-block--default .igf-page-block__actions { grid-column:2; grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:767px) {
+  .igf-layout-row__columns { grid-template-columns:minmax(0,1fr)!important; }
+  .igf-layout-row--spacing-generous .igf-layout-row__inner { padding-top:72px; padding-bottom:72px; }
   .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:1; }
   .igf-page-block { padding:var(--igf-section-mobile,68px) 20px; }
   .igf-page-block--partners { padding-top:28px; padding-bottom:68px; }

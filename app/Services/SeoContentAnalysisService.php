@@ -24,6 +24,7 @@ class SeoContentAnalysisService
         'quote',
         'sub_title',
         'subtitle',
+        'text',
         'title',
     ];
 
@@ -91,9 +92,15 @@ class SeoContentAnalysisService
             foreach ($blocks as $block) {
                 $content = $block->resolvedContent();
                 $blockType = (string) $block->type;
-                $heading = $this->blockHeading($content);
-                if ($heading !== '') {
-                    $document[$blockType === 'hero' ? 'h1' : 'h2'][] = $heading;
+                if ($blockType === 'layout') {
+                    foreach ($this->layoutHeadings($content, 'h2') as $heading) {
+                        $document['h2'][] = $heading;
+                    }
+                } else {
+                    $heading = $this->blockHeading($content);
+                    if ($heading !== '') {
+                        $document[$blockType === 'hero' ? 'h1' : 'h2'][] = $heading;
+                    }
                 }
                 $document['blocks'][] = $content;
                 $this->appendStructuredContent($document, $content, true);
@@ -357,6 +364,29 @@ class SeoContentAnalysisService
         return '';
     }
 
+    /** @return list<string> */
+    private function layoutHeadings(array $content, string $level): array
+    {
+        $headings = [];
+        foreach ((array) ($content['rows'] ?? []) as $row) {
+            foreach ((array) data_get($row, 'columns', []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    if (!is_array($element)
+                        || ($element['type'] ?? null) !== 'heading'
+                        || ($element['level'] ?? null) !== $level) {
+                        continue;
+                    }
+                    $heading = $this->plainText((string) ($element['text'] ?? ''));
+                    if ($heading !== '') {
+                        $headings[] = $heading;
+                    }
+                }
+            }
+        }
+
+        return $headings;
+    }
+
     /**
      * @param array<int, string> $h1
      * @param array<int, string> $h2
@@ -427,7 +457,8 @@ class SeoContentAnalysisService
                 continue;
             }
 
-            if (in_array($key, ['image', 'photo', 'thumbnail', 'logo'], true)) {
+            if (in_array($key, ['image', 'photo', 'thumbnail', 'logo'], true)
+                || ($key === 'path' && ($node['type'] ?? null) === 'image')) {
                 $images[] = [
                     'src' => trim((string) $value),
                     'alt' => trim((string) ($node['image_alt'] ?? $node['alt_text'] ?? $node['alt'] ?? $node['heading'] ?? $node['title'] ?? $node['name'] ?? '')),

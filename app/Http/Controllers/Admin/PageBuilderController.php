@@ -20,6 +20,7 @@ use App\Models\Testimonial;
 use App\Services\PageRevisionService;
 use App\Services\ContentSanitizer;
 use App\Services\DonationDestinationService;
+use App\Services\LayoutBlockContentService;
 use App\Services\LogicalPageTagService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,7 @@ class PageBuilderController extends Controller
         private ContentSanitizer $sanitizer,
         private DonationDestinationService $destinations,
         private LogicalPageTagService $logicalTags,
+        private LayoutBlockContentService $layoutBlocks,
     ) {
     }
 
@@ -308,21 +310,21 @@ class PageBuilderController extends Controller
                         : $block->available_until,
                     'expected_reusable_version' => $blockData['expected_reusable_version'] ?? null,
                 ], $this->blockRules(false))->validate();
-                $this->validateBlockContentForType(
+                $content = $this->prepareBlockContentForType(
                     $block->type,
                     $blockData['content'],
                     'blocks.' . $blockData['uuid'] . '.content'
                 );
                 if ($block->type === 'ways_to_give') {
-                    $this->validateWaysToGiveContent($blockData['content'], $data['locale'], 'blocks.' . $blockData['uuid'] . '.content');
+                    $this->validateWaysToGiveContent($content, $data['locale'], 'blocks.' . $blockData['uuid'] . '.content');
                 }
                 if ($block->type === 'media_text') {
-                    $this->validateMediaTextContent($blockData['content']);
+                    $this->validateMediaTextContent($content);
                 }
 
                 $attributes = [
                     'label' => trim($blockData['label'] ?? $block->resolvedLabel()),
-                    'content' => $this->sanitizer->sanitizeBlockContent($blockData['content']),
+                    'content' => $this->sanitizer->sanitizeBlockContent($content),
                     'is_enabled' => $blockData['is_enabled'],
                     'show_on_desktop' => $blockData['show_on_desktop'] ?? $block->show_on_desktop,
                     'show_on_mobile' => $blockData['show_on_mobile'] ?? $block->show_on_mobile,
@@ -592,7 +594,7 @@ class PageBuilderController extends Controller
             config('page-builder.design_defaults', []),
             $data['content'] ?? config('page-builder.default_content.' . $data['type'], [])
         );
-        $this->validateBlockContentForType($data['type'], $content);
+        $content = $this->prepareBlockContentForType($data['type'], $content);
         if ($data['type'] === 'ways_to_give') {
             $this->validateWaysToGiveContent(
                 $content,
@@ -671,7 +673,7 @@ class PageBuilderController extends Controller
                 $block->setRelation('reusableBlock', $reusable);
             }
             if (array_key_exists('content', $data)) {
-                $this->validateBlockContentForType($block->type, $data['content']);
+                $data['content'] = $this->prepareBlockContentForType($block->type, $data['content']);
             }
             if ($block->type === 'ways_to_give' && array_key_exists('content', $data)) {
                 $this->validateWaysToGiveContent($data['content'], $data['locale']);
@@ -772,6 +774,10 @@ class PageBuilderController extends Controller
             );
             $copy = $source->replicate();
             $copy->uuid = (string) Str::uuid();
+            $copy->translation_key = $copy->uuid;
+            if ($copy->type === 'layout') {
+                $copy->content = $this->layoutBlocks->regenerateIdentifiers($copy->content ?? []);
+            }
             $copy->label = trim($source->label . ' copy');
             $copy->sort_order = ((int) $page->blocks()->max('sort_order')) + 1;
             $copy->is_enabled = ($data['as_draft'] ?? false) ? false : $source->is_enabled;
@@ -1071,7 +1077,7 @@ class PageBuilderController extends Controller
      * Apply the exact same schema and managed-destination checks when a block
      * is edited from the reusable-section library instead of from a page.
      */
-    public function validateReusableBlockPayload(string $type, array $content, string $locale): void
+    public function validateReusableBlockPayload(string $type, array $content, string $locale): array
     {
         Validator::make([
             'locale' => $locale,
@@ -1080,10 +1086,12 @@ class PageBuilderController extends Controller
             'content' => $content,
         ], $this->blockRules())->validate();
 
-        $this->validateBlockContentForType($type, $content);
+        $content = $this->prepareBlockContentForType($type, $content);
         if ($type === 'ways_to_give') {
             $this->validateWaysToGiveContent($content, $locale);
         }
+
+        return $content;
     }
 
     /**
@@ -1222,6 +1230,20 @@ class PageBuilderController extends Controller
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }
+    }
+
+    private function prepareBlockContentForType(
+        string $type,
+        array $content,
+        string $errorPrefix = 'content'
+    ): array {
+        if ($type === 'layout') {
+            $content = $this->layoutBlocks->normalizeAndValidate($content, $errorPrefix);
+        }
+
+        $this->validateBlockContentForType($type, $content, $errorPrefix);
+
+        return $content;
     }
 
     private function presentBlock(PageBlock $block): PageBlock
@@ -2192,6 +2214,7 @@ class PageBuilderController extends Controller
                 'defaults' => config('page-builder.design_defaults', []),
                 'column_count_types' => config('page-builder.column_count_block_types', []),
             ],
+            'layout' => config('page-builder.layout', []),
             'manage_urls' => $this->managedContentUrls($locale),
             'categories' => Category::query()
                 ->where('language', $locale)

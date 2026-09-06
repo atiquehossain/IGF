@@ -113,7 +113,7 @@ function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional =
 const sectionTypes = [
   'hero', 'stats', 'rich_text', 'media_text', 'cards', 'ways_to_give', 'causes', 'events',
   'testimonials', 'team', 'partners', 'faq', 'timeline', 'gallery', 'video', 'cta',
-  'newsletter', 'spacer', 'custom_html',
+  'newsletter', 'layout', 'spacer', 'custom_html',
 ];
 
 function presentationBlock(type, sectionPresentation, index = 0, content = {}) {

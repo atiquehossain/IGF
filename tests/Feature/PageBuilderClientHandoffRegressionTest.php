@@ -23,7 +23,7 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
         $expected = [
             'hero', 'rich_text', 'media_text', 'stats', 'cards', 'ways_to_give',
             'causes', 'events', 'testimonials', 'team', 'partners', 'faq',
-            'timeline', 'gallery', 'video', 'cta', 'newsletter',
+            'timeline', 'gallery', 'video', 'cta', 'newsletter', 'layout',
         ];
 
         $this->assertSame($expected, array_keys(config('page-builder.simple_sections')));
@@ -56,6 +56,54 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
         ] as $designClass) {
             $this->assertStringContainsString($designClass, $source);
         }
+    }
+
+    public function test_simple_visual_layout_editor_exposes_safe_keyboard_controls_and_responsive_preview(): void
+    {
+        $source = $this->simpleBuilderSource();
+        $editor = $this->between($source, 'const layoutOptionsMarkup', 'function renderEssentialFields(');
+        $wiring = $this->between($source, 'function wireLayoutEditor(', 'function wireInspector(');
+        $preview = $this->between($source, 'function previewLayoutElement(', 'function previewBlock(');
+
+        foreach (['full', 'halves', 'thirds', 'quarter', 'third_two_thirds', 'two_thirds_third'] as $preset) {
+            $this->assertStringContainsString($preset, $source);
+        }
+        foreach (['heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer'] as $elementType) {
+            $this->assertStringContainsString("{$elementType}:", $source);
+        }
+        foreach (['layout', 'width', 'background', 'spacing'] as $rowField) {
+            $this->assertStringContainsString("'{$rowField}'", $editor);
+        }
+        foreach (['up', 'down', 'duplicate', 'remove'] as $rowAction) {
+            $this->assertStringContainsString("data-layout-row-action=\"{$rowAction}\"", $editor);
+        }
+        foreach (['up', 'down', 'left', 'right', 'duplicate', 'remove'] as $elementAction) {
+            $this->assertStringContainsString("data-layout-element-action=\"{$elementAction}\"", $editor);
+        }
+
+        $this->assertStringContainsString('rows.length >= 12', $wiring);
+        $this->assertStringContainsString('column.elements.length >= 12', $wiring);
+        $this->assertStringContainsString("openMedia({kind:'layout'", $wiring);
+        $this->assertStringContainsString("openVideoMedia({kind:'layout'", $wiring);
+        $this->assertStringContainsString("target.kind==='layout'", $source);
+        $this->assertStringContainsString("path.startsWith('rows.')", $source);
+
+        foreach (['simple-layout-preview-row__inner', 'simple-layout-preview-columns', 'simple-layout-preview-column'] as $previewClass) {
+            $this->assertStringContainsString($previewClass, $preview);
+        }
+        $this->assertStringContainsString('aria-label="Layout row', $preview);
+        $this->assertStringContainsString('aria-label="Row ${rowIndex+1}, column ${columnIndex+1}', $preview);
+        $this->assertStringContainsString('.simple-preview[data-viewport=mobile] .simple-layout-preview-columns{grid-template-columns:1fr!important}', $source);
+        $this->assertStringContainsString('.simple-layout-preview-row--background-accent{background:linear-gradient', $source);
+        $this->assertStringContainsString('window.crypto?.randomUUID', $source);
+        $this->assertStringContainsString('copy.id = newLayoutId()', $wiring);
+        $this->assertStringContainsString('duplicateLayoutRow(rows[index])', $wiring);
+        $this->assertStringContainsString('const explicitHttpsYoutubeEmbedUrl', $source);
+        $this->assertStringContainsString('function safeLayoutRichHtml', $source);
+        $this->assertStringContainsString('safeLayoutRichHtml(element.body||\'\')', $source);
+        $this->assertStringContainsString("if (!/^https:\\/\\//i.test(candidate)) return '';", $source);
+        $this->assertStringContainsString("sourceType === 'youtube' ? explicitHttpsYoutubeEmbedUrl(element.source)", $preview);
+        $this->assertStringNotContainsString('custom_html', $editor);
     }
 
     public function test_safe_design_fields_are_defaulted_validated_and_persisted(): void

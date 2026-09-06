@@ -145,7 +145,7 @@ class ReusableBlockController extends Controller
         $validationLocale = $data['locale'] === '*'
             ? (string) config('app.fallback_locale', 'en')
             : (string) $data['locale'];
-        $this->pageBuilder->validateReusableBlockPayload(
+        $data['content'] = $this->pageBuilder->validateReusableBlockPayload(
             (string) $reusableBlock->type,
             (array) $data['content'],
             $validationLocale

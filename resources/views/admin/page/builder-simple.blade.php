@@ -80,8 +80,13 @@
     .simple-preview-gallery{display:grid;gap:12px}.simple-preview-gallery figure{position:relative;min-width:0;overflow:hidden;margin:0;border-radius:12px;background:#eee}.simple-preview-gallery img,.simple-preview-gallery__placeholder{display:grid;width:100%;aspect-ratio:4/3;place-items:center;object-fit:cover}.simple-preview-gallery__placeholder{color:var(--orange);font-size:30px}.simple-preview-gallery figcaption{position:absolute;right:0;bottom:0;left:0;padding:25px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.76));color:#fff;font-size:11px;font-weight:800;text-align:left}
     .simple-preview-video{max-width:900px;margin:auto}.simple-preview-video .simple-preview-heading{align-items:center;text-align:center}.simple-preview-video__frame{overflow:hidden;border-radius:15px;background:#181818;box-shadow:0 14px 34px rgba(0,0,0,.16)}.simple-preview-video iframe,.simple-preview-video video{display:block;width:100%;aspect-ratio:16/9;border:0;object-fit:contain}.simple-preview-video__placeholder{display:grid;aspect-ratio:16/9;place-items:center;align-content:center;gap:12px;padding:30px;color:#eee;text-align:center}.simple-preview-video__placeholder i{color:var(--orange);font-size:52px}.simple-preview-video__caption{margin:11px auto 0!important;color:var(--muted);font-size:11px;text-align:center}
     .simple-preview-newsletter{display:grid;grid-template-columns:minmax(0,1fr) minmax(310px,.85fr);align-items:center;gap:36px;padding:clamp(26px,5cqw,48px);border-radius:20px;background:linear-gradient(135deg,#e9eaeb,#f8f5f1)}.simple-preview-newsletter h2{margin-bottom:12px}.simple-preview-newsletter__form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.simple-preview-newsletter__form label>span{display:block;margin-bottom:6px;font-size:10px;font-weight:850;text-transform:uppercase}.simple-preview-newsletter__form input{width:100%;height:48px;padding:0 12px;border:1px solid #cfc8c2;border-radius:8px;background:#fff}.simple-preview-newsletter__form>.simple-preview-button{min-height:48px;align-items:center}.simple-preview-newsletter__consent{display:flex;grid-column:1/-1;align-items:flex-start;gap:7px;margin:3px 0 0!important;color:var(--muted);font-size:9px;line-height:1.45!important}.simple-preview-checkbox{width:14px;height:14px;flex:0 0 auto;border:1px solid #928980;border-radius:3px;background:#fff}
+    .simple-layout-guide{margin:0 0 16px;padding:12px;border-left:3px solid var(--orange);border-radius:7px;background:#fff7ef;color:#614d3d;font-size:11px;line-height:1.5}.simple-layout-guide strong{display:block;margin-bottom:3px;color:var(--brown);font-size:12px}.simple-layout-row-editor{margin:0 0 14px;border:1px solid #ddd5ce;border-radius:11px;background:#f8f6f4}.simple-layout-row-header,.simple-layout-element-header{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 10px}.simple-layout-row-header{min-height:64px}.simple-layout-row-title{min-width:0}.simple-layout-row-title strong,.simple-layout-row-title small{display:block}.simple-layout-row-title strong{font-size:12px}.simple-layout-row-title small{margin-top:3px;color:var(--muted);font-size:9px}.simple-layout-row-actions,.simple-layout-element-actions{display:flex;flex-wrap:wrap;gap:4px}.simple-layout-row-actions button,.simple-layout-element-actions button{display:grid;min-width:44px;min-height:44px;padding:6px;place-items:center;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--brown);cursor:pointer}.simple-layout-row-actions button:disabled,.simple-layout-element-actions button:disabled{cursor:not-allowed;opacity:.34}.simple-layout-row-actions button[data-layout-row-action=remove],.simple-layout-element-actions button[data-layout-element-action=remove]{color:#a52c24}.simple-layout-row-body{padding:13px;border-top:1px solid var(--line)}.simple-layout-row-settings{display:grid;grid-template-columns:1fr 1fr;gap:0 9px}.simple-layout-row-settings .simple-field:first-child{grid-column:1/-1}.simple-layout-columns-editor{display:grid;gap:11px}.simple-layout-column-editor{padding:10px;border:1px dashed #d4c9bf;border-radius:9px;background:#fff}.simple-layout-column-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.simple-layout-column-head strong{font-size:11px}.simple-layout-column-head small{color:var(--muted);font-size:9px}.simple-layout-element-editor{margin-bottom:8px;border:1px solid var(--line);border-radius:8px;background:#faf9f8}.simple-layout-element-header{align-items:flex-start;padding:7px 8px}.simple-layout-element-details>summary{display:flex;min-height:44px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);color:var(--brown);font-size:10px;font-weight:850;cursor:pointer;list-style:none}.simple-layout-element-details>summary::-webkit-details-marker{display:none}.simple-layout-element-details>summary::after{margin-left:auto;content:'+';font-size:16px}.simple-layout-element-details[open]>summary::after{content:'−'}.simple-layout-element-title{display:flex;min-width:0;align-items:center;gap:7px;padding-top:8px;font-size:10px;font-weight:850}.simple-layout-element-title>span{overflow:hidden;text-overflow:ellipsis}.simple-layout-element-title i{display:grid;width:28px;height:28px;flex:0 0 auto;place-items:center;border-radius:6px;background:#fff0e4;color:var(--brown)}.simple-layout-element-body{padding:10px;border-top:1px solid var(--line)}.simple-layout-element-note{margin:0;color:var(--muted);font-size:10px;line-height:1.45}.simple-layout-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-top:9px}.simple-layout-add select{min-width:0;min-height:44px;padding:8px;border:1px solid #d9d2cc;border-radius:7px;background:#fff}.simple-layout-add .simple-btn{padding-inline:11px}.simple-layout-empty{margin:0 0 8px;padding:14px 8px;border:1px dashed #ddd4cc;border-radius:7px;color:var(--muted);font-size:10px;text-align:center}.simple-layout-add-row{width:100%;margin-top:2px}.simple-layout-limit{margin:8px 0 0;color:var(--muted);font-size:10px;text-align:center}.simple-layout-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(1px,1px,1px,1px)!important;white-space:nowrap!important}
+    .simple-preview-block--layout{padding-right:0!important;padding-left:0!important;background:#f5f2ef}.simple-layout-preview{display:grid;gap:14px}.simple-layout-preview-row{position:relative;width:100%;border-top:1px dashed rgba(156,69,0,.28);border-bottom:1px dashed rgba(156,69,0,.28)}.simple-layout-preview-row__inner{margin-inline:auto;padding-right:clamp(16px,4cqw,42px);padding-left:clamp(16px,4cqw,42px);transition:max-width .2s}.simple-layout-preview-columns{display:grid;align-items:start;gap:clamp(10px,2.3cqw,24px)}.simple-layout-preview-row--full .simple-layout-preview-columns{grid-template-columns:minmax(0,1fr)}.simple-layout-preview-row--halves .simple-layout-preview-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-layout-preview-row--thirds .simple-layout-preview-columns{grid-template-columns:repeat(3,minmax(0,1fr))}.simple-layout-preview-row--quarter .simple-layout-preview-columns{grid-template-columns:repeat(4,minmax(0,1fr))}.simple-layout-preview-row--third-two-thirds .simple-layout-preview-columns{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}.simple-layout-preview-row--two-thirds-third .simple-layout-preview-columns{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}.simple-layout-preview-row--width-standard{width:86%;max-width:840px}.simple-layout-preview-row--width-wide{width:95%;max-width:980px}.simple-layout-preview-row--width-full{width:100%;max-width:none}.simple-layout-preview-row--background-default{background:#fff;color:var(--ink)}.simple-layout-preview-row--background-soft{background:linear-gradient(135deg,#fffaf5 0%,#f5f1ed 100%);color:var(--ink)}.simple-layout-preview-row--background-accent{background:linear-gradient(135deg,#ff7500 0%,#e65d00 100%);color:#fff}.simple-layout-preview-row--background-dark{background:#24211f;color:#fff}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) :is(h2,h3,h4,p){color:inherit}.simple-layout-preview-row--spacing-compact .simple-layout-preview-row__inner{padding-top:18px;padding-bottom:18px}.simple-layout-preview-row--spacing-standard .simple-layout-preview-row__inner{padding-top:32px;padding-bottom:32px}.simple-layout-preview-row--spacing-generous .simple-layout-preview-row__inner{padding-top:52px;padding-bottom:52px}.simple-layout-preview-column{display:flex;min-width:0;min-height:76px;flex-direction:column;align-items:flex-start;gap:16px;padding:8px;border:1px dashed rgba(109,106,103,.3);border-radius:7px}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-column{border-color:rgba(255,255,255,.32)}.simple-layout-preview-column>*{max-width:100%}.simple-layout-preview-column h2,.simple-layout-preview-column h3,.simple-layout-preview-column h4{width:100%;margin:0;color:inherit;font-family:'Literata',Georgia,serif;line-height:1.14;overflow-wrap:anywhere}.simple-layout-preview-column h2{font-size:clamp(25px,4.5cqw,46px)}.simple-layout-preview-column h3{font-size:clamp(21px,3.2cqw,32px)}.simple-layout-preview-column h4{font-size:clamp(17px,2.4cqw,24px)}.simple-layout-preview-rich{width:100%;line-height:1.65}.simple-layout-preview-rich :is(p,ul,ol,blockquote){margin:0 0 11px}.simple-layout-preview-media{width:100%;margin:0}.simple-layout-preview-media img,.simple-layout-preview-media video,.simple-layout-preview-media iframe{display:block;width:100%;border:0;border-radius:9px;background:#171717}.simple-layout-preview-media img{height:auto;max-height:430px;object-fit:cover}.simple-layout-preview-media video,.simple-layout-preview-media iframe{aspect-ratio:16/9;object-fit:contain}.simple-layout-preview-media figcaption{margin-top:6px;color:inherit;font-size:10px;opacity:.78}.simple-layout-preview-button{display:inline-flex;min-height:43px;align-items:center;padding:9px 14px;border-radius:8px;font-size:11px;font-weight:850}.simple-layout-preview-button--primary{background:var(--brown);color:#fff}.simple-layout-preview-row--background-accent .simple-layout-preview-button--primary{border:1px solid #fff;background:#fff;color:var(--brown)}.simple-layout-preview-button--secondary{border:1px solid currentColor;background:transparent;color:var(--brown)}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-button--secondary{color:#fff}.simple-layout-preview-button--text{padding-inline:0;color:var(--brown)}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-button--text{color:#fff}.simple-layout-preview-divider{width:100%;height:1px;margin:3px 0;border:0;background:currentColor;opacity:.24}.simple-layout-preview-spacer{display:grid;width:100%;place-items:center;border-radius:5px;background:repeating-linear-gradient(135deg,rgba(156,69,0,.035),rgba(156,69,0,.035) 6px,rgba(156,69,0,.08) 6px,rgba(156,69,0,.08) 12px)}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-spacer{background:repeating-linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.05) 6px,rgba(255,255,255,.13) 6px,rgba(255,255,255,.13) 12px)}.simple-layout-preview-spacer--small{height:20px}.simple-layout-preview-spacer--medium{height:38px}.simple-layout-preview-spacer--large{height:64px}.simple-layout-preview-placeholder{display:grid;width:100%;min-height:60px;place-items:center;padding:10px;color:var(--muted);font-size:9px;text-align:center}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-placeholder{color:#fff}.simple-layout-preview-media-placeholder{display:grid;width:100%;aspect-ratio:16/9;place-items:center;align-content:center;gap:7px;border-radius:9px;background:rgba(109,106,103,.1);color:var(--muted);font-size:9px;text-align:center}.simple-layout-preview-row:is(.simple-layout-preview-row--background-accent,.simple-layout-preview-row--background-dark) .simple-layout-preview-media-placeholder{background:rgba(255,255,255,.1);color:#fff}.simple-layout-preview-media-placeholder i{color:var(--orange);font-size:23px}.simple-layout-preview-row--background-accent .simple-layout-preview-media-placeholder i{color:#fff}
+    .simple-preview[data-viewport=tablet] .simple-layout-preview-row--quarter .simple-layout-preview-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-preview[data-viewport=tablet] .simple-layout-preview-row--width-standard{width:90%}.simple-preview[data-viewport=mobile] .simple-layout-preview-columns{grid-template-columns:1fr!important}.simple-preview[data-viewport=mobile] .simple-layout-preview-row__inner{width:100%}.simple-preview[data-viewport=mobile] .simple-layout-preview-row--spacing-generous .simple-layout-preview-row__inner{padding-top:38px;padding-bottom:38px}.simple-preview[data-viewport=mobile] .simple-layout-preview-row--spacing-standard .simple-layout-preview-row__inner{padding-top:26px;padding-bottom:26px}@container (max-width:960px){.simple-layout-preview-row--quarter .simple-layout-preview-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}@container (max-width:520px){.simple-layout-preview-columns{grid-template-columns:1fr!important}.simple-layout-preview-row__inner{width:100%}.simple-layout-preview-row--spacing-generous .simple-layout-preview-row__inner{padding-top:38px;padding-bottom:38px}.simple-layout-preview-row--spacing-standard .simple-layout-preview-row__inner{padding-top:26px;padding-bottom:26px}.simple-layout-row-settings{grid-template-columns:1fr}.simple-layout-row-settings .simple-field:first-child{grid-column:auto}.simple-layout-add{grid-template-columns:1fr}.simple-layout-add .simple-btn{width:100%}}
     @container (max-width:760px){.simple-preview-block :is(.simple-preview-stats,.simple-preview-cards,.simple-preview-events,.simple-preview-team,.simple-preview-gallery),.simple-preview-partners ul{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-preview-media,.simple-preview-media--reverse{grid-template-columns:1fr;grid-template-areas:'media' 'copy'}.simple-preview-newsletter{grid-template-columns:1fr}.simple-preview-block--spacing-spacious{padding-top:64px;padding-bottom:64px}}
     @container (max-width:520px){.simple-preview-block :is(.simple-preview-stats,.simple-preview-cards,.simple-preview-events,.simple-preview-team,.simple-preview-gallery),.simple-preview-partners ul{grid-template-columns:1fr}.simple-preview-block{padding-right:18px;padding-left:18px}.simple-preview-block--spacing-compact{padding-top:28px;padding-bottom:28px}.simple-preview-block--spacing-standard{padding-top:42px;padding-bottom:42px}.simple-preview-block--spacing-spacious{padding-top:58px;padding-bottom:58px}.simple-preview-newsletter{padding:24px 18px}.simple-preview-newsletter__form{grid-template-columns:1fr}.simple-preview-newsletter__form>.simple-preview-button,.simple-preview-newsletter__consent{grid-column:1}.simple-preview-timeline>ol{padding-left:58px}.simple-preview-timeline>ol::before{left:22px}.simple-preview-timeline li>span{left:-58px;width:46px;height:46px}.simple-managed-option{grid-template-columns:auto minmax(0,1fr)}.simple-managed-move{grid-column:2}.simple-repeat-move{flex-wrap:wrap}}
+    .simple-preview-block--layout{padding:0!important}
+    .simple-layout-element-header{flex-direction:column;align-items:stretch}.simple-layout-element-actions{justify-content:flex-end}
 </style>
 
 <main class="simple-editor" id="simple-editor">
@@ -324,6 +329,7 @@
         dirtyOrder: false,
         busy: false,
         heroSlide: 0,
+        layoutOpenElement: null,
         testimonialIndexes: {},
         mediaTarget: null,
         modalReturn: null,
@@ -392,6 +398,11 @@
             return '';
         }
     };
+    const explicitHttpsYoutubeEmbedUrl = value => {
+        const candidate = String(value || '').trim();
+        if (!/^https:\/\//i.test(candidate)) return '';
+        return youtubeEmbedUrl(candidate);
+    };
     function safeRichHtml(value) {
         const template = document.createElement('template');
         template.innerHTML = String(value || '');
@@ -410,6 +421,37 @@
                     element.setAttribute('target', '_blank');
                     element.setAttribute('rel', 'noopener noreferrer');
                 }
+            }
+        });
+        return template.innerHTML;
+    }
+    function safeLayoutRichHtml(value) {
+        const template = document.createElement('template');
+        template.innerHTML = String(value || '');
+        const allowed = new Set(['A','B','BLOCKQUOTE','BR','EM','H3','H4','LI','OL','P','STRONG','U','UL']);
+        [...template.content.querySelectorAll('*')].forEach(element => {
+            if (!allowed.has(element.tagName)) {
+                element.replaceWith(...element.childNodes);
+                return;
+            }
+            const href = element.tagName === 'A' ? String(element.getAttribute('href') || '').trim() : '';
+            [...element.attributes].forEach(attribute => element.removeAttribute(attribute.name));
+            if (element.tagName !== 'A' || !href || /[\\\u0000-\u0020\u007f]/.test(href)) return;
+            const internal = href.startsWith('#') || (href.startsWith('/') && !href.startsWith('//'));
+            let secureExternal = false;
+            if (!internal) {
+                try {
+                    const parsed = new URL(href);
+                    secureExternal = parsed.protocol === 'https:' && !!parsed.hostname && !parsed.username && !parsed.password && (!parsed.port || parsed.port === '443');
+                } catch (error) {
+                    secureExternal = false;
+                }
+            }
+            if (!internal && !secureExternal) return;
+            element.setAttribute('href', href);
+            if (secureExternal) {
+                element.setAttribute('target', '_blank');
+                element.setAttribute('rel', 'noopener noreferrer');
             }
         });
         return template.innerHTML;
@@ -458,6 +500,7 @@
     }
     function applySnapshot(saved) {
         state.blocks = clone(saved.blocks || []); state.selected = saved.selected || state.blocks[0]?.uuid || null; state.heroSlide = Number(saved.heroSlide || 0);
+        state.layoutOpenElement = null;
         state.dirtyBlocks = new Set(saved.dirtyBlocks || []); state.dirtyPage = !!saved.dirtyPage; state.dirtyOrder = !!saved.dirtyOrder;
         document.getElementById('simple-page-name').value = saved.pageName || '';
         document.getElementById('simple-page-status').value = saved.pageStatus || 'draft';
@@ -556,7 +599,7 @@
     }
     function selectSection(uuid) {
         if (!uuid || uuid === state.selected) return;
-        state.selected = uuid; state.heroSlide = 0; updateSaveState(); renderAll();
+        state.selected = uuid; state.heroSlide = 0; state.layoutOpenElement = null; updateSaveState(); renderAll();
     }
 
     function heroSlides(block) {
@@ -618,6 +661,94 @@
         const alignment = normalizedDesignValue(content.content_alignment, designChoices.alignment, designDefaults.content_alignment || 'left');
         const columns = normalizedDesignValue(content.column_count, designChoices.columns, designDefaults.column_count || 'auto');
         return ` simple-preview-block--${String(block.type).replaceAll('_','-')} simple-preview-block--spacing-${spacing} simple-preview-block--align-${alignment} simple-preview-block--columns-${columns}`;
+    }
+
+    const fallbackLayoutPresets = Object.freeze({
+        full: {label:'One column',columns:1,widths:[12]},
+        halves: {label:'Two equal columns',columns:2,widths:[6,6]},
+        thirds: {label:'Three equal columns',columns:3,widths:[4,4,4]},
+        quarter: {label:'Four equal columns',columns:4,widths:[3,3,3,3]},
+        third_two_thirds: {label:'One third + two thirds',columns:2,widths:[4,8]},
+        two_thirds_third: {label:'Two thirds + one third',columns:2,widths:[8,4]},
+    });
+    const configuredLayoutOptions = contentOptions.layout || {};
+    const layoutChoiceMap = (configured, fallback) => Object.fromEntries(Object.entries(fallback).map(([token, fallbackLabel]) => {
+        const configuredValue = configured?.[token];
+        const label = typeof configuredValue === 'string' ? configuredValue : configuredValue?.label;
+        return [token, typeof label === 'string' && label.trim() ? label : fallbackLabel];
+    }));
+    const layoutPresetDefinitions = Object.fromEntries(Object.entries(fallbackLayoutPresets).map(([token, fallback]) => {
+        const configured = configuredLayoutOptions.presets?.[token];
+        const configuredColumns = Number(typeof configured === 'object' ? configured.columns : 0);
+        return [token, {
+            label: typeof configured === 'string' ? configured : (configured?.label || fallback.label),
+            columns: Number.isInteger(configuredColumns) && configuredColumns >= 1 && configuredColumns <= 4 ? configuredColumns : fallback.columns,
+            widths: Array.isArray(configured?.widths) ? configured.widths : fallback.widths,
+        }];
+    }));
+    const layoutPresetChoices = Object.fromEntries(Object.entries(layoutPresetDefinitions).map(([token, definition]) => [token, definition.label]));
+    const layoutWidthChoices = layoutChoiceMap(configuredLayoutOptions.widths, {standard:'Standard page width',wide:'Wide',full:'Full width'});
+    const layoutBackgroundChoices = layoutChoiceMap(configuredLayoutOptions.backgrounds, {default:'Default',soft:'Soft neutral',accent:'Accent',dark:'Dark'});
+    const layoutSpacingChoices = layoutChoiceMap(configuredLayoutOptions.spacings, {compact:'Compact',standard:'Standard',generous:'Generous'});
+    const layoutElementChoices = layoutChoiceMap(configuredLayoutOptions.element_types, {heading:'Heading',rich_text:'Formatted text',image:'Image',video:'Video',button:'Button',divider:'Divider',spacer:'Space'});
+    const layoutHeadingChoices = layoutChoiceMap(configuredLayoutOptions.heading_levels, {h2:'Large heading',h3:'Medium heading',h4:'Small heading'});
+    const layoutVideoSourceChoices = layoutChoiceMap(configuredLayoutOptions.video_source_types, {upload:'Uploaded video',youtube:'YouTube video'});
+    const layoutButtonStyleChoices = layoutChoiceMap(configuredLayoutOptions.button_styles, {primary:'Primary',secondary:'Secondary',text:'Text link'});
+    const layoutSpacerSizeChoices = layoutChoiceMap(configuredLayoutOptions.spacer_sizes, {small:'Small',medium:'Medium',large:'Large'});
+    const layoutElementIcons = Object.freeze({heading:'fa-header',rich_text:'fa-align-left',image:'fa-picture-o',video:'fa-play-circle',button:'fa-hand-pointer-o',divider:'fa-minus',spacer:'fa-arrows-v'});
+    const layoutChoice = (value, choices, fallback) => Object.prototype.hasOwnProperty.call(choices, String(value || '')) ? String(value) : fallback;
+    const layoutPresetColumnCount = preset => layoutPresetDefinitions[layoutChoice(preset, layoutPresetChoices, 'full')].columns;
+    const validLayoutId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+    function newLayoutId() {
+        if (typeof window.crypto?.randomUUID === 'function') return window.crypto.randomUUID();
+        const bytes = new Uint8Array(16);
+        if (typeof window.crypto?.getRandomValues === 'function') window.crypto.getRandomValues(bytes);
+        else for (let index = 0; index < bytes.length; index += 1) bytes[index] = Math.floor(Math.random() * 256);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = [...bytes].map(byte => byte.toString(16).padStart(2,'0')).join('');
+        return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+    }
+    const layoutElementName = element => {
+        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
+        const copy = type === 'heading' ? element?.text : type === 'rich_text' ? plainText(element?.body) : type === 'button' ? element?.label : type === 'image' ? (element?.caption || element?.alt) : type === 'video' ? element?.title : '';
+        return copy ? `${layoutElementChoices[type]} · ${String(copy).slice(0, 34)}` : layoutElementChoices[type];
+    };
+    function layoutRows(block) {
+        const content = block.content || (block.content = {});
+        if (!Array.isArray(content.rows)) content.rows = [];
+        content.rows.forEach(row => {
+            if (!validLayoutId(row.id)) row.id = newLayoutId();
+            row.layout = layoutChoice(row.layout, layoutPresetChoices, 'full');
+            row.width = layoutChoice(row.width, layoutWidthChoices, 'standard');
+            row.background = layoutChoice(row.background, layoutBackgroundChoices, 'default');
+            row.spacing = layoutChoice(row.spacing, layoutSpacingChoices, 'standard');
+            if (!Array.isArray(row.columns)) row.columns = [];
+            while (row.columns.length < layoutPresetColumnCount(row.layout)) row.columns.push({elements:[]});
+            row.columns.forEach(column => {
+                if (!Array.isArray(column.elements)) column.elements = [];
+                column.elements.forEach(element => { if (element && !validLayoutId(element.id)) element.id = newLayoutId(); });
+            });
+        });
+        return content.rows;
+    }
+    const newLayoutRow = () => ({id:newLayoutId(),layout:'full',width:'standard',background:'default',spacing:'standard',columns:[{elements:[]}]});
+    function newLayoutElement(type) {
+        const normalized = layoutChoice(type, layoutElementChoices, 'heading');
+        const id = newLayoutId();
+        if (normalized === 'rich_text') return {id,type:normalized,body:'<p>Add your text here.</p>'};
+        if (normalized === 'image') return {id,type:normalized,path:'',alt:'',caption:''};
+        if (normalized === 'video') return {id,type:normalized,source_type:'upload',source:'',title:''};
+        if (normalized === 'button') return {id,type:normalized,label:'Learn more',url:'',style:'primary'};
+        if (normalized === 'divider') return {id,type:normalized};
+        if (normalized === 'spacer') return {id,type:normalized,size:'medium'};
+        return {id,type:'heading',text:'New heading',level:'h2'};
+    }
+    function duplicateLayoutRow(row) {
+        const copy = clone(row);
+        copy.id = newLayoutId();
+        copy.columns.forEach(column => column.elements.forEach(element => { element.id = newLayoutId(); }));
+        return copy;
     }
     const safeManageUrl = value => /^(?:https?:\/\/|\/(?!\/))/i.test(String(value || '').trim()) ? String(value).trim() : '';
     function guidedPageCreateLink(block, source) {
@@ -863,8 +994,93 @@
         }
         return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${richField('body','Body text',content.body || '')}${typeField}${mediaFields}${selectField('image_position','Media position',content.image_position || 'left',{left:'Left',right:'Right'})}${textField('link_label','Link text',content.link_label || '')}${linkField('link_url','Link destination',content.link_url || '')}`;
     }
+    const layoutOptionsMarkup = (choices, selected) => Object.entries(choices).map(([value,label]) => `<option value="${escapeHtml(value)}" ${String(selected)===value?'selected':''}>${escapeHtml(label)}</option>`).join('');
+    const layoutRowSelect = (rowIndex, field, label, value, choices, help = '') => `<label class="simple-field"><span>${escapeHtml(label)}</span><select data-layout-row="${rowIndex}" data-layout-row-field="${escapeHtml(field)}">${layoutOptionsMarkup(choices,value)}</select>${help?`<small>${escapeHtml(help)}</small>`:''}</label>`;
+    const layoutElementInput = (rowIndex, columnIndex, elementIndex, field, label, value, options = {}) => {
+        const attributes = `data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}"`;
+        const limit = options.max ? ` maxlength="${options.max}"` : '';
+        return `<label class="simple-field"><span>${escapeHtml(label)}</span>${options.textarea?`<textarea ${attributes}${limit}>${escapeHtml(value||'')}</textarea>`:`<input ${attributes} type="${options.type||'text'}" value="${escapeHtml(value||'')}"${limit}>`}${options.help?`<small>${escapeHtml(options.help)}</small>`:''}</label>`;
+    };
+    const layoutElementSelect = (rowIndex, columnIndex, elementIndex, field, label, value, choices, rerender = false) => `<label class="simple-field"><span>${escapeHtml(label)}</span><select data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="${escapeHtml(field)}" ${rerender?'data-layout-rerender':''}>${layoutOptionsMarkup(choices,value)}</select></label>`;
+    function layoutElementLinkField(rowIndex, columnIndex, elementIndex, value) {
+        const id = `simple-layout-link-${rowIndex}-${columnIndex}-${elementIndex}`;
+        const known = linkTargets.some(target => target.url === value);
+        return `<div class="simple-field"><label for="${escapeHtml(id)}">Button destination</label><div class="simple-link-row"><select data-link-picker="${escapeHtml(id)}" aria-label="Choose button destination from existing pages"><option value="" ${value?'':'selected'}>Choose a page...</option>${linkTargets.map(target=>`<option value="${escapeHtml(target.url)}" ${target.url===value?'selected':''}>${escapeHtml(target.label)}</option>`).join('')}<option value="__custom" ${value&&!known?'selected':''}>Custom web address...</option></select><input id="${escapeHtml(id)}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="url" value="${escapeHtml(value||'')}" placeholder="Or enter /page-name or https://..."></div></div>`;
+    }
+    function renderLayoutElementFields(element, rowIndex, columnIndex, elementIndex) {
+        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
+        if (type === 'heading') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'text','Heading text',element.text||'',{max:240})}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'level','Heading size',layoutChoice(element.level,layoutHeadingChoices,'h2'),layoutHeadingChoices)}`;
+        }
+        if (type === 'rich_text') {
+            const editorId = `simple-layout-rich-${rowIndex}-${columnIndex}-${elementIndex}`;
+            return `<div class="simple-field"><span id="${editorId}-label">Formatted text</span><div class="simple-rich-toolbar" role="toolbar" aria-label="Format this text"><button type="button" data-layout-format="bold" data-layout-rich-editor="${editorId}" aria-label="Bold">B</button><button type="button" data-layout-format="italic" data-layout-rich-editor="${editorId}" aria-label="Italic"><em>I</em></button><button type="button" data-layout-format="insertUnorderedList" data-layout-rich-editor="${editorId}" aria-label="Bulleted list">•</button><button type="button" data-layout-format="createLink" data-layout-rich-editor="${editorId}" aria-label="Add link">↗</button></div><div id="${editorId}" class="simple-rich" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="${editorId}-label" data-layout-rich data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">${safeLayoutRichHtml(element.body||'')}</div></div>`;
+        }
+        if (type === 'image') {
+            const pathId = `simple-layout-image-${rowIndex}-${columnIndex}-${elementIndex}`;
+            return `<div class="simple-field"><label for="${pathId}">Image</label><div class="simple-image-row"><input id="${pathId}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="path" maxlength="2048" value="${escapeHtml(element.path||'')}" placeholder="Choose an image" readonly>${permissions.edit?`<button class="simple-btn" type="button" data-layout-choose-image data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">Choose</button>`:''}</div><small>Choose an image from the Media Library.</small></div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'alt','Describe the image',element.alt||'',{max:255,help:'Describe useful visual information; do not write “image of”.'})}${layoutElementInput(rowIndex,columnIndex,elementIndex,'caption','Caption (optional)',element.caption||'',{max:500})}`;
+        }
+        if (type === 'video') {
+            const sourceType = layoutChoice(element.source_type,layoutVideoSourceChoices,'upload');
+            const sourceId = `simple-layout-video-${rowIndex}-${columnIndex}-${elementIndex}`;
+            const sourceLabel = sourceType === 'upload' ? 'Uploaded video' : 'YouTube video link';
+            const picker = sourceType === 'upload' && permissions.edit ? `<button class="simple-btn" type="button" data-layout-choose-video data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}">Choose</button>` : '';
+            return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'source_type','Video source',sourceType,layoutVideoSourceChoices,true)}<div class="simple-field"><label for="${sourceId}">${sourceLabel}</label><div class="simple-image-row"><input id="${sourceId}" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" data-layout-element-field="source" maxlength="2048" value="${escapeHtml(element.source||'')}" placeholder="${sourceType==='upload'?'Choose an uploaded MP4 or WebM video':'https://www.youtube.com/watch?v=...'}" ${sourceType==='upload'?'readonly':''}>${picker}</div>${sourceType==='upload'?'<small>Choose an MP4 or WebM video from the Media Library.</small>':''}</div>${layoutElementInput(rowIndex,columnIndex,elementIndex,'title','Video title',element.title||'',{max:255,help:'A short, useful title for visitors using assistive technology.'})}`;
+        }
+        if (type === 'button') {
+            return `${layoutElementInput(rowIndex,columnIndex,elementIndex,'label','Button text',element.label||'',{max:80})}${layoutElementLinkField(rowIndex,columnIndex,elementIndex,element.url||'')}${layoutElementSelect(rowIndex,columnIndex,elementIndex,'style','Button style',layoutChoice(element.style,layoutButtonStyleChoices,'primary'),layoutButtonStyleChoices)}`;
+        }
+        if (type === 'spacer') {
+            return `${layoutElementSelect(rowIndex,columnIndex,elementIndex,'size','Amount of space',layoutChoice(element.size,layoutSpacerSizeChoices,'medium'),layoutSpacerSizeChoices)}<p class="simple-layout-element-note">Space automatically becomes smaller on phones.</p>`;
+        }
+        return '<p class="simple-layout-element-note">A divider adds a subtle horizontal line between nearby elements.</p>';
+    }
+    function renderLayoutElementEditor(block, element, rowIndex, columnIndex, elementIndex, columnCount, columnElements) {
+        const type = layoutChoice(element?.type, layoutElementChoices, 'heading');
+        const label = layoutElementName(element);
+        const path = `${block.uuid}:${rowIndex}:${columnIndex}:${elementIndex}`;
+        const open = state.layoutOpenElement === path || (state.layoutOpenElement === null && rowIndex === 0 && columnIndex === 0 && elementIndex === 0);
+        const targetLeftFull = columnIndex > 0 && block.content.rows[rowIndex].columns[columnIndex-1].elements.length >= 12;
+        const targetRightFull = columnIndex < columnCount-1 && block.content.rows[rowIndex].columns[columnIndex+1].elements.length >= 12;
+        return `<article class="simple-layout-element-editor" aria-label="${escapeHtml(label)}">
+            <header class="simple-layout-element-header"><span class="simple-layout-element-title"><i class="fa ${layoutElementIcons[type]||'fa-square-o'}" aria-hidden="true"></i><span>${escapeHtml(label)}</span></span><span class="simple-layout-element-actions" role="group" aria-label="Arrange ${escapeHtml(layoutElementChoices[type])}">
+                <button type="button" data-layout-element-action="up" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} up" title="Move up" ${elementIndex===0?'disabled':''}>↑</button>
+                <button type="button" data-layout-element-action="down" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} down" title="Move down" ${elementIndex===columnElements.length-1?'disabled':''}>↓</button>
+                <button type="button" data-layout-element-action="left" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the previous column" title="Move to previous column" ${columnIndex===0||targetLeftFull?'disabled':''}>←</button>
+                <button type="button" data-layout-element-action="right" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Move ${escapeHtml(layoutElementChoices[type])} to the next column" title="Move to next column" ${columnIndex===columnCount-1||targetRightFull?'disabled':''}>→</button>
+                <button type="button" data-layout-element-action="duplicate" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Duplicate ${escapeHtml(layoutElementChoices[type])}" title="Duplicate" ${columnElements.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
+                <button type="button" data-layout-element-action="remove" data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" data-layout-element="${elementIndex}" aria-label="Delete ${escapeHtml(layoutElementChoices[type])}" title="Delete"><i class="fa fa-trash" aria-hidden="true"></i></button>
+            </span></header>
+            <details class="simple-layout-element-details" data-layout-element-details="${path}" ${open?'open':''}><summary>Edit content</summary><div class="simple-layout-element-body">${renderLayoutElementFields(element,rowIndex,columnIndex,elementIndex)}</div></details>
+        </article>`;
+    }
+    function renderLayoutRowEditor(block, row, rowIndex, rows) {
+        const preset = layoutChoice(row.layout, layoutPresetChoices, 'full');
+        const columnCount = layoutPresetColumnCount(preset);
+        const columns = row.columns.slice(0,columnCount);
+        return `<section class="simple-layout-row-editor" aria-labelledby="simple-layout-row-${rowIndex}">
+            <header class="simple-layout-row-header"><span class="simple-layout-row-title"><strong id="simple-layout-row-${rowIndex}">Row ${rowIndex+1}</strong><small>${escapeHtml(layoutPresetChoices[preset])} · ${columnCount} ${columnCount===1?'column':'columns'}</small></span><span class="simple-layout-row-actions" role="group" aria-label="Arrange row ${rowIndex+1}">
+                <button type="button" data-layout-row-action="up" data-layout-row="${rowIndex}" aria-label="Move row ${rowIndex+1} up" title="Move row up" ${rowIndex===0?'disabled':''}>↑</button>
+                <button type="button" data-layout-row-action="down" data-layout-row="${rowIndex}" aria-label="Move row ${rowIndex+1} down" title="Move row down" ${rowIndex===rows.length-1?'disabled':''}>↓</button>
+                <button type="button" data-layout-row-action="duplicate" data-layout-row="${rowIndex}" aria-label="Duplicate row ${rowIndex+1}" title="Duplicate row" ${rows.length>=12?'disabled':''}><i class="fa fa-copy" aria-hidden="true"></i></button>
+                <button type="button" data-layout-row-action="remove" data-layout-row="${rowIndex}" aria-label="Delete row ${rowIndex+1}" title="Delete row"><i class="fa fa-trash" aria-hidden="true"></i></button>
+            </span></header>
+            <div class="simple-layout-row-body"><div class="simple-layout-row-settings">${layoutRowSelect(rowIndex,'layout','Column layout',preset,layoutPresetChoices,'Changing the layout keeps elements whenever the new columns have enough room.')}${layoutRowSelect(rowIndex,'width','Content width',layoutChoice(row.width,layoutWidthChoices,'standard'),layoutWidthChoices)}${layoutRowSelect(rowIndex,'background','Background',layoutChoice(row.background,layoutBackgroundChoices,'default'),layoutBackgroundChoices)}${layoutRowSelect(rowIndex,'spacing','Space inside row',layoutChoice(row.spacing,layoutSpacingChoices,'standard'),layoutSpacingChoices)}</div>
+                <div class="simple-layout-columns-editor">${columns.map((column,columnIndex)=>{
+                    const elements = Array.isArray(column.elements) ? column.elements : (column.elements=[]);
+                    const selectId = `simple-layout-add-${rowIndex}-${columnIndex}`;
+                    return `<section class="simple-layout-column-editor" aria-labelledby="simple-layout-column-${rowIndex}-${columnIndex}"><header class="simple-layout-column-head"><strong id="simple-layout-column-${rowIndex}-${columnIndex}">Column ${columnIndex+1}</strong><small>${elements.length} of 12 elements</small></header>${elements.length?elements.map((element,elementIndex)=>renderLayoutElementEditor(block,element,rowIndex,columnIndex,elementIndex,columnCount,elements)).join(''):'<p class="simple-layout-empty">This column is empty. Add its first element below.</p>'}<div class="simple-layout-add"><label class="simple-layout-sr" for="${selectId}">Element type for row ${rowIndex+1}, column ${columnIndex+1}</label><select id="${selectId}" data-layout-new-element>${layoutOptionsMarkup(layoutElementChoices,'heading')}</select><button class="simple-btn" type="button" data-layout-add-element data-layout-row="${rowIndex}" data-layout-column="${columnIndex}" aria-label="Add selected element to row ${rowIndex+1}, column ${columnIndex+1}" ${elements.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add element</button></div></section>`;
+                }).join('')}</div>
+            </div>
+        </section>`;
+    }
+    function renderLayoutEditor(block) {
+        const rows = layoutRows(block);
+        return `<div class="simple-layout-guide"><strong>Build with rows and columns</strong>Choose a column layout for each row, then place headings, text, media, buttons, dividers, and space inside its columns. Arrow buttons provide full keyboard control.</div>${rows.map((row,rowIndex)=>renderLayoutRowEditor(block,row,rowIndex,rows)).join('')}${rows.length? '':'<p class="simple-layout-empty">This visual layout has no rows yet.</p>'}<button class="simple-btn simple-layout-add-row" type="button" id="simple-layout-add-row" ${rows.length>=12?'disabled':''}><i class="fa fa-plus" aria-hidden="true"></i> Add row</button><p class="simple-layout-limit">${rows.length} of 12 rows used</p>`;
+    }
     function renderEssentialFields(block) {
         const content = block.content || (block.content = {});
+        if (block.type === 'layout') return renderLayoutEditor(block);
         if (block.type === 'hero') return renderHeroEditor(block);
         if (block.type === 'stats') return renderStatsEditor(block);
         if (block.type === 'ways_to_give') return renderWaysToGiveEditor(block);
@@ -902,7 +1118,8 @@
         const reusableAction = !block.is_reusable && permissions.create
             ? '<div class="simple-shared"><strong>Reuse this section on other pages.</strong> Save it to the shared library with a clear name. <button class="simple-btn" type="button" id="simple-promote-reusable"><i class="fa fa-share-alt" aria-hidden="true"></i> Save as reusable</button></div>'
             : '';
-        inspector.innerHTML = `${sharedNotice}${reusableAction}${renderSectionPresentationField(editorBlock)}${renderSectionDesignFields(editorBlock)}${renderEssentialFields(editorBlock)}<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label><fieldset class="simple-placement-options"><legend>Device visibility and schedule</legend><label class="simple-check"><input id="simple-block-desktop" type="checkbox" ${block.show_on_desktop !== false ? 'checked' : ''}> Show on desktop</label><label class="simple-check"><input id="simple-block-mobile" type="checkbox" ${block.show_on_mobile !== false ? 'checked' : ''}> Show on mobile</label><label class="simple-field"><span>Show from (optional)</span><input id="simple-block-available-from" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_from))}"></label><label class="simple-field"><span>Show until (optional)</span><input id="simple-block-available-until" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_until))}"><small>Leave both dates empty to keep the section available whenever the page is published.</small></label></fieldset>${actionGroup}${editNote}</div></details>`;
+        const sectionDesignControls = block.type === 'layout' ? '' : `${renderSectionPresentationField(editorBlock)}${renderSectionDesignFields(editorBlock)}`;
+        inspector.innerHTML = `${sharedNotice}${reusableAction}${sectionDesignControls}${renderEssentialFields(editorBlock)}<details class="simple-options"><summary>Section options</summary><div style="padding-top:14px"><label class="simple-field"><span>Editor label</span><input id="simple-block-label" value="${escapeHtml(block.label || typeLabels[block.type] || '')}"></label><label class="simple-check"><input id="simple-block-enabled" type="checkbox" ${block.is_enabled ? 'checked' : ''}> Show this section on the website</label><fieldset class="simple-placement-options"><legend>Device visibility and schedule</legend><label class="simple-check"><input id="simple-block-desktop" type="checkbox" ${block.show_on_desktop !== false ? 'checked' : ''}> Show on desktop</label><label class="simple-check"><input id="simple-block-mobile" type="checkbox" ${block.show_on_mobile !== false ? 'checked' : ''}> Show on mobile</label><label class="simple-field"><span>Show from (optional)</span><input id="simple-block-available-from" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_from))}"></label><label class="simple-field"><span>Show until (optional)</span><input id="simple-block-available-until" type="datetime-local" value="${escapeHtml(formatDateTimeLocal(block.available_until))}"><small>Leave both dates empty to keep the section available whenever the page is published.</small></label></fieldset>${actionGroup}${editNote}</div></details>`;
         if (!permissions.edit || sharedContentReadOnly) {
             inspector.querySelectorAll('input,textarea,select,button,[contenteditable="true"]').forEach(control => {
                 const pageOnlyControl = sharedContentReadOnly && control.matches('#simple-block-enabled,#simple-block-desktop,#simple-block-mobile,#simple-block-available-from,#simple-block-available-until,#simple-duplicate,#simple-delete,#simple-detach-reusable,[data-hero-nav]');
@@ -913,6 +1130,141 @@
             });
         }
         wireInspector(block);
+    }
+    function reshapeLayoutRow(row, nextPreset) {
+        const preset = layoutChoice(nextPreset, layoutPresetChoices, 'full');
+        const desiredCount = layoutPresetColumnCount(preset);
+        const currentColumns = Array.isArray(row.columns) ? row.columns : [];
+        currentColumns.forEach(column => { if (!Array.isArray(column.elements)) column.elements = []; });
+        if (currentColumns.length > desiredCount) {
+            const kept = currentColumns.slice(0,desiredCount);
+            const displaced = currentColumns.slice(desiredCount).flatMap(column => column.elements);
+            const freeSlots = kept.reduce((total,column) => total + Math.max(0,12-column.elements.length),0);
+            if (displaced.length > freeSlots) return false;
+            displaced.forEach(element => {
+                const destination = [...kept].reverse().find(column => column.elements.length < 12);
+                destination.elements.push(element);
+            });
+            row.columns = kept;
+        } else {
+            while (currentColumns.length < desiredCount) currentColumns.push({elements:[]});
+            row.columns = currentColumns;
+        }
+        row.layout = preset;
+        return true;
+    }
+    function layoutElementFromControl(block, control) {
+        const rowIndex = Number(control.dataset.layoutRow);
+        const columnIndex = Number(control.dataset.layoutColumn);
+        const elementIndex = Number(control.dataset.layoutElement);
+        const rows = layoutRows(block);
+        return {rowIndex,columnIndex,elementIndex,row:rows[rowIndex],column:rows[rowIndex]?.columns?.[columnIndex],element:rows[rowIndex]?.columns?.[columnIndex]?.elements?.[elementIndex]};
+    }
+    function wireLayoutEditor(block) {
+        const rows = layoutRows(block);
+        inspector.querySelectorAll('[data-layout-element-details]').forEach(details => details.addEventListener('toggle', () => {
+            if (details.open) state.layoutOpenElement = details.dataset.layoutElementDetails;
+            else if (state.layoutOpenElement === details.dataset.layoutElementDetails) state.layoutOpenElement = '';
+        }));
+        inspector.querySelectorAll('[data-layout-row-field]').forEach(control => control.addEventListener('change', () => {
+            const row = rows[Number(control.dataset.layoutRow)];
+            if (!row) return;
+            const field = control.dataset.layoutRowField;
+            if (field === 'layout') {
+                const oldPreset = row.layout;
+                if (!reshapeLayoutRow(row,control.value)) {
+                    control.value = oldPreset;
+                    return notify('This layout has no room for every element. Move or remove elements before reducing its columns.');
+                }
+                state.layoutOpenElement = null;
+                markDirty('block'); renderAll(); return;
+            }
+            const choices = field === 'width' ? layoutWidthChoices : field === 'background' ? layoutBackgroundChoices : layoutSpacingChoices;
+            row[field] = layoutChoice(control.value,choices,field === 'spacing'?'standard':field === 'background'?'default':'standard');
+            markDirty('block'); renderPreview();
+        }));
+        inspector.querySelector('#simple-layout-add-row')?.addEventListener('click', () => {
+            if (rows.length >= 12) return notify('A visual layout can contain up to twelve rows.');
+            recordHistory(); rows.push(newLayoutRow()); state.layoutOpenElement = null; markDirty('block'); renderAll();
+        });
+        inspector.querySelectorAll('[data-layout-row-action]').forEach(button => button.addEventListener('click', () => {
+            const index = Number(button.dataset.layoutRow);
+            const action = button.dataset.layoutRowAction;
+            if (!rows[index]) return;
+            if (action === 'up' || action === 'down') {
+                const target = action === 'up' ? index-1 : index+1;
+                if (target < 0 || target >= rows.length) return;
+                recordHistory(); [rows[index],rows[target]] = [rows[target],rows[index]]; state.layoutOpenElement = null; markDirty('block'); renderAll(); return;
+            }
+            if (action === 'duplicate') {
+                if (rows.length >= 12) return notify('A visual layout can contain up to twelve rows.');
+                recordHistory(); rows.splice(index+1,0,duplicateLayoutRow(rows[index])); state.layoutOpenElement = null; markDirty('block'); renderAll(); return;
+            }
+            if (action === 'remove') {
+                recordHistory(); rows.splice(index,1); state.layoutOpenElement = null; markDirty('block'); renderAll(); notify('Row removed. Use Undo if you need it back.');
+            }
+        }));
+        inspector.querySelectorAll('[data-layout-add-element]').forEach(button => button.addEventListener('click', () => {
+            const rowIndex = Number(button.dataset.layoutRow);
+            const columnIndex = Number(button.dataset.layoutColumn);
+            const column = rows[rowIndex]?.columns?.[columnIndex];
+            const select = button.closest('.simple-layout-add')?.querySelector('[data-layout-new-element]');
+            if (!column || !select) return;
+            if (column.elements.length >= 12) return notify('A column can contain up to twelve elements.');
+            recordHistory(); column.elements.push(newLayoutElement(select.value));
+            state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${column.elements.length-1}`;
+            markDirty('block'); renderAll();
+        }));
+        inspector.querySelectorAll('[data-layout-element-action]').forEach(button => button.addEventListener('click', () => {
+            const {rowIndex,columnIndex,elementIndex,row,column,element} = layoutElementFromControl(block,button);
+            if (!row || !column || !element) return;
+            const action = button.dataset.layoutElementAction;
+            if (action === 'up' || action === 'down') {
+                const target = action === 'up' ? elementIndex-1 : elementIndex+1;
+                if (target < 0 || target >= column.elements.length) return;
+                recordHistory(); [column.elements[elementIndex],column.elements[target]] = [column.elements[target],column.elements[elementIndex]];
+                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${target}`; markDirty('block'); renderAll(); return;
+            }
+            if (action === 'left' || action === 'right') {
+                const targetColumnIndex = action === 'left' ? columnIndex-1 : columnIndex+1;
+                const targetColumn = row.columns[targetColumnIndex];
+                if (!targetColumn || targetColumn.elements.length >= 12) return notify('The adjacent column is full.');
+                recordHistory(); column.elements.splice(elementIndex,1); targetColumn.elements.push(element);
+                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${targetColumnIndex}:${targetColumn.elements.length-1}`; markDirty('block'); renderAll(); return;
+            }
+            if (action === 'duplicate') {
+                if (column.elements.length >= 12) return notify('A column can contain up to twelve elements.');
+                recordHistory(); const copy = clone(element); copy.id = newLayoutId(); column.elements.splice(elementIndex+1,0,copy);
+                state.layoutOpenElement = `${block.uuid}:${rowIndex}:${columnIndex}:${elementIndex+1}`; markDirty('block'); renderAll(); return;
+            }
+            if (action === 'remove') {
+                recordHistory(); column.elements.splice(elementIndex,1); state.layoutOpenElement = ''; markDirty('block'); renderAll(); notify('Element removed. Use Undo if you need it back.');
+            }
+        }));
+        inspector.querySelectorAll('[data-layout-element-field]').forEach(control => control.addEventListener('input', () => {
+            const {element} = layoutElementFromControl(block,control);
+            if (!element) return;
+            element[control.dataset.layoutElementField] = control.value;
+            markDirty('block'); renderPreview();
+        }));
+        inspector.querySelectorAll('[data-layout-rerender]').forEach(control => control.addEventListener('change', () => { renderInspector(); renderPreview(); }));
+        inspector.querySelectorAll('[data-layout-rich]').forEach(editor => editor.addEventListener('input', () => {
+            const {element} = layoutElementFromControl(block,editor);
+            if (!element) return;
+            element.body = editor.innerHTML; markDirty('block'); renderPreview();
+        }));
+        inspector.querySelectorAll('[data-layout-format]').forEach(button => button.addEventListener('click', event => {
+            event.preventDefault();
+            const editor = document.getElementById(button.dataset.layoutRichEditor);
+            editor?.focus();
+            if (button.dataset.layoutFormat === 'createLink') {
+                const url = prompt('Enter the link address:','https://');
+                if (url) document.execCommand('createLink',false,url);
+            } else document.execCommand(button.dataset.layoutFormat,false,null);
+            editor?.dispatchEvent(new Event('input',{bubbles:true}));
+        }));
+        inspector.querySelectorAll('[data-layout-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:'path'})));
+        inspector.querySelectorAll('[data-layout-choose-video]').forEach(button => button.addEventListener('click', () => openVideoMedia({kind:'layout',row:Number(button.dataset.layoutRow),column:Number(button.dataset.layoutColumn),element:Number(button.dataset.layoutElement),key:'source'})));
     }
     function wireInspector(block) {
         inspector.querySelectorAll('[data-hero-nav]').forEach(button => button.addEventListener('click', () => { state.heroSlide += button.dataset.heroNav === 'next' ? 1 : -1; renderInspector(); renderPreview(); }));
@@ -995,6 +1347,7 @@
             inspector.querySelectorAll('[data-choose-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:button.dataset.slideImage?'slide':'content',key:button.dataset.chooseImage})));
             inspector.querySelectorAll('[data-choose-video]').forEach(button => button.addEventListener('click', () => openVideoMedia({kind:'content',key:button.dataset.chooseVideo})));
             inspector.querySelectorAll('[data-choose-card-image]').forEach(button => button.addEventListener('click', () => openMedia({kind:'card',index:Number(button.dataset.chooseCardImage),key:'image'})));
+            if (block.type === 'layout') wireLayoutEditor(block);
         }
         if (canEditBlockContent(block)) {
             inspector.querySelectorAll('[data-hero-move]').forEach(button => button.addEventListener('click', () => {
@@ -1062,9 +1415,55 @@
         const language = locale === 'bn' ? 'bn-BD' : 'en-US';
         return {day:new Intl.DateTimeFormat(language,{day:'2-digit'}).format(date),month:new Intl.DateTimeFormat(language,{month:'short'}).format(date)};
     }
+    function previewLayoutElement(element, rowIndex, columnIndex, elementIndex) {
+        const type = layoutChoice(element?.type,layoutElementChoices,'heading');
+        const path = `rows.${rowIndex}.columns.${columnIndex}.elements.${elementIndex}`;
+        if (type === 'heading') {
+            const level = layoutChoice(element.level,layoutHeadingChoices,'h2');
+            return inlineElement(level,element.text||'New heading',`${path}.text`,'heading text',{single:true});
+        }
+        if (type === 'rich_text') return `<div class="simple-layout-preview-rich">${safeLayoutRichHtml(element.body||'')}</div>`;
+        if (type === 'image') {
+            const image = safeImage(element.path);
+            return image ? `<figure class="simple-layout-preview-media"><img src="${escapeHtml(image)}" alt="${escapeHtml(element.alt||'')}">${element.caption?`<figcaption>${escapeHtml(element.caption)}</figcaption>`:''}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-picture-o" aria-hidden="true"></i><span>Choose an image for this element</span></div>`;
+        }
+        if (type === 'video') {
+            const sourceType = element.source_type === 'youtube' ? 'youtube' : 'upload';
+            const source = sourceType === 'youtube' ? explicitHttpsYoutubeEmbedUrl(element.source) : safeImage(element.source);
+            const title = element.title || 'Video';
+            const media = sourceType === 'youtube' && source
+                ? `<iframe src="${escapeHtml(source)}" title="${escapeHtml(title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`
+                : source ? `<video src="${escapeHtml(source)}" aria-label="${escapeHtml(title)}" controls preload="metadata"></video>` : '';
+            return media ? `<figure class="simple-layout-preview-media">${media}</figure>` : `<div class="simple-layout-preview-media-placeholder"><i class="fa fa-play-circle" aria-hidden="true"></i><span>Choose a video for this element</span></div>`;
+        }
+        if (type === 'button') {
+            const style = layoutChoice(element.style,layoutButtonStyleChoices,'primary');
+            return inlineElement('span',element.label||'Button',`${path}.label`,'button text',{className:`simple-layout-preview-button simple-layout-preview-button--${style}`,single:true});
+        }
+        if (type === 'divider') return '<hr class="simple-layout-preview-divider">';
+        const size = layoutChoice(element.size,layoutSpacerSizeChoices,'medium');
+        return `<div class="simple-layout-preview-spacer simple-layout-preview-spacer--${size}" role="img" aria-label="${escapeHtml(layoutSpacerSizeChoices[size])} spacer"><span class="simple-layout-sr">${escapeHtml(layoutSpacerSizeChoices[size])} spacer</span></div>`;
+    }
+    function previewLayoutRow(row, rowIndex) {
+        const preset = layoutChoice(row.layout,layoutPresetChoices,'full');
+        const width = layoutChoice(row.width,layoutWidthChoices,'standard');
+        const background = layoutChoice(row.background,layoutBackgroundChoices,'default');
+        const spacing = layoutChoice(row.spacing,layoutSpacingChoices,'standard');
+        const columnCount = layoutPresetColumnCount(preset);
+        const columns = row.columns.slice(0,columnCount);
+        return `<section class="simple-layout-preview-row simple-layout-preview-row--${preset.replaceAll('_','-')} simple-layout-preview-row--background-${background} simple-layout-preview-row--spacing-${spacing}" aria-label="Layout row ${rowIndex+1}, ${escapeHtml(layoutPresetChoices[preset])}"><div class="simple-layout-preview-row__inner simple-layout-preview-row--width-${width}"><div class="simple-layout-preview-columns">${columns.map((column,columnIndex)=>{
+            const elements = Array.isArray(column.elements) ? column.elements : [];
+            return `<div class="simple-layout-preview-column" role="group" aria-label="Row ${rowIndex+1}, column ${columnIndex+1}">${elements.length?elements.map((element,elementIndex)=>previewLayoutElement(element,rowIndex,columnIndex,elementIndex)).join(''):`<div class="simple-layout-preview-placeholder">Column ${columnIndex+1}<br>Add an element in the editor panel</div>`}</div>`;
+        }).join('')}</div></div></section>`;
+    }
     function previewBlock(block) {
         // Every root receives data-preview-type="${block.type}" from previewSectionMeta.
         const c = block.content || {};
+
+        if (block.type === 'layout') {
+            const rows = layoutRows(block);
+            return `<section ${previewSectionMeta(block)}><div class="simple-layout-preview" aria-label="Visual layout preview">${rows.length?rows.map((row,rowIndex)=>previewLayoutRow(row,rowIndex)).join(''):'<div class="simple-layout-preview-placeholder">Add a row to begin this visual layout.</div>'}</div></section>`;
+        }
 
         if (block.type === 'hero') {
             const slides = heroSlides(block);
@@ -1188,6 +1587,11 @@
     }
     function setInlineValue(block, path, value) {
         if (path.startsWith('slide.')) heroSlides(block)[state.heroSlide][path.split('.')[1]] = value;
+        else if (path.startsWith('rows.')) {
+            const [,rowIndex,,columnIndex,,elementIndex,key] = path.split('.');
+            const element = block.content?.rows?.[Number(rowIndex)]?.columns?.[Number(columnIndex)]?.elements?.[Number(elementIndex)];
+            if (element && key) element[key] = value;
+        }
         else if (path.startsWith('items.')) { const [,index,key]=path.split('.'); block.content.items[Number(index)][key]=value; }
         else block.content[path] = value;
     }
@@ -1502,7 +1906,7 @@
     function openMedia(target){if(!permissions.edit)return;state.mediaTarget={...target,modalId:'media-modal'};state.modalReturn=document.activeElement;document.getElementById('media-modal').hidden=false;document.querySelector('#media-modal .simple-close').focus()}
     function openVideoMedia(target){if(!permissions.edit)return;state.mediaTarget={...target,modalId:'video-media-modal'};state.modalReturn=document.activeElement;document.getElementById('video-media-modal').hidden=false;document.querySelector('#video-media-modal .simple-close').focus()}
     function closeModal(modal){modal.hidden=true;state.modalReturn?.focus();state.modalReturn=null}
-    function chooseMedia(url){if(!permissions.edit)return;const block=current();if(!block||!state.mediaTarget)return;recordHistory();const target=state.mediaTarget;if(target.kind==='slide')heroSlides(block)[state.heroSlide][target.key]=url;else if(target.kind==='card')block.content.items[target.index][target.key]=url;else block.content[target.key]=url;markDirty('block');closeModal(document.getElementById(target.modalId||'media-modal'));renderAll()}
+    function chooseMedia(url){if(!permissions.edit)return;const block=current();if(!block||!state.mediaTarget)return;recordHistory();const target=state.mediaTarget;if(target.kind==='slide')heroSlides(block)[state.heroSlide][target.key]=url;else if(target.kind==='card')block.content.items[target.index][target.key]=url;else if(target.kind==='layout'){const element=block.content?.rows?.[target.row]?.columns?.[target.column]?.elements?.[target.element];if(!element)return;element[target.key]=url}else block.content[target.key]=url;markDirty('block');closeModal(document.getElementById(target.modalId||'media-modal'));renderAll()}
     document.getElementById('simple-media-grid').addEventListener('click',event=>{const option=event.target.closest('[data-media-url]');if(option)chooseMedia(option.dataset.mediaUrl)});
     document.getElementById('simple-video-grid').addEventListener('click',event=>{const option=event.target.closest('[data-video-media-url]');if(option)chooseMedia(option.dataset.videoMediaUrl)});
     document.getElementById('simple-media-upload')?.addEventListener('change',async event=>{if(!permissions.create||!permissions.edit)return;const file=event.target.files[0];if(!file)return;const form=new FormData();form.append('locale',locale);form.append('file',file);try{const payload=await request(routes.media,'POST',form,true);const grid=document.getElementById('simple-media-grid');grid.insertAdjacentHTML('afterbegin',`<button class="simple-media-option" type="button" data-media-url="${escapeHtml(payload.asset.url)}"><img src="${escapeHtml(payload.asset.url)}" alt=""></button>`);chooseMedia(payload.asset.url);notify(payload.message)}catch(error){notify(error.message)}finally{event.target.value=''}});

@@ -84,6 +84,8 @@ class TranslationCenterService
         'url', 'primary_url', 'secondary_url', 'report_url', 'link_url', 'video_url', 'youtube_url',
         'image', 'photo', 'poster', 'background_image', 'icon', 'value', 'limit',
         'animation_type', 'media_type', 'image_position', 'overlay_opacity', 'interval', 'size',
+        'width', 'background', 'spacing', 'level', 'source_type', 'style', 'path', 'source',
+        'section_spacing', 'content_alignment', 'column_count',
         'content_source', 'category_slug', 'tag_slug', 'sort', 'selection_mode',
         'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type',
         'locale', 'language', 'platform', 'variant', 'layout', 'presentation', 'section_presentation', 'target', 'rel',
@@ -203,8 +205,27 @@ class TranslationCenterService
                 $this->assertCurrentPrecondition($row, $update['precondition']);
             }
 
-            $saved = 0;
             $changedPageUuids = [];
+            $layoutIdentities = $prepared
+                ->map(fn (array $update): array => (array) data_get($update, 'row.identity', []))
+                ->filter(fn (array $identity): bool => isset(
+                    $identity['layout_row_id'],
+                    $identity['layout_element_id'],
+                    $identity['source_block_id']
+                ))
+                ->unique(fn (array $identity): int => (int) $identity['source_block_id']);
+            foreach ($layoutIdentities as $identity) {
+                $changedUuid = $this->synchronizeLayoutBlock(
+                    $identity,
+                    $sourceLocale,
+                    $targetLocale
+                );
+                if ($changedUuid !== null) {
+                    $changedPageUuids[] = $changedUuid;
+                }
+            }
+
+            $saved = 0;
             foreach ($prepared as $update) {
                 $row = $current->get($update['row']['key']);
                 $value = $update['value'];
@@ -262,6 +283,7 @@ class TranslationCenterService
             // locale, sorted logical Pages, canonical generic content owners,
             // then dependent donation causes.
             $pageLocks = $this->editorVersions->lockForMutation($pageUuids);
+            $this->lockPageBlocks($pageLocks);
             $lockedPages = $pageLocks
                 ->flatMap(fn ($pages) => $pages->all())
                 ->values();
@@ -356,6 +378,9 @@ class TranslationCenterService
                     $target->save();
                 }
                 if ($categoryChanged || $publicationChanged) {
+                    $changedPageUuids[] = (string) $source->uuid;
+                }
+                if ($this->synchronizePageLayoutBlocks($source, $target)) {
                     $changedPageUuids[] = (string) $source->uuid;
                 }
                 $counts['pages']++;
@@ -665,6 +690,37 @@ class TranslationCenterService
             foreach ($source->blocks as $block) {
                 $translationKey = (string) ($block->translation_key ?: $block->uuid);
                 $targetBlock = $targetBlocks->get($translationKey);
+                if ($block->type === 'layout' && $this->layoutHasStableIds($block->resolvedContent())) {
+                    $targetContent = $targetBlock?->reusable_block_id ? [] : ($targetBlock?->content ?? []);
+                    foreach ($this->flattenLayoutContent($block->resolvedContent()) as $entry) {
+                        $rows->push($this->row(
+                            [
+                                'type' => 'block',
+                                'source_page_id' => $source->id,
+                                'source_block_id' => $block->id,
+                                'path' => 'layout.' . $entry['row_id'] . '.' . $entry['element_id'] . '.' . $entry['field'],
+                                'layout_row_id' => $entry['row_id'],
+                                'layout_element_id' => $entry['element_id'],
+                                'field' => $entry['field'],
+                            ],
+                            'pages',
+                            'Page · ' . $source->name . ' / ' . ($block->resolvedLabel() ?: config("page-builder.block_types.{$block->type}", Str::headline($block->type))),
+                            Str::headline($entry['field']),
+                            $entry['value'],
+                            $this->layoutTranslationValue(
+                                $targetContent,
+                                $entry['row_id'],
+                                $entry['element_id'],
+                                $entry['field']
+                            ),
+                            str_contains($entry['value'], '<') ? 'html' : 'textarea',
+                            $sourceLocale,
+                            $targetLocale,
+                            $pageIsRequired && $visibleBlockIds->has($block->id)
+                        ));
+                    }
+                    continue;
+                }
                 foreach ($this->flattenBlockContent($block->resolvedContent()) as $path => $sourceValue) {
                     $rows->push($this->row(
                         ['type' => 'block', 'source_page_id' => $source->id, 'source_block_id' => $block->id, 'path' => $path],
@@ -877,6 +933,100 @@ class TranslationCenterService
         }
 
         return $result;
+    }
+
+    private function layoutHasStableIds(array $content): bool
+    {
+        $rowIds = [];
+        $elementIds = [];
+        foreach ((array) ($content['rows'] ?? []) as $row) {
+            $rowId = is_array($row) ? (string) ($row['id'] ?? '') : '';
+            if (!Str::isUuid($rowId) || isset($rowIds[$rowId])) {
+                return false;
+            }
+            $rowIds[$rowId] = true;
+
+            foreach ((array) data_get($row, 'columns', []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    $elementId = is_array($element) ? (string) ($element['id'] ?? '') : '';
+                    if (!Str::isUuid($elementId) || isset($elementIds[$elementId])) {
+                        return false;
+                    }
+                    $elementIds[$elementId] = true;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return list<array{row_id:string,element_id:string,field:string,value:string}>
+     */
+    private function flattenLayoutContent(array $content): array
+    {
+        $entries = [];
+        foreach ((array) ($content['rows'] ?? []) as $row) {
+            $rowId = (string) ($row['id'] ?? '');
+            foreach ((array) data_get($row, 'columns', []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    if (!is_array($element)) {
+                        continue;
+                    }
+                    $elementId = (string) ($element['id'] ?? '');
+                    foreach ($element as $field => $value) {
+                        if (!is_string($value)
+                            || trim(strip_tags($value)) === ''
+                            || !$this->isTranslatableBlockKey((string) $field)) {
+                            continue;
+                        }
+                        $entries[] = [
+                            'row_id' => $rowId,
+                            'element_id' => $elementId,
+                            'field' => (string) $field,
+                            'value' => $value,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $entries;
+    }
+
+    private function layoutTranslationValue(
+        array $content,
+        string $rowId,
+        string $elementId,
+        string $field
+    ): string {
+        foreach ((array) ($content['rows'] ?? []) as $row) {
+            if (!is_array($row) || (string) ($row['id'] ?? '') !== $rowId) {
+                continue;
+            }
+            foreach ((array) ($row['columns'] ?? []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    if (is_array($element) && (string) ($element['id'] ?? '') === $elementId) {
+                        return is_string($element[$field] ?? null) ? (string) $element[$field] : '';
+                    }
+                }
+            }
+        }
+
+        // Elements normally remain in their owning row. The global fallback
+        // keeps copy attached if a future editor permits moving one between
+        // rows while preserving its opaque identity.
+        foreach ((array) ($content['rows'] ?? []) as $row) {
+            foreach ((array) data_get($row, 'columns', []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    if (is_array($element) && (string) ($element['id'] ?? '') === $elementId) {
+                        return is_string($element[$field] ?? null) ? (string) $element[$field] : '';
+                    }
+                }
+            }
+        }
+
+        return '';
     }
 
     private function isTranslatableBlockKey(string $key): bool
@@ -1236,11 +1386,212 @@ class TranslationCenterService
         $targetPage = $this->ensureTargetPage($sourcePage, $targetLocale);
         $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
         $targetBlock = $targetPage->blocks()->where('translation_key', $translationKey)->firstOrFail();
+
+        if ($sourceBlock->type === 'layout'
+            && isset($identity['layout_row_id'], $identity['layout_element_id'], $identity['field'])) {
+            $content = $this->reconcileLayoutTranslationContent(
+                $sourceBlock->resolvedContent(),
+                $targetBlock->content ?? []
+            );
+            if (!$this->setLayoutTranslationValue(
+                $content,
+                (string) $identity['layout_row_id'],
+                (string) $identity['layout_element_id'],
+                (string) $identity['field'],
+                $value
+            )) {
+                $this->throwStalePrecondition();
+            }
+            $targetBlock->update(['content' => $this->sanitizer->sanitizeBlockContent($content)]);
+
+            return [(string) $targetPage->uuid];
+        }
+
         $content = $targetBlock->content ?? [];
         data_set($content, $identity['path'], $value);
         $targetBlock->update(['content' => $this->sanitizer->sanitizeBlockContent($content)]);
 
         return [(string) $targetPage->uuid];
+    }
+
+    /**
+     * Mirror the latest layout structure whenever any row from that block is
+     * submitted. Copy remains keyed by element identity, so a row reorder or
+     * a move between columns cannot attach Bangla wording to another element.
+     */
+    private function synchronizeLayoutBlock(
+        array $identity,
+        string $sourceLocale,
+        string $targetLocale
+    ): ?string {
+        $sourcePage = Page::query()
+            ->whereKey($identity['source_page_id'])
+            ->where('language', $sourceLocale)
+            ->firstOrFail();
+        $sourceBlock = $sourcePage->blocks()->whereKey($identity['source_block_id'])->firstOrFail();
+        if ($sourceBlock->type !== 'layout' || !$this->layoutHasStableIds($sourceBlock->resolvedContent())) {
+            return null;
+        }
+
+        $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
+        $existingTargetPage = Page::query()
+            ->where('uuid', $sourcePage->uuid)
+            ->where('language', $targetLocale)
+            ->first();
+        $targetBlockExisted = $existingTargetPage?->blocks()
+            ->where('translation_key', $translationKey)
+            ->exists() ?? false;
+        $targetPage = $this->ensureTargetPage($sourcePage, $targetLocale);
+        $targetBlock = $targetPage->blocks()->where('translation_key', $translationKey)->firstOrFail();
+        if ($targetBlockExisted && !$this->synchronizeTargetLayoutBlock($sourceBlock, $targetBlock)) {
+            return null;
+        }
+
+        return (string) $targetPage->uuid;
+    }
+
+    /**
+     * Publication can follow a source-only machine edit, where no translated
+     * cell changed and therefore no Translation Center row is submitted. Keep
+     * those target layouts structurally current while retaining copy by each
+     * element's stable identity.
+     */
+    private function synchronizePageLayoutBlocks(Page $sourcePage, Page $targetPage): bool
+    {
+        $changed = false;
+        $targetBlocks = $targetPage->blocks()->get()->keyBy('translation_key');
+
+        foreach ($sourcePage->blocks()->where('type', 'layout')->orderBy('id')->get() as $sourceBlock) {
+            $sourceContent = $sourceBlock->resolvedContent();
+            if (!$this->layoutHasStableIds($sourceContent)) {
+                continue;
+            }
+
+            $translationKey = (string) ($sourceBlock->translation_key ?: $sourceBlock->uuid);
+            $targetBlock = $targetBlocks->get($translationKey);
+            if (!$targetBlock) {
+                $targetBlock = $sourceBlock->replicate();
+                $targetBlock->page_id = $targetPage->id;
+                $targetBlock->uuid = (string) Str::uuid();
+                $targetBlock->translation_key = $translationKey;
+                $targetBlock->reusable_block_id = null;
+                $targetBlock->content = $this->sanitizer->sanitizeBlockContent(
+                    $this->prepareBlockTranslationContent($sourceContent)
+                );
+                $targetBlock->settings = $sourceBlock->resolvedSettings();
+                $targetBlock->save();
+                $targetBlocks->put($translationKey, $targetBlock);
+                $changed = true;
+
+                continue;
+            }
+
+            $changed = $this->synchronizeTargetLayoutBlock($sourceBlock, $targetBlock) || $changed;
+        }
+
+        return $changed;
+    }
+
+    private function synchronizeTargetLayoutBlock(PageBlock $sourceBlock, PageBlock $targetBlock): bool
+    {
+        $content = $this->sanitizer->sanitizeBlockContent(
+            $this->reconcileLayoutTranslationContent(
+                $sourceBlock->resolvedContent(),
+                $targetBlock->content ?? []
+            )
+        );
+
+        if ($content === ($targetBlock->content ?? [])) {
+            return false;
+        }
+
+        $targetBlock->update(['content' => $content]);
+
+        return true;
+    }
+
+    private function reconcileLayoutTranslationContent(array $source, array $target): array
+    {
+        $translations = [];
+        foreach ((array) ($target['rows'] ?? []) as $row) {
+            foreach ((array) data_get($row, 'columns', []) as $column) {
+                foreach ((array) data_get($column, 'elements', []) as $element) {
+                    if (!is_array($element) || !Str::isUuid((string) ($element['id'] ?? ''))) {
+                        continue;
+                    }
+                    $elementId = (string) $element['id'];
+                    foreach ($element as $field => $value) {
+                        if (is_string($value) && $this->isTranslatableBlockKey((string) $field)) {
+                            $translations[$elementId][(string) $field] =
+                                ($element['type'] ?? null) === 'rich_text' && $field === 'body'
+                                    ? $this->sanitizer->sanitizeLayoutRichText($value)
+                                    : $value;
+                        }
+                    }
+                }
+            }
+        }
+
+        $content = $this->prepareBlockTranslationContent($source);
+        foreach ($content['rows'] as &$row) {
+            foreach ($row['columns'] as &$column) {
+                foreach ($column['elements'] as &$element) {
+                    $saved = $translations[(string) ($element['id'] ?? '')] ?? [];
+                    foreach ($element as $field => $value) {
+                        if (is_string($value)
+                            && $this->isTranslatableBlockKey((string) $field)
+                            && array_key_exists($field, $saved)) {
+                            $element[$field] = $saved[$field];
+                        }
+                    }
+                }
+                unset($element);
+            }
+            unset($column);
+        }
+        unset($row);
+
+        return $content;
+    }
+
+    private function setLayoutTranslationValue(
+        array &$content,
+        string $rowId,
+        string $elementId,
+        string $field,
+        string $value
+    ): bool {
+        if (!$this->isTranslatableBlockKey($field)) {
+            return false;
+        }
+
+        foreach ([true, false] as $requireRowMatch) {
+            foreach ($content['rows'] as &$row) {
+                if ($requireRowMatch && (string) ($row['id'] ?? '') !== $rowId) {
+                    continue;
+                }
+                foreach ($row['columns'] as &$column) {
+                    foreach ($column['elements'] as &$element) {
+                        if ((string) ($element['id'] ?? '') !== $elementId) {
+                            continue;
+                        }
+                        if (!array_key_exists($field, $element) || !is_string($element[$field])) {
+                            return false;
+                        }
+                        $element[$field] = ($element['type'] ?? null) === 'rich_text' && $field === 'body'
+                            ? $this->sanitizer->sanitizeLayoutRichText($value)
+                            : $value;
+
+                        return true;
+                    }
+                    unset($element);
+                }
+                unset($column);
+            }
+            unset($row);
+        }
+
+        return false;
     }
 
     private function saveMenu(array $identity, string $sourceLocale, string $targetLocale, string $value): void

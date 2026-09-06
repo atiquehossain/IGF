@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\AuthMenu;
+use App\Models\MediaAsset;
 use App\Models\Page;
 use App\Models\PageBlock;
 use App\Models\ReusableBlock;
@@ -178,6 +179,74 @@ class ReusableBlockLibraryWorkflowTest extends TestCase
             ->assertSee('Sponsor a Child')
             ->assertSee('data-e2e="reusable-managed-items"', false)
             ->assertSee('Internal record IDs are never required.');
+    }
+
+    public function test_layout_library_editor_is_a_guided_row_column_builder_with_safe_media_choices(): void
+    {
+        $owner = $this->owner();
+        $asset = MediaAsset::create([
+            'uuid' => (string) Str::uuid(),
+            'disk' => 'public',
+            'path' => 'media/reusable-layout-photo.jpg',
+            'original_name' => 'Reusable layout photo.jpg',
+            'mime_type' => 'image/jpeg',
+            'extension' => 'jpg',
+            'bytes' => 1200,
+            'width' => 1200,
+            'height' => 800,
+            'alt_text' => 'Community volunteers',
+            'locale' => '*',
+        ]);
+        $block = ReusableBlock::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Shared visual layout',
+            'type' => 'layout',
+            'locale' => 'en',
+            'content' => [
+                'rows' => [[
+                    'id' => (string) Str::uuid(),
+                    'layout' => 'halves',
+                    'width' => 'wide',
+                    'background' => 'soft',
+                    'spacing' => 'standard',
+                    'columns' => [
+                        ['elements' => [[
+                            'id' => (string) Str::uuid(),
+                            'type' => 'heading',
+                            'text' => 'Reusable heading',
+                            'level' => 'h2',
+                        ]]],
+                        ['elements' => []],
+                    ],
+                ]],
+            ],
+            'settings' => [],
+            'is_enabled' => true,
+        ]);
+
+        $response = $this->actingAs($owner, 'admin')->get(route('reusable-blocks.edit', $block))
+            ->assertOk()
+            ->assertSee('data-e2e="reusable-layout-editor"', false)
+            ->assertSee('Build with rows and columns')
+            ->assertSee('Machine IDs and code stay hidden.')
+            ->assertSee('data-layout-row-action="duplicate"', false)
+            ->assertSee('data-layout-element-action="left"', false)
+            ->assertSee('data-layout-add-element', false)
+            ->assertSee('data-layout-media=', false)
+            ->assertSee($asset->original_name)
+            ->assertDontSee('data-layout-row-field="id"', false)
+            ->assertDontSee('data-layout-element-field="id"', false);
+
+        foreach (['One column', 'Two equal columns', 'Three equal columns', 'Four equal columns', 'One third / two thirds', 'Two thirds / one third'] as $preset) {
+            $response->assertSee($preset);
+        }
+        foreach (['heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer'] as $elementType) {
+            $response->assertSee($elementType);
+        }
+        $response->assertSee('window.crypto?.randomUUID', false)
+            ->assertSee('copy.id = newLayoutId()', false)
+            ->assertSee('function safeLayoutRichHtml', false)
+            ->assertSee('safeLayoutRichHtml(element.body)', false);
     }
 
     public function test_library_editor_reuses_builder_validation_for_managed_content(): void

@@ -147,7 +147,7 @@ jobs:
 
       - name: Start isolated application
         run: |
-          php artisan serve --env=cypress --host=127.0.0.1 --port=8001 > storage/logs/cypress-server.log 2>&1 &
+          php artisan serve --env=cypress --no-reload --host=127.0.0.1 --port=8001 > storage/logs/cypress-server.log 2>&1 &
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8001/admin/login > /dev/null; then
               exit 0

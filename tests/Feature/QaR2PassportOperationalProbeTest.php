@@ -44,8 +44,14 @@ class QaR2PassportOperationalProbeTest extends TestCase
         $details = openssl_pkey_get_details($key);
         $this->assertNotFalse($details, 'Unable to inspect the ephemeral Passport QA key.');
         $publicKey = $details['key'];
-        file_put_contents($this->keyDirectory . DIRECTORY_SEPARATOR . 'oauth-private.key', $privateKey);
-        file_put_contents($this->keyDirectory . DIRECTORY_SEPARATOR . 'oauth-public.key', $publicKey);
+        $privateKeyPath = $this->keyDirectory . DIRECTORY_SEPARATOR . 'oauth-private.key';
+        $publicKeyPath = $this->keyDirectory . DIRECTORY_SEPARATOR . 'oauth-public.key';
+        file_put_contents($privateKeyPath, $privateKey);
+        file_put_contents($publicKeyPath, $publicKey);
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $this->assertTrue(chmod($privateKeyPath, 0600), 'Unable to secure the ephemeral Passport private key.');
+            $this->assertTrue(chmod($publicKeyPath, 0644), 'Unable to set permissions on the ephemeral Passport public key.');
+        }
         Passport::loadKeysFrom($this->keyDirectory);
         app(ClientRepository::class)->createPersonalAccessGrantClient('R2 numeric client', 'users');
     }

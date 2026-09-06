@@ -20,6 +20,10 @@ $custom_inline_css = '';
             </div>
           </div>
           <div class="modal-body">
+            <div class="alert alert-info" role="status">
+              <strong>Editing the {{ strtoupper((string) ($annual_report->language ?: 'en')) }} report.</strong>
+              Its public language is kept with this report; use the Translation Center to manage the matching version in another language.
+            </div>
             <form class="form-horizontal" action="{{ route('annual.report.update') }}" method="post"
               enctype="multipart/form-data">
               {{ csrf_field() }}
@@ -58,9 +62,10 @@ $custom_inline_css = '';
 
                 <div class="col-md-4">
                   <div class="form-group">
-                    <label for="order_by" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
-                    <input name="order_by" type="number" class="form-control" value="{{ @$annual_report->order_by }}"
-                      data-e2e="order-by">
+                    <label for="order_by" class="control-label mb-1">Display priority</label>
+                    <input id="order_by" name="order_by" type="number" class="form-control" value="{{ old('order_by', $annual_report->order_by) }}"
+                      min="-2147483648" max="2147483647" step="1" aria-describedby="order-by-help" data-e2e="order-by">
+                    <small id="order-by-help" class="form-text text-muted">Higher numbers appear first; leave blank for normal ordering.</small>
                     @if ($errors->has('order_by'))
                       <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
                     @endif

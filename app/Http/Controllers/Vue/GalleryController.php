@@ -30,24 +30,27 @@ class GalleryController extends Controller
             ->where('status', 1)
             ->where('language', $locale)
             ->orderBy('name')
+            ->orderBy('id')
             ->get();
 
         $results = Gallery::query()
-            ->select('galleries.id', 'galleries.name', 'galleries.description', 'galleries.path', 'galleries.url', 'galleries.grid_column', 'galleries.grid_row', 'albums.name as album_name')
+            ->select('galleries.id', 'galleries.name', 'galleries.description', 'galleries.path', 'galleries.url', 'galleries.order_by', 'galleries.grid_column', 'galleries.grid_row', 'albums.name as album_name')
             ->leftJoin('albums', 'albums.id', '=', 'galleries.album_id')
-            ->where('galleries.status', 1)
-            ->where('galleries.type', 'gallery')
+            ->publiclyAvailable()
             ->where('galleries.language', $locale)
             ->when($search !== '', fn ($query) => $query->where('galleries.name', 'like', '%' . $search . '%'))
             ->when($albumId, fn ($query) => $query->where('galleries.album_id', $albumId))
-            ->orderByDesc('galleries.updated_at')
+            ->orderByRaw('CASE WHEN galleries.order_by IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('galleries.order_by')
+            ->orderByDesc('galleries.id')
             ->paginate(12)
             ->withQueryString();
 
         $this->archiveSeo->abortIfOutOfRange($results);
 
         $results->getCollection()->transform(function ($item) {
-            $item->alt_text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $item->description)) ?? '');
+            $description = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $item->description)) ?? '');
+            $item->alt_text = $description !== '' ? $description : trim((string) $item->name);
             $libraryUrl = $this->safeMediaLibraryUrl((string) $item->url);
             if ($libraryUrl !== null) {
                 $item->path = $libraryUrl;

@@ -9,6 +9,7 @@
       <p v-if="eyebrow" class="igf-content-card__eyebrow">{{ eyebrow }}</p>
       <h2>{{ title }}</h2>
       <p>{{ subtitle }}</p>
+      <div v-if="$slots.meta" class="igf-content-card__meta"><slot name="meta" /></div>
       <span class="igf-content-card__link">{{ linkLabel }} <span aria-hidden="true">&rarr;</span></span>
     </div>
   </a>
@@ -41,6 +42,7 @@ defineProps({
 .igf-content-card h2 { margin:0; color:#191c1d; font:650 var(--igf-heading-3,23px)/1.22 'Literata',Georgia,serif; letter-spacing:-.02em; }
 .igf-content-card h2::after { display:none!important; }
 .igf-content-card__body>p:not(.igf-content-card__eyebrow) { display:-webkit-box; margin:13px 0 20px; overflow:hidden; color:#5e5d66; font-size:var(--igf-body-size,17px); line-height:1.6; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
+.igf-content-card__meta { margin:0 0 22px; }
 .igf-content-card__link { margin-top:auto; color:#9c4500; font-size:13px; font-weight:800; }
 .igf-content-card--award { border-color:#e1d8cf; border-radius:22px; box-shadow:0 16px 38px rgba(44,31,20,.08); }
 .igf-content-card--award .igf-content-card__media { background:linear-gradient(145deg,#f7f1e9,#ece5dd); }

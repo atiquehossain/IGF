@@ -12,6 +12,7 @@ use App\Models\PageMenu;
 use App\Models\Sponsorship;
 use App\Models\SslCommerzTransaction;
 use App\Models\Volunteer;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -156,27 +157,44 @@ class DashboardController extends Controller
         })->values();
 
         $recentActivity = collect()
-            ->merge(Page::query()->latest('updated_at')->limit(3)->get()->map(fn (Page $page): array => [
-                'type' => 'page',
-                'title' => $page->publication_status === 'published' ? 'Page published' : 'Draft updated',
-                'detail' => $page->name,
-                'at' => $page->updated_at,
-                'icon' => 'fa-file-text-o',
-            ]))
-            ->merge(Donation::query()->whereRaw('LOWER(payment_status) = ?', ['success'])->latest()->limit(3)->get()->map(fn (Donation $donation): array => [
-                'type' => 'donation',
-                'title' => 'Donation received',
-                'detail' => 'BDT ' . number_format((float) $donation->amount, 2) . ' payment confirmed.',
-                'at' => $donation->created_at,
-                'icon' => 'fa-heart-o',
-            ]))
-            ->merge(Volunteer::query()->latest()->limit(3)->get()->map(fn (Volunteer $volunteer): array => [
-                'type' => 'volunteer',
-                'title' => 'Volunteer sign-up',
-                'detail' => $volunteer->cause?->name ?: 'New registration received.',
-                'at' => $volunteer->created_at,
-                'icon' => 'fa-user-plus',
-            ]))
+            ->merge(Page::query()
+                ->whereNotNull('updated_at')
+                ->latest('updated_at')
+                ->limit(3)
+                ->get()
+                ->map(fn (Page $page): array => [
+                    'type' => 'page',
+                    'title' => $page->publication_status === 'published' ? 'Page published' : 'Draft updated',
+                    'detail' => $page->name,
+                    'at' => $page->updated_at,
+                    'icon' => 'fa-file-text-o',
+                ]))
+            ->merge(Donation::query()
+                ->whereRaw('LOWER(payment_status) = ?', ['success'])
+                ->whereNotNull('created_at')
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->map(fn (Donation $donation): array => [
+                    'type' => 'donation',
+                    'title' => 'Donation received',
+                    'detail' => 'BDT ' . number_format((float) $donation->amount, 2) . ' payment confirmed.',
+                    'at' => $donation->created_at,
+                    'icon' => 'fa-heart-o',
+                ]))
+            ->merge(Volunteer::query()
+                ->whereNotNull('created_at')
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->map(fn (Volunteer $volunteer): array => [
+                    'type' => 'volunteer',
+                    'title' => 'Volunteer sign-up',
+                    'detail' => $volunteer->cause?->name ?: 'New registration received.',
+                    'at' => $volunteer->created_at,
+                    'icon' => 'fa-user-plus',
+                ]))
+            ->filter(fn (array $activity): bool => $activity['at'] instanceof CarbonInterface)
             ->sortByDesc('at')
             ->take(3)
             ->values();

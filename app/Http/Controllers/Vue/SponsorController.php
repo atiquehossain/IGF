@@ -43,7 +43,10 @@ class SponsorController extends Controller
             'meta_keyword' => 'sponsor a child, education support, child sponsorship Bangladesh',
             'meta_title' => 'Sponsor a Child | Ignite Global Foundation',
             'meta_description' => 'Support a child with dependable access to education, learning materials, nutrition, and essential care through Ignite Global Foundation.',
-            'canonical_url' => url()->current(),
+            'canonical_url' => $this->seo->localizedUrl(
+                url()->current(),
+                (string) app()->getLocale()
+            ),
         ];
         $metaTag = $page
             ? $this->seo->metaForPage($page)

@@ -61,6 +61,7 @@ class NoticeBoardController extends Controller
         $this->validate(request(), array_merge([
             'image_path' => 'mimes:jpeg,png,jpg|max:3000',
             'title' => 'required|string|unique:notice_boards,title',
+            'image_alt' => ['nullable', 'string', 'max:420'],
             'language' => ['required', Rule::in($this->localeIds())],
             'translation_source_id' => ['nullable', 'integer', 'exists:notice_boards,id'],
         ], $this->eventRules()));
@@ -93,6 +94,7 @@ class NoticeBoardController extends Controller
                     'publisher_name' => $request->publisher_name,
                     'url' => @$request->url,
                     'location' => @$request->location,
+                    'image_alt' => $this->plainText($request->input('image_alt')),
                     'language' => $request->language,
                     'notice_type' => 'notice-board',
                     'ip' => @$request->ip(),
@@ -160,6 +162,7 @@ class NoticeBoardController extends Controller
         $this->validate(request(), array_merge([
             'image_path' => 'mimes:jpeg,png,jpg|max:3000',
             'title' => 'required|string|unique:notice_boards,title,' . $request->id,
+            'image_alt' => ['nullable', 'string', 'max:420'],
             'language' => ['required', Rule::in($this->localeIds())],
             'translation_source_id' => ['nullable', 'integer', 'exists:notice_boards,id'],
         ], $this->eventRules()));
@@ -216,6 +219,9 @@ class NoticeBoardController extends Controller
                     'order_by' => @$request->order_by,
                     'url' => @$request->url,
                     'location' => @$request->location,
+                    'image_alt' => $request->exists('image_alt')
+                        ? $this->plainText($request->input('image_alt'))
+                        : $lockedNotice->image_alt,
                     'language' => $request->language,
                     'ip' => $request->ip(),
                 ], $this->eventPayload($request, $lockedNotice), $asset ? [
@@ -471,5 +477,13 @@ class NoticeBoardController extends Controller
             'event_status' => $kind === 'event' ? $request->input('event_status') : null,
             'event_attendance_mode' => $kind === 'event' ? $request->input('event_attendance_mode') : null,
         ];
+    }
+
+    private function plainText(mixed $value): string
+    {
+        $value = html_entity_decode(strip_tags((string) $value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '';
+
+        return trim(preg_replace('/\s+/u', ' ', $value) ?? '');
     }
 }

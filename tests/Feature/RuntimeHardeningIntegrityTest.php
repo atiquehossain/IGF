@@ -342,11 +342,46 @@ class RuntimeHardeningIntegrityTest extends TestCase
             ->from('/admin')
             ->get(route('admin.language', ['language' => 'bn']))
             ->assertRedirect('/admin')
-            ->assertSessionHas('locale', 'bn');
+            ->assertSessionHas('admin_locale', 'bn');
 
         $this->get(route('admin.language', ['language' => 'not-a-locale']))
             ->assertNotFound();
+        $this->assertSame('bn', session('admin_locale'));
+    }
+
+    public function test_public_language_choice_does_not_change_the_admin_english_default(): void
+    {
+        $role = Role::create([
+            'name' => 'English dashboard owner',
+            'is_owner' => true,
+            'security_rank' => 0,
+            'permission' => '',
+            'actionPermission' => '',
+            'serial' => '[]',
+            'status' => 1,
+        ]);
+        $admin = Admin::create([
+            'name' => 'English Dashboard Administrator',
+            'username' => 'english-dashboard-administrator',
+            'email' => 'english-dashboard@example.test',
+            'role' => $role->id,
+            'status' => 1,
+            'password' => bcrypt('not-used-in-this-test'),
+            'must_change_password' => false,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->withSession([
+                Admin::SESSION_AUTH_VERSION => $admin->auth_version,
+                'locale' => 'bn',
+            ])
+            ->get(route('dashboard.index'))
+            ->assertOk()
+            ->assertSee('Overview')
+            ->assertDontSee('ওভারভিউ');
+
         $this->assertSame('bn', session('locale'));
+        $this->assertNull(session('admin_locale'));
     }
 
     public function test_maintenance_automation_is_recoverable_and_destructive_policies_fail_closed(): void

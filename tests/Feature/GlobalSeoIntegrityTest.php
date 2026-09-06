@@ -262,10 +262,9 @@ class GlobalSeoIntegrityTest extends TestCase
         foreach (['/contact-us', '/gallery', '/events', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
             $this->assertStringContainsString('<loc>' . url($path) . '</loc>', $sitemap);
         }
-        // Sponsor is configured as Page-backed. Rendering its safe fallback is
-        // allowed, but it must not be advertised until its published Page
-        // record actually exists in this language.
-        $this->assertStringNotContainsString('<loc>' . url('/sponsor-child') . '</loc>', $sitemap);
+        // Sponsor is settings-backed and remains a complete managed public
+        // page even when no optional legacy Page record exists.
+        $this->assertStringContainsString('<loc>' . url('/sponsor-child') . '</loc>', $sitemap);
     }
 
     public function test_legacy_career_category_is_a_permanent_alias_and_never_a_second_sitemap_url(): void

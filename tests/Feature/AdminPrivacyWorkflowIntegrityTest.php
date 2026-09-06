@@ -11,6 +11,8 @@ use App\Models\Category;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Models\ContactMessage;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MenuAction;
@@ -19,6 +21,7 @@ use App\Models\Role;
 use App\Models\Sponsorship;
 use App\Models\Subscriber;
 use App\Models\Testimonial;
+use App\Models\Upazila;
 use App\Models\Volunteer;
 use App\Services\ContentFileQuarantine;
 use App\Services\PrivacyRetentionService;
@@ -408,9 +411,21 @@ class AdminPrivacyWorkflowIntegrityTest extends TestCase
             'sponsorship_amount' => 2500, 'transaction_id' => 'KEEP-REFERENCE-1',
             'payment_status' => 'Success', 'workflow_status' => 'completed', 'resolved_at' => $old,
         ]);
+        $division = Division::query()->where('name', 'Dhaka')->firstOrFail();
+        $district = District::query()->where('division_id', $division->id)->where('name', 'Dhaka')->firstOrFail();
+        $upazila = Upazila::query()->where('district_id', $district->id)->where('name', 'Savar')->firstOrFail();
         $volunteer = Volunteer::create([
             'name' => 'Private Volunteer', 'email' => 'volunteer-retention@example.test',
-            'phone' => '01700000002', 'workflow_status' => 'spam', 'resolved_at' => $old,
+            'phone' => '01700000002', 'institution' => 'Private Institution', 'address' => 'Private address',
+            'sex' => 'female', 'date_of_birth' => '1990-01-01',
+            'division_id' => $division->id, 'district_id' => $district->id, 'upazila_id' => $upazila->id,
+            'occupation' => 'other', 'occupation_other' => 'Private occupation',
+            'education_level' => 'masters_equivalent', 'blood_group' => 'AB+',
+            'emergency_response_training' => true, 'skill' => 'other', 'skill_other' => 'Private skill',
+            'consent_version' => 'volunteer-registration-v1', 'consent_locale' => 'en',
+            'consent_text_hash' => hash('sha256', 'Private consent wording'),
+            'consent_text_snapshot' => 'Private consent wording', 'consented_at' => $old,
+            'workflow_status' => 'spam', 'resolved_at' => $old,
         ]);
         $conversation = ChatConversation::create([
             'visitor_token_hash' => hash('sha256', 'old-token'), 'guest_name' => 'Private Guest',
@@ -437,7 +452,16 @@ class AdminPrivacyWorkflowIntegrityTest extends TestCase
         $this->assertNull($sponsorship->phone);
         $this->assertEquals(2500, $sponsorship->sponsorship_amount);
         $this->assertSame('KEEP-REFERENCE-1', $sponsorship->transaction_id);
-        $this->assertSame('Anonymized volunteer', $volunteer->fresh()->name);
+        $volunteer->refresh();
+        $this->assertSame('Anonymized volunteer', $volunteer->name);
+        foreach ([
+            'institution', 'email', 'phone', 'address', 'sex', 'date_of_birth',
+            'division_id', 'district_id', 'upazila_id', 'occupation', 'occupation_other',
+            'education_level', 'blood_group', 'emergency_response_training', 'skill', 'skill_other',
+            'consent_version', 'consent_locale', 'consent_text_hash', 'consent_text_snapshot', 'consented_at',
+        ] as $minimizedField) {
+            $this->assertNull($volunteer->{$minimizedField}, "{$minimizedField} should be removed by volunteer retention.");
+        }
         $this->assertNull($conversation->fresh()->guest_email);
         $this->assertSame('[Removed by approved retention policy]', $message->fresh()->body);
         $this->assertNull(Subscriber::find($subscriber->id));

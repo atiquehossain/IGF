@@ -34,6 +34,65 @@ class ContentHubIntegrityTest extends TestCase
             ->assertSee('data-bulk="delete"', false);
     }
 
+    public function test_content_hub_dependency_warning_is_accessible_and_retries_only_after_explicit_confirmation(): void
+    {
+        $admin = $this->authorizedAdmin();
+        $this->page(['name' => 'Dependency warning page']);
+
+        $this->actingAs($admin, 'admin')->get(route('page.index'))
+            ->assertOk()
+            ->assertSee('<section class="hub-dependency-dialog" role="dialog" aria-modal="true"', false)
+            ->assertSee('aria-labelledby="hub-dependency-title"', false)
+            ->assertSee('aria-describedby="hub-dependency-message hub-dependency-effect hub-dependency-recovery"', false)
+            ->assertSee('role="status" aria-live="polite"', false)
+            ->assertSee('Donation links will be affected')
+            ->assertSee('Donation records and accounting history will not be deleted.')
+            ->assertSee("result.payload.code === 'active_donation_destinations'", false)
+            ->assertSee('force_unpublish_dependencies: force', false)
+            ->assertSee('item.textContent =', false)
+            ->assertSee('requestAnimationFrame(() => dependencyCancel.focus())', false);
+    }
+
+    public function test_content_hub_defaults_to_english_when_the_language_filter_is_absent(): void
+    {
+        $admin = $this->authorizedAdmin();
+        $this->page(['name' => 'English default page', 'language' => 'en']);
+        $this->page(['name' => 'Bangla default page', 'language' => 'bn']);
+
+        $this->actingAs($admin, 'admin')->get(route('page.index'))
+            ->assertOk()
+            ->assertViewHas('language', 'en')
+            ->assertSee('English default page')
+            ->assertDontSee('Bangla default page');
+    }
+
+    public function test_content_hub_respects_an_explicit_bangla_language_filter(): void
+    {
+        $admin = $this->authorizedAdmin();
+        $this->page(['name' => 'English filtered page', 'language' => 'en']);
+        $this->page(['name' => 'Bangla filtered page', 'language' => 'bn']);
+
+        $this->actingAs($admin, 'admin')->get(route('page.index', ['language' => 'bn']))
+            ->assertOk()
+            ->assertViewHas('language', 'bn')
+            ->assertSee('Bangla filtered page')
+            ->assertDontSee('English filtered page');
+    }
+
+    public function test_content_hub_keeps_an_explicitly_blank_language_filter_as_all_languages(): void
+    {
+        $admin = $this->authorizedAdmin();
+        $this->page(['name' => 'English all-languages page', 'language' => 'en']);
+        $this->page(['name' => 'Bangla all-languages page', 'language' => 'bn']);
+
+        $this->actingAs($admin, 'admin')->get(route('page.index').'?language=')
+            ->assertOk()
+            ->assertViewHas('language', '')
+            ->assertSee('English all-languages page')
+            ->assertSee('Bangla all-languages page')
+            ->assertSee('<input type="hidden" name="language" value="">', false);
+    }
+
     public function test_view_only_content_manager_gets_a_clear_read_only_hub(): void
     {
         $role = Role::create([

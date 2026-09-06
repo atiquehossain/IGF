@@ -13,7 +13,6 @@ use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\PageBlock;
 use App\Models\PageRevision;
-use App\Models\PageTagModule;
 use App\Models\ReusableBlock;
 use App\Models\MediaAsset;
 use App\Models\Tag;
@@ -21,6 +20,7 @@ use App\Models\Testimonial;
 use App\Services\PageRevisionService;
 use App\Services\ContentSanitizer;
 use App\Services\DonationDestinationService;
+use App\Services\LogicalPageTagService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -30,10 +30,13 @@ use Illuminate\Validation\ValidationException;
 
 class PageBuilderController extends Controller
 {
+    private const REQUIRED_SYSTEM_PAGE_SLUGS = ['home', 'about-us', 'zakat'];
+
     public function __construct(
         private PageRevisionService $revisions,
         private ContentSanitizer $sanitizer,
-        private DonationDestinationService $destinations
+        private DonationDestinationService $destinations,
+        private LogicalPageTagService $logicalTags,
     ) {
     }
 
@@ -61,6 +64,7 @@ class PageBuilderController extends Controller
                 'pageTags.tag',
                 'revisions' => fn ($query) => $query->limit(20),
             ]);
+            $this->logicalTags->hydrate([$page]);
 
             $revisionReusableUuids = $page->revisions
                 ->flatMap(fn (PageRevision $revision) => collect(data_get(
@@ -175,6 +179,9 @@ class PageBuilderController extends Controller
             'selectedThumbnailAssetUuid' => $selectedThumbnailAsset?->uuid,
             'canManageFundingEligibility' => app(Permission::class)
                 ->allows(auth('admin')->user(), 'donationType.edit'),
+            'legacyContentNeedsConversion' => $this->legacyContentNeedsConversion($page),
+            'isRequiredSystemPage' => $this->isRequiredSystemPage($page),
+            'requiredSystemPageLabel' => $this->requiredSystemPageLabel($page),
             'pageCategories' => Category::query()
                 ->where('language', $locale)
                 ->where('status', 1)
@@ -219,15 +226,24 @@ class PageBuilderController extends Controller
             'block.label' => ['nullable', 'string', 'max:255'],
             'block.content' => ['required_with:block', 'array'],
             'block.is_enabled' => ['required_with:block', 'boolean'],
+            'block.show_on_desktop' => ['sometimes', 'boolean'],
+            'block.show_on_mobile' => ['sometimes', 'boolean'],
+            'block.available_from' => ['sometimes', 'nullable', 'date'],
+            'block.available_until' => ['sometimes', 'nullable', 'date'],
             'block.expected_reusable_version' => ['nullable', 'integer', 'min:0'],
             'blocks' => ['nullable', 'array', 'max:100'],
             'blocks.*.uuid' => ['required', 'uuid', 'distinct'],
             'blocks.*.label' => ['nullable', 'string', 'max:255'],
             'blocks.*.content' => ['required', 'array'],
             'blocks.*.is_enabled' => ['required', 'boolean'],
+            'blocks.*.show_on_desktop' => ['sometimes', 'boolean'],
+            'blocks.*.show_on_mobile' => ['sometimes', 'boolean'],
+            'blocks.*.available_from' => ['sometimes', 'nullable', 'date'],
+            'blocks.*.available_until' => ['sometimes', 'nullable', 'date'],
             'blocks.*.expected_reusable_version' => ['nullable', 'integer', 'min:0'],
             'order' => ['nullable', 'array'],
             'order.*' => ['required', 'uuid', 'distinct'],
+            'convert_legacy_content' => ['sometimes', 'boolean'],
         ]);
         $this->authorizePublicationChanges($page, [
             'publication_status' => $data['page']['publication_status'] ?? $page->publication_status,
@@ -248,7 +264,7 @@ class PageBuilderController extends Controller
 
         $blockPayloads = collect($data['blocks'] ?? (!empty($data['block']) ? [$data['block']] : []));
 
-        [$savedBlocks, $editorVersion] = DB::transaction(function () use ($uuid, $blockPayloads, $data) {
+        [$savedBlocks, $convertedLegacyBlock, $editorVersion] = DB::transaction(function () use ($uuid, $blockPayloads, $data) {
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $lockedReusableBlocks = $this->revisions->lockReusableBlocksForPage($page);
             $blocks = $page->blocks()
@@ -265,6 +281,14 @@ class PageBuilderController extends Controller
                     ? $lockedReusableBlocks->get((int) $block->reusable_block_id)
                     : null);
             });
+            $willEnableFirstSection = $blockPayloads->contains(
+                fn (array $blockData): bool => (bool) ($blockData['is_enabled'] ?? false)
+            );
+            $convertLegacyContent = $willEnableFirstSection
+                && $this->assertLegacyConversionConfirmed(
+                    $page,
+                    (bool) ($data['convert_legacy_content'] ?? false)
+                );
             $blockUpdates = collect();
             foreach ($blockPayloads as $blockData) {
                 $block = $blocks->get($blockData['uuid']);
@@ -274,8 +298,21 @@ class PageBuilderController extends Controller
                     'label' => $blockData['label'] ?? $block->resolvedLabel(),
                     'content' => $blockData['content'],
                     'is_enabled' => $blockData['is_enabled'],
+                    'show_on_desktop' => $blockData['show_on_desktop'] ?? $block->show_on_desktop,
+                    'show_on_mobile' => $blockData['show_on_mobile'] ?? $block->show_on_mobile,
+                    'available_from' => array_key_exists('available_from', $blockData)
+                        ? $blockData['available_from']
+                        : $block->available_from,
+                    'available_until' => array_key_exists('available_until', $blockData)
+                        ? $blockData['available_until']
+                        : $block->available_until,
                     'expected_reusable_version' => $blockData['expected_reusable_version'] ?? null,
                 ], $this->blockRules(false))->validate();
+                $this->validateBlockContentForType(
+                    $block->type,
+                    $blockData['content'],
+                    'blocks.' . $blockData['uuid'] . '.content'
+                );
                 if ($block->type === 'ways_to_give') {
                     $this->validateWaysToGiveContent($blockData['content'], $data['locale'], 'blocks.' . $blockData['uuid'] . '.content');
                 }
@@ -287,6 +324,14 @@ class PageBuilderController extends Controller
                     'label' => trim($blockData['label'] ?? $block->resolvedLabel()),
                     'content' => $this->sanitizer->sanitizeBlockContent($blockData['content']),
                     'is_enabled' => $blockData['is_enabled'],
+                    'show_on_desktop' => $blockData['show_on_desktop'] ?? $block->show_on_desktop,
+                    'show_on_mobile' => $blockData['show_on_mobile'] ?? $block->show_on_mobile,
+                    'available_from' => array_key_exists('available_from', $blockData)
+                        ? $blockData['available_from']
+                        : $block->available_from,
+                    'available_until' => array_key_exists('available_until', $blockData)
+                        ? $blockData['available_until']
+                        : $block->available_until,
                     'updated_by' => auth('admin')->id(),
                 ];
                 $this->authorizeReusableBlockChanges($block, $attributes);
@@ -338,6 +383,10 @@ class PageBuilderController extends Controller
 
             $this->revisions->capture($page, 'Before simple editor update', $lockedReusableBlocks);
 
+            $convertedLegacyBlock = $convertLegacyContent
+                ? $this->convertLegacyContentToRichText($page)
+                : null;
+
             if (!empty($data['page'])) {
                 $publicationStatus = $data['page']['publication_status'];
                 $page->update(array_merge([
@@ -376,7 +425,7 @@ class PageBuilderController extends Controller
 
             foreach ($data['order'] ?? [] as $index => $blockUuid) {
                 $page->blocks()->where('uuid', $blockUuid)->update([
-                    'sort_order' => $index,
+                    'sort_order' => $index + ($convertedLegacyBlock ? 1 : 0),
                     'updated_by' => auth('admin')->id(),
                 ]);
             }
@@ -385,13 +434,15 @@ class PageBuilderController extends Controller
                 ->map(fn (PageBlock $block) => $this->presentBlock($block->fresh('reusableBlock')))
                 ->values();
 
-            return [$savedBlocks, $this->advanceEditorVersion($page)];
+            return [$savedBlocks, $convertedLegacyBlock, $this->advanceEditorVersion($page)];
         });
 
         $freshPage = $page->fresh('pageTags');
 
         return response()->json([
-            'message' => 'Changes saved. A revision was created automatically.',
+            'message' => $convertedLegacyBlock
+                ? 'Existing page content was safely converted into the first editable Text section. Changes saved.'
+                : 'Changes saved. A revision was created automatically.',
             'page' => [
                 'name' => $freshPage->name,
                 'publication_status' => $freshPage->publication_status,
@@ -399,6 +450,9 @@ class PageBuilderController extends Controller
             ],
             'block' => $savedBlocks->count() === 1 ? $savedBlocks->first() : null,
             'blocks' => $savedBlocks,
+            'converted_legacy_block' => $convertedLegacyBlock
+                ? $this->presentBlock($convertedLegacyBlock)
+                : null,
             'editor_version' => $editorVersion,
         ]);
     }
@@ -534,29 +588,37 @@ class PageBuilderController extends Controller
     public function storeBlock(string $uuid, Request $request)
     {
         $data = $this->validateBlock($request);
+        $content = array_replace(
+            config('page-builder.design_defaults', []),
+            $data['content'] ?? config('page-builder.default_content.' . $data['type'], [])
+        );
+        $this->validateBlockContentForType($data['type'], $content);
         if ($data['type'] === 'ways_to_give') {
             $this->validateWaysToGiveContent(
-                $data['content'] ?? config('page-builder.default_content.ways_to_give', []),
+                $content,
                 $data['locale']
             );
         }
         if ($data['type'] === 'media_text') {
-            $this->validateMediaTextContent(
-                $data['content'] ?? config('page-builder.default_content.media_text', [])
-            );
+            $this->validateMediaTextContent($content);
         }
 
-        [$block, $editorVersion] = DB::transaction(function () use ($uuid, $data) {
+        [$block, $convertedLegacyBlock, $editorVersion] = DB::transaction(function () use ($uuid, $data, $content) {
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $lockedReusableBlocks = $this->revisions->lockReusableBlocksForPage($page);
+            $convertLegacyContent = $this->assertLegacyConversionConfirmed(
+                $page,
+                (bool) ($data['convert_legacy_content'] ?? false)
+            );
             $this->revisions->capture(
                 $page,
                 'Before adding a ' . $data['type'] . ' block',
                 $lockedReusableBlocks
             );
-            $content = $this->sanitizer->sanitizeBlockContent(
-                $data['content'] ?? config('page-builder.default_content.' . $data['type'], [])
-            );
+            $convertedLegacyBlock = $convertLegacyContent
+                ? $this->convertLegacyContentToRichText($page)
+                : null;
+            $content = $this->sanitizer->sanitizeBlockContent($content);
             $content['section_presentation'] ??= (string) config(
                 'page-builder.section_presentation_default',
                 'standard'
@@ -572,16 +634,23 @@ class PageBuilderController extends Controller
                 'is_enabled' => $data['is_enabled'] ?? true,
                 'show_on_desktop' => $data['show_on_desktop'] ?? true,
                 'show_on_mobile' => $data['show_on_mobile'] ?? true,
+                'available_from' => $data['available_from'] ?? null,
+                'available_until' => $data['available_until'] ?? null,
                 'created_by' => auth('admin')->id(),
                 'updated_by' => auth('admin')->id(),
             ]);
 
-            return [$block, $this->advanceEditorVersion($page)];
+            return [$block, $convertedLegacyBlock, $this->advanceEditorVersion($page)];
         });
 
         return response()->json([
-            'message' => 'Block added.',
+            'message' => $convertedLegacyBlock
+                ? 'Existing page content was safely converted into a Text section, and the new section was added.'
+                : 'Block added.',
             'block' => $this->presentBlock($block),
+            'converted_legacy_block' => $convertedLegacyBlock
+                ? $this->presentBlock($convertedLegacyBlock)
+                : null,
             'editor_version' => $editorVersion,
         ], 201);
     }
@@ -589,7 +658,7 @@ class PageBuilderController extends Controller
     public function updateBlock(string $uuid, string $blockUuid, Request $request)
     {
         $data = $this->validateBlock($request, false);
-        [$block, $updatesSharedFields, $editorVersion] = DB::transaction(function () use ($uuid, $blockUuid, $data) {
+        [$block, $updatesSharedFields, $convertedLegacyBlock, $editorVersion] = DB::transaction(function () use ($uuid, $blockUuid, $data) {
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $lockedReusableBlocks = $this->revisions->lockReusableBlocksForPage($page);
             $block = $page->blocks()
@@ -600,6 +669,9 @@ class PageBuilderController extends Controller
             if ($block->reusable_block_id) {
                 $reusable = $lockedReusableBlocks->get((int) $block->reusable_block_id);
                 $block->setRelation('reusableBlock', $reusable);
+            }
+            if (array_key_exists('content', $data)) {
+                $this->validateBlockContentForType($block->type, $data['content']);
             }
             if ($block->type === 'ways_to_give' && array_key_exists('content', $data)) {
                 $this->validateWaysToGiveContent($data['content'], $data['locale']);
@@ -624,6 +696,11 @@ class PageBuilderController extends Controller
                     : $block->available_until,
                 'updated_by' => auth('admin')->id(),
             ];
+            $convertLegacyContent = (bool) $attributes['is_enabled']
+                && $this->assertLegacyConversionConfirmed(
+                    $page,
+                    (bool) ($data['convert_legacy_content'] ?? false)
+                );
             $updatesSharedFields = $this->authorizeReusableBlockChanges($block, $attributes);
             if ($updatesSharedFields) {
                 abort_unless($reusable && !$reusable->trashed(), 409, PageRevisionService::SHARED_CONFLICT_MESSAGE);
@@ -634,6 +711,10 @@ class PageBuilderController extends Controller
                 'Before updating block ' . $block->label,
                 $lockedReusableBlocks
             );
+
+            $convertedLegacyBlock = $convertLegacyContent
+                ? $this->convertLegacyContentToRichText($page)
+                : null;
 
             if ($updatesSharedFields) {
                 $reusable->fill([
@@ -648,16 +729,26 @@ class PageBuilderController extends Controller
 
             $block->update($attributes);
 
-            return [$block->fresh('reusableBlock'), $updatesSharedFields, $this->advanceEditorVersion($page)];
+            return [
+                $block->fresh('reusableBlock'),
+                $updatesSharedFields,
+                $convertedLegacyBlock,
+                $this->advanceEditorVersion($page),
+            ];
         });
 
         return response()->json([
-            'message' => $block->reusable_block_id
-                ? ($updatesSharedFields
-                    ? 'Reusable section saved everywhere it is used.'
-                    : 'Page placement saved. Shared content was unchanged.')
-                : 'Block saved.',
+            'message' => $convertedLegacyBlock
+                ? 'Existing page content was safely converted into a Text section, and this section was saved.'
+                : ($block->reusable_block_id
+                    ? ($updatesSharedFields
+                        ? 'Reusable section saved everywhere it is used.'
+                        : 'Page placement saved. Shared content was unchanged.')
+                    : 'Block saved.'),
             'block' => $this->presentBlock($block),
+            'converted_legacy_block' => $convertedLegacyBlock
+                ? $this->presentBlock($convertedLegacyBlock)
+                : null,
             'editor_version' => $editorVersion,
         ]);
     }
@@ -749,9 +840,10 @@ class PageBuilderController extends Controller
             'locale' => ['required', 'string', 'max:10'],
             'expected_version' => ['required', 'integer', 'min:0'],
             'reusable_uuid' => ['required', 'uuid'],
+            'convert_legacy_content' => ['sometimes', 'boolean'],
         ]);
 
-        [$block, $editorVersion] = DB::transaction(function () use ($uuid, $data) {
+        [$block, $convertedLegacyBlock, $editorVersion] = DB::transaction(function () use ($uuid, $data) {
             $page = $this->lockPageForMutation($uuid, $data['locale'], (int) $data['expected_version']);
             $candidate = ReusableBlock::query()
                 ->where('uuid', $data['reusable_uuid'])
@@ -771,11 +863,19 @@ class PageBuilderController extends Controller
                 409,
                 'This reusable section changed or became unavailable. Reload the editor and try again.'
             );
+            $convertLegacyContent = $this->assertLegacyConversionConfirmed(
+                $page,
+                (bool) ($data['convert_legacy_content'] ?? false)
+            );
             $this->revisions->capture(
                 $page,
                 'Before adding reusable section ' . $reusable->name,
                 $lockedReusableBlocks
             );
+
+            $convertedLegacyBlock = $convertLegacyContent
+                ? $this->convertLegacyContentToRichText($page)
+                : null;
 
             $block = $page->blocks()->create([
                 'reusable_block_id' => $reusable->id,
@@ -792,12 +892,17 @@ class PageBuilderController extends Controller
                 'updated_by' => auth('admin')->id(),
             ]);
 
-            return [$block, $this->advanceEditorVersion($page)];
+            return [$block, $convertedLegacyBlock, $this->advanceEditorVersion($page)];
         });
 
         return response()->json([
-            'message' => 'Reusable section added to the page.',
+            'message' => $convertedLegacyBlock
+                ? 'Existing page content was safely converted into a Text section, and the saved section was added.'
+                : 'Reusable section added to the page.',
             'block' => $this->presentBlock($block->load('reusableBlock')),
+            'converted_legacy_block' => $convertedLegacyBlock
+                ? $this->presentBlock($convertedLegacyBlock)
+                : null,
             'editor_version' => $editorVersion,
         ], 201);
     }
@@ -918,6 +1023,7 @@ class PageBuilderController extends Controller
                 ->where('uuid', $revisionUuid)
                 ->lockForUpdate()
                 ->firstOrFail();
+            $this->assertRequiredSystemPageRevisionRemainsPublished($page, $revision);
             $this->revisions->restore($page, $revision, $data['expected_reusable_versions'] ?? []);
 
             return $this->advanceEditorVersion($page->fresh());
@@ -961,12 +1067,41 @@ class PageBuilderController extends Controller
         return $validated;
     }
 
+    /**
+     * Apply the exact same schema and managed-destination checks when a block
+     * is edited from the reusable-section library instead of from a page.
+     */
+    public function validateReusableBlockPayload(string $type, array $content, string $locale): void
+    {
+        Validator::make([
+            'locale' => $locale,
+            'expected_version' => 0,
+            'type' => $type,
+            'content' => $content,
+        ], $this->blockRules())->validate();
+
+        $this->validateBlockContentForType($type, $content);
+        if ($type === 'ways_to_give') {
+            $this->validateWaysToGiveContent($content, $locale);
+        }
+    }
+
+    /**
+     * Reusable sections use the builder's named managed-content choices so a
+     * non-technical editor never has to paste an internal UUID or record ID.
+     */
+    public function reusableBlockEditorOptions(string $locale): array
+    {
+        return $this->blockContentOptions($locale);
+    }
+
     private function blockRules(bool $requireType = true): array
     {
         return [
             'locale' => ['required', 'string', 'max:10'],
             'expected_version' => ['required', 'integer', 'min:0'],
             'expected_reusable_version' => ['nullable', 'integer', 'min:0'],
+            'convert_legacy_content' => ['sometimes', 'boolean'],
             'type' => [$requireType ? 'required' : 'sometimes', 'string', Rule::in(array_keys(config('page-builder.block_types')))],
             'label' => ['nullable', 'string', 'max:255'],
             'content' => ['nullable', 'array'],
@@ -998,6 +1133,21 @@ class PageBuilderController extends Controller
                 'sometimes',
                 'string',
                 Rule::in(array_keys(config('page-builder.section_presentations', []))),
+            ],
+            'content.section_spacing' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.section_spacing_options', []))),
+            ],
+            'content.content_alignment' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.content_alignment_options', []))),
+            ],
+            'content.column_count' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.column_count_options', []))),
             ],
             'content.layout' => ['sometimes', 'string', Rule::in(['single_cta', 'card_grid', 'banner'])],
             'content.project_uuid' => ['sometimes', 'nullable', 'uuid'],
@@ -1039,6 +1189,39 @@ class PageBuilderController extends Controller
             'available_from' => ['nullable', 'date'],
             'available_until' => ['nullable', 'date', 'after_or_equal:available_from'],
         ];
+    }
+
+    /**
+     * Validate fields whose allowed values depend on the section type. The
+     * generic rules deliberately continue accepting legacy variant keys; only
+     * editor-owned source and layout selectors are coupled to a type here.
+     */
+    private function validateBlockContentForType(
+        string $type,
+        array $content,
+        string $errorPrefix = 'content'
+    ): void {
+        $errors = [];
+        if (array_key_exists('content_source', $content)) {
+            $allowedSources = array_keys(config('page-builder.automatic_sources.' . $type, []));
+            if (!in_array((string) $content['content_source'], $allowedSources, true)) {
+                $errors[$errorPrefix . '.content_source'] = 'The selected content source is not available for this section type.';
+            }
+        }
+        if (array_key_exists('presentation', $content) && $type !== 'causes') {
+            $errors[$errorPrefix . '.presentation'] = 'This presentation choice is only available for program and cause sections.';
+        }
+        if (array_key_exists('layout', $content) && $type !== 'ways_to_give') {
+            $errors[$errorPrefix . '.layout'] = 'This layout choice is only available for Ways to Give sections.';
+        }
+        if (($content['column_count'] ?? 'auto') !== 'auto'
+            && !in_array($type, config('page-builder.column_count_block_types', []), true)) {
+            $errors[$errorPrefix . '.column_count'] = 'A fixed column count is not available for this section type.';
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     private function presentBlock(PageBlock $block): PageBlock
@@ -1142,34 +1325,12 @@ class PageBuilderController extends Controller
 
     private function syncPageTags(Page $page, array $tagIds): void
     {
-        $wanted = collect($tagIds)->map(fn ($tagId) => (int) $tagId)->unique()->values();
-        $links = $page->pageTags()->orderBy('id')->get();
-        $kept = collect();
-
-        foreach ($links as $link) {
-            $tagId = (int) $link->tag_id;
-            if (!$wanted->contains($tagId) || $kept->contains($tagId)) {
-                $link->delete();
-                continue;
-            }
-
-            $kept->push($tagId);
-        }
-
-        foreach ($wanted->diff($kept) as $tagId) {
-            PageTagModule::create([
-                'uuid' => (string) Str::uuid(),
-                'page_id' => $page->id,
-                'tag_id' => $tagId,
-            ]);
-        }
-
-        $page->unsetRelation('pageTags');
+        $this->logicalTags->sync($page, $tagIds);
     }
 
     private function pageMetadataPayload(Page $page): array
     {
-        $page->loadMissing('pageTags');
+        $this->logicalTags->hydrate([$page]);
 
         return [
             'category_id' => filled($page->category_id) ? (int) $page->category_id : null,
@@ -1234,8 +1395,144 @@ class PageBuilderController extends Controller
             return;
         }
 
+        if ($this->isRequiredSystemPage($page)
+            && ($requestedStatus !== 'published' || $requestedVisibility === 'private')) {
+            throw ValidationException::withMessages([
+                'publication_status' => $this->requiredSystemPageLabel($page)
+                    . ' is a required website page. It must stay published and cannot be made private. You can still edit its content normally.',
+            ]);
+        }
+
         $canPublish = app(Permission::class)->allows(auth('admin')->user(), 'page.status');
         abort_unless($canPublish, 403, 'A publisher must change page status, visibility, or schedule. Your content edits were not saved.');
+    }
+
+    /**
+     * Older pages render their description only while no enabled Page Builder
+     * section exists. Make that implicit switch an explicit, reversible
+     * conversion so adding a section can never make the existing article
+     * disappear without warning.
+     */
+    private function legacyContentNeedsConversion(Page $page): bool
+    {
+        return trim((string) $page->getRawOriginal('description')) !== ''
+            && !$page->blocks()->where('is_enabled', true)->exists();
+    }
+
+    private function assertLegacyConversionConfirmed(Page $page, bool $confirmed): bool
+    {
+        if (!$this->legacyContentNeedsConversion($page)) {
+            return false;
+        }
+
+        if (!$confirmed) {
+            throw ValidationException::withMessages([
+                'convert_legacy_content' => 'This page already has older article content. Confirm the safe conversion to an editable Text section before showing the first Page Builder section.',
+            ]);
+        }
+
+        return true;
+    }
+
+    private function convertLegacyContentToRichText(Page $page): PageBlock
+    {
+        $body = $this->sanitizer->sanitizeHtml((string) $page->getRawOriginal('description'));
+        $content = $this->sanitizer->sanitizeBlockContent(array_replace(
+            config('page-builder.design_defaults', []),
+            config('page-builder.default_content.rich_text', []),
+            [
+                'eyebrow' => '',
+                'heading' => '',
+                'body' => $body,
+            ]
+        ));
+        $content['section_presentation'] ??= (string) config(
+            'page-builder.section_presentation_default',
+            'standard'
+        );
+
+        // A legacy page can already contain hidden draft sections. Move those
+        // down before inserting the converted article so it is unambiguously
+        // the first visitor-facing section rather than tying at sort order 0.
+        $page->blocks()->update([
+            'sort_order' => DB::raw('sort_order + 1'),
+            'updated_by' => auth('admin')->id(),
+        ]);
+
+        $block = $page->blocks()->create([
+            'uuid' => (string) Str::uuid(),
+            // The logical page UUID gives separately converted translations a
+            // stable identity in the Translation Center.
+            'translation_key' => (string) $page->uuid,
+            'type' => 'rich_text',
+            'label' => 'Existing page content',
+            'content' => $content,
+            'settings' => [],
+            'sort_order' => 0,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+            'created_by' => auth('admin')->id(),
+            'updated_by' => auth('admin')->id(),
+        ]);
+
+        // The captured revision still contains the original article. Clearing
+        // its legacy source prevents two competing copies (notably on About)
+        // while the new Text section becomes the single editable owner.
+        $page->update(['description' => '']);
+
+        return $block;
+    }
+
+    private function isRequiredSystemPage(Page $page): bool
+    {
+        if (in_array((string) $page->slug, self::REQUIRED_SYSTEM_PAGE_SLUGS, true)) {
+            return true;
+        }
+
+        return Page::withTrashed()
+            ->where('uuid', $page->uuid)
+            ->whereIn('slug', self::REQUIRED_SYSTEM_PAGE_SLUGS)
+            ->exists();
+    }
+
+    private function requiredSystemPageLabel(Page $page): string
+    {
+        $slug = in_array((string) $page->slug, self::REQUIRED_SYSTEM_PAGE_SLUGS, true)
+            ? (string) $page->slug
+            : (string) Page::withTrashed()
+                ->where('uuid', $page->uuid)
+                ->whereIn('slug', self::REQUIRED_SYSTEM_PAGE_SLUGS)
+                ->value('slug');
+
+        return match ($slug) {
+            'home' => 'Home',
+            'about-us' => 'About us',
+            'zakat' => 'Zakat',
+            default => 'This page',
+        };
+    }
+
+    private function assertRequiredSystemPageRevisionRemainsPublished(Page $page, PageRevision $revision): void
+    {
+        if (!$this->isRequiredSystemPage($page)) {
+            return;
+        }
+
+        $snapshot = (array) data_get($revision->snapshot, 'page', []);
+        $publicationStatus = (string) ($snapshot['publication_status']
+            ?? (!empty($snapshot['status']) ? 'published' : 'draft'));
+        $visibility = (string) ($snapshot['visibility'] ?? 'public');
+        $isActive = array_key_exists('status', $snapshot)
+            ? (bool) $snapshot['status']
+            : $publicationStatus === 'published';
+
+        if (!$isActive || $publicationStatus !== 'published' || $visibility === 'private') {
+            throw ValidationException::withMessages([
+                'revision' => $this->requiredSystemPageLabel($page)
+                    . ' is a required website page. This revision would take it offline, so it cannot be restored. Its content can still be copied into the current published version.',
+            ]);
+        }
     }
 
     /**
@@ -1693,13 +1990,14 @@ class PageBuilderController extends Controller
     {
         $pages = Page::query()
             ->where('language', $locale)
-            ->publiclyAvailable()
+            ->publiclyListed()
             ->with(['category:id,uuid,name,slug,status', 'pageTags.tag:id,name,slug,status'])
             ->orderBy('name')
             ->get([
                 'id', 'uuid', 'category_id', 'name', 'slug', 'sub_title', 'description',
                 'thumbnail', 'published_at', 'order_by', 'is_funding_project', 'is_zakat_eligible',
             ]);
+        $this->logicalTags->hydrate($pages, true);
         $fallbackLocale = (string) config('app.fallback_locale', 'en');
         $givingProjects = Page::query()
             ->publiclyAvailable()
@@ -1829,6 +2127,56 @@ class PageBuilderController extends Controller
                 'sort_id' => (int) $testimonial->id,
             ];
         };
+        $eventOption = function (NoticeBoard $event): array {
+            return [
+                'value' => (string) $event->id,
+                'label' => $event->title,
+                'body' => $event->sub_title ?: str($event->description)->stripTags()->limit(140)->toString(),
+                'image' => $this->builderPublicImage($event->getRawOriginal('image_path'), 'notice_board'),
+                'image_alt' => $event->image_alt ?: $event->title,
+                'published_at' => $event->published_at ? strtotime((string) $event->published_at) : 0,
+                'url' => '/event/' . ltrim((string) $event->slug, '/'),
+                'featured_order' => (int) ($event->order_by ?? 0),
+                'sort_id' => (int) $event->id,
+            ];
+        };
+        $teamOption = function (LatestNews $member): array {
+            $name = trim((string) $member->name);
+            $description = trim((string) $member->description);
+
+            return [
+                'value' => (string) $member->id,
+                'label' => $name,
+                'designation' => $description,
+                'body' => $description,
+                'biography' => trim((string) $member->biography),
+                'qualification' => trim((string) $member->qualification),
+                'image' => $this->builderPublicImage($member->path ?: $member->image, 'our_members'),
+                'image_alt' => $name,
+                'url' => $this->sanitizer->sanitizeUrl($member->url ?: ''),
+                'group_id' => $member->teamGroup ? (int) $member->teamGroup->id : null,
+                'group_name' => $member->teamGroup ? (string) $member->teamGroup->name : '',
+                'group_slug' => $member->teamGroup ? (string) $member->teamGroup->slug : '',
+                'featured_order' => (int) ($member->order_by ?? 0),
+                'sort_id' => (int) $member->id,
+            ];
+        };
+        $galleryOption = function (Gallery $photo): array {
+            $libraryImage = $this->safeBuilderMediaImageUrl((string) $photo->url);
+            $alt = trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $photo->description)));
+
+            return [
+                'value' => (string) $photo->uuid,
+                'label' => $photo->name,
+                'body' => '',
+                'image' => $libraryImage ?: $this->builderGalleryImage($photo),
+                'image_alt' => $alt ?: $photo->name,
+                'url' => $libraryImage ? '' : $this->sanitizer->sanitizeUrl($photo->url ?: ''),
+                'featured_order' => (int) ($photo->order_by ?? 0),
+                'published_at' => $photo->created_at?->getTimestamp() ?? 0,
+                'sort_id' => (int) $photo->id,
+            ];
+        };
 
         return [
             'sources' => config('page-builder.automatic_sources', []),
@@ -1837,6 +2185,14 @@ class PageBuilderController extends Controller
                 'sections' => config('page-builder.section_presentations', []),
                 'causes' => config('page-builder.cause_presentations', []),
             ],
+            'design' => [
+                'section_spacing' => config('page-builder.section_spacing_options', []),
+                'content_alignment' => config('page-builder.content_alignment_options', []),
+                'column_count' => config('page-builder.column_count_options', []),
+                'defaults' => config('page-builder.design_defaults', []),
+                'column_count_types' => config('page-builder.column_count_block_types', []),
+            ],
+            'manage_urls' => $this->managedContentUrls($locale),
             'categories' => Category::query()
                 ->where('language', $locale)
                 ->where('status', 1)
@@ -1874,10 +2230,13 @@ class PageBuilderController extends Controller
                     ])->values(),
                 'events' => NoticeBoard::query()
                     ->where('language', $locale)
-                    ->where('status', 1)
+                    ->publiclyReleased()
                     ->orderBy('title')
-                    ->get(['id', 'title'])
-                    ->map(fn (NoticeBoard $event) => ['value' => (string) $event->id, 'label' => $event->title])
+                    ->get([
+                        'id', 'title', 'sub_title', 'description', 'image_path', 'published_at',
+                        'slug', 'order_by',
+                    ])
+                    ->map($eventOption)
                     ->values(),
                 'testimonials' => Testimonial::query()
                     ->where('language', $locale)
@@ -1891,19 +2250,121 @@ class PageBuilderController extends Controller
                     ->where('language', $locale)
                     ->where('type', 'our-members')
                     ->where('status', 1)
+                    ->where(function ($query) use ($locale): void {
+                        $query->whereNull('team_group_id')
+                            ->orWhereHas('teamGroup', fn ($group) => $group
+                                ->where('status', 1)
+                                ->where('language', $locale));
+                    })
+                    ->with('teamGroup:id,name,slug,status,language')
                     ->orderBy('name')
-                    ->get(['id', 'name'])
-                    ->map(fn (LatestNews $member) => ['value' => (string) $member->id, 'label' => $member->name])
+                    ->get([
+                        'id', 'team_group_id', 'name', 'description', 'biography', 'qualification',
+                        'image', 'path', 'url', 'order_by',
+                    ])
+                    ->map($teamOption)
                     ->values(),
                 'gallery' => Gallery::query()
                     ->where('language', $locale)
-                    ->where('status', 1)
+                    ->publiclyAvailable()
                     ->whereNotNull('uuid')
                     ->orderBy('name')
-                    ->get(['uuid', 'name'])
-                    ->map(fn (Gallery $photo) => ['value' => (string) $photo->uuid, 'label' => $photo->name])
+                    ->get(['id', 'uuid', 'name', 'description', 'image', 'path', 'url', 'order_by', 'created_at'])
+                    ->map($galleryOption)
                     ->values(),
             ],
         ];
+    }
+
+    /**
+     * Give editors contextual hand-offs without revealing links to workspaces
+     * their role cannot open.
+     */
+    private function managedContentUrls(string $locale): array
+    {
+        $permission = app(Permission::class);
+        $admin = auth('admin')->user();
+        $definitions = [
+            'cards' => [
+                'permission' => 'page.index',
+                'label' => 'Manage pages and projects',
+                'url' => route('page.index', ['language' => $locale]),
+            ],
+            'causes' => [
+                'permission' => 'page.index',
+                'label' => 'Manage program pages',
+                'url' => route('page.index', ['language' => $locale]),
+            ],
+            'events' => [
+                'permission' => 'notice.board.index',
+                'label' => 'Manage events and updates',
+                'url' => route('notice.board.index'),
+            ],
+            'testimonials' => [
+                'permission' => 'testimonial.index',
+                'label' => 'Manage community stories',
+                'url' => route('testimonial.index'),
+            ],
+            'team' => [
+                'permission' => 'latest.news.index',
+                'label' => 'Manage team members',
+                'url' => route('latest.news.index'),
+            ],
+            'gallery' => [
+                'permission' => 'gallery.index',
+                'label' => 'Manage gallery photos',
+                'url' => route('gallery.index'),
+            ],
+            'ways_to_give' => [
+                'permission' => 'donationType.index',
+                'label' => 'Manage donation causes',
+                'url' => route('donationType.index'),
+            ],
+            'media' => [
+                'permission' => 'media.index',
+                'label' => 'Manage media library',
+                'url' => route('media.index'),
+            ],
+        ];
+
+        return collect($definitions)
+            ->filter(fn (array $entry): bool => $permission->allows($admin, $entry['permission']))
+            ->map(fn (array $entry): array => [
+                'label' => $entry['label'],
+                'url' => $entry['url'],
+            ])
+            ->all();
+    }
+
+    private function builderPublicImage(?string $value, string $legacyDirectory): string
+    {
+        $image = trim((string) $value);
+        if ($image === '' || str_starts_with($image, '/') || preg_match('#^https?://#i', $image)) {
+            return $image;
+        }
+
+        return '/storage/photos/1/' . $legacyDirectory . '/' . ltrim(str_replace('\\', '/', $image), '/');
+    }
+
+    private function safeBuilderMediaImageUrl(string $value): ?string
+    {
+        $path = parse_url(trim($value), PHP_URL_PATH);
+        if (!is_string($path) || !preg_match('#^/storage/media/[a-z0-9/_-]+\.(?:avif|gif|jpe?g|png|webp)$#i', $path)) {
+            return null;
+        }
+
+        return $path;
+    }
+
+    private function builderGalleryImage(Gallery $photo): string
+    {
+        $source = trim((string) ($photo->path ?: $photo->image));
+        if ($source === '' || str_starts_with($source, '/') || preg_match('#^https?://#i', $source)) {
+            return $source;
+        }
+
+        $filename = rawurlencode(basename(str_replace('\\', '/', $source)));
+
+        return '/storage/photos/1/gallery/' . $photo->id . '/430X360/' . $filename;
     }
 }

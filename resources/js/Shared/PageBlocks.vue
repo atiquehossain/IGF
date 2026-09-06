@@ -9,7 +9,11 @@
       :class="[
         `igf-page-block--${block.type}`,
         `igf-page-block--${block.content?.variant || 'default'}`,
+        block.type === 'cta' && block.content?.variant && !['campaign', 'campus-actions'].includes(block.content.variant) ? 'igf-page-block--default' : null,
         sectionPresentationClass(block),
+        sectionSpacingClass(block),
+        contentAlignmentClass(block),
+        columnCountClass(block),
         visibilityClass(block),
       ]"
       :style="blockStyle(block)"
@@ -337,12 +341,12 @@
         <ul class="igf-partner-list">
           <li v-for="(item, index) in block.content?.items || []" :key="index">
             <a v-if="safeHref(item.url)" class="igf-partner-card" :href="safeHref(item.url)" target="_blank" rel="noopener noreferrer" :aria-label="partnerLinkLabel(item)">
-              <img v-if="item.image" :src="item.image" alt="" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
+              <img v-if="item.image" :src="item.image" :alt="item.image_alt || item.heading" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
               <strong v-if="item.image" class="igf-partner-card__fallback">{{ partnerName(item) }}</strong>
               <strong v-else>{{ item.heading }}</strong>
             </a>
             <div v-else class="igf-partner-card">
-              <img v-if="item.image" :src="item.image" :alt="partnerName(item)" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
+              <img v-if="item.image" :src="item.image" :alt="item.image_alt || item.heading" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
               <strong v-if="item.image" class="igf-partner-card__fallback">{{ partnerName(item) }}</strong>
               <strong v-else>{{ item.heading }}</strong>
             </div>
@@ -598,12 +602,12 @@
         <ul class="igf-partner-list">
           <li v-for="(item, index) in block.content?.items || []" :key="index">
             <a v-if="safeHref(item.url)" class="igf-partner-card" :href="safeHref(item.url)" target="_blank" rel="noopener noreferrer" :aria-label="partnerLinkLabel(item)">
-              <img v-if="item.image" :src="item.image" alt="" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
+              <img v-if="item.image" :src="item.image" :alt="item.image_alt || item.heading" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
               <strong v-if="item.image" class="igf-partner-card__fallback">{{ partnerName(item) }}</strong>
               <strong v-else>{{ item.heading }}</strong>
             </a>
             <div v-else class="igf-partner-card">
-              <img v-if="item.image" :src="item.image" :alt="partnerName(item)" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
+              <img v-if="item.image" :src="item.image" :alt="item.image_alt || item.heading" width="120" height="80" loading="lazy" decoding="async" @error="$event.currentTarget.hidden = true">
               <strong v-if="item.image" class="igf-partner-card__fallback">{{ partnerName(item) }}</strong>
               <strong v-else>{{ item.heading }}</strong>
             </div>
@@ -822,12 +826,18 @@
         </div>
       </div>
 
-      <div v-else-if="block.type === 'cta'" class="igf-page-block__inner igf-callout">
-        <i class="fa-solid fa-quote-left" aria-hidden="true" />
-        <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
-        <h2>{{ block.content?.heading }}</h2>
-        <p class="igf-section-lead">{{ block.content?.body }}</p>
-        <div class="igf-page-block__actions">
+      <div
+        v-else-if="block.type === 'cta'"
+        class="igf-page-block__inner igf-callout"
+        :data-actions="block.content?.primary_label || block.content?.secondary_label ? 'true' : 'false'"
+      >
+        <span class="igf-callout__signal" aria-hidden="true"><i class="fa-solid fa-hand-holding-heart" /></span>
+        <div class="igf-callout__content">
+          <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
+          <h2>{{ block.content?.heading }}</h2>
+          <p class="igf-section-lead">{{ block.content?.body }}</p>
+        </div>
+        <div v-if="block.content?.primary_label || block.content?.secondary_label" class="igf-page-block__actions">
           <a v-if="block.content?.primary_label" class="igf-button igf-button--primary" :href="safeHref(block.content.primary_url, '#')">{{ block.content.primary_label }}</a>
           <a v-if="block.content?.secondary_label" class="igf-button igf-button--outline" :href="safeHref(block.content.secondary_url, '#')">{{ block.content.secondary_label }}</a>
         </div>
@@ -877,6 +887,9 @@ import { responsiveBackgroundPresentation, responsiveImagePresentation } from '.
 
 const props = defineProps({ blocks: { type: Array, default: () => [] } });
 const sectionPresentations = new Set(['standard', 'soft', 'framed', 'contrast']);
+const sectionSpacings = new Set(['compact', 'standard', 'spacious']);
+const contentAlignments = new Set(['left', 'center']);
+const columnCounts = new Set(['auto', '2', '3', '4']);
 const page = usePage();
 const shared = computed(() => page.props.siteSettings?.shared_blocks || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
@@ -1376,12 +1389,31 @@ function sectionPresentationClass(block) {
   const normalizedPresentation = sectionPresentations.has(presentation) ? presentation : 'standard';
   return `igf-page-block--presentation-${normalizedPresentation}`;
 }
+function sectionSpacingClass(block) {
+  const spacing = String(block.content?.section_spacing || 'standard').trim().toLowerCase();
+  return `igf-page-block--spacing-${sectionSpacings.has(spacing) ? spacing : 'standard'}`;
+}
+function contentAlignmentClass(block) {
+  const alignment = String(block.content?.content_alignment || 'left').trim().toLowerCase();
+  return `igf-page-block--align-${contentAlignments.has(alignment) ? alignment : 'left'}`;
+}
+function normalizedColumnCount(block) {
+  const count = String(block.content?.column_count || 'auto').trim().toLowerCase();
+  return columnCounts.has(count) ? count : 'auto';
+}
+function columnCountClass(block) {
+  return `igf-page-block--columns-${normalizedColumnCount(block)}`;
+}
 function visibilityClass(block) {
   return { 'igf-page-block--desktop-hidden': !block.show_on_desktop, 'igf-page-block--mobile-hidden': !block.show_on_mobile };
 }
 function blockStyle(block) {
-  if (block.type === 'spacer') return { minHeight: ({ small: '24px', medium: '56px', large: '96px' }[block.content?.size] || '56px'), padding: 0 };
-  return {};
+  const columnCount = normalizedColumnCount(block);
+  const style = columnCount === 'auto' ? {} : { '--igf-block-columns': columnCount };
+  if (block.type === 'spacer') {
+    return { ...style, minHeight: ({ small: '24px', medium: '56px', large: '96px' }[block.content?.size] || '56px'), padding: 0 };
+  }
+  return style;
 }
 function statAnimationEnabled(block) { return block.content?.animation_enabled !== false; }
 function statAnimationType(block) {
@@ -1727,6 +1759,9 @@ function subscribe() {
 <style scoped lang="scss">
 .igf-page-blocks { --orange:#ff7500; --brown:#9c4500; --ink:#191c1d; --muted:#5f6065; --surface:#f8f9fa; --line:#e5e0dc; --peach:#ffe5ce; --cream:#fff7f1; --linen:#ffeedf; --white:#fff; overflow:hidden; background:var(--white); color:var(--ink); font-family:'Hanken Grotesk',Arial,sans-serif; }
 .igf-page-block { position:relative; padding:var(--igf-section-block,clamp(72px,9vw,120px)) clamp(20px,5vw,48px); background:#fff; color:var(--ink); }
+.igf-page-block--spacing-compact { --igf-section-block:clamp(44px,6vw,72px); --igf-section-mobile:48px; --igf-hero-padding-top:clamp(72px,9vw,112px); --igf-hero-padding-bottom:clamp(76px,10vw,120px); --igf-hero-padding-top-mobile:42px; --igf-hero-padding-bottom-mobile:76px; }
+.igf-page-block--spacing-standard { --igf-section-block:clamp(72px,9vw,120px); --igf-section-mobile:68px; --igf-hero-padding-top:clamp(90px,11vw,140px); --igf-hero-padding-bottom:clamp(100px,13vw,160px); --igf-hero-padding-top-mobile:54px; --igf-hero-padding-bottom-mobile:105px; }
+.igf-page-block--spacing-spacious { --igf-section-block:clamp(96px,12vw,156px); --igf-section-mobile:88px; --igf-hero-padding-top:clamp(116px,14vw,176px); --igf-hero-padding-bottom:clamp(130px,16vw,196px); --igf-hero-padding-top-mobile:72px; --igf-hero-padding-bottom-mobile:132px; }
 .igf-page-block__inner { position:relative; z-index:2; width:min(100%,var(--igf-content-width,1240px)); margin:0 auto; }
 .igf-page-block__eyebrow { margin:0 0 14px; color:var(--brown); font:800 12px/1.25 'Hanken Grotesk',Arial,sans-serif; letter-spacing:.09em; text-transform:uppercase; }
 .igf-page-block__eyebrow--inverse { display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border:1px solid rgba(255,117,0,.34); border-radius:12px; background:rgba(255,117,0,.1); color:#ffb070; }
@@ -1737,7 +1772,7 @@ function subscribe() {
 .igf-page-blocks h3 { margin:0; font-size:var(--igf-heading-3,22px); line-height:1.25; }
 .igf-page-blocks p { color:var(--muted); font-family:inherit; }
 .igf-page-block__lead,.igf-section-lead { max-width:680px; font-size:var(--igf-lead-size,clamp(18px,2vw,21px)); line-height:1.6; }
-.igf-page-block--hero { display:flex; min-height:var(--igf-hero-height,min(780px,86vh)); align-items:center; overflow:hidden; padding-top:clamp(90px,11vw,140px); padding-bottom:clamp(100px,13vw,160px); background:#202124; color:#fff; }
+.igf-page-block--hero { display:flex; min-height:var(--igf-hero-height,min(780px,86vh)); align-items:center; overflow:hidden; padding-top:var(--igf-hero-padding-top,clamp(90px,11vw,140px)); padding-bottom:var(--igf-hero-padding-bottom,clamp(100px,13vw,160px)); background:#202124; color:#fff; }
 .igf-hero-carousel__backgrounds,.igf-hero-carousel__backgrounds>span { position:absolute; inset:0; }
 .igf-hero-carousel__backgrounds { z-index:0; overflow:hidden; background:#202124; }
 .igf-hero-carousel__backgrounds>span { background-color:transparent; background-image:var(--igf-hero-image); background-image:var(--igf-hero-image-set-small,var(--igf-hero-image)); background-position:center; background-size:cover; background-repeat:no-repeat; opacity:0; transform:scale(1.025); transition:opacity .65s ease,transform 6s ease; }
@@ -2161,6 +2196,24 @@ function subscribe() {
 .igf-callout>i { margin-bottom:18px; color:var(--orange); font-size:38px; }
 .igf-callout h2,.igf-callout .igf-section-lead { margin-right:auto; margin-left:auto; }
 .igf-callout .igf-page-block__actions { justify-content:center; }
+.igf-page-block--cta.igf-page-block--default { padding-top:clamp(52px,6vw,82px); padding-bottom:clamp(52px,6vw,82px); }
+.igf-page-block--cta.igf-page-block--default .igf-callout { position:relative; display:grid; overflow:hidden; grid-template-columns:72px minmax(0,1fr) minmax(235px,auto); align-items:center; gap:clamp(24px,4vw,52px); isolation:isolate; padding:clamp(36px,5vw,58px); border:1px solid rgba(255,255,255,.1); border-radius:30px; background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20 0%,#292624 100%); box-shadow:0 24px 58px rgba(39,29,22,.18); color:#fff; text-align:left; }
+.igf-page-block--cta.igf-page-block--default .igf-callout[data-actions="false"] { grid-template-columns:72px minmax(0,1fr); }
+.igf-page-block--cta.igf-page-block--default .igf-callout::before { position:absolute; z-index:-1; top:0; bottom:0; left:0; width:8px; background:linear-gradient(180deg,#ff9b4c,#ff7500 55%,#b94e00); content:''; }
+.igf-page-block--cta.igf-page-block--default .igf-callout::after { position:absolute; z-index:-1; right:-105px; bottom:-155px; width:330px; height:330px; border:52px solid rgba(255,255,255,.035); border-radius:50%; content:''; }
+.igf-callout__signal { display:grid; width:72px; height:72px; place-items:center; align-self:start; border:1px solid rgba(255,172,105,.35); border-radius:22px; background:rgba(255,117,0,.13); color:#ff9b4c; font-size:29px; box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+.igf-callout__content { position:relative; z-index:1; min-width:0; }
+.igf-page-block--cta.igf-page-block--default .igf-callout .igf-page-block__eyebrow { margin-bottom:12px; color:#ffad70; }
+.igf-page-block--cta.igf-page-block--default .igf-callout h2 { max-width:680px; margin:0 0 16px; color:#fff; font-size:clamp(36px,4.2vw,56px); line-height:1.06; overflow-wrap:anywhere; }
+.igf-page-block--cta.igf-page-block--default .igf-callout .igf-section-lead { max-width:650px; margin:0; color:#d9d5d1; font-size:clamp(16px,1.65vw,19px); line-height:1.65; }
+.igf-page-block--cta.igf-page-block--default .igf-page-block__actions { position:relative; z-index:1; display:grid; min-width:235px; gap:12px; margin:0; }
+.igf-page-block--cta.igf-page-block--default .igf-page-block__actions>:only-child { grid-column:1/-1; }
+.igf-page-block--cta.igf-page-block--default .igf-button { width:100%; min-width:0; min-height:54px; justify-content:space-between; padding:0 22px; border-radius:14px; line-height:1.25; overflow-wrap:anywhere; }
+.igf-page-block--cta.igf-page-block--default .igf-button::after { margin-left:14px; content:'\2192'; font-size:18px; line-height:1; transition:transform .18s ease; }
+.igf-page-block--cta.igf-page-block--default .igf-button:hover::after { transform:translateX(4px); }
+.igf-page-block--cta.igf-page-block--default .igf-button--primary { border-color:#ff7500; background:#ff7500; color:#1c1e20; box-shadow:0 10px 24px rgba(255,117,0,.22); }
+.igf-page-block--cta.igf-page-block--default .igf-button--outline { border-color:rgba(255,255,255,.42); background:rgba(255,255,255,.04); color:#fff; }
+.igf-page-block--cta.igf-page-block--default .igf-button:focus-visible { outline:3px solid #ffb176; outline-offset:4px; }
 .igf-page-block--newsletter { padding-top:78px; padding-bottom:78px; background:#e4e5e6; }
 .igf-newsletter { max-width:760px; text-align:center; }
 .igf-newsletter h2 { margin-right:auto; margin-left:auto; font-size:38px; }
@@ -2182,6 +2235,9 @@ function subscribe() {
 .igf-page-block--presentation-framed { background:#f3efeb; }
 .igf-page-block--presentation-framed:not(.igf-page-block--hero):not(.igf-page-block--spacer)>.igf-page-block__inner {
   padding:clamp(28px,4.5vw,58px); border:1px solid #ded2c8; border-top:5px solid var(--orange); border-radius:26px; background:#fff; box-shadow:0 22px 52px rgba(55,42,32,.12);
+}
+.igf-page-block--cta.igf-page-block--default.igf-page-block--presentation-framed>.igf-callout {
+  padding:clamp(36px,5vw,58px); border:1px solid rgba(255,255,255,.1); border-radius:30px; background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20 0%,#292624 100%); box-shadow:0 24px 58px rgba(39,29,22,.18);
 }
 .igf-page-block--presentation-contrast { background:#24211f; color:#fff; }
 .igf-page-block--presentation-contrast :is(h1,h2,h3,h4,p,li,blockquote) { color:inherit; }
@@ -2205,9 +2261,14 @@ function subscribe() {
 .igf-page-block--spacer.igf-page-block--presentation-framed { position:relative; background:#f3efeb; }
 .igf-page-block--spacer.igf-page-block--presentation-framed::after { position:absolute; inset:50% 7% auto; height:1px; background:#d5c6ba; content:''; }
 .igf-page-block--spacer.igf-page-block--presentation-contrast { background:#24211f; }
+.igf-page-block.igf-page-block--align-center>.igf-page-block__inner { text-align:center; }
+.igf-page-block.igf-page-block--align-center>.igf-page-block__inner :is(h1,h2,.igf-page-block__lead,.igf-section-lead) { margin-right:auto; margin-left:auto; }
+.igf-page-block.igf-page-block--align-center .igf-page-block__actions { justify-content:center; }
+.igf-page-block:not(.igf-page-block--columns-auto) :is(.igf-stats,.igf-card-grid,.igf-focus-areas,.igf-giving__options,.igf-event-cards,.igf-team-grid,.igf-gallery__grid,.igf-partner-list,.igf-campus-initiative-grid,.igf-campus-contribution-grid) { grid-template-columns:repeat(var(--igf-block-responsive-columns,var(--igf-block-columns)),minmax(0,1fr)); }
 .sr-only { position:absolute!important; width:1px!important; height:1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; }
 .igf-page-block--desktop-hidden { display:none; }
 @media (max-width:991px) {
+  .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:2; }
   .igf-page-block--campus-stats .igf-stats { grid-template-columns:1fr; gap:48px; }
   .igf-page-block--campus-stats .igf-stat strong { font-size:64px; }
   .igf-campus-initiative-grid,.igf-campus-contribution-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
@@ -2232,12 +2293,16 @@ function subscribe() {
   .igf-page-block--campus-gallery .igf-gallery__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-page-block--campus-gallery .igf-gallery figure:first-child { grid-row:auto; }
   .igf-page-block--campus-gallery .igf-gallery figure:last-child { grid-column:auto; }
+  .igf-page-block--cta.igf-page-block--default .igf-callout { grid-template-columns:64px minmax(0,1fr); gap:24px 28px; }
+  .igf-page-block--cta.igf-page-block--default .igf-callout__signal { width:64px; height:64px; border-radius:19px; font-size:26px; }
+  .igf-page-block--cta.igf-page-block--default .igf-page-block__actions { grid-column:2; grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @media (max-width:767px) {
+  .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:1; }
   .igf-page-block { padding:var(--igf-section-mobile,68px) 20px; }
   .igf-page-block--partners { padding-top:28px; padding-bottom:68px; }
   .igf-page-block--partners .igf-partners h2 { font-size:clamp(38px,6vw,44px); }
-  .igf-page-block--hero { min-height:var(--igf-hero-height-mobile,680px); padding:54px 20px 105px; align-items:end; }
+  .igf-page-block--hero { min-height:var(--igf-hero-height-mobile,680px); padding:var(--igf-hero-padding-top-mobile,54px) 20px var(--igf-hero-padding-bottom-mobile,105px); align-items:end; }
   .igf-page-block__hero-content { padding:27px 23px; }
   .igf-hero-carousel__controls { right:18px; bottom:68px; left:18px; justify-content:center; }
   .igf-hero-carousel__dots { order:2; }
@@ -2276,8 +2341,15 @@ function subscribe() {
   .igf-accountability-grid a { min-height:125px; padding:14px; font-size:13px; }
   .igf-newsletter form { grid-template-columns:1fr; }
   .igf-consent,.igf-newsletter__message { grid-column:1; }
+  .igf-page-block--cta.igf-page-block--default { padding:44px 20px; }
+  .igf-page-block--cta.igf-page-block--default .igf-callout { grid-template-columns:1fr; gap:22px; padding:30px 24px 26px; border-radius:24px; }
+  .igf-page-block--cta.igf-page-block--default .igf-callout__signal { width:58px; height:58px; border-radius:17px; font-size:24px; }
+  .igf-page-block--cta.igf-page-block--default .igf-callout h2 { font-size:clamp(32px,10vw,42px); }
+  .igf-page-block--cta.igf-page-block--default .igf-page-block__actions { grid-column:auto; grid-template-columns:1fr; width:100%; }
+  .igf-page-block--cta.igf-page-block--default .igf-button { min-height:52px; }
   .igf-page-block--presentation-framed:not(.igf-page-block--hero):not(.igf-page-block--spacer) { padding-right:14px; padding-left:14px; }
   .igf-page-block--presentation-framed:not(.igf-page-block--hero):not(.igf-page-block--spacer)>.igf-page-block__inner { padding:26px 20px; border-radius:18px; }
+  .igf-page-block--cta.igf-page-block--default.igf-page-block--presentation-framed>.igf-callout { padding:30px 24px 26px; border-radius:24px; }
   .igf-page-block--hero.igf-page-block--presentation-soft .igf-page-block__hero-content,
   .igf-page-block--hero.igf-page-block--presentation-framed .igf-page-block__hero-content { padding:24px 20px; border-radius:18px; }
   .igf-page-block--desktop-hidden { display:block; }

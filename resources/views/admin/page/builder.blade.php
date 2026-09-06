@@ -16,11 +16,16 @@
     $canManagePublication = $permission->allows($admin, 'page.status');
     $canEditSeo = $permission->allows($admin, 'seo.content.edit');
     $canViewMediaLibrary = $permission->allows($admin, 'media.index');
+    $canCreatePage = $permission->allows($admin, 'page.create');
     $canRestoreRevisions = $canEditBuilder
         && $canManagePublication
         && $permission->allows($admin, 'seo.metadata.edit')
         && $builderPermissions['editReusable'];
     $canManageHomeBanners = $permission->allows($admin, 'banner.index');
+    $publicUrl = app(\App\Services\SeoMetadataService::class)->publicUrlForPage($page);
+    $publicUrlParts = parse_url($publicUrl) ?: [];
+    $publicPath = (string) ($publicUrlParts['path'] ?? '/');
+    if (filled($publicUrlParts['query'] ?? null)) $publicPath .= '?'.$publicUrlParts['query'];
     $selectedTagIds = $page->pageTags->pluck('tag_id')->map(fn ($id) => (int) $id)->all();
     $rawThumbnail = trim((string) $page->getRawOriginal('thumbnail'));
     $currentThumbnailUrl = $rawThumbnail === ''
@@ -44,6 +49,8 @@
     .igf-builder__title { min-width:0; }
     .igf-builder__topbar h1 { max-width:520px; margin:0; overflow:hidden; color:var(--igf-ink); font:700 20px/1.15 'Literata',serif; text-overflow:ellipsis; white-space:nowrap; }
     .igf-builder__topbar small { display:block; margin-top:3px; overflow:hidden; color:var(--igf-muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+    .igf-builder__topbar small a { color:var(--igf-primary); font-weight:800; text-decoration:none; }
+    .igf-builder__topbar small a:hover,.igf-builder__topbar small a:focus-visible { text-decoration:underline; }
     .igf-builder__viewport { display:flex; flex:0 0 auto; gap:2px; padding:3px; border-radius:8px; background:#edeeef; }
     .igf-viewport-button { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; padding:0; border:0; border-radius:6px; background:transparent; color:#6f6e75; cursor:pointer; }
     .igf-viewport-button.is-active { background:#fff; color:var(--igf-primary); box-shadow:0 1px 3px rgba(36,36,43,.12); }
@@ -53,7 +60,7 @@
     .igf-locale { max-width:164px; }
     .igf-builder__grid { display:grid; grid-template-columns:minmax(0,1fr) 340px; flex:1 1 auto; min-height:0; }
     .igf-builder__canvas { grid-column:1; grid-row:1; min-width:0; min-height:0; padding:24px; overflow:auto; background:#f3f4f5; }
-    .igf-builder__preview { width:min(100%,1200px); min-height:1000px; margin:0 auto; overflow:hidden; border:1px solid rgba(25,28,29,.06); border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(36,36,43,.05); transform-origin:top center; transition:width .25s ease; }
+    .igf-builder__preview { container-type:inline-size; width:min(100%,1200px); min-height:1000px; margin:0 auto; overflow:hidden; border:1px solid rgba(25,28,29,.06); border-radius:8px; background:#fff; box-shadow:0 2px 8px rgba(36,36,43,.05); transform-origin:top center; transition:width .25s ease; }
     .igf-builder__preview[data-viewport="tablet"] { width:min(100%,768px); }
     .igf-builder__preview[data-viewport="mobile"] { width:min(100%,390px); }
     .igf-builder__preview[data-viewport="desktop"] [data-hide-desktop="true"],
@@ -93,6 +100,7 @@
     .igf-tag-options label { display:flex; align-items:center; justify-content:flex-start; gap:8px; margin:0; font-size:12px; font-weight:650; letter-spacing:0; }
     .igf-tag-options input { width:16px; height:16px; min-height:16px; margin:0; padding:0; border:0; accent-color:var(--igf-orange); }
     .igf-banner-guidance { margin:8px 0 15px; padding:10px; border-left:3px solid var(--igf-orange); border-radius:5px; background:#fff7ee; color:#65472c; font-size:11px; line-height:1.5; }
+    .igf-manage-links { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 14px; }.igf-manage-link { display:inline-flex; min-height:44px; align-items:center; gap:7px; padding:9px 11px; border:1px solid #efb789; border-radius:8px; background:#fff8f2; color:var(--igf-primary)!important; font-size:11px; font-weight:800; text-decoration:none!important; }
     .igf-check { display:flex; align-items:center; gap:8px; margin:10px 0; color:#313135; font-size:13px; }
     .igf-check input { width:auto; accent-color:var(--igf-primary); }
     .igf-giving-list { display:grid; gap:8px; margin:0 0 14px; }.igf-giving-option { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:9px; min-height:56px; padding:9px; border:1px solid #dddfe1; border-radius:8px; background:#f8f9fa; }.igf-giving-option.is-unavailable { border-color:#d9a9a4; background:#fff4f2; }.igf-giving-option input { width:18px; height:18px; accent-color:var(--igf-primary); }.igf-giving-option strong,.igf-giving-option small { display:block; }.igf-giving-option small { margin-top:3px; color:#747379; font-size:10px; line-height:1.35; }.igf-giving-move { display:flex; gap:4px; }.igf-giving-move button { display:grid; min-width:44px; min-height:44px; place-content:center; border:1px solid #d8dadd; border-radius:7px; background:#fff; color:var(--igf-primary); cursor:pointer; }.igf-giving-move button:focus-visible { outline:3px solid rgba(255,117,0,.32); outline-offset:2px; }.igf-giving-preview { margin:10px 0 14px; padding:12px; border-radius:8px; background:#f2f6fb; color:#334155; font-size:11px; line-height:1.5; }
@@ -144,7 +152,23 @@
     .igf-preview-block--stats h2 { font-size:34px; }
     .igf-preview-block--stats .igf-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
     .igf-preview-giving { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:24px; }.igf-preview-giving article { padding:20px; border:1px solid #e3ded9; border-radius:12px; background:#fff8f2; }.igf-preview-giving i { color:var(--igf-orange); font-size:28px; }.igf-preview-giving h3 { margin:12px 0 7px; font:700 18px/1.25 'Literata',serif; }.igf-preview-giving p { margin:0; color:#747379; font-size:12px; }.igf-preview-giving--single { grid-template-columns:1fr; max-width:720px; }.igf-preview-giving--banner { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); padding:18px; border-radius:14px; background:#2c2723; }
-    .igf-preview-focus-grid { position:relative; display:grid; isolation:isolate; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.igf-preview-focus-grid::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(760px,100%); height:480px; background:radial-gradient(circle,rgba(255,117,0,.16),rgba(255,117,0,0) 70%); content:""; transform:translate(-50%,-50%); }.igf-preview-focus-tile { min-height:290px; animation:igf-builder-focus-rise .5s ease-out both; animation-delay:var(--focus-preview-delay,0ms); }.igf-preview-focus-heading { display:flex; padding:24px; flex-direction:column; justify-content:center; background:linear-gradient(145deg,var(--igf-orange),#ff9a42); color:#fff; }.igf-preview-focus-heading .igf-eyebrow,.igf-preview-focus-heading p { color:#fff; }.igf-preview-focus-heading h2 { font-size:clamp(25px,3vw,38px); }.igf-preview-focus-card { position:relative; z-index:0; display:flex; overflow:hidden; padding:24px; flex-direction:column; align-items:flex-start; isolation:isolate; border:1px solid #e3ded9; border-radius:14px; background:#fff; box-shadow:0 8px 22px rgba(25,28,29,.08); outline:1px dashed #d9d2cc; outline-offset:-10px; }.igf-preview-focus-card::before { position:absolute; z-index:0; inset:0 auto 0 0; width:0; background:var(--igf-orange); content:""; transition:width .5s ease; }.igf-preview-focus-card:hover::before { width:100%; }.igf-preview-focus-card>* { position:relative; z-index:1; }.igf-preview-focus-card img { width:64px; height:64px; margin-bottom:16px; border-radius:12px; object-fit:cover; }.igf-preview-focus-card>i { display:grid; width:64px; height:64px; margin-bottom:16px; place-items:center; border-radius:12px; background:#fff3e8; color:var(--igf-primary); font-size:26px; }.igf-preview-focus-card h3 { margin:0 0 10px; font:700 20px/1.25 'Literata',serif; text-transform:uppercase; }.igf-preview-focus-card p { margin:0 0 20px; font-size:13px; }.igf-preview-focus-card span { margin-top:auto; padding:8px 12px; border-radius:999px; background:var(--igf-primary); color:#fff; font-size:11px; font-weight:800; } @keyframes igf-builder-focus-rise { from { opacity:0; transform:translateY(100px); } to { opacity:1; transform:translateY(0); } }
+    .igf-preview-block--focus { padding:clamp(48px,6cqw,72px) clamp(20px,4.6cqw,48px); }.igf-preview-focus-grid { position:relative; display:grid; isolation:isolate; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:stretch; }.igf-preview-focus-grid::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(900px,100%); height:600px; background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%); content:""; pointer-events:none; transform:translate(-50%,-50%); }.igf-preview-focus-tile { min-width:0; min-height:390px; animation:igf-builder-focus-rise .5s ease-out both; animation-delay:var(--focus-preview-delay,0ms); }.igf-preview-focus-heading { container-type:inline-size; display:flex; overflow:hidden; padding:clamp(28px,4.4cqw,46px); flex-direction:column; justify-content:center; border-radius:16px; background:var(--igf-orange); color:#fff; }.igf-preview-focus-heading .igf-eyebrow { color:#572500; }.igf-preview-focus-heading h2 { max-width:100%; margin:0; font-size:clamp(30px,10.5cqi,44px); line-height:1.08; overflow-wrap:anywhere; }.igf-preview-focus-heading>p { margin:18px 0 0; color:rgba(255,255,255,.9); }.igf-preview-focus-view-all { display:inline-flex; width:fit-content; align-items:center; gap:6px; margin-top:28px; color:#fff; font-size:14px; font-weight:800; }.igf-preview-focus-card { position:relative; z-index:0; display:flex; overflow:hidden; padding:clamp(26px,3.6cqw,38px); flex-direction:column; align-items:flex-start; isolation:isolate; border:1px solid #e3ded9; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(25,28,29,.08); color:var(--igf-ink); transition:color .3s ease-out,border-color .3s ease-out,box-shadow .3s ease-out; }.igf-preview-focus-card::before { position:absolute; z-index:-1; inset:0; background:var(--igf-orange); content:""; transform:scaleX(0); transform-origin:left center; transition:transform .5s ease-out; }.igf-preview-focus-card:hover,.igf-preview-focus-card:focus-within { border-color:var(--igf-orange); box-shadow:0 14px 32px rgba(156,69,0,.2); color:#fff; }.igf-preview-focus-card:hover::before,.igf-preview-focus-card:focus-within::before { transform:scaleX(1); }.igf-preview-focus-card img { width:72px; height:72px; flex:0 0 auto; margin-bottom:28px; border-radius:16px; background:#fff2e8; object-fit:cover; transition:background-color .3s ease-out; }.igf-preview-focus-card>i { display:grid; width:72px; height:72px; flex:0 0 auto; margin-bottom:28px; place-items:center; border-radius:16px; background:#fff2e8; color:var(--igf-primary); font-size:34px; transition:background-color .3s ease-out,color .3s ease-out; }.igf-preview-focus-card:hover img,.igf-preview-focus-card:focus-within img,.igf-preview-focus-card:hover>i,.igf-preview-focus-card:focus-within>i { background:rgba(255,255,255,.2); color:#fff; }.igf-preview-focus-card h3 { margin:0 0 16px; font:700 clamp(24px,2.95cqw,31px)/1.22 'Literata',serif; }.igf-preview-focus-card p { margin:0 0 24px; color:var(--igf-muted); font-size:16px; line-height:1.65; transition:color .3s ease-out; }.igf-preview-focus-card:hover p,.igf-preview-focus-card:focus-within p { color:rgba(255,255,255,.92); }.igf-preview-focus-card span { width:fit-content; margin-top:auto; padding:8px 14px; border:1px dashed currentColor; border-radius:999px; background:transparent; color:inherit; font-size:13px; font-weight:800; } @container (max-width:960px) { .igf-preview-focus-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } } @container (max-width:560px) { .igf-preview-focus-grid { grid-template-columns:1fr; } .igf-preview-focus-tile { min-height:320px; } } @keyframes igf-builder-focus-rise { from { opacity:0; transform:translateY(100px); } to { opacity:1; transform:translateY(0); } }
+    .igf-preview-block--cta { padding:clamp(38px,5cqw,58px) clamp(18px,4cqw,42px); }
+    .igf-preview-cta-panel { position:relative; display:grid; overflow:hidden; grid-template-columns:64px minmax(0,1fr) minmax(205px,auto); align-items:center; gap:clamp(20px,3.5cqw,40px); isolation:isolate; padding:clamp(30px,4.5cqw,48px); border-radius:26px; background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20,#292624); box-shadow:0 18px 42px rgba(39,29,22,.18); color:#fff; }
+    .igf-preview-cta-panel[data-actions="false"] { grid-template-columns:64px minmax(0,1fr); }
+    .igf-preview-cta-panel::before { position:absolute; z-index:-1; top:0; bottom:0; left:0; width:7px; background:linear-gradient(180deg,#ff9b4c,#ff7500 55%,#b94e00); content:""; }
+    .igf-preview-cta-signal { display:grid; width:64px; height:64px; place-items:center; align-self:start; border:1px solid rgba(255,172,105,.35); border-radius:19px; background:rgba(255,117,0,.13); color:#ff9b4c; font-size:26px; }
+    .igf-preview-cta-content { min-width:0; }
+    .igf-preview-cta-content .igf-eyebrow { color:#ffad70; }
+    .igf-preview-cta-content h2 { margin-bottom:14px; color:#fff; font-size:clamp(31px,5.2cqw,48px); line-height:1.06; overflow-wrap:anywhere; }
+    .igf-preview-cta-content p { margin:0; color:#d9d5d1; }
+    .igf-preview-cta-actions { display:grid; min-width:0; gap:10px; }
+    .igf-preview-cta-actions>:only-child { grid-column:1/-1; }
+    .igf-preview-cta-button { display:flex; min-width:0; min-height:48px; align-items:center; justify-content:space-between; padding:0 18px; border:1px solid #ff7500; border-radius:12px; background:#ff7500; color:#1c1e20; font-size:12px; font-weight:800; line-height:1.25; overflow-wrap:anywhere; }
+    .igf-preview-cta-button::after { flex:0 0 auto; margin-left:12px; content:'\2192'; font-size:17px; }
+    .igf-preview-cta-button--outline { border-color:rgba(255,255,255,.42); background:rgba(255,255,255,.04); color:#fff; }
+    @container (max-width:960px) { .igf-preview-cta-panel { grid-template-columns:58px minmax(0,1fr); } .igf-preview-cta-signal { width:58px; height:58px; } .igf-preview-cta-actions { grid-column:2; grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @container (max-width:520px) { .igf-preview-block--cta { padding:30px 14px; } .igf-preview-cta-panel { grid-template-columns:1fr; gap:20px; padding:28px 22px; border-radius:22px; } .igf-preview-cta-actions { grid-column:auto; grid-template-columns:1fr; } .igf-preview-cta-content h2 { font-size:clamp(30px,10cqw,39px); } }
     .igf-stat { padding:28px 18px; border:1px solid rgba(25,28,29,.06); border-radius:12px; background:#f8f9fa; text-align:center; }
     .igf-stat strong { display:block; margin-bottom:6px; color:var(--igf-primary); font:700 38px/1.1 'Literata',serif; }
     .igf-stat.is-animation-count-up,.igf-stat.is-animation-fade-up { animation:igf-builder-stat-fade-up var(--preview-animation-duration,900ms) cubic-bezier(.22,1,.36,1) both; animation-delay:var(--preview-animation-delay,0ms); }
@@ -212,7 +236,7 @@
         <div class="igf-builder__heading">
             <div class="igf-builder__title">
                 <h1>Editing: {{ $page->name }}</h1>
-                <small>{{ strtoupper($page->language) }} &middot; /page/{{ $page->slug }}</small>
+                <small>{{ strtoupper($page->language) }} &middot; Live: <a href="{{ $publicUrl }}" target="_blank" rel="noopener">{{ $publicPath }}</a></small>
             </div>
             <div class="igf-builder__viewport" aria-label="Preview viewport">
                 <button type="button" class="igf-viewport-button is-active" data-viewport="desktop" aria-label="Desktop preview" aria-pressed="true"><i class="fa fa-desktop" aria-hidden="true"></i></button>
@@ -227,11 +251,12 @@
                     <option value="{{ $localePage->language }}" @selected($localePage->language === $page->language)>{{ strtoupper($localePage->language) }} &mdash; {{ $localePage->name }}</option>
                 @endforeach
             </select>
-            <a class="igf-btn" href="{{ route('page.builder.preview', ['uuid' => $page->uuid, 'locale' => $page->language]) }}" target="_blank" rel="noopener">Preview</a>
+            <a class="igf-btn" href="{{ route('page.builder.preview', ['uuid' => $page->uuid, 'locale' => $page->language]) }}" target="_blank" rel="noopener">Preview draft</a>
+            <a class="igf-btn" href="{{ $publicUrl }}" target="_blank" rel="noopener">View live</a>
             @if($canEditBuilder)
                 <div class="igf-publish-control">
                     <button type="button" class="igf-btn igf-btn--primary" id="save-page" disabled>Save page</button>
-                    @if($canManagePublication)
+                    @if($canManagePublication && !$isRequiredSystemPage)
                         <button type="button" class="igf-btn" id="publish-menu-toggle" aria-haspopup="menu" aria-expanded="false" aria-controls="publish-menu" aria-label="Choose publication action"><i class="fa fa-caret-down" aria-hidden="true"></i></button>
                         <div class="igf-publish-menu" id="publish-menu" role="menu" hidden>
                             @foreach(['draft' => 'Save as draft', 'pending_review' => 'Submit for review', 'published' => 'Publish now', 'scheduled' => 'Schedule publication', 'private' => 'Make private'] as $value => $label)
@@ -262,6 +287,9 @@
             <div id="builder-panel-library" class="igf-panel" role="tabpanel" aria-labelledby="builder-tab-library" data-panel="library" hidden>
                 <h3>Page blocks</h3>
                 <p class="igf-muted">Select, reorder, duplicate, hide, or delete any section.</p>
+                @if($legacyContentNeedsConversion)
+                    <p class="igf-banner-guidance" id="advanced-legacy-conversion-note" role="note"><strong>Your existing article is protected.</strong> Before the first section is shown, the editor will ask to copy that article into an editable Rich text block. Nothing will be discarded.</p>
+                @endif
                 <div class="igf-block-list" id="block-list"></div>
                 @if($canCreateBuilder)
                 <div class="igf-add">
@@ -351,14 +379,19 @@
                     <span class="igf-field-help">Tags help group related pages for project lists and visitor browsing.</span>
                 </div>
                 <div class="igf-field"><label for="publication-status">Publication status</label>
-                    <select id="publication-status" @disabled(!$canEditBuilder || !$canManagePublication)>
-                        @foreach(['draft' => 'Draft', 'pending_review' => 'Pending review', 'scheduled' => 'Scheduled', 'published' => 'Published', 'private' => 'Private'] as $value => $label)
-                            <option value="{{ $value }}" @selected(($page->publication_status ?: ($page->status ? 'published' : 'draft')) === $value)>{{ $label }}</option>
-                        @endforeach
+                    <select id="publication-status" @disabled(!$canEditBuilder || !$canManagePublication || ($isRequiredSystemPage && $page->publication_status === 'published'))>
+                        @if($isRequiredSystemPage)
+                            <option value="published" selected>Published — required website page</option>
+                            @if($page->publication_status !== 'published')<option value="{{ $page->publication_status }}" selected>{{ ucfirst($page->publication_status) }} — repair by publishing</option>@endif
+                        @else
+                            @foreach(['draft' => 'Draft', 'pending_review' => 'Pending review', 'scheduled' => 'Scheduled', 'published' => 'Published', 'private' => 'Private'] as $value => $label)
+                                <option value="{{ $value }}" @selected(($page->publication_status ?: ($page->status ? 'published' : 'draft')) === $value)>{{ $label }}</option>
+                            @endforeach
+                        @endif
                     </select>
-                    <span class="igf-field-help">{{ $canManagePublication ? 'Controls whether and when visitors can see this page.' : 'Only a publisher can change publication status. Your content edits can still be saved.' }}</span>
+                    <span class="igf-field-help">{{ $isRequiredSystemPage ? $requiredSystemPageLabel . ' stays published so this essential visitor route cannot be accidentally taken offline. Its content remains fully editable.' : ($canManagePublication ? 'Controls whether and when visitors can see this page.' : 'Only a publisher can change publication status. Your content edits can still be saved.') }}</span>
                 </div>
-                <div class="igf-field"><label for="page-visibility">Visibility</label><select id="page-visibility" @disabled(!$canEditBuilder || !$canManagePublication)><option value="public" @selected($page->visibility === 'public')>Public</option><option value="unlisted" @selected($page->visibility === 'unlisted')>Unlisted</option><option value="private" @selected($page->visibility === 'private')>Private</option></select></div>
+                <div class="igf-field"><label for="page-visibility">Visibility</label><select id="page-visibility" @disabled(!$canEditBuilder || !$canManagePublication || $isRequiredSystemPage)><option value="public" @selected($page->visibility === 'public')>Public</option><option value="unlisted" @selected($page->visibility === 'unlisted')>Unlisted</option>@unless($isRequiredSystemPage)<option value="private" @selected($page->visibility === 'private')>Private</option>@endunless</select></div>
                 <div class="igf-field" id="schedule-field" @if($page->publication_status !== 'scheduled') hidden @endif><label for="scheduled-for">Publish at</label><input id="scheduled-for" type="datetime-local" value="{{ $page->scheduled_for?->format('Y-m-d\TH:i') }}" @disabled(!$canEditBuilder || !$canManagePublication)></div>
                 <div class="igf-seo-handoff">
                     <strong><i class="fa fa-search" aria-hidden="true"></i> Search &amp; Sharing</strong>
@@ -419,8 +452,10 @@
     let editorVersion = @json((int) $page->editor_version);
     const revisionReusableVersions = @json($revisionReusableVersions);
     const permissions = @json($builderPermissions);
+    let legacyContentNeedsConversion = @json($legacyContentNeedsConversion);
     const canManageFundingEligibility = @json($canManageFundingEligibility);
     const routes = {
+        createPage: @json($canCreatePage ? route('page.create') : null),
         edit: @json(route('page.builder.edit', $page->uuid)),
         updatePage: @json(route('page.builder.update', $page->uuid)),
         storeMedia: @json(route('page.builder.media.store', $page->uuid)),
@@ -457,6 +492,17 @@
     const inspector = document.getElementById('block-inspector');
 
     const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    function confirmLegacyContentConversion(action='add this section') {
+        if (!legacyContentNeedsConversion) return true;
+        return confirm(`Keep your existing page article while you ${action}?\n\nChoose OK to copy it into the first editable Rich text block. The original version will also remain available in page history.`);
+    }
+    function acceptConvertedLegacyBlock(payload) {
+        const converted = payload?.converted_legacy_block;
+        if (!converted) return;
+        if (!state.blocks.some(block => block.uuid === converted.uuid)) state.blocks.unshift(converted);
+        legacyContentNeedsConversion = false;
+        document.getElementById('advanced-legacy-conversion-note')?.remove();
+    }
     const mediaLibraryLink = routes.mediaLibrary
         ? `<a href="${escapeHtml(routes.mediaLibrary)}" target="_blank" rel="noopener">Open media library</a>`
         : '';
@@ -531,13 +577,45 @@
         return Object.keys(contentOptions.sources?.[block.type] || {})[0] || 'manual';
     };
     const managedSelect = (key, label, value, choices, rerender = false) => `<div class="igf-field"><label for="managed-${key}">${escapeHtml(label)}</label><select id="managed-${key}" data-content-key="${escapeHtml(key)}" ${rerender ? 'data-managed-rerender' : ''}>${Object.entries(choices).map(([optionValue,optionLabel])=>`<option value="${escapeHtml(optionValue)}" ${String(value)===String(optionValue)?'selected':''}>${escapeHtml(optionLabel)}</option>`).join('')}</select></div>`;
+    const safeManageUrl = value => /^(?:https?:\/\/|\/(?!\/))/i.test(String(value || '').trim()) ? String(value).trim() : '';
+    function guidedPageCreateLink(block, source) {
+        if (!routes.createPage || !['category','projects'].includes(source)) return null;
+        const url = new URL(routes.createPage, window.location.origin);
+        url.searchParams.set('language', locale);
+        if (source === 'category') {
+            url.searchParams.set('kind', 'program');
+            url.searchParams.set('category_slug', String(block.content?.category_slug || 'our-causes'));
+            return {url:url.toString(),label:'Add program',icon:'fa-plus'};
+        }
+        url.searchParams.set('kind', 'project');
+        const tagSlug = String(block.content?.tag_slug || '').trim();
+        if (tagSlug) url.searchParams.set('tag_slug', tagSlug);
+        return {url:url.toString(),label:'Add project',icon:'fa-plus'};
+    }
+    function contentManagementLinks(block, source) {
+        const map = contentOptions.manage_urls || {};
+        const entry = map[block.type] ?? map[source];
+        const links = [];
+        if (typeof entry === 'string') links.push({url:entry,label:`Manage ${blockTypeLabels[block.type] || 'content'}`,icon:'fa-pencil'});
+        else if (entry && typeof entry === 'object') {
+            const manageUrl = entry.manage_url || entry.url;
+            if (manageUrl) links.push({url:manageUrl,label:entry.manage_label || entry.label || 'Manage content',icon:'fa-pencil'});
+        }
+        const guidedCreate = guidedPageCreateLink(block, source);
+        if (guidedCreate) links.push(guidedCreate);
+        const safeLinks = links.filter(link => safeManageUrl(link.url));
+        return safeLinks.length ? `<nav class="igf-manage-links" aria-label="Manage section content">${safeLinks.map(link=>`<a class="igf-manage-link" href="${escapeHtml(link.url)}"><i class="fa ${link.icon}" aria-hidden="true"></i> ${escapeHtml(link.label)}</a>`).join('')}</nav>` : '';
+    }
     function renderSectionPresentationField(block) {
         return `${managedSelect('section_presentation', 'Section presentation', normalizedSectionPresentation(block.content?.section_presentation), sectionPresentationChoices, true)}<p class="igf-muted igf-section-presentation-help">Changes the section’s surrounding surface while keeping its content layout.</p>`;
     }
     function managedItems(block, source) {
         let items = [...(contentOptions.items?.[source] || [])];
         if (source === 'projects' && block.content?.tag_slug) items = items.filter(item => (item.tags || []).includes(block.content.tag_slug));
-        if (source === 'category' && block.content?.category_slug) items = items.filter(item => item.category === block.content.category_slug);
+        if (source === 'category') {
+            const categorySlug = String(block.content?.category_slug ?? 'our-causes').trim();
+            items = items.filter(item => item.category === categorySlug);
+        }
         return items;
     }
     function managedPreviewItems(block) {
@@ -584,13 +662,13 @@
         const selection = content.selection_mode === 'manual'
             ? `<div class="igf-field"><label for="managed-selected-items">Choose managed items</label><select id="managed-selected-items" multiple size="${Math.min(10,Math.max(3,candidates.length))}" data-content-array-key="selected_items">${candidates.map(item=>`<option value="${escapeHtml(item.value)}" ${selected.has(String(item.value))?'selected':''}>${escapeHtml(item.label)}</option>`).join('')}</select><small>Use Ctrl or Command to choose more than one.</small></div>`
             : '';
-        const itemLink = ['cards','causes','events','team'].includes(block.type) ? `<div class="igf-field"><label for="managed-item-link">Item link text</label><input id="managed-item-link" data-content-key="item_link_label" value="${escapeHtml(content.item_link_label || '')}"></div>` : '';
+        const itemLink = ['cards','causes','events'].includes(block.type) ? `<div class="igf-field"><label for="managed-item-link">Item link text</label><input id="managed-item-link" data-content-key="item_link_label" value="${escapeHtml(content.item_link_label || '')}"></div>` : '';
         const viewAll = ['cards','causes','events','gallery'].includes(block.type) ? `<div class="igf-field"><label for="managed-view-all-label">View-all link text</label><input id="managed-view-all-label" data-content-key="view_all_label" value="${escapeHtml(content.view_all_label || '')}"></div><div class="igf-field"><label for="managed-view-all-url">View-all destination</label><input id="managed-view-all-url" data-content-key="view_all_url" value="${escapeHtml(content.view_all_url || '')}"></div>` : '';
         const presentation = block.type === 'causes'
             ? `${managedSelect('presentation','Content layout',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'},true)}<p class="igf-muted">Animated focus areas uses the heading as the first tile, then reveals program cards in a short stagger. Five items fill two complete desktop rows.</p>`
             : '';
 
-        return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${presentation}${sourceField}${sourceSpecific}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
+        return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${presentation}${sourceField}${sourceSpecific}${contentManagementLinks(block,source)}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
     }
 
     function renderWaysToGiveInspector(block) {
@@ -764,7 +842,14 @@
         if (block.type === 'causes' && content.presentation === 'focus_areas') {
             const options = managedPreviewItems(block);
             const body = String(content.body || '').replace(/<[^>]*>/g, ' ');
-            return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-preview-focus-grid"><header class="igf-preview-focus-tile igf-preview-focus-heading" style="--focus-preview-delay:0ms"><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2>${body?`<p>${escapeHtml(body)}</p>`:''}</header>${options.map((option,index) => `<article class="igf-preview-focus-tile igf-preview-focus-card" style="--focus-preview-delay:${Math.min(index + 1, 5) * 100}ms">${option.image?`<img src="${escapeHtml(option.image)}" alt="${escapeHtml(option.image_alt || option.label || '')}">`:'<i class="fa fa-compass" aria-hidden="true"></i>'}<h3>${escapeHtml(option.label || 'Published item')}</h3>${option.body?`<p>${escapeHtml(option.body)}</p>`:''}<span>${escapeHtml(content.item_link_label || 'Learn more')}</span></article>`).join('')}</div>${options.length?'':`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No published items are available for this selection.')}</p>`}</section>`;
+            return `<section class="igf-preview-block igf-preview-block--focus${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-preview-focus-grid"><header class="igf-preview-focus-tile igf-preview-focus-heading" style="--focus-preview-delay:0ms"><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2>${body?`<p>${escapeHtml(body)}</p>`:''}<span class="igf-preview-focus-view-all">${escapeHtml(content.view_all_label || 'View all programs')} →</span></header>${options.map((option,index) => `<article class="igf-preview-focus-tile igf-preview-focus-card" style="--focus-preview-delay:${Math.min(index + 1, 5) * 100}ms">${option.image?`<img src="${escapeHtml(option.image)}" alt="${escapeHtml(option.image_alt || option.label || '')}">`:'<i class="fa fa-compass" aria-hidden="true"></i>'}<h3>${escapeHtml(option.label || 'Published item')}</h3>${option.body?`<p>${escapeHtml(option.body)}</p>`:''}<span>${escapeHtml(content.item_link_label || 'Learn more')} →</span></article>`).join('')}</div>${options.length?'':`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No published items are available for this selection.')}</p>`}</section>`;
+        }
+        if (block.type === 'cta' && !['campaign', 'campus-actions'].includes(content.variant)) {
+            const body = String(content.body || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+            const primary = content.primary_label ? `<span class="igf-preview-cta-button">${escapeHtml(content.primary_label)}</span>` : '';
+            const secondary = content.secondary_label ? `<span class="igf-preview-cta-button igf-preview-cta-button--outline">${escapeHtml(content.secondary_label)}</span>` : '';
+            const hasActions = Boolean(primary || secondary);
+            return `<section class="igf-preview-block igf-preview-block--cta${selected}" data-block="${escapeHtml(block.uuid)}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-preview-cta-panel" data-actions="${hasActions}"><span class="igf-preview-cta-signal" aria-hidden="true"><i class="fa fa-heart"></i></span><div class="igf-preview-cta-content">${content.eyebrow ? `<div class="igf-eyebrow">${escapeHtml(content.eyebrow)}</div>` : ''}<h2>${escapeHtml(content.heading || block.label)}</h2>${body ? `<p>${escapeHtml(body)}</p>` : ''}</div>${hasActions ? `<div class="igf-preview-cta-actions">${primary}${secondary}</div>` : ''}</div></section>`;
         }
         if (block.type === 'spacer') return `<section class="igf-preview-block${selected}" style="padding:${content.size === 'large' ? 90 : content.size === 'small' ? 24 : 54}px" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"></section>`;
         if (block.type === 'custom_html') return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}>${content.html || '<p>Custom HTML block</p>'}</section>`;
@@ -1061,6 +1146,9 @@
         }
         if (canEditContent) captureHeroEditor(block);
         const content = {...(block.content || {})};
+        const convertLegacyContent = legacyContentNeedsConversion
+            && document.getElementById('block-enabled').checked;
+        if (convertLegacyContent && !confirmLegacyContentConversion('show this first section')) return;
         try {
             if (canEditContent) {
                 inspector.querySelectorAll('[data-content-key]').forEach(input => {
@@ -1084,7 +1172,9 @@
                 available_from: document.getElementById('block-available-from').value || null,
                 available_until: document.getElementById('block-available-until').value || null,
                 expected_reusable_version: block.reusable_version,
+                convert_legacy_content: convertLegacyContent,
             });
+            acceptConvertedLegacyBlock(payload);
             Object.assign(block, payload.block);
             setDirty(false, scope); renderAll(); notify(payload.message);
         } catch (error) { notify(error.message); }
@@ -1178,8 +1268,15 @@
         if (!permissions.create) return;
         const scope = blockScope();
         if (!confirmBlockDiscard('add a new section')) return;
+        const convertLegacyContent = legacyContentNeedsConversion;
+        if (convertLegacyContent && !confirmLegacyContentConversion('add a new section')) return;
         try {
-            const payload = await request(routes.storeBlock, 'POST', {locale, type: document.getElementById('new-block-type').value});
+            const payload = await request(routes.storeBlock, 'POST', {
+                locale,
+                type: document.getElementById('new-block-type').value,
+                convert_legacy_content: convertLegacyContent,
+            });
+            acceptConvertedLegacyBlock(payload);
             setDirty(false, scope); state.blocks.push(payload.block); state.selected = payload.block.uuid; renderAll(); notify(payload.message);
         } catch (error) { notify(error.message); }
     });
@@ -1188,11 +1285,15 @@
         if (!permissions.edit) return;
         const scope = blockScope();
         if (!confirmBlockDiscard('attach a reusable section')) return;
+        const convertLegacyContent = legacyContentNeedsConversion;
+        if (convertLegacyContent && !confirmLegacyContentConversion('add this reusable section')) return;
         try {
             const payload = await request(routes.attachReusable, 'POST', {
                 locale,
                 reusable_uuid: document.getElementById('reusable-block').value,
+                convert_legacy_content: convertLegacyContent,
             });
+            acceptConvertedLegacyBlock(payload);
             setDirty(false, scope); state.blocks.push(payload.block); state.selected = payload.block.uuid; renderAll(); notify(payload.message);
         } catch (error) { notify(error.message); }
     });

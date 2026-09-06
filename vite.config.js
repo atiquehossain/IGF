@@ -6,7 +6,11 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   plugins: [
     laravel({
-      input: ['resources/scss/app.scss', 'resources/js/app.js'],
+      input: [
+        'resources/scss/app.scss',
+        'resources/js/app.js',
+        'resources/js/admin/siteSettingsPayload.js',
+      ],
       refresh: true,
     }),
     vue({

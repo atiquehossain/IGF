@@ -33,6 +33,17 @@ class OpportunityPageCustomizationTest extends TestCase
                 'pagination_label',
                 'back_label',
                 'card_link_label',
+                'form_title',
+                'form_introduction',
+                'applicant_name_label',
+                'email_label',
+                'phone_label',
+                'submit_label',
+                'privacy_message',
+                'closed_title',
+                'closed_message',
+                'upcoming_title',
+                'upcoming_message',
             ] as $key) {
                 $field = $schema['fields'][$key] ?? null;
                 $this->assertIsArray($field, "{$group}.{$key} must be editable.");
@@ -62,6 +73,8 @@ class OpportunityPageCustomizationTest extends TestCase
         $this->storePublicCopy('career_page', 'empty_message', 'Please return next week.');
         $this->storePublicCopy('career_page', 'search_description', 'Editor-managed careers search description.');
         $this->storePublicCopy('career_page', 'card_link_label', 'Read role and apply');
+        $this->storePublicCopy('career_page', 'form_title', 'Send your application');
+        $this->storePublicCopy('career_page', 'privacy_message', 'Recruitment reviewers can see this application.');
 
         $this->storePublicCopy('workshop_page', 'title', 'Learning workshops');
         $this->storePublicCopy('workshop_page', 'introduction', 'An editor-managed workshop introduction.');
@@ -69,6 +82,8 @@ class OpportunityPageCustomizationTest extends TestCase
         $this->storePublicCopy('workshop_page', 'empty_title', 'New sessions are being planned');
         $this->storePublicCopy('workshop_page', 'search_description', 'Editor-managed workshops search description.');
         $this->storePublicCopy('workshop_page', 'card_link_label', 'Read session and register');
+        $this->storePublicCopy('workshop_page', 'form_title', 'Reserve a workshop place');
+        $this->storePublicCopy('workshop_page', 'closed_message', 'Registration has finished for this session.');
 
         $this->get(route('frontend.jobs.index'))
             ->assertOk()
@@ -82,6 +97,8 @@ class OpportunityPageCustomizationTest extends TestCase
                 ->where('data.copy.empty_title', 'New roles are being prepared')
                 ->where('data.copy.empty_message', 'Please return next week.')
                 ->where('data.copy.card.link_label', 'Read role and apply')
+                ->where('data.copy.form_title', 'Send your application')
+                ->where('data.copy.privacy_message', 'Recruitment reviewers can see this application.')
             );
 
         $this->get(route('frontend.workshops.index'))
@@ -94,6 +111,8 @@ class OpportunityPageCustomizationTest extends TestCase
                 ->where('data.copy.listing_title', 'Sessions accepting registrations')
                 ->where('data.copy.empty_title', 'New sessions are being planned')
                 ->where('data.copy.card.link_label', 'Read session and register')
+                ->where('data.copy.form_title', 'Reserve a workshop place')
+                ->where('data.copy.closed_message', 'Registration has finished for this session.')
             );
     }
 

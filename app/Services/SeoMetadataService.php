@@ -5,10 +5,14 @@ namespace App\Services;
 use App\Data\SeoMetadataPayload;
 use App\Models\Category;
 use App\Models\AnnualReport;
+use App\Models\JobPosting;
+use App\Models\JobPostingTranslation;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\SeoMetadata;
 use App\Models\Tag;
+use App\Models\Workshop;
+use App\Models\WorkshopTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -378,6 +382,24 @@ class SeoMetadataService
             return $this->annualReportAlternateUrls($slug, $currentLocale, $locales, $defaultLocale);
         }
 
+        if ($routeName === 'frontend.jobs.show') {
+            return $this->jobAlternateUrls(
+                trim((string) request()->route('job')),
+                $currentLocale,
+                $locales,
+                $defaultLocale
+            );
+        }
+
+        if ($routeName === 'frontend.workshops.show') {
+            return $this->workshopAlternateUrls(
+                trim((string) request()->route('workshop')),
+                $currentLocale,
+                $locales,
+                $defaultLocale
+            );
+        }
+
         if ($routeName === 'frontend.project' && $slug !== '') {
             if (!Schema::hasTable('tags') || !Tag::query()->where('status', 1)->where('slug', $slug)->exists()) {
                 return collect();
@@ -533,9 +555,105 @@ class SeoMetadataService
         ]);
     }
 
+    /** @param Collection<int, string> $locales @return Collection<string, string> */
+    private function jobAlternateUrls(
+        string $slug,
+        string $currentLocale,
+        Collection $locales,
+        string $defaultLocale
+    ): Collection {
+        if ($slug === '' || !Schema::hasTable('job_postings') || !Schema::hasTable('job_posting_translations')) {
+            return collect();
+        }
+
+        $posting = null;
+        foreach (array_values(array_unique([$currentLocale, $defaultLocale])) as $translationLocale) {
+            $posting = JobPosting::query()
+                ->publicDetail()
+                ->whereHas('translations', fn ($query) => $query
+                    ->where('locale', $translationLocale)
+                    ->where('slug', $slug))
+                ->with(['translations' => fn ($query) => $query
+                    ->whereIn('locale', $locales->all())
+                    ->whereNotNull('slug')
+                    ->where('slug', '!=', '')])
+                ->first();
+            if ($posting) {
+                break;
+            }
+        }
+
+        if (!$posting) {
+            return collect();
+        }
+
+        return $posting->translations
+            ->sortBy(fn (JobPostingTranslation $translation): int =>
+                (int) $locales->search((string) $translation->locale))
+            ->mapWithKeys(fn (JobPostingTranslation $translation): array => [
+                (string) $translation->locale => (string) $this->localizedUrl(
+                    route('frontend.jobs.show', ['job' => $translation->slug]),
+                    (string) $translation->locale,
+                    $defaultLocale
+                ),
+            ]);
+    }
+
+    /** @param Collection<int, string> $locales @return Collection<string, string> */
+    private function workshopAlternateUrls(
+        string $slug,
+        string $currentLocale,
+        Collection $locales,
+        string $defaultLocale
+    ): Collection {
+        if ($slug === '' || !Schema::hasTable('workshops') || !Schema::hasTable('workshop_translations')) {
+            return collect();
+        }
+
+        $workshop = null;
+        foreach (array_values(array_unique([$currentLocale, $defaultLocale])) as $translationLocale) {
+            $workshop = Workshop::query()
+                ->publicDetail()
+                ->whereHas('translations', fn ($query) => $query
+                    ->where('locale', $translationLocale)
+                    ->where('slug', $slug))
+                ->with(['translations' => fn ($query) => $query
+                    ->whereIn('locale', $locales->all())
+                    ->whereNotNull('slug')
+                    ->where('slug', '!=', '')])
+                ->first();
+            if ($workshop) {
+                break;
+            }
+        }
+
+        if (!$workshop) {
+            return collect();
+        }
+
+        return $workshop->translations
+            ->sortBy(fn (WorkshopTranslation $translation): int =>
+                (int) $locales->search((string) $translation->locale))
+            ->mapWithKeys(fn (WorkshopTranslation $translation): array => [
+                (string) $translation->locale => (string) $this->localizedUrl(
+                    route('frontend.workshops.show', ['workshop' => $translation->slug]),
+                    (string) $translation->locale,
+                    $defaultLocale
+                ),
+            ]);
+    }
+
     /** @param array<string, mixed> $definition @param Collection<int, string> $locales @return Collection<string, string> */
     private function specialPageAlternateUrls(array $definition, Collection $locales, string $defaultLocale): Collection
     {
+        if (!empty($definition['settings_backed'])) {
+            $path = (string) ($definition['path'] ?? '/');
+
+            return $locales->mapWithKeys(fn (string $locale) => [
+                $locale => (string) $this->localizedUrl(url($path), $locale, $defaultLocale),
+            ]);
+        }
+
         if (!Schema::hasTable('pages')) {
             return collect();
         }
@@ -632,6 +750,9 @@ class SeoMetadataService
     {
         $definition = app(SeoRouteRegistry::class)->definition($routeName);
         if (!is_array($definition) || empty($definition['page_slug']) || !Schema::hasTable('pages')) {
+            return null;
+        }
+        if (!empty($definition['settings_backed'])) {
             return null;
         }
 

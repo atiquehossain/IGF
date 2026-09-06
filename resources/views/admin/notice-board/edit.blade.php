@@ -29,6 +29,8 @@ $custom_inline_css = '';
               @php
                 $mediaUrls = app(\App\Services\AdminMediaUrlResolver::class);
                 $noticeImageUrl = $mediaUrls->image($notice_board?->getRawOriginal('image_path'), 'notice_board');
+                $inlineCssValue = old('inline_css', $notice_board->inline_css);
+                $showAdvancedStyling = $errors->has('inline_css') || filled($inlineCssValue);
               @endphp
 
               <input name="id" type="hidden" class="form-control" value="{{ @$notice_board->id }}">
@@ -94,9 +96,10 @@ $custom_inline_css = '';
 
                 <div class="col-md-3">
                   <div class="form-group">
-                    <label for="order_by" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
-                    <input id="order_by" name="order_by" type="number" class="form-control" value="{{ @$notice_board->order_by }}"
-                      data-e2e="order-by">
+                    <label for="order_by" class="control-label mb-1">Display priority</label>
+                    <input id="order_by" name="order_by" type="number" class="form-control" value="{{ old('order_by', $notice_board->order_by) }}"
+                      min="-2147483648" max="2147483647" step="1" aria-describedby="order-by-help" data-e2e="order-by">
+                    <small id="order-by-help" class="form-text text-muted">Higher numbers appear first; leave blank for normal ordering.</small>
                     @if ($errors->has('order_by'))
                       <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
                     @endif
@@ -134,7 +137,7 @@ $custom_inline_css = '';
                         <img class="file-upload_img" id="upload_img"
                           src="{{ $noticeImageUrl }}"
                           onerror="this.onerror=null;this.src='{{ $mediaUrls->fallback() }}'"
-                          alt="Current event image">
+                          alt="Selected event or news image preview">
                       </label>
                       <input type="file" onchange="changefile(event, `upload_img`)" name="image_path"
                         value="{{ old('image_path') }}" id="image_path" class="file-upload_input" data-e2e="image_path">
@@ -143,6 +146,16 @@ $custom_inline_css = '';
                     @if ($errors->has('image_path'))
                       <small class="help-block form-text text-danger">{{ $errors->first('image_path') }}</small>
                     @endif
+                  </div>
+                </div>
+
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="image_alt">Image description (optional)</label>
+                    <input id="image_alt" name="image_alt" type="text" class="form-control" maxlength="420"
+                      value="{{ old('image_alt', $notice_board->image_alt) }}" aria-describedby="image-alt-help" data-e2e="image-alt">
+                    <small id="image-alt-help" class="form-text text-muted">Describe what visitors should understand from the image in this content language. Leave blank to use the title.</small>
+                    @error('image_alt')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                   </div>
                 </div>
 
@@ -156,13 +169,19 @@ $custom_inline_css = '';
                   </div>
                 </div>
                 <div class="col-md-12">
-                  <div class="form-group has-success">
-                    <label for="inline_css">CSS</label>
-                    <textarea id="inline_css" class="form-control form-control-danger" name="inline_css" rows="6" data-e2e="inline-css"> {{ $notice_board->inline_css }}</textarea>
-                    @if ($errors->has('inline_css'))
-                      <small class="help-block form-text text-danger">{{ $errors->first('inline_css') }}</small>
-                    @endif
-                  </div>
+                  <details class="card border mb-3" data-e2e="advanced-styling" @if($showAdvancedStyling) open @endif>
+                    <summary class="card-header py-2 font-weight-bold">Advanced developer styling</summary>
+                    <div class="card-body">
+                      <p class="alert alert-warning py-2" role="note">Ordinary editors can leave this closed. This CSS affects only this item’s public detail page, not the Events &amp; News listing. Custom CSS can break the public layout; only change it with developer guidance.</p>
+                      <div class="form-group has-success mb-0">
+                        <label for="inline_css">CSS</label>
+                        <textarea id="inline_css" class="form-control form-control-danger" name="inline_css" rows="6" data-e2e="inline-css">{{ $inlineCssValue }}</textarea>
+                        @if ($errors->has('inline_css'))
+                          <small class="help-block form-text text-danger">{{ $errors->first('inline_css') }}</small>
+                        @endif
+                      </div>
+                    </div>
+                  </details>
                 </div>
 
               </div>

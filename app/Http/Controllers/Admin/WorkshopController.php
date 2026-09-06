@@ -98,7 +98,7 @@ final class WorkshopController extends Controller
     {
         $this->opportunities->deleteWorkshopDraft($workshop, $request->user('admin'));
 
-        return redirect()->route('workshops.index')->with($this->success('Unused workshop draft deleted.'));
+        return redirect()->route('workshops.index')->with($this->success('Unused workshop draft moved to Content Trash.'));
     }
 
     /** @return array<string, mixed> */

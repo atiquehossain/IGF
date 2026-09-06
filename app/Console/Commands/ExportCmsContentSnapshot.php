@@ -230,6 +230,16 @@ class ExportCmsContentSnapshot extends Command
         if ($table === 'notice_boards') {
             unset($record['file_path']);
         }
+        if (
+            $table === 'seo_metadata'
+            && array_key_exists('sitemap_priority', $record)
+            && $record['sitemap_priority'] !== null
+        ) {
+            // PDO returns DECIMAL values as strings for MySQL but SQLite
+            // returns this column as a number. Keep the Git-safe snapshot
+            // byte-for-byte reproducible across both supported drivers.
+            $record['sitemap_priority'] = (float) $record['sitemap_priority'];
+        }
 
         foreach ($this->relationMap($table) as $column => [$targetTable, $snapshotColumn]) {
             $value = $record[$column] ?? null;

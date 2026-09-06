@@ -9,6 +9,7 @@ use App\Helper\Seq;
 use App\Helper\Str;
 use App\Models\Banner;
 use App\Models\Tag;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class TagController extends Controller
@@ -16,7 +17,7 @@ class TagController extends Controller
 
     public function index(Request $request)
     {
-        $title = $request->Lang->TagTitle;
+        $title = 'Project groups';
         $search = $request->search;
         $tags = Tag::where('name', 'like', '%' . $search . '%')->paginate(15);
         $banners = Banner::whereIN('type', ['banner-home', 'banner-page'])->where('status', 1)->where('language', app()->getLocale())->get();
@@ -31,10 +32,13 @@ class TagController extends Controller
 
     public function store(Request $request)
     {
-        $request['slug'] = Str::slug(@$request->name);
-
-        $this->validate(request(), [
-            'name' => 'required|string|max:255|unique:tags',
+        $name = trim(strip_tags((string) $request->input('name')));
+        $request->merge(['name' => $name, 'slug' => Str::slug($name)]);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('tags', 'name')],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('tags', 'slug')],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'banner_id' => ['nullable', 'integer', Rule::exists('banners', 'id')],
         ]);
 
         try {
@@ -42,10 +46,10 @@ class TagController extends Controller
 
             Tag::create([
                 'uuid' => $uuid,
-                'name' => $request->name,
-                'slug' => $request->slug,
-                'banner_id' => $request->banner_id,
-                'description' => $request->description,
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'banner_id' => $validated['banner_id'] ?? null,
+                'description' => $this->plainDescription($validated['description'] ?? null),
                 'status' => 0
             ]);
 
@@ -71,7 +75,7 @@ class TagController extends Controller
     public function edit($id = null, Request $request)
     {
         try {
-            $tag = Tag::select('id', 'name', 'banner_id')->where('id', $id)->first();
+            $tag = Tag::select('id', 'name', 'description', 'banner_id')->where('id', $id)->first();
             $response = ['data' => $tag];
             return response($response, 200);
         } catch (Throwable $e) {
@@ -81,12 +85,20 @@ class TagController extends Controller
 
     public function update(Request $request)
     {
-        $this->validate(request(), [
-            'name' => 'required|string',
-            'id' => 'required|string',
+        $request->merge(['name' => trim(strip_tags((string) $request->input('name')))]);
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('tags', 'name')->ignore($request->input('id')),
+            ],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'banner_id' => ['nullable', 'integer', Rule::exists('banners', 'id')],
+            'id' => ['required', 'integer', Rule::exists('tags', 'id')],
         ]);
         try {
-            $tag = Tag::find($request->id);
+            $tag = Tag::find($validated['id']);
             if (empty($tag)) {
                 $notification = array(
                     'message' => $request->Lang->Common->Form->NotFound,
@@ -95,9 +107,9 @@ class TagController extends Controller
                 return back()->with($notification);
             }
             $tag->update([
-                'name' => $request->name,
-                'banner_id' => $request->banner_id,
-                'description' => $request->description
+                'name' => $validated['name'],
+                'banner_id' => $validated['banner_id'] ?? null,
+                'description' => $this->plainDescription($validated['description'] ?? null),
             ]);
 
             $notification = array(
@@ -143,5 +155,12 @@ class TagController extends Controller
         } catch (Throwable $e) {
             return response(['message' => $request->Lang->Common->Form->NotDelete], 403);
         }
+    }
+
+    private function plainDescription(?string $value): ?string
+    {
+        $description = trim(strip_tags((string) $value));
+
+        return $description === '' ? null : $description;
     }
 }

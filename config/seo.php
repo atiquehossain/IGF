@@ -8,7 +8,15 @@ return [
         'frontend.zakat' => ['label' => 'Zakat', 'path' => '/zakat', 'page_slug' => 'zakat'],
         'frontend.contactUs' => ['label' => 'Contact us', 'path' => '/contact-us'],
         'frontend.gallery' => ['label' => 'Photo gallery', 'path' => '/gallery'],
-        'frontend.sponsor_child' => ['label' => 'Sponsor a child', 'path' => '/sponsor-child', 'page_slug' => 'sponsor-a-child'],
+        'frontend.sponsor_child' => [
+            'label' => 'Sponsor a child',
+            'path' => '/sponsor-child',
+            'page_slug' => 'sponsor-a-child',
+            // The visitor page is fully owned by localized Website Customizer
+            // settings. A legacy Page row may still supply optional SEO/banner
+            // data, but it is not required for this route to exist.
+            'settings_backed' => true,
+        ],
         'frontend.events' => ['label' => 'Events & publications', 'path' => '/events'],
         'frontend.project' => ['label' => 'Projects', 'path' => '/projects'],
         'frontend.jobs.index' => ['label' => 'Careers', 'path' => '/careers'],

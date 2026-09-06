@@ -4,6 +4,10 @@
     @php
         $canCreateAlbum = app(\App\Http\Middleware\Permission::class)
             ->allows(auth('admin')->user(), 'album.store');
+        $sourceGallery = $galleries->firstWhere('language', 'en') ?: $galleries->first();
+        $sourceAlbum = $sourceGallery ? $albums->firstWhere('id', $sourceGallery->album_id) : null;
+        $albumAllowsPublication = !$sourceGallery || empty($sourceGallery->album_id) || (int) optional($sourceAlbum)->status === 1;
+        $isPublic = $sourceGallery && (int) $sourceGallery->status === 1 && $albumAllowsPublication;
     @endphp
     <div class="content pb-0">
 
@@ -15,7 +19,10 @@
                             <div class="col-md-6">
                                 <h1 class="card-title">{{ $title }}</h1>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex flex-wrap justify-content-end" style="gap: 8px;">
+                                <a class="btn igf-btn igf-btn-secondary" href="{{ $isPublic ? route('frontend.gallery', ['search' => $sourceGallery->name]) : route('frontend.gallery') }}" target="_blank" rel="noopener">
+                                    <i class="fa fa-external-link" aria-hidden="true"></i> {{ $isPublic ? 'Preview live item' : 'View live gallery' }}
+                                </a>
                                 <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('gallery.index') }}" id="go-back">
                                     <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
@@ -23,6 +30,11 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert {{ $isPublic ? 'alert-success' : 'alert-warning' }}" role="status">
+                            <strong>Public visibility:</strong>
+                            {{ $isPublic ? 'Published in the live gallery.' : ((int) optional($sourceGallery)->status === 1 ? 'Hidden because its album is not published.' : 'Draft — visitors cannot see it yet.') }}
+                            Publication can be changed from the gallery list.
+                        </div>
                         @if($isLocalization)
                         <ul class="nav nav-pills mb-3" id="gallery-language-tabs" role="tablist" aria-label="Gallery languages">
                         @foreach ($translations as $translation)
@@ -39,11 +51,19 @@
                         </ul>
                         @endif
                         <form action="{{ route('gallery.update') }}" method="post" enctype="multipart/form-data">
+                            @method('PUT')
+                            @csrf
+                            <input name="uuid" type="hidden" value="{{ @$uuid }}">
+                            <div class="form-group">
+                                <label for="gallery_order_by" class="control-label mb-1">Display priority</label>
+                                <input id="gallery_order_by" name="order_by" type="number" min="0" max="1000000" step="1"
+                                    value="{{ old('order_by', optional($sourceGallery)->order_by) }}" class="form-control" aria-describedby="gallery-order-help" data-e2e="gallery-order-by">
+                                <small id="gallery-order-help" class="help-block form-text text-muted">Higher numbers appear first in the public gallery. Equal priorities are resolved consistently by the newest record.</small>
+                                @if ($errors->has('order_by'))
+                                    <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
+                                @endif
+                            </div>
                             <div class="tab-content" id="gallery-language-panels">
-                                @method('PUT')
-                                @csrf
-
-                                <input name="uuid" type="hidden" class="form-control" value="{{ @$uuid }}">
                                 @foreach ($translations as $translation)
                                 <?php
                                     $isActive = '';
@@ -65,8 +85,9 @@
                                                 <select id="gallery_album_{{$lang}}" name="album_id[{{$lang}}]" class="form-control" required data-gallery-album-language="{{ $lang }}" data-e2e="gallery-album-id-{{ $lang }}">
                                                     <option value="">{{ $Lang->Common->Form-> Select }} {{ $Lang->Album }}</option>
                                                     @foreach ($albumsList as $album)
-                                                    <option value="{{ $album->id }}" {{ $gallery->album_id == $album->id ? 'selected' : '' }}>
+                                                    <option value="{{ $album->id }}" {{ (string) old('album_id.'. $lang, @$gallery->album_id) === (string) $album->id ? 'selected' : '' }}>
                                                         {{ $album->name }}
+                                                        @if((int) $album->status !== 1) — draft (photos hidden) @endif
                                                     </option>
                                                     @endforeach
                                                 </select>
@@ -83,9 +104,10 @@
                                         </div>
 
                                         <div class="form-group has-success">
-                                                <label for="gallery_name_{{$lang}}" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                                                <label for="gallery_name_{{$lang}}" class="control-label mb-1">Photo caption <span>*</span></label>
                                                 <input id="gallery_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="{{old('name.'. $lang, @$gallery->name)}}"
-                                                    class="form-control" required data-e2e="gallery-name-{{ $lang }}">
+                                                    class="form-control" required maxlength="255" data-e2e="gallery-name-{{ $lang }}" aria-describedby="gallery-caption-help-{{$lang}}">
+                                                <small id="gallery-caption-help-{{$lang}}" class="help-block form-text text-muted">Shown below the photo and in the image viewer.</small>
                                                 @if ($errors->has('name.'. $lang))
                                                     <small
                                                         class="help-block form-text text-danger">{{ $errors->first('name.'. $lang) }}</small>
@@ -93,8 +115,9 @@
                                         </div>
 
                                         <div class="form-group has-success">
-                                            <label for="gallery_description_{{$lang}}">Image alternative text ( <small class="text-info">Describe the image for visitors using a screen reader; maximum 120 characters.</small>)</label>
-                                            <textarea id="gallery_description_{{$lang}}" class="form-control form-control-danger" name="description[{{$lang}}]" rows="4" maxlength="120" data-e2e="gallery-description-{{ $lang }}">{{old('description.'. $lang, @$gallery->description)}}</textarea>
+                                            <label for="gallery_description_{{$lang}}">Image description (alternative text)</label>
+                                            <textarea id="gallery_description_{{$lang}}" class="form-control form-control-danger" name="description[{{$lang}}]" rows="3" maxlength="120" data-e2e="gallery-description-{{ $lang }}" aria-describedby="gallery-alt-help-{{$lang}}">{{old('description.'. $lang, @$gallery->description)}}</textarea>
+                                            <small id="gallery-alt-help-{{$lang}}" class="help-block form-text text-muted">Briefly describe what is visible for visitors using a screen reader. If blank, the photo caption is used. Maximum 120 characters.</small>
                                             @if ($errors->has('description.'. $lang))
                                             <small class="help-block form-text text-danger">{{ $errors->first('description.'. $lang) }}</small>
                                             @endif
@@ -114,11 +137,11 @@
                                             <div class="file-upload">
                                                 <label for="gallery_image_{{$lang}}" class="file-upload_label">
                                                     <img class="file-upload_img" id="upload_img_{{$lang}}"
-                                                        src="{{ $gallery->display_image_url }}"
+                                                        src="{{ @$gallery->display_image_url ?: asset('image/no-image.png') }}"
                                                         onerror="this.onerror=null;this.src='{{ asset('image/no-image.png') }}'"
-                                                        alt="Current image for {{ $gallery->name }}">
+                                                        alt="{{ trim(strip_tags((string) optional($gallery)->description)) ?: (string) optional($gallery)->name ?: 'Selected photo preview' }}">
                                                 </label>
-                                                <input type="file" onchange="changefile(event, `upload_img_{{$lang}}`)" name="image[{{$lang}}]" value="{{old('image.'. $lang, @$gallery->image)}}" id="gallery_image_{{$lang}}" class="file-upload_input" data-e2e="gallery-image-{{ $lang }}">
+                                                <input type="file" onchange="changefile(event, `upload_img_{{$lang}}`)" name="image[{{$lang}}]" value="{{old('image.'. $lang, @$gallery->image)}}" id="gallery_image_{{$lang}}" class="file-upload_input" accept="image/jpeg,image/png" data-e2e="gallery-image-{{ $lang }}">
                                             </div>
                                             <div style="clear: both"></div>
                                             @if($errors->has('image.'. $lang))
@@ -130,7 +153,7 @@
 
                                 <div class="col-md-12 m-b-20 text-right">
                                     <button type="submit" class="btn btn-success btn-sm" name="save">
-                                        <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
+                                        <i class="fa fa-save"></i> Save changes
                                     </button>
                                 <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
                                     <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing

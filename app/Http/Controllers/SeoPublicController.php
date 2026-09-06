@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\AnnualReport;
 use App\Models\Category;
 use App\Models\DonationType;
+use App\Models\JobPosting;
+use App\Models\JobPostingTranslation;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\SeoMetadata;
 use App\Models\Tag;
+use App\Models\Workshop;
+use App\Models\WorkshopTranslation;
 use App\Services\CategoryLandingPageAliasService;
 use App\Services\DonationDestinationService;
 use App\Services\LocalizationManager;
@@ -101,7 +105,12 @@ class SeoPublicController extends Controller
             ->get()
             ->keyBy('route_name');
 
-        $backingSlugs = $this->routes->all()->pluck('page_slug')->filter()->unique()->values();
+        $specialPageSlugs = $this->routes->all()
+            ->pluck('page_slug')
+            ->filter()
+            ->unique()
+            ->values();
+        $backingSlugs = $specialPageSlugs;
         $defaultLocale = (string) config('app.fallback_locale', 'en');
         $backingSources = Page::query()
             ->publiclyAvailable()
@@ -116,7 +125,9 @@ class SeoPublicController extends Controller
         $backingUuids = $backingSources->pluck('uuid')->filter()->unique()->values();
         $landingPageUuids = $this->landingPageAliases->pageUuids();
         $backingPages = $this->routes->all()->mapWithKeys(function (array $definition, string $routeName) use ($backingSources, $locale) {
-            $source = !empty($definition['page_slug']) ? $backingSources->get($definition['page_slug']) : null;
+            $source = !empty($definition['page_slug'])
+                ? $backingSources->get($definition['page_slug'])
+                : null;
             if (!$source) {
                 return [$routeName => null];
             }
@@ -136,8 +147,9 @@ class SeoPublicController extends Controller
             /** @var SeoMetadata|null $routeMetadata */
             $routeMetadata = $routeSeo->get($routeName);
             /** @var Page|null $page */
+            $requiresBackingPage = isset($definition['page_slug']) && empty($definition['settings_backed']);
             $page = isset($definition['page_slug']) ? $backingPages->get($routeName) : null;
-            if (isset($definition['page_slug']) && !$page) {
+            if ($requiresBackingPage && !$page) {
                 // A route-backed page is only a real localized URL when its
                 // corresponding Page translation exists. Route metadata must
                 // never fabricate a missing translation.
@@ -167,7 +179,7 @@ class SeoPublicController extends Controller
                 $query->whereNull('published_at')->orWhere('published_at', '<=', now());
             })
             ->get()
-            ->reject(fn (Page $page) => $backingSlugs->contains($page->slug)
+            ->reject(fn (Page $page) => $specialPageSlugs->contains($page->slug)
                 || (filled($page->uuid) && ($backingUuids->contains($page->uuid)
                     || $landingPageUuids->contains($page->uuid))))
             ->filter(fn (Page $page) => $this->isIndexable($page->seo))
@@ -253,12 +265,74 @@ class SeoPublicController extends Controller
                 'lastmod' => $this->lastModified($cause, $cause->seo),
             ]);
 
+        $jobs = JobPosting::query()
+            ->publicDetail()
+            ->whereHas('translations', fn ($query) => $query
+                ->where('locale', $locale)
+                ->whereNotNull('slug')
+                ->where('slug', '!=', ''))
+            ->with([
+                'seo',
+                'translations' => fn ($query) => $query
+                    ->whereIn('locale', $this->localization->publicLocales())
+                    ->whereNotNull('slug')
+                    ->where('slug', '!=', ''),
+            ])
+            ->get()
+            ->filter(fn (JobPosting $posting): bool => $this->isIndexable($posting->seo))
+            ->map(function (JobPosting $posting) use ($locale): array {
+                /** @var JobPostingTranslation $translation */
+                $translation = $posting->translations->firstWhere('locale', $locale);
+
+                return [
+                    'loc' => $this->sitemapLocation(
+                        $posting->seo?->canonical_url,
+                        route('frontend.jobs.show', ['job' => $translation->slug]),
+                        $locale
+                    ),
+                    'lastmod' => $this->lastModified($posting, $translation, $posting->seo),
+                    'alternates' => $this->jobSitemapAlternates($posting),
+                ];
+            });
+
+        $workshops = Workshop::query()
+            ->publicDetail()
+            ->whereHas('translations', fn ($query) => $query
+                ->where('locale', $locale)
+                ->whereNotNull('slug')
+                ->where('slug', '!=', ''))
+            ->with([
+                'seo',
+                'translations' => fn ($query) => $query
+                    ->whereIn('locale', $this->localization->publicLocales())
+                    ->whereNotNull('slug')
+                    ->where('slug', '!=', ''),
+            ])
+            ->get()
+            ->filter(fn (Workshop $workshop): bool => $this->isIndexable($workshop->seo))
+            ->map(function (Workshop $workshop) use ($locale): array {
+                /** @var WorkshopTranslation $translation */
+                $translation = $workshop->translations->firstWhere('locale', $locale);
+
+                return [
+                    'loc' => $this->sitemapLocation(
+                        $workshop->seo?->canonical_url,
+                        route('frontend.workshops.show', ['workshop' => $translation->slug]),
+                        $locale
+                    ),
+                    'lastmod' => $this->lastModified($workshop, $translation, $workshop->seo),
+                    'alternates' => $this->workshopSitemapAlternates($workshop),
+                ];
+            });
+
         return $staticEntries
             ->concat($categories)
             ->concat($events)
             ->concat($projects)
             ->concat($reports)
             ->concat($donationCauses)
+            ->concat($jobs)
+            ->concat($workshops)
             ->concat($pages)
             ->filter(fn (array $entry) => $this->seo->isSameOrigin($entry['loc']))
             ->sortBy('loc')
@@ -357,6 +431,63 @@ class SeoPublicController extends Controller
         return $links->all();
     }
 
+    /** @return array<int, array{locale: string, url: string}> */
+    private function jobSitemapAlternates(JobPosting $posting): array
+    {
+        return $this->opportunitySitemapAlternates(
+            $posting->translations,
+            'frontend.jobs.show',
+            'job'
+        );
+    }
+
+    /** @return array<int, array{locale: string, url: string}> */
+    private function workshopSitemapAlternates(Workshop $workshop): array
+    {
+        return $this->opportunitySitemapAlternates(
+            $workshop->translations,
+            'frontend.workshops.show',
+            'workshop'
+        );
+    }
+
+    /**
+     * @param Collection<int, JobPostingTranslation|WorkshopTranslation> $translations
+     * @return array<int, array{locale: string, url: string}>
+     */
+    private function opportunitySitemapAlternates(
+        Collection $translations,
+        string $routeName,
+        string $routeParameter
+    ): array {
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $links = $translations
+            ->filter(fn (JobPostingTranslation|WorkshopTranslation $translation) => filled($translation->slug))
+            ->unique('locale')
+            ->sortBy(fn (JobPostingTranslation|WorkshopTranslation $translation): string =>
+                ((string) $translation->locale === $defaultLocale ? '0' : '1') . $translation->locale)
+            ->map(fn (JobPostingTranslation|WorkshopTranslation $translation): array => [
+                'locale' => (string) $translation->locale,
+                'url' => $this->sitemapLocation(
+                    null,
+                    route($routeName, [$routeParameter => $translation->slug]),
+                    (string) $translation->locale
+                ),
+            ])
+            ->values();
+
+        if ($links->count() < 2) {
+            return [];
+        }
+
+        $default = $links->firstWhere('locale', $defaultLocale);
+        if ($default) {
+            $links->push(['locale' => 'x-default', 'url' => $default['url']]);
+        }
+
+        return $links->all();
+    }
+
     private function isPublicPage(Page $page): bool
     {
         $published = $page->publication_status === 'published'
@@ -378,9 +509,10 @@ class SeoPublicController extends Controller
         return (string) $this->seo->localizedUrl($url, $locale);
     }
 
-    private function lastModified(?Model $content, ?SeoMetadata ...$metadata): ?string
+    private function lastModified(?Model ...$records): ?string
     {
-        return collect([$content?->updated_at, ...array_map(fn (?SeoMetadata $seo) => $seo?->updated_at, $metadata)])
+        return collect($records)
+            ->map(fn (?Model $record) => $record?->updated_at)
             ->filter()
             ->sortByDesc(fn (CarbonInterface $date) => $date->getTimestamp())
             ->first()?->toAtomString();
@@ -395,6 +527,10 @@ class SeoPublicController extends Controller
             AnnualReport::where('language', $locale)->max('updated_at'),
             Tag::max('updated_at'),
             DonationType::max('updated_at'),
+            JobPosting::max('updated_at'),
+            JobPostingTranslation::where('locale', $locale)->max('updated_at'),
+            Workshop::max('updated_at'),
+            WorkshopTranslation::where('locale', $locale)->max('updated_at'),
             SeoMetadata::where('locale', $locale)->max('updated_at'),
         ])->filter()->map(fn ($date) => \Illuminate\Support\Carbon::parse($date));
 

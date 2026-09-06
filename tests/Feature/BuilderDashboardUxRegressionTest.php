@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\AuthMenu;
 use App\Models\ContactMessage;
+use App\Models\Page;
 use App\Models\Role;
 use App\Models\Sponsorship;
 use App\Models\Volunteer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -42,7 +44,8 @@ class BuilderDashboardUxRegressionTest extends TestCase
 
         $this->assertIsString($source);
         $this->assertStringContainsString('<details class="simple-more">', $source);
-        $this->assertStringContainsString('Preview page</a>', $source);
+        $this->assertStringContainsString('Preview draft</a>', $source);
+        $this->assertStringContainsString('View live page</a>', $source);
         $this->assertStringContainsString('Search &amp; Sharing</a>', $source);
         $this->assertStringContainsString('Advanced editor</a>', $source);
         $this->assertStringContainsString('.simple-more__menu{position:fixed;top:78px;right:12px}', $source);
@@ -131,6 +134,29 @@ class BuilderDashboardUxRegressionTest extends TestCase
             ->assertDontSee('<a href="' . route('sponsorships.index') . '"><strong>', false)
             ->assertDontSee('<a href="' . route('volunteer.index') . '"><strong>', false)
             ->assertDontSee('<a href="' . route('contact-message.index') . '"><strong>', false);
+    }
+
+    public function test_dashboard_ignores_legacy_activity_without_a_timestamp(): void
+    {
+        $page = Page::query()->create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Legacy timestamp-less page',
+            'sub_title' => '',
+            'slug' => 'legacy-timestamp-less-page',
+            'status' => 1,
+            'publication_status' => 'published',
+            'language' => 'en',
+        ]);
+        DB::table('pages')->where('id', $page->id)->update([
+            'created_at' => null,
+            'updated_at' => null,
+        ]);
+        $admin = $this->makeAdminWithMenuPermissions('Legacy page reviewer', ['page.index']);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('dashboard.index'))
+            ->assertOk()
+            ->assertDontSee('Legacy timestamp-less page');
     }
 
     public function test_dashboard_action_links_keep_touch_sized_targets(): void

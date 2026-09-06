@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\ContactMessage;
+use App\Models\District;
+use App\Models\Division;
+use App\Models\Upazila;
 use App\Models\Volunteer;
 use App\Models\VolunteerCause;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,6 +43,17 @@ class PublicSubmissionFeedbackIntegrityTest extends TestCase
             'description' => 'Support learners.',
             'status' => 1,
         ]);
+        $division = Division::create(['name' => 'Failure Test Division', 'status' => true]);
+        $district = District::create([
+            'name' => 'Failure Test District',
+            'division_id' => $division->id,
+            'status' => true,
+        ]);
+        $upazila = Upazila::create([
+            'name' => 'Failure Test Upazila',
+            'district_id' => $district->id,
+            'status' => true,
+        ]);
         Volunteer::creating(static function (): void {
             throw new RuntimeException('Simulated database failure.');
         });
@@ -52,6 +66,17 @@ class PublicSubmissionFeedbackIntegrityTest extends TestCase
                 'phone' => '+8801800000000',
                 'address' => 'Dhaka',
                 'cause_id' => $cause->id,
+                'sex' => 'male',
+                'date_of_birth' => '1995-04-10',
+                'division_id' => $division->id,
+                'district_id' => $district->id,
+                'upazila_id' => $upazila->id,
+                'occupation' => 'service',
+                'education_level' => 'masters_equivalent',
+                'blood_group' => 'O+',
+                'emergency_response_training' => false,
+                'skill' => 'creative_writing',
+                'consent' => true,
             ])
             ->assertRedirect('/volunteer/register')
             ->assertSessionHasErrors('registration')

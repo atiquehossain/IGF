@@ -443,13 +443,16 @@ class PageBuilderIntegrityTest extends TestCase
         }
 
         $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
-        $this->assertStringContainsString("if(block.type==='testimonials')", $simpleSource);
-        $this->assertStringContainsString('const items = managedPagePreviewItems(block);', $simpleSource);
+        $this->assertMatchesRegularExpression(
+            "/if\\s*\\(\\s*block\\.type\\s*===\\s*'testimonials'\\s*\\)/",
+            $simpleSource
+        );
+        $this->assertStringContainsString('const testimonial = testimonialPreview(block);', $simpleSource);
         $this->assertStringContainsString('state.testimonialIndexes[block.uuid] = index;', $simpleSource);
         $this->assertStringContainsString('data-testimonial-step="-1"', $simpleSource);
         $this->assertStringContainsString('data-testimonial-index="${index}"', $simpleSource);
         $this->assertStringContainsString('wireTestimonialPreview();', $simpleSource);
-        $this->assertStringContainsString('${escapeHtml(story.quote||\'\')}', $simpleSource);
+        $this->assertStringContainsString('${escapeHtml(story.quote||story.body||\'\')}', $simpleSource);
         $this->assertStringContainsString('${escapeHtml(story.designation)}', $simpleSource);
     }
 
@@ -1720,7 +1723,10 @@ class PageBuilderIntegrityTest extends TestCase
 
         $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
         $advancedSource = file_get_contents(resource_path('views/admin/page/builder.blade.php'));
-        $this->assertStringContainsString("block.type==='causes'&&c.presentation==='focus_areas'", $simpleSource);
+        $this->assertMatchesRegularExpression(
+            "/block\\.type\\s*===\\s*'causes'\\s*&&\\s*c\\.presentation\\s*===\\s*'focus_areas'/",
+            $simpleSource
+        );
         $this->assertStringContainsString('class="simple-focus-grid"', $simpleSource);
         $this->assertStringContainsString("block.type === 'causes' && content.presentation === 'focus_areas'", $advancedSource);
         $this->assertStringContainsString('renderPreview(); renderInspector();', $advancedSource);

@@ -6,10 +6,14 @@ use App\Helper\Translation;
 use App\Http\Controllers\Controller;
 use App\Models\MediaAsset;
 use App\Models\SiteSetting;
+use App\Models\SiteSettingRevision;
+use App\Services\AdminAuditService;
 use App\Services\ContentSanitizer;
 use App\Services\DonationPaymentMethodService;
-use App\Services\SiteSettingVersionService;
+use App\Services\SiteSettingRevisionService;
 use App\Services\SiteSettingService;
+use App\Services\SiteSettingVersionService;
+use App\Support\SiteSettingsPayload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +27,10 @@ class SiteSettingsController extends Controller
         private SiteSettingService $settings,
         private ContentSanitizer $sanitizer,
         private DonationPaymentMethodService $paymentMethods,
-        private SiteSettingVersionService $versions
+        private SiteSettingVersionService $versions,
+        private SiteSettingRevisionService $revisions,
+        private SiteSettingsPayload $settingsPayload,
+        private AdminAuditService $audit
     ) {
     }
 
@@ -33,14 +40,18 @@ class SiteSettingsController extends Controller
         $locale = (string) $request->query('locale', app()->getLocale());
 
         abort_unless($locales->pluck('id')->contains($locale), 404);
+        $values = $this->settings->values($locale);
+        $revisions = $this->revisions->recentFor($locale);
 
         return view('admin.site-settings.index', [
             'title' => 'Website Customizer',
             'schema' => config('site-settings.groups', []),
-            'values' => $this->settings->values($locale),
+            'values' => $values,
             'locales' => $locales,
             'locale' => $locale,
-            'globalSettingsVersion' => $this->versions->current(),
+            'globalSettingsVersion' => $this->versions->current($locale),
+            'settingRevisions' => $revisions,
+            'settingRevisionDiffs' => $this->revisions->diffsFor($revisions, $values),
             'paymentProviderStatuses' => $this->paymentMethods->operationalStatuses(),
             'mediaAssets' => MediaAsset::query()
                 ->where('mime_type', 'like', 'image/%')
@@ -57,6 +68,19 @@ class SiteSettingsController extends Controller
         $locale = (string) $request->input('locale', app()->getLocale());
 
         abort_unless(in_array($locale, $allowedLocales, true), 422);
+
+        try {
+            $submittedSettings = $request->exists('settings_payload')
+                ? $this->settingsPayload->decode((string) $request->input('settings_payload'), $schema)
+                : $this->settingsPayload->validateFormInput($request->input('settings'), $schema);
+
+            // Use only the schema-whitelisted, complete settings tree for all
+            // validation and persistence. Merging it into the request also
+            // lets Laravel flash individual field values back after an error.
+            $request->request->set('settings', $submittedSettings);
+        } catch (ValidationException $exception) {
+            throw $this->redirectValidationException($exception, $locale);
+        }
 
         $rules = [
             'locale' => ['required', 'string', 'max:10'],
@@ -157,46 +181,58 @@ class SiteSettingsController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($schema, $validated, $locale) {
-                $currentVersion = $this->versions->current(true);
-                if (!hash_equals($currentVersion, $validated['global_settings_version'])) {
-                    throw ValidationException::withMessages([
-                        'global_settings_version' => 'Website-wide settings changed after this form was opened. Reload the customizer, review the latest values, and save again.',
-                    ]);
-                }
+            DB::transaction(function () use ($request, $schema, $validated, $locale): void {
+                $this->assertCurrentVersion($locale, $validated['global_settings_version']);
+                $actor = $request->user('admin');
+                $revision = $this->revisions->capture(
+                    $locale,
+                    'Before website settings were saved in ' . strtoupper($locale),
+                    $actor
+                );
 
-            foreach ($schema as $groupKey => $group) {
-                foreach ($group['fields'] as $key => $field) {
-                    $value = data_get($validated, "settings.{$groupKey}.{$key}");
-                    $value = $this->normalizeValue($value, $field['type']);
-                    $settingLocale = ($field['localized'] ?? false) ? $locale : '*';
+                foreach ($schema as $groupKey => $group) {
+                    foreach ($group['fields'] as $key => $field) {
+                        $value = data_get($validated, "settings.{$groupKey}.{$key}");
+                        $value = $this->normalizeValue($value, $field['type']);
+                        $settingLocale = ($field['localized'] ?? false) ? $locale : '*';
 
-                    $setting = SiteSetting::withTrashed()->firstOrNew([
-                        'group' => $groupKey,
-                        'key' => $key,
-                        'locale' => $settingLocale,
-                    ]);
+                        $setting = SiteSetting::withTrashed()->firstOrNew([
+                            'group' => $groupKey,
+                            'key' => $key,
+                            'locale' => $settingLocale,
+                        ]);
 
-                    if ($setting->trashed()) {
-                        $setting->restore();
+                        if ($setting->trashed()) {
+                            $setting->restore();
+                        }
+
+                        $setting->fill([
+                            'value' => $this->serializedValue($value, $field['type']),
+                            'type' => $field['type'] === 'faq_list'
+                                ? 'json'
+                                : (in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text'),
+                            'is_public' => (bool) ($field['public'] ?? false),
+                            'created_by' => $setting->exists ? $setting->created_by : $actor?->getKey(),
+                            'updated_by' => $actor?->getKey(),
+                        ])->save();
                     }
-
-                    $setting->fill([
-                        'value' => $this->serializedValue($value, $field['type']),
-                        'type' => $field['type'] === 'faq_list'
-                            ? 'json'
-                            : (in_array($field['type'], ['boolean', 'integer', 'float'], true) ? $field['type'] : 'text'),
-                        'is_public' => (bool) ($field['public'] ?? false),
-                        'created_by' => $setting->exists ? $setting->created_by : auth('admin')->id(),
-                        'updated_by' => auth('admin')->id(),
-                    ])->save();
                 }
-            }
+
+                $changes = $this->revisions->diffAgainstValues($revision, $this->settings->values($locale));
+                $this->audit->record(
+                    $actor,
+                    'site_settings.saved',
+                    'site-settings',
+                    changes: ['settings' => array_column($changes, 'path')],
+                    context: [
+                        'locale' => $locale,
+                        'revision_uuid' => $revision->uuid,
+                        'changed_count' => count($changes),
+                    ]
+                );
             });
         } catch (ValidationException $exception) {
-            $parameters = $locale === app()->getLocale() ? [] : ['locale' => $locale];
-
-            throw $exception->redirectTo(route('site.settings.index', $parameters));
+            throw $this->redirectValidationException($exception, $locale);
         }
 
         return redirect()->route('site.settings.index', ['locale' => $locale])
@@ -207,17 +243,114 @@ class SiteSettingsController extends Controller
     {
         $field = config("site-settings.groups.{$group}.fields.{$key}");
         abort_unless(is_array($field), 404);
+        $selectedLocale = (string) $request->input('locale', app()->getLocale());
+        $allowedLocales = collect(Translation::languageList())->pluck('id')->all();
+        $validator = Validator::make($request->all(), [
+            'locale' => ['required', 'string', Rule::in($allowedLocales)],
+            'global_settings_version' => ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],
+        ]);
 
-        $locale = ($field['localized'] ?? false)
-            ? (string) $request->input('locale', app()->getLocale())
-            : '*';
+        try {
+            $validated = $validator->validate();
+            DB::transaction(function () use ($request, $field, $group, $key, $selectedLocale, $validated): void {
+                $this->assertCurrentVersion($selectedLocale, $validated['global_settings_version']);
+                $actor = $request->user('admin');
+                $revision = $this->revisions->capture(
+                    $selectedLocale,
+                    'Before ' . $group . '.' . $key . ' was reset to its default',
+                    $actor
+                );
+                $settingLocale = ($field['localized'] ?? false) ? $selectedLocale : '*';
 
-        SiteSetting::where('group', $group)
-            ->where('key', $key)
-            ->where('locale', $locale)
-            ->delete();
+                SiteSetting::query()
+                    ->where('group', $group)
+                    ->where('key', $key)
+                    ->where('locale', $settingLocale)
+                    ->delete();
 
-        return back()->with(['message' => 'Setting reset to its default.', 'alert-type' => 'success']);
+                $this->audit->record(
+                    $actor,
+                    'site_settings.reset',
+                    'site-settings',
+                    changes: ['settings' => [$group . '.' . $key]],
+                    context: [
+                        'locale' => $selectedLocale,
+                        'revision_uuid' => $revision->uuid,
+                    ]
+                );
+            });
+        } catch (ValidationException $exception) {
+            throw $this->redirectValidationException($exception, $selectedLocale);
+        }
+
+        return redirect()->route('site.settings.index', ['locale' => $selectedLocale])
+            ->with(['message' => 'Setting reset to its default. The previous version is in revision history.', 'alert-type' => 'success']);
+    }
+
+    public function restoreRevision(Request $request, SiteSettingRevision $revision)
+    {
+        $allowedLocales = collect(Translation::languageList())->pluck('id')->all();
+        $locale = (string) $request->input('locale', $revision->locale);
+        $validator = Validator::make($request->all(), [
+            'locale' => ['required', 'string', Rule::in($allowedLocales)],
+            'global_settings_version' => ['required', 'string', 'size:64', 'regex:/^[a-f0-9]{64}$/'],
+            'restore_confirmation' => ['required', 'accepted'],
+        ]);
+        $validator->after(function ($validator) use ($locale, $revision): void {
+            if (!hash_equals((string) $revision->locale, $locale)) {
+                $validator->errors()->add('locale', 'This restore point belongs to a different editing language.');
+            }
+        });
+
+        try {
+            $validated = $validator->validate();
+            DB::transaction(function () use ($request, $revision, $locale, $validated): void {
+                $this->assertCurrentVersion($locale, $validated['global_settings_version']);
+                $actor = $request->user('admin');
+                $backup = $this->revisions->capture(
+                    $locale,
+                    'Automatic backup before restoring revision ' . $revision->uuid,
+                    $actor
+                );
+                $restoredRevision = $this->revisions->restore($revision, $actor);
+                $changes = $this->revisions->diffAgainstValues($backup, $this->settings->values($locale));
+
+                $this->audit->record(
+                    $actor,
+                    'site_settings.restored',
+                    $restoredRevision,
+                    changes: ['settings' => array_column($changes, 'path')],
+                    context: [
+                        'locale' => $locale,
+                        'revision_uuid' => $restoredRevision->uuid,
+                        'backup_revision_uuid' => $backup->uuid,
+                        'changed_count' => count($changes),
+                    ]
+                );
+            });
+        } catch (ValidationException $exception) {
+            throw $this->redirectValidationException($exception, $locale);
+        }
+
+        return redirect()->route('site.settings.index', ['locale' => $locale])
+            ->with(['message' => 'Website version restored. The version it replaced was backed up automatically.', 'alert-type' => 'success']);
+    }
+
+    private function assertCurrentVersion(string $locale, string $expectedVersion): void
+    {
+        $currentVersion = $this->versions->current($locale, true);
+        if (!hash_equals($currentVersion, $expectedVersion)) {
+            throw ValidationException::withMessages([
+                'global_settings_version' => 'Settings for this language or shared website settings changed after this form was opened. Reload the customizer, review the latest values, and try again.',
+            ]);
+        }
+    }
+
+    private function redirectValidationException(ValidationException $exception, string $locale): ValidationException
+    {
+        $parameters = $locale === app()->getLocale() ? [] : ['locale' => $locale];
+
+        return $exception->redirectTo(route('site.settings.index', $parameters));
     }
 
     private function rulesFor(array $field): array
@@ -231,6 +364,11 @@ class SiteSettingsController extends Controller
             'url_or_path' => ['nullable', 'string', 'max:2048', function ($attribute, $value, $fail) {
                 if ($value !== null && $value !== '' && $this->sanitizer->sanitizeUrl($value) === '') {
                     $fail('The ' . $attribute . ' field must be a safe URL or site path.');
+                }
+            }],
+            'analytics_id' => ['nullable', 'string', 'max:32', function ($attribute, $value, $fail) {
+                if ($value !== null && $value !== '' && !preg_match('/^G-[A-Z0-9]+$/i', trim((string) $value))) {
+                    $fail('Enter a GA4 measurement ID such as G-ABC123DEF4, or leave this field blank.');
                 }
             }],
             'color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],

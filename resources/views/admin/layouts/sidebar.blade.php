@@ -137,7 +137,7 @@ $legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
             </ul>
             @foreach($navGroups as $group)
                 <details class="igf-nav-group" @if($group['active']) open @endif>
-                    <summary aria-label="{{ $group['label'] }} navigation" title="{{ $group['label'] }}"><i class="fa {{ $group['icon'] }}" aria-hidden="true"></i><span>{{ $group['label'] }}</span></summary>
+                    <summary aria-label="{{ $group['label'] }} navigation" title="{{ $group['label'] }}"><i class="fa {{ $group['icon'] }}" aria-hidden="true"></i><span>{{ $group['label'] }}</span><i class="igf-nav-chevron fa fa-chevron-down" aria-hidden="true"></i></summary>
                     <ul class="nav navbar-nav">
                         @foreach($group['items'] as $item)
                             @php
@@ -150,7 +150,7 @@ $legacyMenuHasCurrent = str_contains($legacyMenu, 'aria-current="page"');
             @endforeach
             @if($legacyMenu !== '')
                 <details class="igf-all-tools" @if($legacyMenuHasCurrent) open @endif>
-                    <summary aria-label="Advanced and legacy tools navigation" title="Advanced &amp; Legacy Tools"><i class="fa fa-cogs" aria-hidden="true"></i><span>Advanced & Legacy Tools</span></summary>
+                    <summary aria-label="Advanced and legacy tools navigation" title="Advanced &amp; Legacy Tools"><i class="fa fa-cogs" aria-hidden="true"></i><span>Advanced & Legacy Tools</span><i class="igf-nav-chevron fa fa-chevron-down" aria-hidden="true"></i></summary>
                     <ul class="nav navbar-nav">
                         {!! $legacyMenu !!}
                     </ul>

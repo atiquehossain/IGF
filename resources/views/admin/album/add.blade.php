@@ -19,6 +19,9 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-info" role="note">
+                            <strong>New albums start as drafts.</strong> Publish the album from the album list when its published photos are ready to appear in the live gallery.
+                        </div>
                         @if($isLocalization)
                         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                         @foreach ($translations as $translation)
@@ -49,8 +52,8 @@
                                 <div class="tab-pane fade {{ $isActive }}" id="{{$translation->id}}" role="tabpanel" aria-labelledby="{{$translation->id}}-tab">
                                     <input name="language[{{$lang}}]" type="hidden" class="form-control" value="{{$lang}}">
                                     <div class="form-group has-success">
-                                            <label for="name" class="control-label mb-1"> {{ $Lang->Common->Form->Name }} <span>*</span></label>
-                                            <input id="name" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}"
+                                            <label for="album_name_{{$lang}}" class="control-label mb-1">Album name <span>*</span></label>
+                                            <input id="album_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}"
                                                 class="form-control" required data-e2e="album-name-{{ $lang }}">
                                             @if ($errors->has('name.'.$lang))
                                                 <small
@@ -62,7 +65,7 @@
 
                             <div class="col-md-12 m-b-20 text-right">
                                 <button type="submit" class="btn btn-success btn-sm" name="save" value="1">
-                                    <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
+                                    <i class="fa fa-save"></i> Save album draft
                                 </button>
                                 <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
                                     <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing

@@ -247,6 +247,28 @@ class AdminLibraryPermissionUxTest extends TestCase
         $this->assertSame([], AdminPermissionRegistry::capabilitiesForRoute('admin.not-registered'));
     }
 
+    public function test_page_and_content_trash_cross_link_as_one_recovery_center(): void
+    {
+        $admin = $this->makeAdmin([
+            'page.index',
+            'content.trash.index',
+        ], [
+            'page.trash.view',
+        ]);
+
+        $this->actingAs($admin, 'admin')->get(route('page.trash.index'))
+            ->assertOk()
+            ->assertSee('Recovery center sections')
+            ->assertSee('Open other deleted content')
+            ->assertSee('href="'.route('content.trash.index').'"', false);
+
+        $this->actingAs($admin, 'admin')->get(route('content.trash.index'))
+            ->assertOk()
+            ->assertSee('Recovery center sections')
+            ->assertSee('Open deleted pages')
+            ->assertSee('href="'.route('page.trash.index').'"', false);
+    }
+
     private function makeAdmin(array $menuCapabilities, array $actionCapabilities): Admin
     {
         $menus = AuthMenu::query()->whereIn('link', $menuCapabilities)->get();

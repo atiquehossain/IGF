@@ -3,6 +3,10 @@
 @php
     $editing = $job->exists;
     $translations = $job->translations->keyBy('locale');
+    $admin = Auth::guard('admin')->user();
+    $permissions = app(\App\Http\Middleware\Permission::class);
+    $canPreview = $editing && $permissions->allows($admin, 'recruitment.jobs.preview');
+    $canManageSeo = $editing && $permissions->allows($admin, 'seo.content.edit');
     $dateValue = static fn ($value) => $value?->format('Y-m-d\TH:i');
     $scorecardCriteria = old('scorecard_criteria');
     if ($scorecardCriteria === null) {
@@ -101,7 +105,23 @@
         @foreach(['en' => 'English', 'bn' => 'Bangla'] as $locale => $language)
             @php($translation = $translations->get($locale))
             <section class="card mb-3" aria-labelledby="job-{{ $locale }}-title">
-                <div class="card-header"><strong id="job-{{ $locale }}-title">{{ $language }} public content</strong></div>
+                <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                    <strong id="job-{{ $locale }}-title">{{ $language }} public content</strong>
+                    @if($editing && $translation)
+                        <div class="d-flex flex-wrap" style="gap:.5rem">
+                            @if($canPreview)
+                                <a class="btn igf-btn igf-btn-secondary igf-btn-compact" href="{{ route('recruitment.jobs.preview', [$job, 'locale' => $locale]) }}" target="_blank" rel="noopener">
+                                    <i class="fa fa-eye" aria-hidden="true"></i> Preview saved {{ $language }}
+                                </a>
+                            @endif
+                            @if($canManageSeo)
+                                <a class="btn igf-btn igf-btn-secondary igf-btn-compact" href="{{ route('seo.content.edit', ['type' => 'job', 'id' => $job->id, 'locale' => $locale]) }}">
+                                    <i class="fa fa-search" aria-hidden="true"></i> Search &amp; Sharing
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
                 <div class="card-body"><div class="row">
                     <div class="col-md-8 form-group"><label for="{{ $locale }}-title">Title</label><input id="{{ $locale }}-title" class="form-control" name="translations[{{ $locale }}][title]" maxlength="255" value="{{ old("translations.$locale.title", $translation?->title) }}" lang="{{ $locale }}" required></div>
                     <div class="col-md-4 form-group"><label for="{{ $locale }}-slug">Public URL slug</label><input id="{{ $locale }}-slug" class="form-control" name="translations[{{ $locale }}][slug]" maxlength="190" value="{{ old("translations.$locale.slug", $translation?->slug) }}" lang="{{ $locale }}"><small class="form-text text-muted">Leave blank to generate it from the title.</small></div>

@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\JobPosting;
 use App\Models\Page;
+use App\Models\Workshop;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -56,7 +58,12 @@ class SeoContentAnalysisService
             return $this->unavailable($locale);
         }
 
-        $title = trim((string) ($model->getAttribute('name') ?: $model->getAttribute('title')));
+        $contentModel = $this->localizedContentModel($model, $type, $locale);
+        if (!$contentModel) {
+            return $this->unavailable($locale);
+        }
+
+        $title = trim((string) ($contentModel->getAttribute('name') ?: $contentModel->getAttribute('title')));
         $document = [
             'h1' => $title !== '' ? [$title] : [],
             'h2' => [],
@@ -66,7 +73,7 @@ class SeoContentAnalysisService
             'blocks' => [],
         ];
 
-        foreach ($this->modelContentValues($model, $type) as $value) {
+        foreach ($this->modelContentValues($contentModel, $type) as $value) {
             $this->appendValue($document, $value, 'description');
         }
 
@@ -253,8 +260,39 @@ class SeoContentAnalysisService
             'category' => [$model->getAttribute('description')],
             'event', 'annual_report' => [$model->getAttribute('sub_title'), $model->getAttribute('description')],
             'donation_cause' => [$model->getAttribute('description')],
+            'job' => [
+                $model->getAttribute('summary'),
+                $model->getAttribute('description'),
+                $model->getAttribute('responsibilities'),
+                $model->getAttribute('requirements'),
+            ],
+            'workshop' => [
+                $model->getAttribute('summary'),
+                $model->getAttribute('description'),
+                $model->getAttribute('venue_address'),
+                $model->getAttribute('registration_instructions'),
+            ],
             default => [],
         };
+    }
+
+    private function localizedContentModel(Model $model, string $type, string $locale): ?Model
+    {
+        if ($type === 'job' && $model instanceof JobPosting) {
+            return ($model->relationLoaded('translations')
+                ? $model->getRelation('translations')->firstWhere('locale', $locale)
+                : null)
+                ?: $model->translations()->where('locale', $locale)->first();
+        }
+
+        if ($type === 'workshop' && $model instanceof Workshop) {
+            return ($model->relationLoaded('translations')
+                ? $model->getRelation('translations')->firstWhere('locale', $locale)
+                : null)
+                ?: $model->translations()->where('locale', $locale)->first();
+        }
+
+        return $model;
     }
 
     /** @param array<string, mixed> $document */

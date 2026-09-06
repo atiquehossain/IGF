@@ -190,6 +190,172 @@ describe('PageBlocks section presentations', () => {
   });
 });
 
+describe('PageBlocks call to action', () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    setPageSettings();
+  });
+
+  const ctaBlock = (uuid, content = {}) => ({
+    uuid,
+    type: 'cta',
+    label: 'Call to action',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      eyebrow: 'Take action',
+      heading: 'Help communities lead lasting change',
+      body: 'Choose the way you would like to stand with a community.',
+      primary_label: 'Donate now',
+      primary_url: '/donate',
+      secondary_label: 'Become a volunteer',
+      secondary_url: '/volunteer/register',
+      ...content,
+    },
+  });
+
+  test('renders the redesigned semantic structure with both authored actions', () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [ctaBlock('generic-cta')] } });
+    const section = wrapper.get('section.igf-page-block--cta');
+    const callout = section.get('.igf-callout');
+    const signal = callout.get('.igf-callout__signal');
+    const content = callout.get('.igf-callout__content');
+    const actions = callout.get('.igf-page-block__actions');
+    const links = actions.findAll('a');
+
+    expect(section.classes()).toContain('igf-page-block--default');
+    expect(callout.attributes('data-actions')).toBe('true');
+    expect(signal.attributes('aria-hidden')).toBe('true');
+    expect(signal.find('.fa-hand-holding-heart').exists()).toBe(true);
+    expect(content.get('.igf-page-block__eyebrow').text()).toBe('Take action');
+    expect(content.get('h2').text()).toBe('Help communities lead lasting change');
+    expect(content.get('.igf-section-lead').text()).toBe('Choose the way you would like to stand with a community.');
+    expect(callout.element.children[0]).toBe(signal.element);
+    expect(callout.element.children[1]).toBe(content.element);
+    expect(callout.element.children[2]).toBe(actions.element);
+    expect(links).toHaveLength(2);
+    expect(links[0].classes()).toContain('igf-button--primary');
+    expect(links[0].text()).toBe('Donate now');
+    expect(links[0].attributes('href')).toBe('/donate');
+    expect(links[1].classes()).toContain('igf-button--outline');
+    expect(links[1].text()).toBe('Become a volunteer');
+    expect(links[1].attributes('href')).toBe('/volunteer/register');
+
+    wrapper.unmount();
+  });
+
+  test('omits the action region and uses the content-only layout when no labels are authored', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [ctaBlock('content-only-cta', {
+          primary_label: '',
+          primary_url: '',
+          secondary_label: '',
+          secondary_url: '',
+        })],
+      },
+    });
+    const callout = wrapper.get('.igf-callout');
+
+    expect(callout.attributes('data-actions')).toBe('false');
+    expect(callout.find('.igf-page-block__actions').exists()).toBe(false);
+    expect(callout.find('.igf-callout__signal').exists()).toBe(true);
+    expect(callout.find('.igf-callout__content').exists()).toBe(true);
+    expect(callout.element.children).toHaveLength(2);
+
+    wrapper.unmount();
+  });
+
+  test.each([
+    ['primary', { secondary_label: '', secondary_url: '' }, 'Donate now', '/donate', 'igf-button--primary'],
+    ['secondary', { primary_label: '', primary_url: '' }, 'Become a volunteer', '/volunteer/register', 'igf-button--outline'],
+  ])('renders a lone %s action without an empty companion', (_name, content, label, href, className) => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [ctaBlock(`single-${_name}-cta`, content)] } });
+    const callout = wrapper.get('.igf-callout');
+    const actions = callout.get('.igf-page-block__actions');
+    const links = actions.findAll('a');
+
+    expect(callout.attributes('data-actions')).toBe('true');
+    expect(links).toHaveLength(1);
+    expect(links[0].text()).toBe(label);
+    expect(links[0].attributes('href')).toBe(href);
+    expect(links[0].classes()).toContain(className);
+    expect(actions.element.children).toHaveLength(1);
+
+    wrapper.unmount();
+  });
+
+  test('gives the volunteer variant the generic redesign and safely normalizes action URLs', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [ctaBlock('volunteer-cta', {
+          variant: 'volunteer',
+          primary_url: 'javascript:alert(1)',
+          secondary_url: ' https://example.test/get-involved ',
+        })],
+      },
+    });
+    const section = wrapper.get('section.igf-page-block--cta');
+    const links = section.get('.igf-page-block__actions').findAll('a');
+
+    expect(section.classes()).toEqual(expect.arrayContaining([
+      'igf-page-block--volunteer',
+      'igf-page-block--default',
+    ]));
+    expect(section.find('.igf-callout__signal').exists()).toBe(true);
+    expect(links[0].attributes('href')).toBe('#');
+    expect(links[1].attributes('href')).toBe('https://example.test/get-involved');
+    expect(wrapper.html()).not.toContain('javascript:');
+
+    wrapper.unmount();
+  });
+
+  test('keeps campaign and campus actions on their specialized renderers', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          ctaBlock('campaign-cta', { variant: 'campaign' }),
+          ctaBlock('campus-cta', { variant: 'campus-actions' }),
+        ],
+      },
+    });
+    const campaign = wrapper.get('section.igf-page-block--campaign');
+    const campus = wrapper.get('section.igf-page-block--campus-actions');
+
+    expect(campaign.classes()).not.toContain('igf-page-block--default');
+    expect(campaign.find('.igf-campaign').exists()).toBe(true);
+    expect(campaign.find('.igf-callout__signal').exists()).toBe(false);
+    expect(campus.classes()).not.toContain('igf-page-block--default');
+    expect(campus.find('.igf-campus-actions').exists()).toBe(true);
+    expect(campus.find('.igf-callout__signal').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  test('ships a responsive three, two, and one-column CTA layout with accessible actions', () => {
+    const tabletStart = pageBlocksSource.indexOf('@media (max-width:960px)');
+    const tabletEnd = pageBlocksSource.indexOf('@media (max-width:767px)', tabletStart);
+    const mobileEnd = pageBlocksSource.indexOf('@media (max-width:560px)', tabletEnd);
+    const tabletCss = pageBlocksSource.slice(tabletStart, tabletEnd);
+    const mobileCss = pageBlocksSource.slice(tabletEnd, mobileEnd);
+
+    expect(pageBlocksSource).toContain('grid-template-columns:72px minmax(0,1fr) minmax(235px,auto)');
+    expect(pageBlocksSource).toContain('.igf-page-block--cta.igf-page-block--default .igf-callout[data-actions="false"] { grid-template-columns:72px minmax(0,1fr); }');
+    expect(pageBlocksSource).toContain('.igf-callout__content { position:relative; z-index:1; min-width:0; }');
+    expect(pageBlocksSource).toContain('.igf-page-block--cta.igf-page-block--default .igf-page-block__actions>:only-child { grid-column:1/-1; }');
+    expect(pageBlocksSource).toContain('width:100%; min-width:0; min-height:54px; justify-content:space-between; padding:0 22px; border-radius:14px; line-height:1.25; overflow-wrap:anywhere;');
+    expect(pageBlocksSource).toContain('.igf-page-block--cta.igf-page-block--default .igf-button--primary { border-color:#ff7500; background:#ff7500; color:#1c1e20;');
+    expect(pageBlocksSource).toContain('.igf-page-block--cta.igf-page-block--default .igf-button:focus-visible { outline:3px solid #ffb176; outline-offset:4px; }');
+    expect(tabletStart).toBeGreaterThanOrEqual(0);
+    expect(tabletCss).toContain('.igf-page-block--cta.igf-page-block--default .igf-callout { grid-template-columns:64px minmax(0,1fr);');
+    expect(tabletCss).toContain('.igf-page-block--cta.igf-page-block--default .igf-page-block__actions { grid-column:2; grid-template-columns:repeat(2,minmax(0,1fr)); }');
+    expect(mobileCss).toContain('.igf-page-block--cta.igf-page-block--default .igf-callout { grid-template-columns:1fr;');
+    expect(mobileCss).toContain('.igf-page-block--cta.igf-page-block--default .igf-page-block__actions { grid-column:auto; grid-template-columns:1fr; width:100%; }');
+    expect(mobileCss).toContain('.igf-page-block--cta.igf-page-block--default .igf-button { min-height:52px; }');
+  });
+});
+
 describe('PageBlocks hero carousel', () => {
   beforeEach(() => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: false });
@@ -770,7 +936,7 @@ describe('PageBlocks partner logo wall', () => {
     expect(linkedCard.attributes('target')).toBe('_blank');
     expect(linkedCard.attributes('rel')).toBe('noopener noreferrer');
     expect(linkedCard.attributes('aria-label')).toBe('Bangladesh Brand Forum, opens in a new tab');
-    expect(linkedCard.get('img').attributes('alt')).toBe('');
+    expect(linkedCard.get('img').attributes('alt')).toBe('Bangladesh Brand Forum');
     expect(cards[1].element.tagName).toBe('DIV');
     expect(cards[1].get('img').attributes('alt')).toBe('Daraz Bangladesh');
     expect(section.find('figcaption').exists()).toBe(false);

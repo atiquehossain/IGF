@@ -181,7 +181,7 @@ class AdminInlineCrudPermissionUxTest extends TestCase
             ->assertOk()
             ->assertSee('id="new_tag"', false)
             ->assertSee('id="tagModal"', false)
-            ->assertSee('data-id="'.$this->tag->id.'" aria-label="Edit project"', false)
+            ->assertSee('data-id="'.$this->tag->id.'" aria-label="Edit project group"', false)
             ->assertSee('data-url="'.route('tag.status', $this->tag->id).'"', false)
             ->assertSee('data-url="'.route('tag.destroy', $this->tag->id).'"', false);
 

@@ -18,4 +18,9 @@ class Album extends Model
         'uuid',
         'status'
     ];
+
+    public function galleries()
+    {
+        return $this->hasMany(Gallery::class, 'album_id');
+    }
 }

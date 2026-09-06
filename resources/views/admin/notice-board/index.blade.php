@@ -43,7 +43,7 @@
                   <th width="12%"><strong>Language</strong></th>
                   <th width="13%"><strong>{{ $Lang->Common->Form->Location }}</strong></th>
                   <th width="10%"><strong>{{ $Lang->Common->Form->ReleaseDate }}</strong></th>
-                  <th width="10%"><strong>{{ $Lang->Common->Form->Order }}</strong></th>
+                  <th width="10%"><strong>Display priority</strong></th>
                   <th width="15%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                 </tr>
               </thead>

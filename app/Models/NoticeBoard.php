@@ -29,6 +29,7 @@ class NoticeBoard extends Model
         'url',
         'location',
         'image_path',
+        'image_alt',
         'file_path',
         'publisher_name',
         'published_at',

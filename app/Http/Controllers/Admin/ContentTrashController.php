@@ -11,13 +11,17 @@ use App\Models\Donation;
 use App\Models\DonationType;
 use App\Models\EventCalendar;
 use App\Models\Gallery;
+use App\Models\JobPosting;
+use App\Models\JobScorecardCriterion;
 use App\Models\LatestNews;
 use App\Models\NoticeBoard;
 use App\Models\SeoMetadata;
+use App\Models\SeoMetadataRevision;
 use App\Models\SplashScreen;
 use App\Models\Tag;
 use App\Models\Testimonial;
 use App\Models\VolunteerCause;
+use App\Models\Workshop;
 use App\Models\YouTube;
 use App\Services\ContentFileQuarantine;
 use App\Services\AdminAuditService;
@@ -54,6 +58,7 @@ class ContentTrashController extends Controller
             'donation-type' => ['model' => DonationType::class, 'label' => 'Donation cause', 'title' => ['name']],
             'event' => ['model' => EventCalendar::class, 'label' => 'Event', 'title' => ['title']],
             'gallery' => ['model' => Gallery::class, 'label' => 'Gallery item', 'title' => ['name']],
+            'job' => ['model' => JobPosting::class, 'label' => 'Job draft', 'title' => []],
             'member' => ['model' => LatestNews::class, 'label' => 'Team member', 'title' => ['name']],
             'publication' => ['model' => NoticeBoard::class, 'label' => 'Publication', 'title' => ['title', 'slug']],
             'splash-screen' => ['model' => SplashScreen::class, 'label' => 'Splash screen', 'title' => ['title']],
@@ -61,6 +66,7 @@ class ContentTrashController extends Controller
             'testimonial' => ['model' => Testimonial::class, 'label' => 'Testimonial', 'title' => ['name']],
             'volunteer-cause' => ['model' => VolunteerCause::class, 'label' => 'Volunteer cause', 'title' => ['name']],
             'video' => ['model' => YouTube::class, 'label' => 'Video', 'title' => ['title', 'name']],
+            'workshop' => ['model' => Workshop::class, 'label' => 'Workshop draft', 'title' => []],
         ];
     }
 
@@ -90,9 +96,19 @@ class ContentTrashController extends Controller
                     ->merge(['language', 'slug'])
                     ->unique()
                     ->filter(fn (string $column) => Schema::hasColumn($model->getTable(), $column));
-                $query->where(function ($fields) use ($columns, $model, $search): void {
+                $hasTranslatedIdentity = $model instanceof JobPosting || $model instanceof Workshop;
+                $query->where(function ($fields) use ($columns, $hasTranslatedIdentity, $model, $search): void {
                     foreach ($columns as $column) {
                         $fields->orWhere($model->qualifyColumn($column), 'like', '%' . $search . '%');
+                    }
+                    if ($hasTranslatedIdentity) {
+                        $fields->orWhereHas('translations', function ($translations) use ($search): void {
+                            $translations->where(function ($identity) use ($search): void {
+                                $identity->where('title', 'like', '%' . $search . '%')
+                                    ->orWhere('slug', 'like', '%' . $search . '%')
+                                    ->orWhere('locale', 'like', '%' . $search . '%');
+                            });
+                        });
                     }
                 });
             }
@@ -111,10 +127,7 @@ class ContentTrashController extends Controller
                 $type = (string) $row->trash_type;
                 $definition = $registry[$type];
                 $model = $definition['model']::onlyTrashed()->findOrFail($row->trash_id);
-                $title = collect($definition['title'])
-                    ->map(fn (string $attribute) => trim((string) $model->getAttribute($attribute)))
-                    ->first(fn (string $value) => $value !== '') ?: 'Untitled item #' . $model->getKey();
-                $detail = trim((string) ($model->getAttribute('language') ?? $model->getAttribute('slug') ?? ''));
+                [$title, $detail] = $this->identity($model, $definition['title']);
                 $retentionNote = $this->retentionNote($model);
 
                 return (object) [
@@ -193,7 +206,7 @@ class ContentTrashController extends Controller
                     ->lockForUpdate()
                     ->firstOrFail();
             } else {
-                $item::onlyTrashed()->whereKey($item->getKey())->lockForUpdate()->firstOrFail();
+                $item = $item::onlyTrashed()->whereKey($item->getKey())->lockForUpdate()->firstOrFail();
             }
 
             if ($retentionNote = $this->retentionNote($item)) {
@@ -205,6 +218,7 @@ class ContentTrashController extends Controller
             }
 
             $batch = $this->quarantine->stage($item);
+            $this->purgeOwnedOpportunityContent($item);
             SeoMetadata::withTrashed()
                 ->where('seoable_type', $item::class)
                 ->where('seoable_id', $item->getKey())
@@ -245,6 +259,30 @@ class ContentTrashController extends Controller
 
     private function retentionNote(Model $item): ?string
     {
+        if ($item instanceof JobPosting) {
+            if ($item->publication_status !== JobPosting::PUBLICATION_DRAFT) {
+                return 'Only unused job drafts can be permanently deleted. Restore this job and use its close or withdraw action instead.';
+            }
+            if ($item->applications()->withTrashed()->exists()) {
+                return 'This job is retained because applicant records reference it. Restore the job to manage it; applicant history cannot be removed from Content Trash.';
+            }
+            if ($item->importBatches()->exists()) {
+                return 'This job is retained because an application import record references it. Restore the job to review that import history.';
+            }
+        }
+
+        if ($item instanceof Workshop) {
+            if ($item->publication_status !== Workshop::PUBLICATION_DRAFT) {
+                return 'Only unused workshop drafts can be permanently deleted. Restore this workshop and use its close or withdraw action instead.';
+            }
+            if ($item->registrations()->withTrashed()->exists()) {
+                return 'This workshop is retained because registration records reference it. Restore the workshop to manage it; registration history cannot be removed from Content Trash.';
+            }
+            if ($item->importBatches()->exists()) {
+                return 'This workshop is retained because a registration import record references it. Restore the workshop to review that import history.';
+            }
+        }
+
         if ($item instanceof DonationType) {
             return Donation::query()
                 ->where(fn ($query) => $query
@@ -280,6 +318,62 @@ class ContentTrashController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * @param list<string> $titleAttributes
+     * @return array{0:string,1:string}
+     */
+    private function identity(Model $model, array $titleAttributes): array
+    {
+        if ($model instanceof JobPosting || $model instanceof Workshop) {
+            $translations = $model->translations()
+                ->get(['locale', 'slug', 'title'])
+                ->sortBy(fn (Model $translation): string =>
+                    (strtolower((string) $translation->getAttribute('locale')) === 'en' ? '0' : '1')
+                    . strtolower((string) $translation->getAttribute('locale'))
+                )
+                ->values();
+            $preferred = $translations->first();
+            $kind = $model instanceof JobPosting ? 'job' : 'workshop';
+            $path = $model instanceof JobPosting ? '/careers/' : '/workshops/';
+            $title = trim((string) $preferred?->getAttribute('title')) ?: 'Untitled ' . $kind . ' draft #' . $model->getKey();
+            $detail = $translations->map(function (Model $translation) use ($path): string {
+                $locale = strtoupper(trim((string) $translation->getAttribute('locale')));
+                $slug = trim((string) $translation->getAttribute('slug'));
+
+                return $locale . ($slug !== '' ? ': ' . $path . $slug : '');
+            })->filter()->implode('; ');
+
+            return [$title, $detail];
+        }
+
+        $title = collect($titleAttributes)
+            ->map(fn (string $attribute) => trim((string) $model->getAttribute($attribute)))
+            ->first(fn (string $value) => $value !== '') ?: 'Untitled item #' . $model->getKey();
+        $detail = trim((string) ($model->getAttribute('language') ?? $model->getAttribute('slug') ?? ''));
+
+        return [$title, $detail];
+    }
+
+    private function purgeOwnedOpportunityContent(Model $item): void
+    {
+        if (!$item instanceof JobPosting && !$item instanceof Workshop) {
+            return;
+        }
+
+        SeoMetadataRevision::query()
+            ->where('seoable_type', $item::class)
+            ->where('seoable_id', $item->getKey())
+            ->delete();
+
+        if ($item instanceof JobPosting) {
+            JobScorecardCriterion::withTrashed()
+                ->where('job_posting_id', $item->getKey())
+                ->forceDelete();
+        }
+
+        $item->translations()->delete();
     }
 
     private function decimalToCents(string $value): int

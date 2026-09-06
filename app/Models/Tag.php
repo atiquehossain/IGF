@@ -16,6 +16,7 @@ class Tag extends Model
         'uuid',
         'name',
         'slug',
+        'description',
         'banner_id',
         'status'
     ];

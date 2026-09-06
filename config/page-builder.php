@@ -24,7 +24,7 @@ return [
     ],
 
     'simple_sections' => [
-        'hero' => ['label' => 'Hero banner', 'icon' => 'fa-image', 'description' => 'A large opening image with a message and buttons.'],
+        'hero' => ['label' => 'Hero banner', 'icon' => 'fa-picture-o', 'description' => 'A large opening image with a message and buttons.'],
         'rich_text' => ['label' => 'Text section', 'icon' => 'fa-align-left', 'description' => 'A heading and formatted body copy.'],
         'media_text' => ['label' => 'Media and text', 'icon' => 'fa-columns', 'description' => 'Tell a story beside an image, uploaded video, or YouTube video.'],
         'stats' => ['label' => 'Impact statistics', 'icon' => 'fa-bar-chart', 'description' => 'Show important numbers and short labels.'],
@@ -34,11 +34,11 @@ return [
         'events' => ['label' => 'Upcoming events', 'icon' => 'fa-calendar', 'description' => 'Automatically display upcoming events.'],
         'testimonials' => ['label' => 'Community stories', 'icon' => 'fa-quote-left', 'description' => 'Automatically display approved testimonials.'],
         'team' => ['label' => 'Leadership and team', 'icon' => 'fa-users', 'description' => 'Automatically display published board or team members.'],
-        'partners' => ['label' => 'Partner organizations', 'icon' => 'fa-handshake', 'description' => 'Show a polished wall of partner logos with optional website links.'],
-        'faq' => ['label' => 'Questions and answers', 'icon' => 'fa-circle-question', 'description' => 'Add accessible expandable answers to common questions.'],
-        'timeline' => ['label' => 'Timeline or process', 'icon' => 'fa-timeline', 'description' => 'Explain milestones, history, or a step-by-step process.'],
-        'gallery' => ['label' => 'Photo gallery', 'icon' => 'fa-images', 'description' => 'Display selected photos or published gallery images.'],
-        'video' => ['label' => 'Video', 'icon' => 'fa-circle-play', 'description' => 'Embed a YouTube or Vimeo video, or play an uploaded video.'],
+        'partners' => ['label' => 'Partner organizations', 'icon' => 'fa-handshake-o', 'description' => 'Show a polished wall of partner logos with optional website links.'],
+        'faq' => ['label' => 'Questions and answers', 'icon' => 'fa-question-circle', 'description' => 'Add accessible expandable answers to common questions.'],
+        'timeline' => ['label' => 'Timeline or process', 'icon' => 'fa-list-ol', 'description' => 'Explain milestones, history, or a step-by-step process.'],
+        'gallery' => ['label' => 'Photo gallery', 'icon' => 'fa-picture-o', 'description' => 'Display selected photos or published gallery images.'],
+        'video' => ['label' => 'Video', 'icon' => 'fa-play-circle', 'description' => 'Embed a YouTube or Vimeo video, or play an uploaded video.'],
         'cta' => ['label' => 'Call to action', 'icon' => 'fa-bullhorn', 'description' => 'Invite visitors to donate, volunteer, or learn more.'],
         'newsletter' => ['label' => 'Newsletter signup', 'icon' => 'fa-envelope', 'description' => 'Let visitors subscribe for updates.'],
     ],
@@ -87,6 +87,46 @@ return [
     ],
 
     'section_presentation_default' => 'standard',
+
+    /*
+     * These constrained design choices are shared by the simple editor and
+     * public renderer. Keeping them in one registry prevents arbitrary class
+     * names or layout values from entering saved page content.
+     */
+    'section_spacing_options' => [
+        'compact' => 'Compact',
+        'standard' => 'Standard',
+        'spacious' => 'Spacious',
+    ],
+
+    'content_alignment_options' => [
+        'left' => 'Left',
+        'center' => 'Centered',
+    ],
+
+    'column_count_options' => [
+        'auto' => 'Automatic',
+        '2' => 'Two columns',
+        '3' => 'Three columns',
+        '4' => 'Four columns',
+    ],
+
+    'design_defaults' => [
+        'section_spacing' => 'standard',
+        'content_alignment' => 'left',
+        'column_count' => 'auto',
+    ],
+
+    'column_count_block_types' => [
+        'stats',
+        'cards',
+        'ways_to_give',
+        'causes',
+        'events',
+        'team',
+        'partners',
+        'gallery',
+    ],
 
     'cause_presentations' => [
         'card_grid' => 'Standard image cards',

@@ -1047,6 +1047,245 @@ class ProjectAwareDonationIntegrityTest extends TestCase
         $this->assertDatabaseHas('pages', ['id' => $page->id, 'deleted_at' => null]);
     }
 
+    public function test_page_trash_reports_the_exact_active_donation_dependency_without_writing(): void
+    {
+        DonationType::query()->forceDelete();
+
+        $program = $this->category('Dependency warning projects', 'dependency-warning-projects');
+        $page = $this->page('Clean water', 'clean-water-warning', $program);
+        $translation = $this->page('বিশুদ্ধ পানি', 'clean-water-warning-bn', $program, [
+            'uuid' => $page->uuid,
+            'language' => 'bn',
+        ]);
+        $cause = DonationType::create([
+            'name' => 'Pure Water & Sanitation',
+            'description' => 'A visitor-ready clean water appeal.',
+            'destination_type' => 'page',
+            'destination_page_uuid' => $page->uuid,
+            'status' => 1,
+        ]);
+        $destroyer = $this->adminWith(['page.destroy', 'donationType.status'], 'page.index');
+
+        $this->asAdmin($destroyer)->deleteJson(route('page.destroy', $page->uuid))
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'active_donation_destinations')
+            ->assertJsonPath('requires_confirmation', true)
+            ->assertJsonPath('force_available', true)
+            ->assertJsonCount(1, 'dependencies.donation_causes')
+            ->assertJsonFragment([
+                'id' => $cause->id,
+                'uuid' => $cause->uuid,
+                'name' => 'Pure Water & Sanitation',
+            ]);
+
+        $this->assertNotSoftDeleted('pages', ['id' => $page->id]);
+        $this->assertNotSoftDeleted('pages', ['id' => $translation->id]);
+        $this->assertDatabaseHas('donation_types', [
+            'id' => $cause->id,
+            'status' => 1,
+            'destination_page_uuid' => $page->uuid,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_confirmed_page_trash_unpublishes_an_ordinary_cause_and_preserves_financial_history(): void
+    {
+        DonationType::query()->forceDelete();
+
+        $program = $this->category('Confirmed cleanup projects', 'confirmed-cleanup-projects');
+        $page = $this->page('Clean water confirmed', 'clean-water-confirmed', $program);
+        $translation = $this->page('বিশুদ্ধ পানি নিশ্চিত', 'clean-water-confirmed-bn', $program, [
+            'uuid' => $page->uuid,
+            'language' => 'bn',
+        ]);
+        $cause = DonationType::create([
+            'name' => 'Confirmed Water Fund',
+            'description' => 'A visitor-ready clean water appeal.',
+            'destination_type' => 'page',
+            'destination_page_uuid' => $page->uuid,
+            'status' => 1,
+        ]);
+        $donation = $this->donation([
+            'payment_cause' => $cause->uuid,
+            'cause_uuid_snapshot' => $cause->uuid,
+            'cause_slug_snapshot' => $cause->slug,
+            'cause_name_snapshot' => $cause->name,
+            'destination_type_snapshot' => 'page',
+            'destination_uuid_snapshot' => $page->uuid,
+            'destination_name_snapshot' => $page->name,
+            'project_uuid_snapshot' => $page->uuid,
+            'project_name_snapshot' => $page->name,
+            'payment_status' => 'Success',
+        ]);
+        $destroyer = $this->adminWith(['page.destroy', 'donationType.status'], 'page.index');
+        $allocation = DonationAllocation::create([
+            'request_token' => (string) Str::uuid(),
+            'donation_id' => $donation->id,
+            'page_uuid' => $page->uuid,
+            'page_name_snapshot' => $page->name,
+            'amount' => '25.00',
+            'note' => 'Append-only allocation retained during page cleanup.',
+            'allocated_by' => $destroyer->id,
+            'allocated_by_name_snapshot' => $destroyer->name,
+        ]);
+
+        $this->asAdmin($destroyer)->deleteJson(route('page.destroy', $page->uuid), [
+            'force_unpublish_dependencies' => true,
+        ])->assertOk();
+
+        $this->assertSoftDeleted('pages', ['id' => $page->id]);
+        $this->assertSoftDeleted('pages', ['id' => $translation->id]);
+        $this->assertDatabaseHas('donation_types', [
+            'id' => $cause->id,
+            'status' => 0,
+            'destination_page_uuid' => $page->uuid,
+            'deleted_at' => null,
+        ]);
+        $this->assertDatabaseHas('donations', [
+            'id' => $donation->id,
+            'cause_uuid_snapshot' => $cause->uuid,
+            'destination_type_snapshot' => 'page',
+            'destination_uuid_snapshot' => $page->uuid,
+            'project_uuid_snapshot' => $page->uuid,
+        ]);
+        $this->assertDatabaseHas('donation_allocations', [
+            'id' => $allocation->id,
+            'donation_id' => $donation->id,
+            'page_uuid' => $page->uuid,
+            'page_name_snapshot' => $page->name,
+            'amount' => '25.00',
+        ]);
+    }
+
+    public function test_confirmed_bulk_trash_affects_only_selected_logical_pages_and_their_ordinary_causes(): void
+    {
+        DonationType::query()->forceDelete();
+
+        $program = $this->category('Bulk cleanup projects', 'bulk-cleanup-projects');
+        $first = $this->page('Bulk clean water', 'bulk-clean-water', $program);
+        $firstTranslation = $this->page('বাল্ক বিশুদ্ধ পানি', 'bulk-clean-water-bn', $program, [
+            'uuid' => $first->uuid,
+            'language' => 'bn',
+        ]);
+        $second = $this->page('Bulk healthcare', 'bulk-healthcare', $program);
+        $secondTranslation = $this->page('বাল্ক স্বাস্থ্যসেবা', 'bulk-healthcare-bn', $program, [
+            'uuid' => $second->uuid,
+            'language' => 'bn',
+        ]);
+        $unrelated = $this->page('Unrelated livelihoods', 'unrelated-livelihoods', $program);
+        $cause = DonationType::create([
+            'name' => 'Bulk Water Fund',
+            'description' => 'A visitor-ready cause for the selected page.',
+            'destination_type' => 'page',
+            'destination_page_uuid' => $first->uuid,
+            'status' => 1,
+        ]);
+        $destroyer = $this->adminWith(['page.destroy', 'donationType.status'], 'page.index');
+
+        $this->asAdmin($destroyer)->deleteJson(route('page.bulk.destroy'), [
+            'page_ids' => [$first->id, $second->id],
+            'force_unpublish_dependencies' => true,
+        ])->assertOk()
+            ->assertJsonPath('deleted_versions', 4)
+            ->assertJsonPath('unpublished_donation_causes', 1);
+
+        foreach ([$first, $firstTranslation, $second, $secondTranslation] as $selected) {
+            $this->assertSoftDeleted('pages', ['id' => $selected->id]);
+        }
+        $this->assertNotSoftDeleted('pages', ['id' => $unrelated->id]);
+        $this->assertDatabaseHas('donation_types', [
+            'id' => $cause->id,
+            'status' => 0,
+            'destination_page_uuid' => $first->uuid,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_protected_donation_destinations_remain_blocked_even_when_force_is_requested(): void
+    {
+        $destroyer = $this->adminWith(['page.destroy', 'donationType.status'], 'page.index');
+
+        foreach (['direct', 'zakat'] as $purpose) {
+            DonationType::query()->forceDelete();
+            $program = $this->category(
+                Str::headline($purpose) . ' protected projects',
+                $purpose . '-protected-projects'
+            );
+            $page = $this->page(
+                Str::headline($purpose) . ' protected destination',
+                $purpose . '-protected-destination',
+                $program,
+                ['is_zakat_eligible' => $purpose === 'zakat']
+            );
+            $cause = DonationType::create([
+                'name' => Str::headline($purpose) . ' protected cause',
+                'description' => 'A protected visitor-facing donation purpose.',
+                'purpose_key' => $purpose,
+                'destination_type' => 'page',
+                'destination_page_uuid' => $page->uuid,
+                'status' => 1,
+            ]);
+
+            $this->asAdmin($destroyer)->deleteJson(route('page.destroy', $page->uuid), [
+                'force_unpublish_dependencies' => true,
+            ])->assertUnprocessable()
+                ->assertJsonPath('code', 'active_donation_destinations')
+                ->assertJsonPath('requires_confirmation', false)
+                ->assertJsonPath('force_available', false)
+                ->assertJsonFragment([
+                    'id' => $cause->id,
+                    'uuid' => $cause->uuid,
+                    'name' => $cause->name,
+                ]);
+
+            $this->assertNotSoftDeleted('pages', ['id' => $page->id]);
+            $this->assertDatabaseHas('donation_types', [
+                'id' => $cause->id,
+                'purpose_key' => $purpose,
+                'status' => 1,
+                'destination_page_uuid' => $page->uuid,
+                'deleted_at' => null,
+            ]);
+        }
+    }
+
+    public function test_page_destroy_permission_alone_cannot_force_a_donation_cause_offline(): void
+    {
+        DonationType::query()->forceDelete();
+
+        $program = $this->category('Permission guarded projects', 'permission-guarded-projects');
+        $page = $this->page('Permission guarded destination', 'permission-guarded-destination', $program);
+        $cause = DonationType::create([
+            'name' => 'Permission guarded cause',
+            'description' => 'A visitor-ready cause requiring publishing authority.',
+            'destination_type' => 'page',
+            'destination_page_uuid' => $page->uuid,
+            'status' => 1,
+        ]);
+        $pageOnlyDestroyer = $this->adminWith(['page.destroy'], 'page.index');
+
+        $this->asAdmin($pageOnlyDestroyer)->deleteJson(route('page.destroy', $page->uuid))
+            ->assertUnprocessable()
+            ->assertJsonPath('code', 'active_donation_destinations')
+            ->assertJsonPath('requires_confirmation', true)
+            ->assertJsonPath('force_available', false);
+
+        $this->deleteJson(route('page.destroy', $page->uuid), [
+            'force_unpublish_dependencies' => true,
+        ])->assertForbidden()
+            ->assertJsonPath('code', 'donation_dependency_permission_required')
+            ->assertJsonPath('requires_confirmation', false)
+            ->assertJsonPath('force_available', false);
+
+        $this->assertNotSoftDeleted('pages', ['id' => $page->id]);
+        $this->assertDatabaseHas('donation_types', [
+            'id' => $cause->id,
+            'status' => 1,
+            'destination_page_uuid' => $page->uuid,
+            'deleted_at' => null,
+        ]);
+    }
+
     public function test_bulk_duplicate_clears_funding_controls_while_translations_ignore_hidden_row_ids_and_keep_logical_controls(): void
     {
         $program = $this->category('Projects', 'projects');

@@ -1,6 +1,7 @@
 @extends('admin.layouts.master')
 
 @section('content')
+    @php($sourceAlbum = $albums->firstWhere('language', 'en') ?: $albums->first())
     <div class="content pb-0">
 
         <div class="row justify-content-md-center justify-content-lg-center">
@@ -11,7 +12,10 @@
                             <div class="col-md-6">
                                 <h4 class="card-title">{{ $title }}</h4>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex flex-wrap justify-content-end" style="gap: 8px;">
+                                <a class="btn igf-btn igf-btn-secondary" href="{{ (int) optional($sourceAlbum)->status === 1 ? route('frontend.gallery', ['album_id' => $sourceAlbum->id]) : route('frontend.gallery') }}" target="_blank" rel="noopener">
+                                    <i class="fa fa-external-link" aria-hidden="true"></i> {{ (int) optional($sourceAlbum)->status === 1 ? 'Preview live album' : 'View live gallery' }}
+                                </a>
                                 <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('album.index') }}" id="go-back">
                                     <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
@@ -19,6 +23,9 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert {{ (int) optional($sourceAlbum)->status === 1 ? 'alert-success' : 'alert-warning' }}" role="status">
+                            <strong>Public visibility:</strong> {{ (int) optional($sourceAlbum)->status === 1 ? 'Published. Published photos in this album can appear publicly.' : 'Draft. Every photo in this album is hidden from visitors.' }} Publication can be changed from the album list.
+                        </div>
                         @if($isLocalization)
                         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                         @foreach ($translations as $translation)
@@ -53,8 +60,8 @@
                                     <input name="language[{{$lang}}]" type="hidden" class="form-control" value="{{$lang}}">
                                     <input name="id[{{$lang}}]" type="hidden" class="form-control" value="{{ @$album->id }}">
                                     <div class="form-group has-success">
-                                            <label for="name" class="control-label mb-1"> {{ $Lang->Common->Form->Name }} <span>*</span></label>
-                                            <input id="name" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang, @$album->name) }}"
+                                            <label for="album_name_{{$lang}}" class="control-label mb-1">Album name <span>*</span></label>
+                                            <input id="album_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang, @$album->name) }}"
                                                 class="form-control" required data-e2e="album-name-{{ $lang }}">
                                             @if ($errors->has('name.'.$lang))
                                                 <small

@@ -183,14 +183,19 @@ class GuidedPageCreateIntegrityTest extends TestCase
             $this->assertNotEmpty($pages['en']->thumbnail);
             $this->assertNotEmpty($pages['bn']->thumbnail);
             $this->assertNotSame($pages['en']->thumbnail, $pages['bn']->thumbnail);
-            $this->assertSame([$englishTag->id], $pages['en']->pageTags()->pluck('tag_id')->map(fn ($id) => (int) $id)->all());
-            $this->assertSame([$banglaTag->id], $pages['bn']->pageTags()->pluck('tag_id')->map(fn ($id) => (int) $id)->all());
+            $expectedTagIds = [$englishTag->id, $banglaTag->id];
+            sort($expectedTagIds);
+            foreach ($pages as $page) {
+                $actualTagIds = $page->pageTags()->pluck('tag_id')->map(fn ($id) => (int) $id)->all();
+                sort($actualTagIds);
+                $this->assertSame($expectedTagIds, $actualTagIds);
+            }
 
             foreach ($pages as $page) {
                 $revision = $page->revisions()->sole();
                 $this->assertSame('Initial snapshot from legacy page creation', $revision->note);
                 $this->assertSame($page->thumbnail, $revision->snapshot['page']['thumbnail']);
-                $this->assertCount(1, $revision->snapshot['tags']);
+                $this->assertCount(2, $revision->snapshot['tags']);
             }
         } finally {
             app()->useStoragePath($originalStoragePath);

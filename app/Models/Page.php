@@ -135,4 +135,65 @@ class Page extends Model
                     });
             });
     }
+
+    /**
+     * Public records that may be surfaced by discovery features. Unlisted
+     * pages remain directly addressable but must not appear automatically.
+     */
+    public function scopePubliclyListed($query)
+    {
+        return $query
+            ->publiclyAvailable()
+            ->where($this->qualifyColumn('visibility'), 'public');
+    }
+
+    /**
+     * Project groups belong to the logical page, not to one language row.
+     * Keep the direct relation as a legacy fallback for rows without UUIDs,
+     * while letting every translation discover assignments made on a sibling.
+     */
+    public function scopeAssignedToActiveProjectTag($query, ?int $tagId = null, ?string $tagSlug = null)
+    {
+        $qualifiedUuid = $query->getModel()->qualifyColumn('uuid');
+        $tagFilter = static function ($tags) use ($tagId, $tagSlug): void {
+            $tags->where('status', 1);
+            if ($tagId !== null) {
+                $tags->whereKey($tagId);
+            }
+            if (filled($tagSlug)) {
+                $tags->where('slug', $tagSlug);
+            }
+        };
+
+        return $query->where(function ($pages) use ($qualifiedUuid, $tagId, $tagSlug, $tagFilter): void {
+            $pages->whereHas('pageTags.tag', $tagFilter)
+                ->orWhere(function ($logicalPages) use ($qualifiedUuid, $tagId, $tagSlug): void {
+                    $logicalPages
+                        ->whereNotNull($qualifiedUuid)
+                        ->where($qualifiedUuid, '!=', '')
+                        ->whereExists(function ($assignments) use ($qualifiedUuid, $tagId, $tagSlug): void {
+                            $assignments->selectRaw('1')
+                                ->from('pages as logical_tag_pages')
+                                ->join(
+                                    'page_tag_modules as logical_page_tags',
+                                    'logical_page_tags.page_id',
+                                    '=',
+                                    'logical_tag_pages.id'
+                                )
+                                ->join('tags as logical_tags', 'logical_tags.id', '=', 'logical_page_tags.tag_id')
+                                ->whereNull('logical_tag_pages.deleted_at')
+                                ->whereNull('logical_tags.deleted_at')
+                                ->where('logical_tags.status', 1)
+                                ->whereColumn('logical_tag_pages.uuid', $qualifiedUuid);
+
+                            if ($tagId !== null) {
+                                $assignments->where('logical_tags.id', $tagId);
+                            }
+                            if (filled($tagSlug)) {
+                                $assignments->where('logical_tags.slug', $tagSlug);
+                            }
+                        });
+                });
+        });
+    }
 }

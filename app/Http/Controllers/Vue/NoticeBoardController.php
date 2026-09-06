@@ -41,6 +41,7 @@ class NoticeBoardController extends Controller
             $publishedAt = $event->published_at;
             $event->setAttribute('published_at', $publishedAt ? Carbon::parse($publishedAt)->toDateString() : null);
             $event->setAttribute('image_url', $this->publicImageUrl($event->getRawOriginal('image_path')));
+            $event->setAttribute('image_alt', $this->publicImageAlt($event));
             return $event;
         });
 
@@ -85,6 +86,7 @@ class NoticeBoardController extends Controller
         $publishedAt = $event->published_at;
         $event->setAttribute('published_at', $publishedAt ? Carbon::parse($publishedAt)->toDateString() : null);
         $event->setAttribute('image_url', $this->publicImageUrl($event->getRawOriginal('image_path')));
+        $event->setAttribute('image_alt', $this->publicImageAlt($event));
         $event->setAttribute('description', $this->sanitizer->sanitizeHtml($event->description));
         $event->setAttribute('inline_css', $this->sanitizer->sanitizeCss($event->inline_css));
 
@@ -147,5 +149,14 @@ class NoticeBoardController extends Controller
         return str_starts_with($path, '/') || preg_match('#^https?://#i', $path)
             ? $path
             : '/storage/photos/1/notice_board/' . $path;
+    }
+
+    private function publicImageAlt(NoticeBoard $event): string
+    {
+        $value = html_entity_decode(strip_tags((string) $event->image_alt), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $value = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $value) ?? '';
+        $value = trim(preg_replace('/\s+/u', ' ', $value) ?? '');
+
+        return $value !== '' ? $value : (string) $event->title;
     }
 }

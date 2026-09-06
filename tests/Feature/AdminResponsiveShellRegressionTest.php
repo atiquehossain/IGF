@@ -43,6 +43,35 @@ class AdminResponsiveShellRegressionTest extends TestCase
         $this->assertStringContainsString('aria-label="Log out"', $sidebar);
     }
 
+    public function test_expandable_sidebar_groups_show_decorative_chevrons_that_rotate_when_open(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/admin/layouts/sidebar.blade.php'));
+        $header = file_get_contents(resource_path('views/admin/layouts/header.blade.php'));
+        $chevron = '<i class="igf-nav-chevron fa fa-chevron-down" aria-hidden="true"></i>';
+
+        $this->assertStringContainsString(
+            '<span>{{ $group[\'label\'] }}</span>'.$chevron.'</summary>',
+            $sidebar
+        );
+        $this->assertStringContainsString(
+            '<span>Advanced & Legacy Tools</span>'.$chevron.'</summary>',
+            $sidebar
+        );
+        $this->assertStringContainsString(
+            '.igf-nav-group summary .igf-nav-chevron,.igf-all-tools summary .igf-nav-chevron { flex:0 0 auto;',
+            $header
+        );
+        $this->assertStringContainsString(
+            '.igf-nav-group[open] > summary .igf-nav-chevron,.igf-all-tools[open] > summary .igf-nav-chevron { transform:rotate(180deg); }',
+            $header
+        );
+        $this->assertStringContainsString('body.open .igf-nav-chevron { display:none; }', $header);
+        $this->assertStringContainsString(
+            'aside.left-panel.open-menu .igf-nav-label, aside.left-panel.open-menu .igf-nav-chevron { display:block; }',
+            $header
+        );
+    }
+
     public function test_navigation_translation_and_chat_actions_have_44_pixel_targets_and_mobile_containment(): void
     {
         $navigation = file_get_contents(resource_path('views/admin/page_menu/index.blade.php'));

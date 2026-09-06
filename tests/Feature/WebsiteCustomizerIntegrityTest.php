@@ -117,6 +117,145 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         $this->assertArrayNotHasKey('card_networks_label', $donationFields);
     }
 
+    public function test_customizer_preview_and_open_site_links_are_pinned_to_the_editing_language(): void
+    {
+        config()->set('app.localization', true);
+        $admin = $this->makePageEditor();
+
+        $response = $this->actingAs($admin, 'admin')
+            ->withSession(['locale' => 'en'])
+            ->get(route('site.settings.index', ['locale' => 'bn']));
+
+        $response
+            ->assertOk()
+            ->assertSee('Previewing <strong>BN</strong>', false)
+            ->assertSee('Public website preview in BN')
+            ->assertSee('Open website in BN')
+            ->assertSee('About us')
+            ->assertSee('Events &amp; stories', false)
+            ->assertSee('Careers')
+            ->assertSee('Workshops')
+            ->assertSee('Member registration');
+
+        foreach ([
+            route('frontend.home', ['lang' => 'bn']),
+            route('frontend.about', ['lang' => 'bn']),
+            route('frontend.events', ['lang' => 'bn']),
+            route('frontend.jobs.index', ['lang' => 'bn']),
+            route('frontend.workshops.index', ['lang' => 'bn']),
+            route('frontend.volunteer_registration.index', ['lang' => 'bn']),
+            route('register.form', ['lang' => 'bn']),
+        ] as $localizedUrl) {
+            $response->assertSee($localizedUrl, false);
+        }
+
+        $response->assertDontSee('src="'.route('frontend.home').'"', false);
+    }
+
+    public function test_customizer_uses_one_clear_recovery_center_shortcut(): void
+    {
+        $admin = $this->makePageEditor([
+            'site.settings.index',
+            'page.index',
+            'content.trash.index',
+        ], [
+            'site.settings.edit',
+            'page.trash.view',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index'))
+            ->assertOk()
+            ->assertSee('Recovery center')
+            ->assertSee('Restore deleted pages and other content')
+            ->assertSee('href="'.route('page.trash.index').'"', false)
+            ->assertDontSee('Trash &amp; recovery', false);
+    }
+
+    public function test_editor_directory_covers_every_public_family_with_permission_aware_handoffs(): void
+    {
+        config()->set('app.localization', true);
+        $admin = $this->makePageEditor([
+            'site.settings.index',
+            'page.index',
+            'recruitment.jobs.index',
+        ], [
+            'site.settings.edit',
+            'recruitment.jobs.templates.manage',
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')
+            ->get(route('site.settings.index', ['locale' => 'bn']))
+            ->assertOk()
+            ->assertSee('Where do I edit this?')
+            ->assertSee('Public previews stay in BN.')
+            ->assertSee('Edit careers wording')
+            ->assertSee('Open jobs')
+            ->assertSee('Open application forms')
+            ->assertSee('Website Customizer owns every public section and form label.')
+            ->assertSee('Website Customizer owns shared listing, detail-label, and empty-state wording.')
+            ->assertSee('Results come automatically from published pages, program categories, project groups, events, reports, gallery items, donation causes, jobs, and workshops in their own editors.')
+            ->assertSee('href="'.route('page.index', ['language' => 'bn']).'"', false)
+            ->assertSee('href="'.route('recruitment.jobs.index').'"', false)
+            ->assertSee('href="'.route('recruitment.forms.index').'"', false)
+            ->assertDontSee('href="'.route('recruitment.applications.index').'"', false)
+            ->assertDontSee('href="'.route('workshops.index').'"', false)
+            ->assertDontSee('href="'.route('category.index').'"', false);
+
+        foreach ([
+            'Home page',
+            'About & general pages',
+            'Category pages',
+            'Project pages',
+            'Header, footer & navigation',
+            'Newsletter & confirmation email',
+            'Chat assistant & inbox',
+            'Visitor announcement',
+            'Search engines & social sharing',
+            'Careers & application forms',
+            'Workshops & registration forms',
+            'Events & stories',
+            'Gallery',
+            'Annual reports',
+            'Contact page',
+            'Donate & causes',
+            'Zakat',
+            'Sponsor a child',
+            'Volunteer options & applications',
+            'Search',
+            'Member sign-in & registration',
+            '404 & payment messages',
+            'Analytics consent',
+            'Reusable sections',
+        ] as $publicFamily) {
+            $response->assertSee($publicFamily);
+        }
+
+        foreach ([
+            route('frontend.home', ['lang' => 'bn']),
+            route('frontend.project', ['lang' => 'bn']),
+            route('frontend.jobs.index', ['lang' => 'bn']),
+            route('frontend.workshops.index', ['lang' => 'bn']),
+            route('frontend.donate.index', ['lang' => 'bn']),
+            route('frontend.zakat', ['lang' => 'bn']),
+            route('frontend.volunteer_registration.index', ['lang' => 'bn']),
+            route('showLogin', ['lang' => 'bn']),
+            route('register.form', ['lang' => 'bn']),
+            route('login2fa', ['lang' => 'bn']),
+            route('frontend.page', [
+                'slug' => '__website-customizer-missing-page__',
+                'lang' => 'bn',
+            ]),
+        ] as $localizedPreviewUrl) {
+            $response->assertSee($localizedPreviewUrl, false);
+        }
+
+        $this->assertSame(
+            24,
+            substr_count($response->getContent(), 'class="editor-directory__item"')
+        );
+    }
+
     public function test_admin_can_publish_dynamic_office_contact_details(): void
     {
         $admin = $this->makePageEditor();
@@ -780,7 +919,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
     {
         return [
             'locale' => $locale,
-            'global_settings_version' => app(SiteSettingVersionService::class)->current(),
+            'global_settings_version' => app(SiteSettingVersionService::class)->current($locale),
             'settings' => $settings,
         ];
     }
@@ -835,8 +974,11 @@ class WebsiteCustomizerIntegrityTest extends TestCase
 
     private function customizerMarkup(string $html): string
     {
-        $this->assertSame(1, preg_match('/<main class="igf-customizer">.*?<\/main>/s', $html, $matches));
+        $start = strpos($html, '<main class="igf-customizer">');
+        $this->assertNotFalse($start);
+        $end = strpos($html, '</main>', $start);
+        $this->assertNotFalse($end);
 
-        return $matches[0];
+        return substr($html, $start, ($end + strlen('</main>')) - $start);
     }
 }

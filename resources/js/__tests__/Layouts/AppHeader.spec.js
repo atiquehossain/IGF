@@ -22,7 +22,7 @@ describe('AppHeader verified language switcher', () => {
     usePage().props = baseProps();
   });
 
-  test('uses the server-provided translated slug instead of query-toggling the current path', () => {
+  test('uses translated slugs and explicit locale intent so English overrides a Bangla session', () => {
     usePage().props.seoAlternates = {
       links: [
         { locale: 'en', url: 'http://localhost/page/english-story' },
@@ -35,7 +35,7 @@ describe('AppHeader verified language switcher', () => {
     const languageLinks = wrapper.findAll('.utility-bar__links a[hreflang]');
 
     expect(languageLinks.map((link) => link.attributes('hreflang'))).toEqual(['en', 'bn']);
-    expect(languageLinks[0].attributes('href')).toBe('http://localhost/page/english-story');
+    expect(languageLinks[0].attributes('href')).toBe('http://localhost/page/english-story?lang=en');
     expect(languageLinks[1].attributes('href')).toBe('http://localhost/page/bangla-story?lang=bn');
     expect(wrapper.html()).not.toContain('/page/english-story?lang=bn');
   });

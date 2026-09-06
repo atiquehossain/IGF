@@ -63,6 +63,8 @@
                                 $displayMode = old('display_mode.'. $lang, @$category->display_mode ?: 'archive');
                                 $landingPageUuid = old('landing_page_uuid.'. $lang, @$category->landing_page_uuid);
                                 $selectedLandingPage = $landingPages->firstWhere('uuid', $landingPageUuid);
+                                $inlineCssValue = old('inline_css.'. $lang, @$category->inline_css);
+                                $showAdvancedStyling = $errors->has('inline_css.'. $lang) || filled($inlineCssValue);
 
                                 $isValidUrl = filter_var(@$category->path, FILTER_VALIDATE_URL);
                                 if (empty($isValidUrl) && $category) {
@@ -220,15 +222,21 @@
                                     @endif
                                 </div>
 
-                                <div class="form-group has-success">
-                                    <label for="inline_css">{{ $Lang->Common->Form->CSS }}</label>
-                                    <textarea class="form-control form-control-danger" name="inline_css[{{$lang}}]"
-                                        rows="4">{{old('inline_css.'. $lang, @$category->inline_css)}}</textarea>
-                                    @if ($errors->has('inline_css.'. $lang))
-                                    <small class="help-block form-text text-danger">{{ $errors->first('inline_css.'. $lang)
-                                        }}</small>
-                                    @endif
-                                </div>
+                                <details class="card border mb-3" data-e2e="advanced-styling-{{ $lang }}" @if($showAdvancedStyling) open @endif>
+                                    <summary class="card-header py-2 font-weight-bold">Advanced developer styling</summary>
+                                    <div class="card-body">
+                                        <p class="alert alert-warning py-2" role="note">Ordinary editors can leave this closed. Custom CSS can break the public layout; only change it with developer guidance.</p>
+                                        <div class="form-group has-success mb-0">
+                                            <label for="inline_css_{{ $lang }}">{{ $Lang->Common->Form->CSS }}</label>
+                                            <textarea id="inline_css_{{ $lang }}" class="form-control form-control-danger" name="inline_css[{{$lang}}]"
+                                                rows="4">{{ $inlineCssValue }}</textarea>
+                                            @if ($errors->has('inline_css.'. $lang))
+                                            <small class="help-block form-text text-danger">{{ $errors->first('inline_css.'. $lang)
+                                                }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </details>
 
                                 <div class="alert alert-info" role="note">
                                     <strong>Search &amp; Sharing:</strong>

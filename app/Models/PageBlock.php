@@ -51,15 +51,19 @@ class PageBlock extends Model
 
     public function resolvedContent(): array
     {
-        return $this->reusableBlock?->is_enabled
-            ? ($this->reusableBlock->content ?? [])
-            : ($this->content ?? []);
+        if ($this->reusable_block_id !== null) {
+            return $this->reusableBlock?->is_enabled
+                ? ($this->reusableBlock->content ?? [])
+                : [];
+        }
+
+        return $this->content ?? [];
     }
 
     public function resolvedSettings(): array
     {
-        $settings = $this->reusableBlock?->is_enabled
-            ? ($this->reusableBlock->settings ?? [])
+        $settings = $this->reusable_block_id !== null
+            ? ($this->reusableBlock?->is_enabled ? ($this->reusableBlock->settings ?? []) : [])
             : ($this->settings ?? []);
 
         return array_filter(
@@ -78,6 +82,10 @@ class PageBlock extends Model
     {
         return $query
             ->where('is_enabled', true)
+            ->where(function ($builder) {
+                $builder->whereNull('reusable_block_id')
+                    ->orWhereHas('reusableBlock', fn ($reusable) => $reusable->where('is_enabled', true));
+            })
             ->where(function ($builder) {
                 $builder->whereNull('available_from')->orWhere('available_from', '<=', now());
             })

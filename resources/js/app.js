@@ -12,6 +12,7 @@ import VueCookies from 'vue-cookies';
 import mixin from './mixin/mixin.js';
 import baseMixin from './base';
 import ChangeFontSize from './libs/dynamic-font-size-changer';
+import { trackAnalyticsPageView } from './Shared/analytics';
 
 import './bootstrap';
 
@@ -26,9 +27,7 @@ function executeFontSizeChange() {
 
 router.on('navigate', () => {
   window.scrollTo(0, 0);
-  if (typeof window.gtag === 'function' && window.igfAnalyticsId) {
-    window.gtag('config', window.igfAnalyticsId);
-  }
+  trackAnalyticsPageView();
   executeFontSizeChange();
 });
 

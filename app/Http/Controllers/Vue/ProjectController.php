@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Services\PublicArchiveSeoService;
 use App\Services\PublicStructuredDataService;
 use App\Services\SeoMetadataService;
+use App\Services\TranslationCenterService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,6 +19,7 @@ class ProjectController extends Controller
         private PublicArchiveSeoService $archiveSeo,
         private PublicStructuredDataService $structuredData,
         private SeoMetadataService $seo,
+        private TranslationCenterService $translations,
     ) {
     }
 
@@ -26,16 +28,22 @@ class ProjectController extends Controller
         $tag = $slug !== ''
             ? Tag::with('banner')->where('status', 1)->where('slug', $slug)->firstOrFail()
             : null;
+        if ($tag) {
+            $localized = $this->translations->localizedContentValues('project_group', [
+                (string) $tag->uuid => [
+                    'name' => (string) $tag->name,
+                    'description' => (string) $tag->description,
+                ],
+            ]);
+            $copy = $localized[(string) $tag->uuid] ?? [];
+            $tag->setAttribute('name', (string) ($copy['name'] ?? $tag->name));
+            $tag->setAttribute('description', (string) ($copy['description'] ?? $tag->description));
+        }
 
         $pages = Page::publiclyAvailable()
             ->with(['pageTags.tag'])
             ->where('language', app()->getLocale())
-            ->whereHas('pageTags.tag', function ($query) use ($tag) {
-                $query->where('status', 1);
-                if ($tag) {
-                    $query->whereKey($tag->id);
-                }
-            })
+            ->assignedToActiveProjectTag($tag?->id)
             ->orderBy('order_by', 'desc')
             ->paginate(12)
             ->withQueryString();

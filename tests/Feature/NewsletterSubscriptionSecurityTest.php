@@ -10,6 +10,7 @@ use App\Models\AuthMenu;
 use App\Models\MenuAction;
 use App\Models\Role;
 use App\Models\Subscriber;
+use App\Models\TranslationLocale;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -111,6 +112,49 @@ class NewsletterSubscriptionSecurityTest extends TestCase
         )->minutes();
         $this->get($confirmationUrl)->assertForbidden();
         $this->assertNull($subscriber->fresh()->confirmed_at);
+    }
+
+    public function test_subscription_remembers_language_and_uses_customizable_localized_confirmation_copy(): void
+    {
+        Mail::fake();
+        config()->set('app.localization', true);
+        TranslationLocale::query()->whereKey('bn')->update([
+            'is_enabled' => true,
+            'enabled_at' => now(),
+        ]);
+
+        $this->withSession(['locale' => 'bn'])
+            ->from(route('frontend.home', ['lang' => 'bn']))
+            ->post(route('frontend.subscribe'), [
+                'email' => 'bangla-reader@example.test',
+                'consent' => true,
+            ])
+            ->assertSessionHas('message.text', 'ঠিকানাটি আপডেট পেতে সক্ষম হলে একটি নিশ্চিতকরণ লিংক পাঠানো হয়েছে।');
+
+        $subscriber = Subscriber::query()->sole();
+        $this->assertSame('bn', $subscriber->language);
+        $confirmationUrl = null;
+        $captured = null;
+        Mail::assertSent(ConfirmNewsletterSubscription::class, function (
+            ConfirmNewsletterSubscription $mail
+        ) use (&$confirmationUrl, &$captured): bool {
+            $confirmationUrl = $mail->confirmationUrl();
+            $captured = $mail;
+
+            return true;
+        });
+
+        $this->assertStringContainsString('lang=bn', $confirmationUrl);
+        $this->assertSame('আপনার ইগনাইট ইমেইল সাবস্ক্রিপশন নিশ্চিত করুন', $captured->envelope()->subject);
+        $rendered = $captured->render();
+        $this->assertStringContainsString('lang="bn"', $rendered);
+        $this->assertStringContainsString('আপনার ইমেইল সাবস্ক্রিপশন নিশ্চিত করুন', $rendered);
+
+        $this->get($confirmationUrl)
+            ->assertRedirect(route('frontend.home', ['lang' => 'bn']))
+            ->assertSessionHas('message.text', 'আপনার ইমেইল সাবস্ক্রিপশন নিশ্চিত হয়েছে।');
+
+        $this->assertNotNull($subscriber->fresh()->confirmed_at);
     }
 
     public function test_confirmation_delivery_migration_rolls_back_and_reapplies_cleanly(): void

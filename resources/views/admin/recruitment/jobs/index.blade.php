@@ -8,6 +8,7 @@
     $canPublish = $permissions->allows($admin, 'recruitment.jobs.status');
     $canDelete = $permissions->allows($admin, 'recruitment.jobs.destroy');
     $canReview = $permissions->allows($admin, 'recruitment.applications.index');
+    $canViewTrash = $permissions->allows($admin, 'content.trash.index');
 @endphp
 
 @section('content')
@@ -17,10 +18,19 @@
             <h1 id="jobs-page-title" class="h3 mb-1">Recruitment jobs</h1>
             <p class="text-muted mb-0">Schedule bilingual vacancies, control application windows, and review applicants.</p>
         </div>
-        @if($canCreate)
-            <a class="btn igf-btn igf-btn-primary mt-2 mt-md-0" href="{{ route('recruitment.jobs.create') }}">
-                <i class="fa fa-plus" aria-hidden="true"></i> Create job
-            </a>
+        @if($canViewTrash || $canCreate)
+            <div class="d-flex flex-wrap mt-2 mt-md-0" style="gap:.5rem">
+                @if($canViewTrash)
+                    <a class="btn igf-btn igf-btn-secondary" href="{{ route('content.trash.index', ['type' => 'job']) }}">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i> Deleted job drafts
+                    </a>
+                @endif
+                @if($canCreate)
+                    <a class="btn igf-btn igf-btn-primary" href="{{ route('recruitment.jobs.create') }}">
+                        <i class="fa fa-plus" aria-hidden="true"></i> Create job
+                    </a>
+                @endif
+            </div>
         @endif
     </div>
 
@@ -87,7 +97,7 @@
                                         <form method="post" action="{{ route('recruitment.jobs.duplicate', $job) }}">@csrf<button class="btn igf-btn igf-btn-tertiary igf-btn-compact" type="submit">Duplicate</button></form>
                                     @endif
                                     @if($canDelete && $job->publication_status === 'draft' && $job->applications_count === 0)
-                                        <form method="post" action="{{ route('recruitment.jobs.destroy', $job) }}" onsubmit="return confirm('Delete this unused draft?')">@csrf @method('delete')<button class="btn btn-outline-danger btn-sm" type="submit">Delete</button></form>
+                                        <form method="post" action="{{ route('recruitment.jobs.destroy', $job) }}" onsubmit="return confirm('Move this unused draft to Content Trash?')">@csrf @method('delete')<button class="btn btn-outline-danger btn-sm" type="submit">Move to trash</button></form>
                                     @endif
                                 </div>
                             </td>

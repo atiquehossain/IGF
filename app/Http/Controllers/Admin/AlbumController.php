@@ -26,8 +26,15 @@ class AlbumController extends Controller
         $title = $request->Lang->Album;
         $search = $request->search;
         $albums = Album::where('name', 'like', '%' . $search . '%')
-            ->orderBy('id', 'ASC')
+            ->withCount([
+                'galleries as photo_count' => fn ($query) => $query->where('type', 'gallery'),
+                'galleries as published_photo_count' => fn ($query) => $query
+                    ->where('type', 'gallery')
+                    ->where('status', 1),
+            ])
             ->where('language', app()->getLocale())
+            ->orderBy('name')
+            ->orderBy('id')
             ->paginate(15);
         return view('admin.album.index')->with(compact('title', 'albums', 'search'));
     }
@@ -214,7 +221,10 @@ class AlbumController extends Controller
                 $data = Album::where('uuid', $id)->where('language', 'en')->first();
                 $data->status = $data->status ^ 1;
                 Album::where('uuid', $id)->update(['status' => $data->status]);
-                return response(['message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully)], 200);
+                return response([
+                    'message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully),
+                    'status' => (bool) $data->status,
+                ], 200);
             }
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->NotUpdate], 403);

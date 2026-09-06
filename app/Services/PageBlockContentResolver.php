@@ -308,18 +308,13 @@ class PageBlockContentResolver
     private function pageItems(string $source, array $content, int $limit): array
     {
         $query = Page::query()
-            ->publiclyAvailable()
+            ->publiclyListed()
             ->where('language', app()->getLocale())
             ->with(['category', 'pageTags.tag']);
 
         if ($source === 'projects') {
             $tagSlug = trim((string) ($content['tag_slug'] ?? ''));
-            $query->whereHas('pageTags.tag', function (Builder $tagQuery) use ($tagSlug): void {
-                $tagQuery->where('status', 1);
-                if ($tagSlug !== '') {
-                    $tagQuery->where('slug', $tagSlug);
-                }
-            });
+            $query->assignedToActiveProjectTag(null, $tagSlug !== '' ? $tagSlug : null);
         } else {
             $categorySlug = trim((string) ($content['category_slug'] ?? 'our-causes'));
             $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery
@@ -328,18 +323,37 @@ class PageBlockContentResolver
         }
 
         $pages = $this->records($query, $content, $limit, 'uuid', 'name', 'published_at');
+        $localizedProjectTags = [];
+        if ($source === 'projects') {
+            app(LogicalPageTagService::class)->hydrate($pages, true);
+            $tagFallbacks = $pages
+                ->flatMap(fn (Page $page) => $page->pageTags->pluck('tag'))
+                ->filter(fn ($tag) => $tag && (bool) $tag->status && filled($tag->uuid))
+                ->unique('uuid')
+                ->mapWithKeys(fn ($tag): array => [(string) $tag->uuid => [
+                    'name' => (string) $tag->name,
+                ]])
+                ->all();
+            $localizedProjectTags = $this->translations->localizedContentValues(
+                'project_group',
+                $tagFallbacks
+            );
+        }
         $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
         $requestedTag = trim((string) ($content['tag_slug'] ?? ''));
 
-        return $pages->map(function (Page $page) use ($source, $itemLinkLabel, $requestedTag): array {
+        return $pages->map(function (Page $page) use ($source, $itemLinkLabel, $requestedTag, $localizedProjectTags): array {
             $projectTag = $source === 'projects'
                 ? ($requestedTag !== ''
                     ? $page->pageTags->pluck('tag')->firstWhere('slug', $requestedTag)
                     : $page->pageTags->pluck('tag')->first(fn ($tag) => (bool) $tag?->status))
                 : null;
+            $projectTagName = $projectTag
+                ? (string) data_get($localizedProjectTags, (string) $projectTag->uuid . '.name', $projectTag->name)
+                : '';
 
             return [
-                'status' => $projectTag?->name ?: '',
+                'status' => $projectTagName,
                 'heading' => $page->name,
                 'body' => $page->sub_title ?: str($page->description)->stripTags()->limit(140)->toString(),
                 'image' => $this->publicImage($page->getRawOriginal('thumbnail'), 'page'),
@@ -362,7 +376,7 @@ class PageBlockContentResolver
             'heading' => $event->title,
             'body' => $event->sub_title ?: str($event->description)->stripTags()->limit(140)->toString(),
             'image' => $this->publicImage($event->getRawOriginal('image_path'), 'notice_board'),
-            'image_alt' => $event->title,
+            'image_alt' => $event->image_alt ?: $event->title,
             'published_at' => $event->published_at ? Carbon::parse($event->published_at)->toDateString() : '',
             'url' => '/event/' . $event->slug,
             'link_label' => $itemLinkLabel,
@@ -540,7 +554,7 @@ class PageBlockContentResolver
     private function galleryItems(array $content, int $limit): array
     {
         $query = Gallery::query()
-            ->where('status', 1)
+            ->publiclyAvailable()
             ->where('language', app()->getLocale());
         $photos = $this->records($query, $content, $limit, 'uuid', 'name');
 

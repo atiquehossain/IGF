@@ -8,13 +8,19 @@
     $canPublish = $permissions->allows($admin, 'workshops.status');
     $canDelete = $permissions->allows($admin, 'workshops.destroy');
     $canReview = $permissions->allows($admin, 'workshop.registrations.index');
+    $canViewTrash = $permissions->allows($admin, 'content.trash.index');
 @endphp
 
 @section('content')
 <main class="content pb-0" aria-labelledby="workshops-page-title">
     <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
         <div><h1 id="workshops-page-title" class="h3 mb-1">Workshops</h1><p class="text-muted mb-0">Manage free bilingual workshops, registration windows, capacity, and approvals.</p></div>
-        @if($canCreate)<a class="btn igf-btn igf-btn-primary" href="{{ route('workshops.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Create workshop</a>@endif
+        @if($canViewTrash || $canCreate)
+            <div class="d-flex flex-wrap" style="gap:.5rem">
+                @if($canViewTrash)<a class="btn igf-btn igf-btn-secondary" href="{{ route('content.trash.index', ['type' => 'workshop']) }}"><i class="fa fa-trash-o" aria-hidden="true"></i> Deleted workshop drafts</a>@endif
+                @if($canCreate)<a class="btn igf-btn igf-btn-primary" href="{{ route('workshops.create') }}"><i class="fa fa-plus" aria-hidden="true"></i> Create workshop</a>@endif
+            </div>
+        @endif
     </div>
 
     @if($errors->any())<div class="alert alert-danger" role="alert"><strong>The request could not be completed.</strong><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -45,7 +51,7 @@
                             <form method="post" action="{{ route('workshops.status', $workshop) }}" onsubmit="return confirm('Withdraw this workshop from all public pages? Its registrations will remain private and available to authorized staff.')">@csrf @method('patch')<input type="hidden" name="action" value="withdraw"><button class="btn btn-outline-secondary btn-sm" type="submit">Withdraw</button></form>
                         @endif
                         @if($canCreate)<form method="post" action="{{ route('workshops.duplicate', $workshop) }}">@csrf<button class="btn igf-btn igf-btn-tertiary igf-btn-compact" type="submit">Duplicate</button></form>@endif
-                        @if($canDelete && $workshop->publication_status === 'draft' && $workshop->registrations_count === 0)<form method="post" action="{{ route('workshops.destroy', $workshop) }}" onsubmit="return confirm('Delete this unused draft?')">@csrf @method('delete')<button class="btn btn-outline-danger btn-sm" type="submit">Delete</button></form>@endif
+                        @if($canDelete && $workshop->publication_status === 'draft' && $workshop->registrations_count === 0)<form method="post" action="{{ route('workshops.destroy', $workshop) }}" onsubmit="return confirm('Move this unused draft to Content Trash?')">@csrf @method('delete')<button class="btn btn-outline-danger btn-sm" type="submit">Move to trash</button></form>@endif
                     </div></td>
                 </tr>
             @endforeach

@@ -15,6 +15,7 @@ use App\Services\ContentSanitizer;
 use App\Services\JobApplicationSubmissionService;
 use App\Services\PublicCardImageService;
 use App\Services\PublicFormTokenService;
+use App\Services\SeoMetadataService;
 use App\Services\SiteSettingService;
 use App\Services\WorkshopRegistrationService;
 use Carbon\CarbonInterface;
@@ -35,6 +36,7 @@ class OpportunityController extends Controller
         private PublicCardImageService $cardImages,
         private PublicFormTokenService $tokens,
         private SiteSettingService $siteSettings,
+        private SeoMetadataService $seo,
     ) {
     }
 
@@ -85,19 +87,71 @@ class OpportunityController extends Controller
         $isOpen = $this->jobIsOpen($posting, $now);
         $copy = $this->jobCopy($locale);
         $receipt = $this->receipt($request, 'job', (string) $posting->uuid);
+        $canonicalUrl = (string) $this->seo->localizedUrl(
+            route('frontend.jobs.show', ['job' => $translation->slug]),
+            $locale
+        );
+        $meta = $this->seo->metaForModel($posting, $this->meta(
+            (string) $translation->title,
+            $this->plainText((string) ($translation->summary ?: $translation->description)),
+            $canonicalUrl
+        ), $canonicalUrl, $locale);
 
         return Inertia::render('job', [
             'status' => true,
             'title' => (string) $translation->title,
-            'meta_tag' => $this->meta(
-                (string) $translation->title,
-                $this->plainText((string) ($translation->summary ?: $translation->description))
-            ),
+            'meta_tag' => $meta,
+            'contentSeo' => $meta,
             'data' => array_merge([
                 'listing' => $this->jobData($posting, $translation, $now, true),
                 'form' => $isOpen ? $this->publicForm($posting->currentFormVersion, 'job', (string) $posting->uuid, $locale, $request) : null,
                 'copy' => $copy,
             ], $receipt),
+        ]);
+    }
+
+    /**
+     * Show the saved visitor page to an authenticated administrator without
+     * exposing a submission token or requiring the listing to be published.
+     */
+    public function previewJob(Request $request, JobPosting $job)
+    {
+        $locale = $this->previewLocale($request);
+        app()->setLocale($locale);
+        $job->load('translations');
+        $translation = $job->translations->firstWhere('locale', $locale) ?? abort(404);
+        $canonicalUrl = (string) $this->seo->localizedUrl(
+            route('frontend.jobs.show', ['job' => $translation->slug]),
+            $locale
+        );
+        $meta = $this->previewMeta(
+            $job,
+            (string) $translation->title,
+            $this->plainText((string) ($translation->summary ?: $translation->description)),
+            $canonicalUrl,
+            $locale
+        );
+        $listing = array_merge($this->jobData($job, $translation, now(), true), [
+            'is_open' => false,
+            'public_url' => null,
+            'status_label' => $locale === 'bn' ? 'খসড়া প্রিভিউ' : 'Draft preview',
+        ]);
+
+        return $this->previewResponse($request, 'job', [
+            'status' => true,
+            'title' => 'Preview: ' . $translation->title,
+            'meta_tag' => $meta,
+            'contentSeo' => $meta,
+            'data' => [
+                'listing' => $listing,
+                'form' => null,
+                'copy' => $this->jobCopy($locale),
+                'preview' => $this->previewNotice(
+                    $locale,
+                    route('recruitment.jobs.edit', $job),
+                    'job applications'
+                ),
+            ],
         ]);
     }
 
@@ -168,19 +222,71 @@ class OpportunityController extends Controller
         $isOpen = $this->workshopIsOpen($session, $now);
         $copy = $this->workshopCopy($locale);
         $receipt = $this->receipt($request, 'workshop', (string) $session->uuid);
+        $canonicalUrl = (string) $this->seo->localizedUrl(
+            route('frontend.workshops.show', ['workshop' => $translation->slug]),
+            $locale
+        );
+        $meta = $this->seo->metaForModel($session, $this->meta(
+            (string) $translation->title,
+            $this->plainText((string) ($translation->summary ?: $translation->description)),
+            $canonicalUrl
+        ), $canonicalUrl, $locale);
 
         return Inertia::render('workshop', [
             'status' => true,
             'title' => (string) $translation->title,
-            'meta_tag' => $this->meta(
-                (string) $translation->title,
-                $this->plainText((string) ($translation->summary ?: $translation->description))
-            ),
+            'meta_tag' => $meta,
+            'contentSeo' => $meta,
             'data' => array_merge([
                 'listing' => $this->workshopData($session, $translation, $now, true),
                 'form' => $isOpen ? $this->publicForm($session->currentFormVersion, 'workshop', (string) $session->uuid, $locale, $request) : null,
                 'copy' => $copy,
             ], $receipt),
+        ]);
+    }
+
+    /**
+     * Workshop previews use the real public component while keeping the
+     * registration workflow disabled and the response private.
+     */
+    public function previewWorkshop(Request $request, Workshop $workshop)
+    {
+        $locale = $this->previewLocale($request);
+        app()->setLocale($locale);
+        $workshop->load('translations');
+        $translation = $workshop->translations->firstWhere('locale', $locale) ?? abort(404);
+        $canonicalUrl = (string) $this->seo->localizedUrl(
+            route('frontend.workshops.show', ['workshop' => $translation->slug]),
+            $locale
+        );
+        $meta = $this->previewMeta(
+            $workshop,
+            (string) $translation->title,
+            $this->plainText((string) ($translation->summary ?: $translation->description)),
+            $canonicalUrl,
+            $locale
+        );
+        $listing = array_merge($this->workshopData($workshop, $translation, now(), true), [
+            'is_open' => false,
+            'public_url' => null,
+            'status_label' => $locale === 'bn' ? 'খসড়া প্রিভিউ' : 'Draft preview',
+        ]);
+
+        return $this->previewResponse($request, 'workshop', [
+            'status' => true,
+            'title' => 'Preview: ' . $translation->title,
+            'meta_tag' => $meta,
+            'contentSeo' => $meta,
+            'data' => [
+                'listing' => $listing,
+                'form' => null,
+                'copy' => $this->workshopCopy($locale),
+                'preview' => $this->previewNotice(
+                    $locale,
+                    route('workshops.edit', $workshop),
+                    'workshop registrations'
+                ),
+            ],
         ]);
     }
 
@@ -476,6 +582,66 @@ class OpportunityController extends Controller
         return app()->getLocale() === 'bn' ? 'bn' : 'en';
     }
 
+    private function previewLocale(Request $request): string
+    {
+        $locale = strtolower(trim((string) $request->query('locale', 'en')));
+        abort_unless(in_array($locale, ['en', 'bn'], true), 404);
+
+        return $locale;
+    }
+
+    /** @return array<string, mixed> */
+    private function previewMeta(
+        JobPosting|Workshop $listing,
+        string $title,
+        string $description,
+        string $canonicalUrl,
+        string $locale,
+    ): array {
+        $meta = $this->seo->metaForModel(
+            $listing,
+            $this->meta($title, $description, $canonicalUrl),
+            $canonicalUrl,
+            $locale
+        );
+        $meta['canonical_url'] = $canonicalUrl;
+        $meta['robots'] = 'noindex,nofollow,noarchive';
+
+        return $meta;
+    }
+
+    /** @return array{enabled: true, label: string, message: string, editor_url: string, editor_label: string} */
+    private function previewNotice(string $locale, string $editorUrl, string $disabledFeature): array
+    {
+        if ($locale === 'bn') {
+            return [
+                'enabled' => true,
+                'label' => 'ব্যক্তিগত খসড়া প্রিভিউ',
+                'message' => 'শুধু অনুমোদিত অ্যাডমিন এই সংরক্ষিত পৃষ্ঠা দেখতে পারেন। এই প্রিভিউতে জমা দেওয়ার ফর্ম বন্ধ আছে।',
+                'editor_url' => $editorUrl,
+                'editor_label' => 'এডিটরে ফিরুন',
+            ];
+        }
+
+        return [
+            'enabled' => true,
+            'label' => 'Private saved preview',
+            'message' => 'Only authorized administrators can see this page. ' . ucfirst($disabledFeature) . ' are disabled in preview.',
+            'editor_url' => $editorUrl,
+            'editor_label' => 'Return to editor',
+        ];
+    }
+
+    private function previewResponse(Request $request, string $component, array $props)
+    {
+        return Inertia::render($component, $props)
+            ->toResponse($request)
+            ->withHeaders([
+                'Cache-Control' => 'private, no-store, max-age=0',
+                'X-Robots-Tag' => 'noindex, nofollow, noarchive',
+            ]);
+    }
+
     private function plainText(string $value, int $limit = 3000): string
     {
         $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -505,13 +671,20 @@ class OpportunityController extends Controller
     }
 
     /** @return array<string, string> */
-    private function meta(string $title, string $description): array
+    private function meta(string $title, string $description, ?string $canonicalUrl = null): array
     {
-        return [
+        $meta = [
             'meta_keyword' => $title . ', Ignite Global Foundation',
             'meta_title' => $title . ' | Ignite Global Foundation',
             'meta_description' => mb_substr($description, 0, 160),
+            'meta_image' => '',
         ];
+
+        if ($canonicalUrl !== null) {
+            $meta['canonical_url'] = $canonicalUrl;
+        }
+
+        return $meta;
     }
 
     private function employmentType(string $type, string $locale): string

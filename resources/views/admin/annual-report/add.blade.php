@@ -19,6 +19,10 @@
           </div>
 
           <div class="modal-body">
+            <div class="alert alert-info" role="status">
+              <strong>Creating a {{ strtoupper(app()->getLocale()) }} report.</strong>
+              To add a report in another language, switch the admin editing language from the globe menu before creating it.
+            </div>
             <form class="form-horizontal" action="{{ route('annual.report.store') }}" method="post"
               enctype="multipart/form-data">
               {{ csrf_field() }}
@@ -48,9 +52,10 @@
 
                 <div class="col-md-3">
                   <div class="form-group">
-                    <label for="order_by" class="control-label mb-1">{{ $Lang->Common->Form->OrderBy }}</label>
-                    <input name="order_by" type="number" class="form-control" value="{{ old('order_by') }}"
-                      data-e2e="order-by">
+                    <label for="order_by" class="control-label mb-1">Display priority</label>
+                    <input id="order_by" name="order_by" type="number" class="form-control" value="{{ old('order_by') }}"
+                      min="-2147483648" max="2147483647" step="1" aria-describedby="order-by-help" data-e2e="order-by">
+                    <small id="order-by-help" class="form-text text-muted">Higher numbers appear first; leave blank for normal ordering.</small>
                     @if ($errors->has('order_by'))
                       <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
                     @endif

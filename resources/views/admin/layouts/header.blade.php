@@ -77,6 +77,8 @@
             .igf-nav-group summary,.igf-all-tools summary { display:flex; align-items:center; gap:13px; min-height:44px; padding:9px 14px; border-radius:8px; color:#77777c; font-size:12px; font-weight:800; letter-spacing:.03em; cursor:pointer; list-style:none; }
             .igf-nav-group summary::-webkit-details-marker,.igf-all-tools summary::-webkit-details-marker { display:none; }
             .igf-nav-group summary i,.igf-all-tools summary i { flex:0 0 20px; width:20px; text-align:center; }
+            .igf-nav-group summary .igf-nav-chevron,.igf-all-tools summary .igf-nav-chevron { flex:0 0 auto; width:auto; margin-left:auto; font-size:10px; transition:transform .18s ease; }
+            .igf-nav-group[open] > summary .igf-nav-chevron,.igf-all-tools[open] > summary .igf-nav-chevron { transform:rotate(180deg); }
             .igf-nav-group summary:hover,.igf-all-tools summary:hover { background:var(--igf-surface-low); color:var(--igf-primary); }
             .igf-nav-group[open] summary,.igf-all-tools[open] summary { color:var(--igf-primary); }
             .igf-nav-group > ul,.igf-all-tools > ul { margin:3px 0 7px!important; padding-left:12px!important; }
@@ -117,7 +119,7 @@
             body.open .right-panel { max-width:calc(100vw - 83px); margin-left:83px!important; }
             body.open .right-panel header.header.igf-topbar { left:83px; }
             body.open .igf-brand-copy, body.open .igf-sidebar-footer span { display:none; }
-            body.open .igf-nav-group summary span, body.open .igf-all-tools summary span, body.open .igf-nav-label { display:none; }
+            body.open .igf-nav-group summary span, body.open .igf-all-tools summary span, body.open .igf-nav-label, body.open .igf-nav-chevron { display:none; }
             body.open .igf-sidebar-brand { justify-content:center; padding-inline:16px; }
             body.open .igf-sidebar-footer { padding-inline:11px; }
 
@@ -127,12 +129,12 @@
                 .right-panel header.header.igf-topbar { left:83px; }
                 .right-panel .menutoggle { display:inline-flex; }
                 .igf-brand-copy, .igf-sidebar-footer span { display:none; }
-                .igf-nav-group summary span, .igf-all-tools summary span, .igf-nav-label { display:none; }
+                .igf-nav-group summary span, .igf-all-tools summary span, .igf-nav-label, .igf-nav-chevron { display:none; }
                 .igf-sidebar-brand { justify-content:center; padding-inline:16px; }
                 .igf-sidebar-footer { padding-inline:11px; }
                 aside.left-panel.open-menu { width:256px!important; max-width:256px!important; }
                 aside.left-panel.open-menu .igf-brand-copy, aside.left-panel.open-menu .igf-sidebar-footer span { display:block; }
-                aside.left-panel.open-menu .igf-nav-group summary span, aside.left-panel.open-menu .igf-all-tools summary span, aside.left-panel.open-menu .igf-nav-label { display:block; }
+                aside.left-panel.open-menu .igf-nav-group summary span, aside.left-panel.open-menu .igf-all-tools summary span, aside.left-panel.open-menu .igf-nav-label, aside.left-panel.open-menu .igf-nav-chevron { display:block; }
                 aside.left-panel.open-menu .igf-sidebar-close { display:flex; }
                 aside.left-panel.open-menu .igf-sidebar-brand { justify-content:flex-start; padding-inline:24px; }
                 aside.left-panel.open-menu .igf-sidebar-footer { padding-inline:20px; }
@@ -142,7 +144,7 @@
                 .right-panel, body.open .right-panel { max-width:100vw; margin-left:0!important; }
                 .right-panel header.header.igf-topbar, body.open .right-panel header.header.igf-topbar { left:0; padding:0 16px; }
                 .igf-brand-copy, .igf-sidebar-footer span { display:block; }
-                .igf-nav-group summary span, .igf-all-tools summary span, .igf-nav-label { display:block; }
+                .igf-nav-group summary span, .igf-all-tools summary span, .igf-nav-label, .igf-nav-chevron { display:block; }
                 .igf-sidebar-close { display:flex; }
                 .igf-sidebar-brand { justify-content:flex-start; padding-inline:24px; }
                 .igf-sidebar-footer { padding-inline:20px; }

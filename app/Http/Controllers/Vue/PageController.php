@@ -33,7 +33,12 @@ class PageController extends Controller
         ];
 
         if (isset($specializedRoutes[$slug])) {
-            return redirect()->route($specializedRoutes[$slug], [], 301);
+            $canonical = route($specializedRoutes[$slug]);
+
+            return redirect()->to(
+                (string) $this->seo->localizedUrl($canonical, (string) app()->getLocale()),
+                301
+            );
         }
 
         $page = Page::select(

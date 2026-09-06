@@ -9,6 +9,11 @@ currently published on the website. It was built in a brand-new SQLite file
 from the project migrations, `DatabaseSeeder`, and
 `CmsContentSnapshotSeeder`; it is not a copy of the live database.
 
+Canonical Bangladesh location reference data is included for the volunteer
+form (8 divisions, 64 districts, and 495 upazilas). The database also retains
+the single required `seo_redirect_locks` mutex row. Automated checks enforce
+those exact structural records and reject unexpected rows.
+
 The artifact deliberately contains no administrator or member accounts,
 password reset or OAuth records, donations, payment transactions,
 sponsorships, messages, comments, chat conversations, subscribers,

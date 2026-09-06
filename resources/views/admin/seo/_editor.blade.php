@@ -17,6 +17,7 @@
     $canUploadMedia = $canUploadMedia ?? false;
     $canUseExternalCanonical = $canUseExternalCanonical ?? false;
     $canOpenPage = $canOpenPage ?? true;
+    $editorOpenUrl = $editorOpenUrl ?? $editor['default_url'];
     $seoRevisionDiffs = $seoRevisionDiffs ?? collect();
     $seoRevisionCanonicalPolicies = $seoRevisionCanonicalPolicies ?? collect();
     $contentAnalysis = (array) ($editor['content_analysis'] ?? ['available' => false, 'issues' => []]);
@@ -42,7 +43,7 @@
         </div>
         <div class="seo2-actions">
             @if($editor['copy_url'] && $canEditMetadata)<a class="seo2-btn seo2-btn--soft" href="{{ $editor['copy_url'] }}"><i class="fa fa-copy" aria-hidden="true"></i> Copy English</a>@endif
-            @if($canOpenPage)<a class="seo2-btn" href="{{ $editor['default_url'] }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Open page</a>@endif
+            @if($canOpenPage)<a class="seo2-btn" href="{{ $editorOpenUrl }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> {{ $editorOpenUrl === $editor['default_url'] ? 'Open page' : 'Preview saved page' }}</a>@endif
         </div>
     </header>
     <div class="seo2-card__body">

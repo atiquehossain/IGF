@@ -8,6 +8,8 @@
     $permissions = app(\App\Http\Middleware\Permission::class);
     $canPublish = $editing && $permissions->allows($admin, 'workshops.status');
     $canManageForms = $permissions->allows($admin, 'workshops.templates.manage');
+    $canPreview = $editing && $permissions->allows($admin, 'workshops.preview');
+    $canManageSeo = $editing && $permissions->allows($admin, 'seo.content.edit');
     $isPublished = $editing && $workshop->publication_status === \App\Models\Workshop::PUBLICATION_PUBLISHED;
     $isDraft = !$editing || $workshop->publication_status === \App\Models\Workshop::PUBLICATION_DRAFT;
     $englishTranslation = $translations->get('en');
@@ -369,12 +371,26 @@
                 $addressKey = "translations.$locale.venue_address";
             @endphp
             <section class="card mb-3" aria-labelledby="workshop-{{ $locale }}-title">
-                <div class="card-header workshop-section-heading">
+                <div class="card-header workshop-section-heading d-flex flex-wrap justify-content-between align-items-center">
                     <span class="workshop-step-number" aria-hidden="true">{{ $step }}</span>
                     <div>
                         <h2 id="workshop-{{ $locale }}-title" class="h5 mb-1">{{ $language }} public page</h2>
                         <small class="text-muted">Everything here is visible to visitors. Title and description are required.</small>
                     </div>
+                    @if($editing && $translation)
+                        <div class="d-flex flex-wrap ml-auto" style="gap:.5rem">
+                            @if($canPreview)
+                                <a class="btn igf-btn igf-btn-secondary igf-btn-compact" href="{{ route('workshops.preview', [$workshop, 'locale' => $locale]) }}" target="_blank" rel="noopener">
+                                    <i class="fa fa-eye" aria-hidden="true"></i> Preview saved {{ $language }}
+                                </a>
+                            @endif
+                            @if($canManageSeo)
+                                <a class="btn igf-btn igf-btn-secondary igf-btn-compact" href="{{ route('seo.content.edit', ['type' => 'workshop', 'id' => $workshop->id, 'locale' => $locale]) }}">
+                                    <i class="fa fa-search" aria-hidden="true"></i> Search &amp; Sharing
+                                </a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
                 <div class="card-body">
                     <div class="row">

@@ -20,9 +20,13 @@ final class PublicContentDatabaseArtifactTest extends TestCase
     /** @var list<string> */
     private const STRUCTURAL_TABLES = [
         'auth_menus',
+        'districts',
+        'divisions',
         'menu_actions',
         'migrations',
         'roles',
+        'seo_redirect_locks',
+        'upazilas',
     ];
 
     /** @var list<string> */
@@ -89,13 +93,13 @@ final class PublicContentDatabaseArtifactTest extends TestCase
         'admin_audit_events',
         'admin_listing_preferences',
         'page_revisions',
+        'site_setting_revisions',
         'seo_metadata_revisions',
         'seo_audit_runs',
         'seo_audit_issues',
         'seo_audit_alerts',
         'seo_audit_ignore_rules',
         'seo_not_found_hits',
-        'seo_redirect_locks',
         'editor_drafts',
         'failed_jobs',
         'private_file_cleanup_jobs',
@@ -167,6 +171,29 @@ final class PublicContentDatabaseArtifactTest extends TestCase
                 "Unclassified table [{$table}] must stay empty until it is explicitly reviewed."
             );
         }
+
+        $this->assertSame(
+            [['id' => 1]],
+            $database->query('SELECT id FROM seo_redirect_locks ORDER BY id')->fetchAll(PDO::FETCH_ASSOC),
+            'The artifact must contain only the required SEO redirect mutex row.'
+        );
+        $this->assertSame(8, $this->rowCount($database, 'divisions'));
+        $this->assertSame(64, $this->rowCount($database, 'districts'));
+        $this->assertSame(495, $this->rowCount($database, 'upazilas'));
+        $this->assertSame(
+            0,
+            (int) $database->query(
+                'SELECT COUNT(*) FROM districts d LEFT JOIN divisions v ON v.id = d.division_id WHERE v.id IS NULL'
+            )->fetchColumn(),
+            'The artifact contains a district without its division.'
+        );
+        $this->assertSame(
+            0,
+            (int) $database->query(
+                'SELECT COUNT(*) FROM upazilas u LEFT JOIN districts d ON d.id = u.district_id WHERE d.id IS NULL'
+            )->fetchColumn(),
+            'The artifact contains an upazila without its district.'
+        );
     }
 
     public function test_public_content_database_contains_only_public_cms_fields(): void
@@ -262,8 +289,8 @@ final class PublicContentDatabaseArtifactTest extends TestCase
             $this->assertSame(0, $exitCode, Artisan::output());
             $this->assertFileExists($outputPath);
             $this->assertSame(
-                File::get($snapshotPath),
-                File::get($outputPath),
+                str_replace(["\r\n", "\r"], "\n", File::get($snapshotPath)),
+                str_replace(["\r\n", "\r"], "\n", File::get($outputPath)),
                 'The artifact content differs from the normalized, reviewed CMS snapshot.'
             );
         } finally {

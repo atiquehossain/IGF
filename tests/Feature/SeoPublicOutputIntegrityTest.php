@@ -235,14 +235,30 @@ class SeoPublicOutputIntegrityTest extends TestCase
             ->assertSee('<loc>' . url('/?lang=bn') . '</loc>', false);
     }
 
-    public function test_missing_special_page_translation_returns_not_found_instead_of_an_indexable_fallback(): void
+    public function test_page_backed_special_routes_require_translation_but_settings_backed_sponsor_does_not(): void
     {
         $this->enableBangla();
         $this->makePage('home', 'en');
-        $this->makePage('sponsor-a-child', 'en');
 
         $this->get('/?lang=bn')->assertNotFound();
-        $this->get('/sponsor-child?lang=bn')->assertNotFound();
+        $sponsor = $this->get('/sponsor-child?lang=bn')
+            ->assertOk()
+            ->assertHeader('Content-Language', 'bn')
+            ->assertInertia(fn ($page) => $page
+                ->component('sponsor_child')
+                ->where('locale', 'bn')
+                ->where('seoAlternates.links', [
+                    ['locale' => 'en', 'url' => url('/sponsor-child')],
+                    ['locale' => 'bn', 'url' => url('/sponsor-child?lang=bn')],
+                ])
+            );
+        $sponsor->assertSee('rel="canonical" href="' . url('/sponsor-child?lang=bn') . '"', false);
+
+        $this->get('/sitemap-bn.xml')
+            ->assertOk()
+            ->assertSee('<loc>' . url('/sponsor-child?lang=bn') . '</loc>', false);
+
+        $this->get('/page/ordinary-page?lang=bn')->assertNotFound();
     }
 
     public function test_category_hreflang_uses_shared_uuid_and_the_translated_slug(): void

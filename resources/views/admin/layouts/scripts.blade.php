@@ -321,6 +321,21 @@
                     button.attr('aria-pressed', isPublished ? 'true' : 'false');
                     button.attr('aria-label', actionLabel + ' ' + itemLabel);
                     button.attr('title', actionLabel + ' ' + itemLabel);
+
+                    var publicationBadge = button.closest('tr').find('[data-publication-status]').first();
+                    if (publicationBadge.length) {
+                        var albumPublished = String(publicationBadge.data('album-published') ?? '1') !== '0';
+                        var isPublic = isPublished && albumPublished;
+                        var label = isPublic
+                            ? String(publicationBadge.data('published-label') || 'Published')
+                            : (isPublished
+                                ? String(publicationBadge.data('hidden-label') || 'Hidden')
+                                : String(publicationBadge.data('draft-label') || 'Draft'));
+                        publicationBadge
+                            .removeClass('badge-success badge-warning badge-secondary')
+                            .addClass(isPublic ? 'badge-success' : (isPublished ? 'badge-warning' : 'badge-secondary'))
+                            .text(label);
+                    }
                 },
                 error: function(err) {
                     toastrMsg('error', adminErrorMessage(err));

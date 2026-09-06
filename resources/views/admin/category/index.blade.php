@@ -50,7 +50,7 @@
                                             <span class="name">{{ @$category->name }}</span>
                                         </td>
                                         <td>
-                                            <span class="copy-text" data-route="{{ route('frontend.category', [app()->getLocale(), @$category->slug]) }}">{{@$category->slug}}</span>
+                                            <span class="copy-text" data-route="{{ app(\App\Services\SeoMetadataService::class)->localizedUrl(route('frontend.category', ['slug' => $category->slug]), (string) $category->language) }}">{{ $category->slug }}</span>
                                         </td>
                                         <td>
                                             <?= App\Link::action(@$category->uuid, @$category->status, 'category ' . ($category->name ?? '')) ?>

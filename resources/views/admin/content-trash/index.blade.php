@@ -4,6 +4,7 @@
     $admin = auth('admin')->user();
     $permissions = app(\App\Http\Middleware\Permission::class);
     $canViewPages = $permissions->allows($admin, 'page.index');
+    $canViewPageTrash = $permissions->allows($admin, 'page.trash.index');
     $canRestoreContent = $permissions->allows($admin, 'content.trash.edit');
     $canPermanentlyDeleteContent = $permissions->allows($admin, 'content.trash.destroy');
     $screenIsReadOnly = !$canRestoreContent && !$canPermanentlyDeleteContent;
@@ -19,6 +20,12 @@
         </div>
         <div class="card-body">
             <p class="text-muted">Editorial items are recoverable here. Their media and SEO settings stay attached until an owner deletes them permanently.</p>
+            @if($canViewPageTrash)
+                <div class="alert alert-light d-flex flex-wrap justify-content-between align-items-center" role="navigation" aria-label="Recovery center sections">
+                    <span><strong>Looking for a deleted page?</strong> Pages have their own recovery list so their sections, revisions and SEO can be restored together.</span>
+                    <a class="btn igf-btn igf-btn-secondary mt-2 mt-md-0" href="{{ route('page.trash.index') }}"><i class="fa fa-file-text-o" aria-hidden="true"></i> Open deleted pages</a>
+                </div>
+            @endif
             @if($screenIsReadOnly)
                 <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can filter and review deleted content and retention notes, but your role cannot restore or permanently delete content.</div>
             @endif
@@ -38,10 +45,10 @@
                                 <td>{{ $item->detail ?: '—' }}</td>
                                 <td>{{ $item->deleted_at?->format('M j, Y g:i A') }}</td>
                                 <td class="text-right text-nowrap">
-                                    @if($canRestoreContent)<button type="button" class="btn btn-sm btn-success trash-action" data-method="POST" data-url="{{ route('content.trash.restore', [$item->type, $item->id]) }}">Restore</button>@endif
+                                    @if($canRestoreContent)<button type="button" class="btn btn-sm btn-success trash-action" aria-label="Restore {{ $item->type_label }}: {{ $item->title }}" data-method="POST" data-url="{{ route('content.trash.restore', [$item->type, $item->id]) }}">Restore</button>@endif
                                     @if($canPermanentlyDeleteContent)
                                         @if($item->can_force_delete)
-                                            <button type="button" class="btn btn-sm btn-danger trash-action" data-method="DELETE" data-confirm="Permanently delete this content and its SEO/media? This cannot be undone." data-url="{{ route('content.trash.force-destroy', [$item->type, $item->id]) }}">Delete permanently</button>
+                                            <button type="button" class="btn btn-sm btn-danger trash-action" aria-label="Permanently delete {{ $item->type_label }}: {{ $item->title }}" data-method="DELETE" data-confirm="Permanently delete this content and its attached translations, SEO and media? This cannot be undone." data-url="{{ route('content.trash.force-destroy', [$item->type, $item->id]) }}">Delete permanently</button>
                                         @else
                                             <button class="btn btn-sm btn-danger" type="button" disabled title="{{ $item->retention_note }}">Retained for records</button>
                                         @endif

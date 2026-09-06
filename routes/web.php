@@ -36,6 +36,7 @@ Route::prefix('admin')->group(function () {
             Route::get('jobs', 'Admin\JobPostingController@index')->name('recruitment.jobs.index');
             Route::get('jobs/create', 'Admin\JobPostingController@create')->name('recruitment.jobs.create');
             Route::post('jobs', 'Admin\JobPostingController@store')->name('recruitment.jobs.store');
+            Route::get('jobs/{job}/preview', 'Vue\OpportunityController@previewJob')->name('recruitment.jobs.preview');
             Route::get('jobs/{job}', 'Admin\JobPostingController@show')->name('recruitment.jobs.show');
             Route::get('jobs/{job}/edit', 'Admin\JobPostingController@edit')->name('recruitment.jobs.edit');
             Route::put('jobs/{job}', 'Admin\JobPostingController@update')->name('recruitment.jobs.update');
@@ -80,6 +81,7 @@ Route::prefix('admin')->group(function () {
         Route::get('workshops', 'Admin\WorkshopController@index')->name('workshops.index');
         Route::get('workshops/create', 'Admin\WorkshopController@create')->name('workshops.create');
         Route::post('workshops', 'Admin\WorkshopController@store')->name('workshops.store');
+        Route::get('workshops/{workshop}/preview', 'Vue\OpportunityController@previewWorkshop')->name('workshops.preview');
         Route::get('workshops/{workshop}', 'Admin\WorkshopController@show')->name('workshops.show');
         Route::get('workshops/{workshop}/edit', 'Admin\WorkshopController@edit')->name('workshops.edit');
         Route::put('workshops/{workshop}', 'Admin\WorkshopController@update')->name('workshops.update');
@@ -286,6 +288,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('site-settings', 'Admin\SiteSettingsController@index')->name('site.settings.index');
         Route::put('site-settings', 'Admin\SiteSettingsController@update')->name('site.settings.update');
+        Route::post('site-settings/revisions/{revision}/restore', 'Admin\SiteSettingsController@restoreRevision')->name('site.settings.revisions.restore');
         Route::delete('site-settings/{group}/{key}', 'Admin\SiteSettingsController@destroy')->name('site.settings.destroy');
 
         Route::get('translations', 'Admin\TranslationCenterController@index')->name('translations.index');
@@ -333,6 +336,9 @@ Route::prefix('admin')->group(function () {
         Route::post('page-builder/{uuid}/revisions/{revisionUuid}/restore', 'Admin\PageBuilderController@restoreRevision')->name('page.builder.revision.restore');
 
         Route::get('reusable-blocks', 'Admin\ReusableBlockController@index')->name('reusable-blocks.index');
+        Route::get('reusable-blocks/{reusableBlock}/edit', 'Admin\ReusableBlockController@edit')->name('reusable-blocks.edit');
+        Route::get('reusable-blocks/{reusableBlock}/preview', 'Admin\ReusableBlockController@preview')->name('reusable-blocks.preview');
+        Route::get('reusable-blocks/{reusableBlock}', 'Admin\ReusableBlockController@show')->name('reusable-blocks.show');
         Route::put('reusable-blocks/{reusableBlock}', 'Admin\ReusableBlockController@update')->name('reusable-blocks.update');
         Route::delete('reusable-blocks/{reusableBlock}', 'Admin\ReusableBlockController@destroy')->name('reusable-blocks.destroy');
         Route::post('reusable-blocks/{uuid}/restore', 'Admin\ReusableBlockController@restore')->name('reusable-blocks.restore');
@@ -625,7 +631,7 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
 
     // Annual Report Section
     Route::get('annual-report', 'Vue\AnnualReportController@index')->name('frontend.annual_report.index');
-    Route::get('annual-report/download/{slug?}', 'Vue\AnnualReportController@download')->name('frontend.annual_report.download');
+    Route::get('annual-report/download/{slug}', 'Vue\AnnualReportController@download')->name('frontend.annual_report.download');
     Route::get('annual-report/{slug}', 'Vue\AnnualReportController@show')->name('frontend.annual_report.show');
 
     // Github login

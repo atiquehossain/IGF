@@ -20,6 +20,23 @@ class Volunteer extends Model
         'phone',
         'address',
         'cause_id',
+        'sex',
+        'date_of_birth',
+        'division_id',
+        'district_id',
+        'upazila_id',
+        'occupation',
+        'occupation_other',
+        'education_level',
+        'blood_group',
+        'emergency_response_training',
+        'skill',
+        'skill_other',
+        'consent_version',
+        'consent_locale',
+        'consent_text_hash',
+        'consent_text_snapshot',
+        'consented_at',
         'status',
         'workflow_status',
         'assigned_to',
@@ -29,6 +46,9 @@ class Volunteer extends Model
     ];
 
     protected $casts = [
+        'date_of_birth' => 'date',
+        'emergency_response_training' => 'boolean',
+        'consented_at' => 'datetime',
         'follow_up_at' => 'datetime',
         'resolved_at' => 'datetime',
         'anonymized_at' => 'datetime',
@@ -37,5 +57,20 @@ class Volunteer extends Model
     public function cause()
     {
         return $this->belongsTo(VolunteerCause::class, 'cause_id', 'id');
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function upazila()
+    {
+        return $this->belongsTo(Upazila::class);
     }
 }

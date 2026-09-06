@@ -170,6 +170,7 @@ final class AdminPermissionRegistry
         ['id' => 259, 'link' => 'workshops.templates.manage', 'menu' => 'workshops.index', 'name' => 'Manage workshop form templates', 'type' => 2],
         ['id' => 260, 'link' => 'recruitment.applications.anonymize', 'menu' => 'recruitment.applications.index', 'name' => 'Anonymize job applications', 'type' => 4, 'owner_only' => true],
         ['id' => 261, 'link' => 'workshop.registrations.anonymize', 'menu' => 'workshop.registrations.index', 'name' => 'Anonymize workshop registrations', 'type' => 4, 'owner_only' => true],
+        ['id' => 262, 'link' => 'site.settings.restore', 'menu' => 'site.settings.index', 'name' => 'Restore website-setting revisions', 'type' => 2, 'grant_from' => ['site.settings.edit']],
     ];
 
     private const ACTION_SUFFIXES = [
@@ -311,6 +312,7 @@ final class AdminPermissionRegistry
         return array_replace($map, [
             'recruitment.jobs.index' => 'recruitment.jobs.index',
             'recruitment.jobs.show' => 'recruitment.jobs.index',
+            'recruitment.jobs.preview' => ['recruitment.jobs.index', 'recruitment.jobs.edit'],
             'recruitment.jobs.create' => 'recruitment.jobs.create',
             'recruitment.jobs.store' => 'recruitment.jobs.create',
             'recruitment.jobs.duplicate' => 'recruitment.jobs.create',
@@ -358,6 +360,7 @@ final class AdminPermissionRegistry
             'recruitment.forms.preview' => 'recruitment.jobs.templates.manage',
             'workshops.index' => 'workshops.index',
             'workshops.show' => 'workshops.index',
+            'workshops.preview' => ['workshops.index', 'workshops.edit'],
             'workshops.create' => 'workshops.create',
             'workshops.store' => 'workshops.create',
             'workshops.duplicate' => 'workshops.create',
@@ -429,6 +432,7 @@ final class AdminPermissionRegistry
             'content.trash.index' => 'content.trash.index',
             'content.trash.restore' => 'content.trash.edit',
             'content.trash.force-destroy' => 'content.trash.destroy',
+            'site.settings.revisions.restore' => 'site.settings.restore',
             'translations.toggle' => 'translations.status',
             'seo.index' => ['seo.metadata.view', 'seo.metadata.edit'],
             'seo.update' => 'seo.metadata.edit',
@@ -467,6 +471,8 @@ final class AdminPermissionRegistry
             'page.builder.block.detach' => 'page.builder.edit',
             'page.builder.block.destroy' => 'page.builder.destroy',
             'page.builder.revision.restore' => 'page.builder.edit',
+            'reusable-blocks.show' => 'reusable-blocks.index',
+            'reusable-blocks.preview' => 'reusable-blocks.index',
             'reusable-blocks.restore' => 'reusable-blocks.edit',
             'reusable-blocks.force-destroy' => 'reusable-blocks.destroy',
             'media.bulk' => 'media.destroy',

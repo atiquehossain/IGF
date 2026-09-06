@@ -15,7 +15,10 @@
                             <div class="col-md-6">
                                 <h1 class="card-title">{{ $title }}</h1>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 d-flex flex-wrap justify-content-end" style="gap: 8px;">
+                                <a class="btn igf-btn igf-btn-secondary" href="{{ route('frontend.gallery') }}" target="_blank" rel="noopener">
+                                    <i class="fa fa-external-link" aria-hidden="true"></i> View live gallery
+                                </a>
                                 <a class="btn igf-btn igf-btn-secondary float-right" href="{{ route('gallery.index') }}" id="go-back">
                                     <i class="fa fa-arrow-left" aria-hidden="true"></i> {{ $Lang->Common->GoBack }}
                                 </a>
@@ -23,6 +26,9 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div class="alert alert-info" role="note">
+                            <strong>New photos start as drafts.</strong> After saving, publish the photo from the gallery list. Its album must also be published before visitors can see it.
+                        </div>
                         @if($isLocalization)
                         <ul class="nav nav-pills mb-3" id="gallery-language-tabs" role="tablist" aria-label="Gallery languages">
                         @foreach ($translations as $translation)
@@ -39,9 +45,17 @@
                         </ul>
                         @endif
                         <form action="{{ route('gallery.store') }}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <div class="form-group">
+                                <label for="gallery_order_by" class="control-label mb-1">Display priority</label>
+                                <input id="gallery_order_by" name="order_by" type="number" min="0" max="1000000" step="1"
+                                    value="{{ old('order_by', $nextPriority) }}" class="form-control" aria-describedby="gallery-order-help" data-e2e="gallery-order-by">
+                                <small id="gallery-order-help" class="help-block form-text text-muted">Higher numbers appear first. The suggested value places this photo before the current photos.</small>
+                                @if ($errors->has('order_by'))
+                                    <small class="help-block form-text text-danger">{{ $errors->first('order_by') }}</small>
+                                @endif
+                            </div>
                             <div class="tab-content" id="gallery-language-panels">
-
-                                @csrf
                                 @foreach ($translations as $translation)
                                 <?php
                                     $isActive = '';
@@ -79,9 +93,10 @@
                                         </div>
 
                                         <div class="form-group has-success">
-                                                <label for="gallery_name_{{$lang}}" class="control-label mb-1">{{ $Lang->Common->Form->Name }} <span>*</span></label>
+                                                <label for="gallery_name_{{$lang}}" class="control-label mb-1">Photo caption <span>*</span></label>
                                                 <input id="gallery_name_{{$lang}}" name="name[{{$lang}}]" type="text" value="{{ old('name.'. $lang) }}"
-                                                    class="form-control" required data-e2e="gallery-name-{{ $lang }}">
+                                                    class="form-control" required maxlength="255" data-e2e="gallery-name-{{ $lang }}" aria-describedby="gallery-caption-help-{{$lang}}">
+                                                <small id="gallery-caption-help-{{$lang}}" class="help-block form-text text-muted">Shown below the photo and in the image viewer.</small>
                                                 @if ($errors->has('name.'. $lang))
                                                     <small
                                                         class="help-block form-text text-danger">{{ $errors->first('name.'. $lang) }}</small>
@@ -90,8 +105,9 @@
 
 
                                         <div class="form-group has-success">
-                                            <label for="gallery_description_{{$lang}}">Image alternative text ( <small class="text-info">Describe the image for visitors using a screen reader; maximum 120 characters.</small>)</label>
-                                            <textarea id="gallery_description_{{$lang}}" class="form-control form-control-danger" name="description[{{$lang}}]" rows="4" maxlength="120" data-e2e="gallery-description-{{ $lang }}">{{old('description.'. $lang)}}</textarea>
+                                            <label for="gallery_description_{{$lang}}">Image description (alternative text)</label>
+                                            <textarea id="gallery_description_{{$lang}}" class="form-control form-control-danger" name="description[{{$lang}}]" rows="3" maxlength="120" data-e2e="gallery-description-{{ $lang }}" aria-describedby="gallery-alt-help-{{$lang}}">{{old('description.'. $lang)}}</textarea>
+                                            <small id="gallery-alt-help-{{$lang}}" class="help-block form-text text-muted">Briefly describe what is visible for visitors using a screen reader. If blank, the photo caption is used. Maximum 120 characters.</small>
                                             @if ($errors->has('description.'. $lang))
                                             <small class="help-block form-text text-danger">{{ $errors->first('description.'. $lang) }}</small>
                                             @endif
@@ -110,9 +126,9 @@
                                                 <br> {{ $Lang->Common->Form->Provide1180px_2 }}</small>
                                             <div class="file-upload">
                                                 <label for="gallery_image_{{$lang}}" class="file-upload_label">
-                                                    <img class="file-upload_img" id="upload_img_{{$lang}}" src="{{ asset('/')}}image/no-image.png">
+                                                    <img class="file-upload_img" id="upload_img_{{$lang}}" src="{{ asset('/')}}image/no-image.png" alt="Selected photo preview">
                                                 </label>
-                                                <input type="file" onchange="changefile(event, `upload_img_{{$lang}}`)" name="image[{{$lang}}]" value="{{old('image.'. $lang)}}" id="gallery_image_{{$lang}}" class="file-upload_input" data-e2e="gallery-image-{{ $lang }}">
+                                                <input type="file" onchange="changefile(event, `upload_img_{{$lang}}`)" name="image[{{$lang}}]" value="{{old('image.'. $lang)}}" id="gallery_image_{{$lang}}" class="file-upload_input" accept="image/jpeg,image/png" required data-e2e="gallery-image-{{ $lang }}">
                                             </div>
                                             <div style="clear: both"></div>
                                             @if($errors->has('image.'. $lang))
@@ -123,8 +139,8 @@
                                 @endforeach
 
                                 <div class="col-md-12 m-b-20 text-right">
-                                    <button type="submit" class="btn btn-success btn-sm" name="save">
-                                        <i class="fa fa-save"></i> {{ $Lang->Common->Save }}
+                                    <button type="submit" class="btn btn-success btn-sm" name="save" value="1">
+                                        <i class="fa fa-save"></i> Save draft
                                     </button>
                                 <button type="submit" name="save_and_update" value="1" class="btn igf-btn igf-btn-secondary igf-btn-compact">
                                     <i class="fa fa-save" aria-hidden="true"></i> Save and continue editing

@@ -39,9 +39,10 @@
                 <tr>
                   <th width="10%" class="serial">{{ $Lang->Common->Form->ID }}</th>
                   <th width="35%"><strong>{{ $Lang->Common->Form->Title }}</strong></th>
+                  <th width="10%"><strong>Content language</strong></th>
                   {{-- <th width="20%"><strong>{{ $Lang->Common->Form->Location }}</strong></th> --}}
                   <th width="10%"><strong>{{ $Lang->Common->Form->ReleaseDate }}</strong></th>
-                  <th width="10%"><strong>{{ $Lang->Common->Form->Order }}</strong></th>
+                  <th width="10%"><strong>Display priority</strong></th>
                   <th width="15%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                 </tr>
               </thead>
@@ -50,6 +51,7 @@
                   <tr id="{{ @$annual_report->id }}">
                     <td>{{ @$annual_report->id }} </td>
                     <td>{{ @$annual_report->title }}</td>
+                    <td><span class="badge badge-light">{{ strtoupper((string) ($annual_report->language ?: 'en')) }}</span></td>
                     {{-- <td>{{ @$annual_report->location }}</td> --}}
                     <td>{{ date('M d, Y', strtotime(@$annual_report->published_at)) }}</td>
                     <td>{{ @$annual_report->order_by }}</td>

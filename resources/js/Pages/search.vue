@@ -54,6 +54,9 @@ const typeLabel = type => ({
   event: settings.value.event_type_label,
   report: settings.value.report_type_label,
   gallery: settings.value.gallery_type_label,
+  donation: settings.value.donation_type_label,
+  job: settings.value.job_type_label,
+  workshop: settings.value.workshop_type_label,
 }[type] || settings.value.default_type_label || 'Published content');
 function resultUrl(item) { return item.result_url || '/'; }
 function submitSearch() { router.get(route('search'), { search: query.value || undefined }); }

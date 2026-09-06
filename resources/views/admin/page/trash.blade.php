@@ -4,6 +4,7 @@
     $admin = auth('admin')->user();
     $permissions = app(\App\Http\Middleware\Permission::class);
     $canViewPages = $permissions->allows($admin, 'page.index');
+    $canViewContentTrash = $permissions->allows($admin, 'content.trash.index');
     $canRestorePages = $permissions->allows($admin, 'page.trash.edit');
     $canPermanentlyDeletePages = $permissions->allows($admin, 'page.trash.destroy');
     $screenIsReadOnly = !$canRestorePages && !$canPermanentlyDeletePages;
@@ -19,6 +20,12 @@
         </div>
         <div class="card-body">
             <p class="text-muted">Deleted pages remain recoverable here. Permanent deletion also removes their blocks, revisions, and SEO metadata and cannot be undone.</p>
+            @if($canViewContentTrash)
+                <div class="alert alert-light d-flex flex-wrap justify-content-between align-items-center" role="navigation" aria-label="Recovery center sections">
+                    <span><strong>Looking for another deleted item?</strong> Images, programs, events, reports and other editorial records are kept in Content trash.</span>
+                    <a class="btn igf-btn igf-btn-secondary mt-2 mt-md-0" href="{{ route('content.trash.index') }}"><i class="fa fa-archive" aria-hidden="true"></i> Open other deleted content</a>
+                </div>
+            @endif
             @if($screenIsReadOnly)
                 <div class="alert alert-info" role="status"><strong>Read-only access.</strong> You can search and review deleted page details, but your role cannot restore or permanently delete pages.</div>
             @endif

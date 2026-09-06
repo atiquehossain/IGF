@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobPosting extends Model
@@ -96,6 +97,12 @@ class JobPosting extends Model
     public function translations(): HasMany
     {
         return $this->hasMany(JobPostingTranslation::class);
+    }
+
+    public function seo(): MorphOne
+    {
+        return $this->morphOne(SeoMetadata::class, 'seoable')
+            ->where('locale', app()->getLocale());
     }
 
     public function applications(): HasMany

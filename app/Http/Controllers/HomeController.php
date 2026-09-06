@@ -12,6 +12,7 @@ use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\Subscriber;
 use App\Services\ContentSanitizer;
+use App\Services\SiteSettingService;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -23,8 +24,10 @@ use Throwable;
 class HomeController extends Controller
 {
     private const GENERIC_SUBSCRIPTION_MESSAGE = 'If this address can receive updates, a confirmation link has been sent.';
-    public function __construct(private ContentSanitizer $sanitizer)
-    {
+    public function __construct(
+        private ContentSanitizer $sanitizer,
+        private SiteSettingService $siteSettings,
+    ) {
     }
 
     private $meta_tag = [
@@ -258,12 +261,14 @@ class HomeController extends Controller
         ]);
 
         $email = Str::lower(trim($validated['email']));
+        $locale = app()->getLocale();
+        $copy = (array) data_get($this->siteSettings->values($locale, true), 'shared_blocks', []);
 
         try {
-            [$subscriber, $shouldSend] = DB::transaction(function () use ($email): array {
+            [$subscriber, $shouldSend] = DB::transaction(function () use ($email, $locale): array {
                 $subscriber = Subscriber::query()->firstOrCreate(
                     ['email' => $email],
-                    ['uuid' => (string) Str::uuid()]
+                    ['uuid' => (string) Str::uuid(), 'language' => $locale]
                 );
                 $subscriber = Subscriber::query()->lockForUpdate()->findOrFail($subscriber->getKey());
 
@@ -273,6 +278,10 @@ class HomeController extends Controller
 
                 if ($subscriber->confirmed_at !== null) {
                     return [$subscriber, false];
+                }
+
+                if ($subscriber->language !== $locale) {
+                    $subscriber->forceFill(['language' => $locale])->save();
                 }
 
                 $cooldown = max(1, (int) config('privacy.newsletter.resend_cooldown_minutes', 15));
@@ -289,11 +298,15 @@ class HomeController extends Controller
                 $confirmationUrl = URL::temporarySignedRoute(
                     'frontend.subscribe.confirm',
                     now()->addMinutes(max(1, (int) config('privacy.newsletter.confirmation_ttl_minutes', 1440))),
-                    ['subscriber' => $subscriber->uuid]
+                    ['subscriber' => $subscriber->uuid, 'lang' => $locale]
                 );
 
                 try {
-                    Mail::to($subscriber->email)->send(new ConfirmNewsletterSubscription($confirmationUrl));
+                    Mail::to($subscriber->email)->send(new ConfirmNewsletterSubscription(
+                        $confirmationUrl,
+                        $locale,
+                        $copy,
+                    ));
                 } catch (Throwable $exception) {
                     Log::warning('Newsletter confirmation dispatch failed.', [
                         'subscriber_id' => $subscriber->getKey(),
@@ -309,13 +322,14 @@ class HomeController extends Controller
 
         return back()->with('message', [
             'type' => 'success',
-            'text' => self::GENERIC_SUBSCRIPTION_MESSAGE,
+            'text' => trim((string) ($copy['newsletter_request_message'] ?? ''))
+                ?: self::GENERIC_SUBSCRIPTION_MESSAGE,
         ]);
     }
 
-    public function confirmSubscription(string $subscriber)
+    public function confirmSubscription(Request $request, string $subscriber)
     {
-        DB::transaction(function () use ($subscriber): void {
+        $locale = DB::transaction(function () use ($subscriber): string {
             $record = Subscriber::query()
                 ->where('uuid', $subscriber)
                 ->lockForUpdate()
@@ -324,11 +338,20 @@ class HomeController extends Controller
             if ($record !== null && $record->confirmed_at === null) {
                 $record->forceFill(['confirmed_at' => now()])->save();
             }
-        });
 
-        return redirect()->route('frontend.home')->with('message', [
+            return trim((string) ($record?->language ?: app()->getLocale())) ?: 'en';
+        });
+        $request->session()->put('locale', $locale);
+        app()->setLocale($locale);
+        $copy = (array) data_get($this->siteSettings->values($locale, true), 'shared_blocks', []);
+        $routeParameters = $locale === (string) config('app.fallback_locale', 'en')
+            ? []
+            : ['lang' => $locale];
+
+        return redirect()->route('frontend.home', $routeParameters)->with('message', [
             'type' => 'success',
-            'text' => 'Your email subscription is confirmed.',
+            'text' => trim((string) ($copy['newsletter_confirmed_message'] ?? ''))
+                ?: 'Your email subscription is confirmed.',
         ]);
     }
 }

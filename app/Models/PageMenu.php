@@ -47,6 +47,7 @@ class PageMenu extends Model
                         ->whereNull('navigation_parent.deleted_at');
                 })
                 ->where('status', 1)
+                ->withoutStalePageDestinations()
                 ->orderBy('order_by', 'ASC');
         return $children;
     }
@@ -61,5 +62,28 @@ class PageMenu extends Model
 
     public function page() {
         return $this->belongsTo(Page::class ,'slug', 'slug')->publiclyAvailable();
+    }
+
+    /**
+     * Suppress links made stale by a known page becoming unavailable while
+     * retaining legacy/custom route definitions that were never page-backed.
+     * Because menu state is not mutated, restoring the page restores its link.
+     */
+    public function scopeWithoutStalePageDestinations($query)
+    {
+        $table = $this->getTable();
+
+        return $query->where(function ($menus) use ($table): void {
+            $menus->whereNull($table . '.link')
+                ->orWhere($table . '.link', '!=', 'frontend.page')
+                ->orWhereHas('page', fn ($pages) => $pages
+                    ->whereColumn('pages.language', $table . '.language'))
+                ->orWhereNotExists(function ($knownPages) use ($table): void {
+                    $knownPages->selectRaw('1')
+                        ->from('pages as configured_pages')
+                        ->whereColumn('configured_pages.slug', $table . '.slug')
+                        ->whereColumn('configured_pages.language', $table . '.language');
+                });
+        });
     }
 }

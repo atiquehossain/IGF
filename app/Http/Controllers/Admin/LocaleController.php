@@ -13,7 +13,10 @@ class LocaleController extends Controller
         $allowed = $localization->editorLocales()->pluck('id')->all();
         abort_unless(in_array($language, $allowed, true), 404);
 
-        session()->put('locale', $language);
+        // Keep the administration language independent from the visitor-site
+        // language. Opening a Bangla public preview must never switch the
+        // client's dashboard away from its English default.
+        session()->put('admin_locale', $language);
         app()->setLocale($language);
 
         return back();

@@ -102,10 +102,8 @@
     @php
       try {
         $favicon = \App\Models\SiteSetting::valueFor('branding', 'favicon', '*', '/image/favicon/favicon-32x32.png');
-        $analyticsId = \App\Models\SiteSetting::valueFor('analytics', 'google_analytics_id', '*', '');
       } catch (\Throwable $exception) {
         $favicon = '/image/favicon/favicon-32x32.png';
-        $analyticsId = '';
       }
       $faviconUrl = filter_var($favicon, FILTER_VALIDATE_URL) ? $favicon : asset(ltrim($favicon, '/'));
     @endphp
@@ -118,19 +116,6 @@
   </head>
   <body>
     @inertia
-    @if(preg_match('/^G-[A-Z0-9]+$/', $analyticsId))
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $analyticsId }}"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        window.igfAnalyticsId = @json($analyticsId);
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
-        gtag('config', window.igfAnalyticsId);
-    </script>
-    @endif
     <!-- <script src="{{ asset('/sw.js') }}"></script> -->
     <script type="module">
         // if ('serviceWorker' in navigator) {

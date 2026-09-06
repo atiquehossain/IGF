@@ -24,9 +24,11 @@ use Inertia\Inertia;
 class AuthController extends Controller {
 
     public function showLogin(Request $request) {
+        $memberSettings = $this->memberSettings();
+
         return Inertia::render('auth/login')->with([
             'status' => true,
-            'title' => 'Member login',
+            'title' => $memberSettings['title'] ?? 'Member login',
             'meta_tag' => [
                 'meta_title' => 'Member Login | Ignite Global Foundation',
                 'meta_description' => 'Secure member access for Ignite Global Foundation.',
@@ -52,6 +54,8 @@ class AuthController extends Controller {
 
     public function login(Request $request, MemberCredentialVerifier $credentials, $locale = 'en') {
 
+        $memberSettings = $this->memberSettings();
+
         $this->validate($request, [
             'phone_no' => 'required|numeric|digits:11',
             'password' => 'required|string|min:6',
@@ -64,13 +68,13 @@ class AuthController extends Controller {
                 ->first();
 
             if (!$credentials->passes($user, (string) $request->password)) {
-                return $this->invalidCredentialResponse();
+                return $this->invalidCredentialResponse($memberSettings);
             }
 
             if ($user->hasTwoFactorEnabled()) {
                 return Redirect::route('login2fa')->with('message', [
                     'type' => 'warning',
-                    'text' => 'Two-factor authentication is enabled. Continue with secure login.',
+                    'text' => $memberSettings['two_factor_required_message'] ?? 'Two-factor authentication is enabled. Continue with secure login.',
                 ]);
             }
 
@@ -81,14 +85,14 @@ class AuthController extends Controller {
 
             Auth::guard('web')->login($user, $request->boolean('remember'));
             $request->session()->regenerate();
-            $response = ['type' => 'success', 'text' => 'Success Login'];
+            $response = ['type' => 'success', 'text' => $memberSettings['login_success_message'] ?? 'You are now signed in.'];
             return Redirect::route('frontend.home')->with('message', $response);
         } catch (Exception $e) {
             Log::warning('Member authentication failed unexpectedly.', [
                 'exception_class' => $e::class,
             ]);
 
-            return $this->invalidCredentialResponse();
+            return $this->invalidCredentialResponse($memberSettings);
         }
     }
 
@@ -121,12 +125,12 @@ class AuthController extends Controller {
                 $response = ['type' => 'success', 'text' => $memberSettings['registration_success_message'] ?? 'Your member application was submitted for administrator approval.'];
                 return Redirect::route('frontend.home')->with('message', $response);
             } else {
-                $response = ['type' => 'error', 'text' => 'Signup Failed'];
+                $response = ['type' => 'error', 'text' => $memberSettings['registration_error_message'] ?? 'We could not submit your member application. Please try again later.'];
                 return back()->with('message', $response);
             }
         } catch (Exception $e) {
             report($e);
-            $response = ['type' => 'error', 'text' => 'You are not signup in. Please try again later.'];
+            $response = ['type' => 'error', 'text' => $memberSettings['registration_error_message'] ?? 'We could not submit your member application. Please try again later.'];
             return back()->with('message', $response);
         }
     }
@@ -137,9 +141,11 @@ class AuthController extends Controller {
     }
 
     public function showLogin2fa(Request $request) {
+        $memberSettings = $this->memberSettings();
+
         return Inertia::render('auth/login-2fa')->with([
             'status' => true,
-            'title' => 'Secure login',
+            'title' => $memberSettings['two_factor_title'] ?? 'Secure login',
             'meta_tag' => [
                 'meta_title' => 'Secure Login | Ignite Global Foundation',
                 'meta_description' => 'Two-factor protected member access for Ignite Global Foundation.',
@@ -149,11 +155,12 @@ class AuthController extends Controller {
     }
 
     public function showLogin2faVerify(Request $request) {
+        $memberSettings = $this->memberSettings();
         $response = Session::get('data');
         if (!is_array($response) || empty($response['access_token'])) {
             return Redirect::route('login2fa')->with('message', [
                 'type' => 'warning',
-                'text' => 'Start a new secure login challenge.',
+                'text' => $memberSettings['verification_restart_message'] ?? 'Start a new secure login challenge.',
             ]);
         }
 
@@ -170,6 +177,8 @@ class AuthController extends Controller {
         TwoFactorChallengeService $challenges,
         MemberCredentialVerifier $credentials
     ) {
+        $memberSettings = $this->memberSettings();
+
         $this->validate($request, [
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6',
@@ -182,7 +191,7 @@ class AuthController extends Controller {
                 ->first();
 
             if (!$credentials->passes($user, (string) $request->password)) {
-                return $this->invalidCredentialResponse();
+                return $this->invalidCredentialResponse($memberSettings);
             }
 
             $google2fa = app('pragmarx.google2fa');
@@ -214,11 +223,13 @@ class AuthController extends Controller {
                 'exception_class' => $e::class,
             ]);
 
-            return $this->invalidCredentialResponse();
+            return $this->invalidCredentialResponse($memberSettings);
         }
     }
 
     public function verify2fa(Request $request, TwoFactorChallengeService $challenges) {
+        $memberSettings = $this->memberSettings();
+
         $this->validate($request, [
             'access_token' => 'required|string|size:64',
             'code' => ['required', 'string', 'regex:/^\d{6}$/'],
@@ -227,17 +238,17 @@ class AuthController extends Controller {
         try {
             $challenge = $challenges->consume($request->string('access_token')->toString());
             if ($challenge === null) {
-                return back()->with('message', ['type' => 'error', 'text' => 'The verification challenge is invalid or expired.']);
+                return back()->with('message', ['type' => 'error', 'text' => $memberSettings['verification_invalid_message'] ?? 'The verification challenge is invalid or expired.']);
             }
 
             $user = User::find($challenge['user_id']);
             if (empty($user) || empty($user->status) || (int) $user->is_approved !== 1) {
-                return back()->with('message', ['type' => 'error', 'text' => 'The verification challenge is invalid or expired.']);
+                return back()->with('message', ['type' => 'error', 'text' => $memberSettings['verification_invalid_message'] ?? 'The verification challenge is invalid or expired.']);
             }
 
             $secret = $user->google2fa_secret ?: $challenge['pending_secret'];
             if (empty($secret)) {
-                return back()->with('message', ['type' => 'error', 'text' => 'The verification challenge is invalid or expired.']);
+                return back()->with('message', ['type' => 'error', 'text' => $memberSettings['verification_invalid_message'] ?? 'The verification challenge is invalid or expired.']);
             }
 
             $google2fa = app('pragmarx.google2fa');
@@ -257,47 +268,52 @@ class AuthController extends Controller {
                 $request->session()->regenerate();
                 Session::forget('data');
 
-                return Redirect::route('frontend.home')->with('message', ['type' => 'success', 'text' => 'Success Login']);
+                return Redirect::route('frontend.home')->with('message', ['type' => 'success', 'text' => $memberSettings['login_success_message'] ?? 'You are now signed in.']);
             }
 
-            return back()->with('message', ['type' => 'error', 'text' => 'Verification code mismatch. Start a new login challenge.']);
+            return back()->with('message', ['type' => 'error', 'text' => $memberSettings['verification_mismatch_message'] ?? 'The verification code did not match. Start a new login challenge.']);
         } catch (Exception $e) {
             report($e);
-            $response = ['type' => 'error', 'text' => 'Verification code mismatch. Please try again later.'];
+            $response = ['type' => 'error', 'text' => $memberSettings['verification_mismatch_message'] ?? 'The verification code did not match. Start a new login challenge.'];
             return back()->with('message', $response);
         }
     }
 
-    private function invalidCredentialResponse()
+    private function invalidCredentialResponse(?array $memberSettings = null)
     {
+        $memberSettings ??= $this->memberSettings();
+
         return back()->with('message', [
             'type' => 'error',
-            'text' => MemberCredentialVerifier::FAILURE_MESSAGE,
+            'text' => $memberSettings['invalid_credentials_message'] ?? MemberCredentialVerifier::FAILURE_MESSAGE,
         ]);
     }
 
     public function logout(Request $request, $locale = 'en') {
+        $memberSettings = $this->memberSettings();
+
         try {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-            $response = ['type' => 'success', 'text' => 'successfully logout'];
+            $response = ['type' => 'success', 'text' => $memberSettings['logout_success_message'] ?? 'You have signed out safely.'];
             return Redirect::route('frontend.home')->with('message', $response);
         } catch (Exception $e) {
-            $response = ['type' => 'error', 'text' => 'Something wrong'];
+            $response = ['type' => 'error', 'text' => $memberSettings['generic_error_message'] ?? 'Something went wrong. Please try again later.'];
             return back()->with('message', $response);
         }
     }
 
     public function changePassword(Request $request, $locale = 'en')
     {
+        $memberSettings = $this->memberSettings();
         $validator = Validator::make($request->all(), [
             'current_password' => ['required', 'string'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
         ]);
 
         if ($validator->fails()) {
-            $response = ['type' => 'error', 'text' => 'Please correct the highlighted password fields.'];
+            $response = ['type' => 'error', 'text' => $memberSettings['password_validation_message'] ?? 'Please correct the highlighted password fields.'];
             return back()->withErrors($validator)->with('message', $response);
         }
 
@@ -315,16 +331,17 @@ class AuthController extends Controller {
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                $response = ['type' => 'success', 'text' => 'Password changed successfully.'];
+                $response = ['type' => 'success', 'text' => $memberSettings['password_success_message'] ?? 'Your password was changed. Please sign in again.'];
                 return Redirect::route('frontend.home')->with('message', $response);                
             } else {
-                $response = ['type' => 'error', 'text' => 'Incorrect current password.'];
+                $currentPasswordMessage = $memberSettings['current_password_error_message'] ?? 'Incorrect current password.';
+                $response = ['type' => 'error', 'text' => $currentPasswordMessage];
                 return back()
-                    ->withErrors(['current_password' => 'The current password is incorrect.'])
+                    ->withErrors(['current_password' => $memberSettings['current_password_field_error_message'] ?? 'The current password is incorrect.'])
                     ->with('message', $response);
             }
         } catch (Exception $e) {
-            $response = ['type' => 'error', 'text' => 'Password change Failed. Please try again later.'];
+            $response = ['type' => 'error', 'text' => $memberSettings['password_error_message'] ?? 'We could not change your password. Please try again later.'];
             return back()->with('message', $response);
         }
     }

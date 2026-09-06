@@ -16,6 +16,7 @@ use App\Models\PageTagModule;
 use App\Models\SeoMetadata;
 use App\Services\PageRevisionService;
 use App\Services\PageEditorVersionService;
+use App\Services\AdminAuditService;
 use App\Services\ContentSanitizer;
 use App\Services\PageCategoryTranslationMapper;
 use App\Services\TranslationCenterService;
@@ -25,6 +26,7 @@ use App\Services\SeoEditorialReviewService;
 use App\Services\SeoMetadataService;
 use App\Services\AdminPrivateSearch;
 use App\Services\SafeMediaReplacementService;
+use App\Services\LogicalPageTagService;
 use App\Http\Middleware\Permission;
 
 use App\Rules\ValidateUniqueRule;
@@ -38,10 +40,14 @@ use Exception;
 use Throwable;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Collection;
+use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class PageController extends Controller
 {
+    private const REQUIRED_SYSTEM_PAGE_SLUGS = ['home', 'about-us', 'zakat'];
+
     public function __construct(
         private ContentSanitizer $sanitizer,
         private PageCategoryTranslationMapper $categoryMapper,
@@ -52,6 +58,7 @@ class PageController extends Controller
         private PageEditorVersionService $editorVersions,
         private SeoEditorialReviewService $seoReviews,
         private SeoMetadataService $seoMetadata,
+        private LogicalPageTagService $logicalTags,
     )
     {
     }
@@ -61,7 +68,9 @@ class PageController extends Controller
         $title = $request->Lang->Menu->Page;
         $search = $request->search;
         $status = $request->string('status')->toString();
-        $language = $request->string('language')->toString();
+        $language = $request->query->has('language')
+            ? $request->string('language')->toString()
+            : 'en';
         $category = $request->integer('category');
         $needsTranslation = $request->boolean('needs_translation');
         $languages = Page::query()
@@ -126,6 +135,7 @@ class PageController extends Controller
                 'og_image' => $fallback['meta_image'],
             ];
             $defaultUrl = $this->seoMetadata->publicUrlForPage($page);
+            $page->setAttribute('public_url', $defaultUrl);
             $health = $this->seoHealth->evaluate([
                 'title' => $meta['meta_title'] ?? '',
                 'description' => $meta['meta_description'] ?? '',
@@ -198,6 +208,7 @@ class PageController extends Controller
                     'pageTags',
                     $source->pageTags()->orderBy('id')->lockForUpdate()->get()
                 );
+                $this->logicalTags->hydrate([$source]);
                 $language = $data['action'] === 'translate'
                     ? $data['target_language']
                     : $source->language;
@@ -259,13 +270,10 @@ class PageController extends Controller
                     $block->save();
                 }
 
-                foreach ($source->pageTags as $sourceTag) {
-                    PageTagModule::create([
-                        'uuid' => Seq::uuidV4(),
-                        'page_id' => $copy->id,
-                        'tag_id' => $sourceTag->tag_id,
-                    ]);
-                }
+                $this->logicalTags->sync(
+                    $copy,
+                    $source->pageTags->pluck('tag_id')->map(fn ($tagId): int => (int) $tagId)->all()
+                );
 
                 $sourceSeo = SeoMetadata::where('seoable_type', Page::class)
                     ->where('seoable_id', $source->id)
@@ -316,39 +324,53 @@ class PageController extends Controller
         $data = $request->validate([
             'page_ids' => ['required', 'array', 'min:1', 'max:100'],
             'page_ids.*' => ['integer', 'distinct', 'exists:pages,id'],
+            'force_unpublish_dependencies' => ['sometimes', 'boolean'],
         ]);
 
         $uuids = Page::whereIn('id', $data['page_ids'])->pluck('uuid')->unique();
-        $deleted = 0;
-        DB::transaction(function () use ($uuids, &$deleted) {
+        $forceUnpublishDependencies = (bool) ($data['force_unpublish_dependencies'] ?? false);
+
+        return DB::transaction(function () use ($uuids, $forceUnpublishDependencies, $request) {
             $pageLocks = $this->editorVersions->lockForMutation($uuids);
             $pages = $pageLocks
                 ->flatten(1)
                 ->filter(fn (Page $page): bool => !$page->trashed())
                 ->sortBy(fn (Page $page): string => $page->uuid . ':' . str_pad((string) $page->id, 20, '0', STR_PAD_LEFT))
                 ->values();
-            $blocked = DonationType::query()
-                ->where('status', 1)
-                ->where('destination_type', 'page')
-                ->whereIn('destination_page_uuid', $uuids->all())
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get(['id'])
-                ->isNotEmpty();
-            abort_if(
-                $blocked,
-                422,
-                'One or more selected pages is an active donation destination. Reassign or unpublish its donation cause before moving it to trash.'
-            );
+            if ($this->requiredSystemPageNames($pages)->isNotEmpty()) {
+                return $this->requiredSystemPageProtectionResponse($pages, 'move to trash');
+            }
+            $causes = $this->activeDonationCauses($uuids, true);
+            if ($causes->isNotEmpty()) {
+                $dependencyResponse = $this->resolveDonationDependenciesForTrash(
+                    $request,
+                    $pages,
+                    $causes,
+                    $forceUnpublishDependencies
+                );
+                if ($dependencyResponse !== null) {
+                    return $dependencyResponse;
+                }
+            }
+
+            $unpublished = $this->unpublishDonationDependencies($request, $causes, $uuids);
+            $deleted = 0;
             foreach ($pages as $page) {
                 app(PageRevisionService::class)->capture($page, 'Before page moved to trash by bulk action');
                 SeoMetadata::where('seoable_type', Page::class)->where('seoable_id', $page->id)->delete();
                 $page->delete();
                 $deleted++;
             }
-        });
 
-        return response()->json(['message' => $deleted . ' page version' . ($deleted === 1 ? '' : 's') . ' moved to trash.']);
+            return response()->json([
+                'message' => $deleted . ' page version' . ($deleted === 1 ? '' : 's') . ' moved to trash.'
+                    . ($unpublished > 0
+                        ? ' ' . $unpublished . ' donation cause' . ($unpublished === 1 ? ' was' : 's were') . ' unpublished.'
+                        : ''),
+                'deleted_versions' => $deleted,
+                'unpublished_donation_causes' => $unpublished,
+            ]);
+        });
     }
 
     public function create(Request $request)
@@ -449,13 +471,7 @@ class PageController extends Controller
                     'visibility' => 'public',
                 ]);
 
-                foreach ($tagIds as $tagId) {
-                    PageTagModule::create([
-                        'uuid' => Seq::uuidV4(),
-                        'page_id' => $page->id,
-                        'tag_id' => $tagId,
-                    ]);
-                }
+                $this->logicalTags->sync($page, $tagIds->all());
 
                 app(PageRevisionService::class)->capture($page, 'Initial snapshot from guided page creation');
 
@@ -502,6 +518,13 @@ class PageController extends Controller
             $names = (array) $request->input('name');
             $primaryLanguage = in_array('en', $languages, true) ? 'en' : $languages[0];
             $slug = $this->uniqueDraftSlug((string) $names[$primaryLanguage], $primaryLanguage, $uuid);
+            $logicalTagIds = collect($request->input('tags', []))
+                ->flatten()
+                ->map(fn ($tagId): int => (int) $tagId)
+                ->filter(fn (int $tagId): bool => $tagId > 0)
+                ->unique()
+                ->values();
+            $createdPages = collect();
 
             foreach ($languages as $language) {
                 $description = $this->sanitizer->sanitizeHtml(
@@ -531,7 +554,7 @@ class PageController extends Controller
                     'order_by' => @$request->order_by[$language],
                     'name_enabled' => @$request->name_enabled[$language] ?? 1,
                     'sub_title_enabled' => @$request->sub_title_enabled[$language] ?? 1,
-                    'is_relationship' => @$request->is_relationship[$language] ?? 0,
+                    'is_relationship' => $logicalTagIds->isNotEmpty(),
                     'status' => 0,
                     'publication_status' => 'draft',
                 ]);
@@ -546,15 +569,17 @@ class PageController extends Controller
                     ]);
                 }
 
-                foreach (array_unique((array) data_get($request->input('tags', []), $language, [])) as $tag) {
-                    PageTagModule::create([
-                        'uuid' => Seq::uuidV4(),
-                        'page_id' => $page->id,
-                        'tag_id' => $tag,
-                    ]);
-                }
+                $createdPages->push($page);
+            }
 
-                app(PageRevisionService::class)->capture($page, 'Initial snapshot from legacy page creation');
+            if ($createdPages->isNotEmpty()) {
+                $this->logicalTags->sync($createdPages->first(), $logicalTagIds->all());
+                foreach ($createdPages as $createdPage) {
+                    app(PageRevisionService::class)->capture(
+                        $createdPage,
+                        'Initial snapshot from legacy page creation'
+                    );
+                }
             }
 
             DB::commit();
@@ -617,6 +642,7 @@ class PageController extends Controller
             $pages =  Page::with('pageTags')
                 ->where('uuid', $id)
                 ->get();
+            $this->logicalTags->hydrate($pages);
             $editorVersion = (int) $pages->max('editor_version');
 
             $categorylist = Category::select('categories.*')
@@ -643,6 +669,14 @@ class PageController extends Controller
             'language.*' => ['required', 'string', 'max:10', 'distinct'],
             'name.*' =>  ['required', new ValidateUniqueRule('pages|uuid,' . $request->uuid), 'nullable'],
             'thumbnail.*' => ['nullable', 'file', 'mimes:jpeg,png,jpg,webp', 'max:500'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['nullable', 'array', 'max:50'],
+            'tags.*.*' => [
+                'integer',
+                Rule::exists('tags', 'id')->where(fn ($query) => $query
+                    ->where('status', 1)
+                    ->whereNull('deleted_at')),
+            ],
         ]);
 
         $stagedAssets = [];
@@ -672,6 +706,15 @@ class PageController extends Controller
                     'uuid' => 'The English source page no longer exists.',
                 ]);
             }
+            $logicalTagIds = collect($request->input('tags', []))
+                ->flatten()
+                ->map(fn ($tagId): int => (int) $tagId)
+                ->filter(fn (int $tagId): bool => $tagId > 0)
+                ->unique()
+                ->values();
+            foreach ($logicalPages as $logicalPage) {
+                app(PageRevisionService::class)->capture($logicalPage, 'Before legacy page editor update');
+            }
 
             foreach ($request->language as $language) {
                 $page = $logicalPages->firstWhere('language', $language);
@@ -685,7 +728,6 @@ class PageController extends Controller
                 $published_date = @$request->published_at[$language];
 
                 if ($page) {
-                    app(PageRevisionService::class)->capture($page, 'Before legacy page editor update');
                     $page->update([
                         'name' => $request->name[$language],
                         'sub_title' => (string) data_get($request->input('sub_title', []), $language, ''),
@@ -716,16 +758,6 @@ class PageController extends Controller
                         ]);
                     }
 
-                    PageTagModule::where('page_id', $page->id)->delete();
-                    if (!empty($request->tags[$language])) {
-                        foreach ($request->tags[$language] as $tag) {
-                            PageTagModule::create([
-                                'uuid' => Seq::uuidV4(),
-                                'page_id' => $page->id,
-                                'tag_id' => $tag,
-                            ]);
-                        }
-                    }
                 } else {
                     if (!$published_date) {
                         $published_date = date("Y-m-d");
@@ -770,17 +802,9 @@ class PageController extends Controller
                         ]);
                     }
 
-                    if (!empty($request->tags[$language])) {
-                        foreach ($request->tags[$language] as $tag) {
-                            PageTagModule::create([
-                                'uuid' => Seq::uuidV4(),
-                                'page_id' => $page->id,
-                                'tag_id' => $tag,
-                            ]);
-                        }
-                    }
                 }
             }
+            $this->logicalTags->sync($find_page, $logicalTagIds->all());
             $this->editorVersions->advanceLocked($pageLocks, [$uuid]);
             DB::commit();
             $committed = true;
@@ -932,6 +956,9 @@ class PageController extends Controller
                     if (!$data) {
                         return response(['message' => $request->Lang->Common->Form->NotFound], 404);
                     }
+                    if ($data->status && $this->requiredSystemPageNames($pages)->isNotEmpty()) {
+                        return $this->requiredSystemPageProtectionResponse($pages, 'unpublished');
+                    }
                     if ($data->status && $this->hasActiveDonationCause((string) $data->uuid, true)) {
                         return response([
                             'message' => 'An active donation cause sends gifts directly to this page. Reassign or unpublish the cause before unpublishing the page.',
@@ -956,19 +983,36 @@ class PageController extends Controller
 
     public function destroy($id = null, Request $request)
     {
+        $data = $request->validate([
+            'force_unpublish_dependencies' => ['sometimes', 'boolean'],
+        ]);
+        $forceUnpublishDependencies = (bool) ($data['force_unpublish_dependencies'] ?? false);
+
         try {
-            return DB::transaction(function () use ($id, $request) {
+            return DB::transaction(function () use ($id, $request, $forceUnpublishDependencies) {
                 $pages = Page::where('uuid', $id)
                     ->orderBy('id')
                     ->lockForUpdate()
                     ->get();
                 abort_if($pages->isEmpty(), 404);
-                if ($this->hasActiveDonationCause((string) $id, true)) {
-                    return response([
-                        'message' => 'An active donation cause sends gifts directly to this page. Reassign or unpublish the cause before deleting the page.',
-                    ], 422);
+                if ($this->requiredSystemPageNames($pages)->isNotEmpty()) {
+                    return $this->requiredSystemPageProtectionResponse($pages, 'move to trash');
+                }
+                $pageUuids = collect([(string) $id]);
+                $causes = $this->activeDonationCauses($pageUuids, true);
+                if ($causes->isNotEmpty()) {
+                    $dependencyResponse = $this->resolveDonationDependenciesForTrash(
+                        $request,
+                        $pages,
+                        $causes,
+                        $forceUnpublishDependencies
+                    );
+                    if ($dependencyResponse !== null) {
+                        return $dependencyResponse;
+                    }
                 }
 
+                $unpublished = $this->unpublishDonationDependencies($request, $causes, $pageUuids);
                 foreach ($pages as $page) {
                     app(PageRevisionService::class)->capture($page, 'Before page moved to trash');
                     SeoMetadata::where('seoable_type', Page::class)
@@ -977,7 +1021,14 @@ class PageController extends Controller
                     $page->delete();
                 }
 
-                return response(['message' => $request->Lang->Common->Form->DeleteSuccessfully], 200);
+                return response([
+                    'message' => $request->Lang->Common->Form->DeleteSuccessfully
+                        . ($unpublished > 0
+                            ? ' ' . $unpublished . ' donation cause' . ($unpublished === 1 ? ' was' : 's were') . ' unpublished.'
+                            : ''),
+                    'deleted_versions' => $pages->count(),
+                    'unpublished_donation_causes' => $unpublished,
+                ], 200);
             });
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->NotDelete], 403);
@@ -1040,6 +1091,9 @@ class PageController extends Controller
                     ->lockForUpdate()
                     ->get();
                 abort_if($pages->isEmpty(), 404);
+                if ($this->requiredSystemPageNames($pages)->isNotEmpty()) {
+                    return $this->requiredSystemPageProtectionResponse($pages, 'permanently delete');
+                }
                 if ($this->hasActiveDonationCause((string) $id, true)) {
                     return response([
                         'message' => 'An active donation cause sends gifts directly to this page. Reassign or unpublish the cause before permanently deleting the page.',
@@ -1069,13 +1123,206 @@ class PageController extends Controller
 
     private function hasActiveDonationCause(string $uuid, bool $lock = false): bool
     {
+        return $this->activeDonationCauses(collect([$uuid]), $lock)->isNotEmpty();
+    }
+
+    private function requiredSystemPageNames(Collection $pages): Collection
+    {
+        return $pages
+            ->pluck('slug')
+            ->filter(fn ($slug): bool => in_array((string) $slug, self::REQUIRED_SYSTEM_PAGE_SLUGS, true))
+            ->unique()
+            ->map(fn (string $slug): string => match ($slug) {
+                'home' => 'Home',
+                'about-us' => 'About us',
+                'zakat' => 'Zakat',
+            })
+            ->values();
+    }
+
+    private function requiredSystemPageProtectionResponse(Collection $pages, string $action): JsonResponse
+    {
+        $names = $this->requiredSystemPageNames($pages);
+        $subject = $names->count() === 1
+            ? $names->first()
+            : $names->join(', ', ' and ');
+
+        return response()->json([
+            'message' => $subject . ' ' . ($names->count() === 1 ? 'is a required website page' : 'are required website pages')
+                . ' and cannot be ' . $action . '. You can still edit content, images, sections, and search settings normally.',
+            'code' => 'required_system_page',
+            'protected_pages' => $names->all(),
+        ], 422);
+    }
+
+    private function activeDonationCauses(Collection $uuids, bool $lock = false): Collection
+    {
+        $pageUuids = $uuids
+            ->map(fn ($uuid): string => trim((string) $uuid))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($pageUuids->isEmpty()) {
+            return collect();
+        }
+
         $query = DonationType::query()
             ->where('status', 1)
             ->where('destination_type', 'page')
-            ->where('destination_page_uuid', $uuid);
+            ->whereIn('destination_page_uuid', $pageUuids->all())
+            ->orderBy('id');
 
         return $lock
-            ? $query->orderBy('id')->lockForUpdate()->get(['id'])->isNotEmpty()
-            : $query->exists();
+            ? $query->lockForUpdate()->get()
+            : $query->get();
+    }
+
+    private function resolveDonationDependenciesForTrash(
+        Request $request,
+        Collection $pages,
+        Collection $causes,
+        bool $forceRequested
+    ): ?JsonResponse {
+        $protected = $causes->filter(fn (DonationType $cause): bool => in_array(
+            (string) $cause->purpose_key,
+            DonationType::PROTECTED_PURPOSE_KEYS,
+            true
+        ));
+        $actor = $request->user('admin') ?? auth('admin')->user();
+        $canUnpublishCauses = app(Permission::class)->allows($actor, 'donationType.status');
+        $forceAvailable = $protected->isEmpty() && $canUnpublishCauses;
+
+        if (!$forceRequested) {
+            return response()->json(
+                $this->donationDependencyPayload(
+                    $pages,
+                    $causes,
+                    $forceAvailable,
+                    true,
+                    $protected->isNotEmpty()
+                        ? 'One or more selected pages is an active donation destination for a protected direct or Zakat cause. Reassign that cause before moving the page to trash.'
+                        : ($canUnpublishCauses
+                            ? 'One or more selected pages is an active donation destination. Confirm that the affected donation cause may be unpublished before moving the page to trash.'
+                            : 'One or more selected pages is an active donation destination. An administrator with permission to publish or unpublish donation causes must confirm this cleanup.')
+                ),
+                422
+            );
+        }
+
+        if ($protected->isNotEmpty()) {
+            return response()->json(
+                $this->donationDependencyPayload(
+                    $pages,
+                    $causes,
+                    false,
+                    false,
+                    'One or more selected pages is an active donation destination for a protected direct or Zakat cause. Reassign that cause before moving the page to trash.'
+                ),
+                422
+            );
+        }
+
+        if (!$canUnpublishCauses) {
+            return response()->json([
+                ...$this->donationDependencyPayload(
+                    $pages,
+                    $causes,
+                    false,
+                    false,
+                    'You do not have permission to unpublish the donation causes that use this active donation destination.'
+                ),
+                'code' => 'donation_dependency_permission_required',
+            ], 403);
+        }
+
+        return null;
+    }
+
+    private function donationDependencyPayload(
+        Collection $pages,
+        Collection $causes,
+        bool $forceAvailable,
+        bool $requiresConfirmation,
+        string $message
+    ): array {
+        $logicalPages = $pages
+            ->groupBy(fn (Page $page): string => (string) $page->uuid);
+        $pageNames = $logicalPages->map(function (Collection $translations): string {
+            $preferred = $translations->firstWhere('language', 'en') ?? $translations->first();
+
+            return (string) ($preferred?->name ?? 'Page');
+        });
+        $protectedCount = $causes->filter(fn (DonationType $cause): bool => in_array(
+            (string) $cause->purpose_key,
+            DonationType::PROTECTED_PURPOSE_KEYS,
+            true
+        ))->count();
+
+        return [
+            'message' => $message,
+            'code' => 'active_donation_destinations',
+            'requires_confirmation' => $requiresConfirmation,
+            'force_available' => $forceAvailable,
+            'effect' => $forceAvailable
+                ? 'Continuing will unpublish the listed donation causes and automatically remove the trashed pages from public managed cards. Donation and accounting history will be preserved.'
+                : 'Reassign or unpublish the listed donation causes before moving these pages to trash. Donation and accounting history will be preserved.',
+            'impact' => [
+                'logical_pages' => $logicalPages->count(),
+                'page_versions' => $pages->count(),
+                'donation_causes_to_unpublish' => $causes->count() - $protectedCount,
+                'protected_donation_causes' => $protectedCount,
+            ],
+            'dependencies' => [
+                'donation_causes' => $causes->map(function (DonationType $cause) use ($pageNames): array {
+                    $isProtected = in_array(
+                        (string) $cause->purpose_key,
+                        DonationType::PROTECTED_PURPOSE_KEYS,
+                        true
+                    );
+
+                    return [
+                        'id' => (int) $cause->id,
+                        'uuid' => (string) $cause->uuid,
+                        'name' => (string) $cause->name,
+                        'slug' => (string) $cause->slug,
+                        'purpose_key' => $cause->purpose_key ?: null,
+                        'page_uuid' => (string) $cause->destination_page_uuid,
+                        'page_name' => (string) ($pageNames->get((string) $cause->destination_page_uuid) ?? 'Page'),
+                        'protected' => $isProtected,
+                    ];
+                })->values()->all(),
+            ],
+        ];
+    }
+
+    private function unpublishDonationDependencies(
+        Request $request,
+        Collection $causes,
+        Collection $pageUuids
+    ): int {
+        if ($causes->isEmpty()) {
+            return 0;
+        }
+
+        $actor = $request->user('admin') ?? auth('admin')->user();
+        foreach ($causes as $cause) {
+            $cause->status = false;
+            $cause->save();
+            app(AdminAuditService::class)->record(
+                $actor,
+                'donation_cause.unpublished_for_page_trash',
+                $cause,
+                ['status' => ['before' => true, 'after' => false]],
+                [
+                    'destination_page_uuid' => (string) $cause->destination_page_uuid,
+                    'page_uuids' => $pageUuids->values()->all(),
+                    'forced_dependency_cleanup' => true,
+                ]
+            );
+        }
+
+        return $causes->count();
     }
 }

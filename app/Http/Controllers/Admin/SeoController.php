@@ -8,6 +8,7 @@ use App\Http\Middleware\Permission;
 use App\Models\AnnualReport;
 use App\Models\Category;
 use App\Models\DonationType;
+use App\Models\JobPosting;
 use App\Models\MediaAsset;
 use App\Models\NoticeBoard;
 use App\Models\Page;
@@ -15,6 +16,7 @@ use App\Models\SeoMetadata;
 use App\Models\SeoMetadataRevision;
 use App\Models\SeoRedirect;
 use App\Models\Tag;
+use App\Models\Workshop;
 use App\Services\LocalizationManager;
 use App\Services\PageEditorVersionService;
 use App\Services\SeoContentAnalysisService;
@@ -267,6 +269,7 @@ class SeoController extends Controller
             [$model, $pageEditorVersion] = $this->pageEditorRenderSnapshot($model, $locale);
         }
         $defaultCanonical = $this->publicUrl($model, $type, $locale);
+        $contentFallback = $this->fallbackForModel($model, $type, $locale);
         $seoSnapshot = $this->metadataSnapshotForModel($model, $locale);
         $seo = $this->visibleSeoSnapshot($seoSnapshot);
         [$copySeo, $copyFallback] = request()->query('copy') === 'en' && $locale !== 'en'
@@ -274,7 +277,7 @@ class SeoController extends Controller
             : [null, null];
         $editor = $this->editorState(
             $seo,
-            $this->fallbackForModel($model, $type),
+            $contentFallback,
             $defaultCanonical,
             $locale,
             $type,
@@ -288,13 +291,27 @@ class SeoController extends Controller
 
         $permission = app(Permission::class);
         $admin = request()->user('admin');
+        $previewRouteName = match ($type) {
+            'job' => 'recruitment.jobs.preview',
+            'workshop' => 'workshops.preview',
+            default => null,
+        };
+        $canPreview = $previewRouteName
+            && Route::has($previewRouteName)
+            && $permission->allows($admin, $previewRouteName);
+        $editorOpenUrl = $canPreview
+            ? route($previewRouteName, [$model, 'locale' => $locale])
+            : $defaultCanonical;
+        $canOpenPage = $previewRouteName === null
+            || $canPreview
+            || (bool) data_get($editor, 'publication.is_live', false);
 
         return view('admin.seo.content', [
             'title' => 'Search & Sharing',
             'type' => $type,
             'model' => $model,
             'contentLabel' => $label,
-            'contentTitle' => $this->modelTitle($model),
+            'contentTitle' => $this->modelTitle($model, $type, $locale),
             'locale' => $locale,
             'locales' => $locales,
             'defaultCanonical' => $defaultCanonical,
@@ -313,6 +330,8 @@ class SeoController extends Controller
             'canViewMedia' => $permission->allows($admin, 'media.index'),
             'canUploadMedia' => $permission->allows($admin, 'media.store'),
             'canUseExternalCanonical' => $permission->allows($admin, 'seo.canonical.external'),
+            'canOpenPage' => $canOpenPage,
+            'editorOpenUrl' => $editorOpenUrl,
             'seoRevisionDiffs' => $this->revisionDiffs($this->revisions->recentFor($seo), $seo),
             'seoRevisionCanonicalPolicies' => $this->revisionCanonicalPolicies($this->revisions->recentFor($seo), $defaultCanonical),
         ]);
@@ -464,7 +483,7 @@ class SeoController extends Controller
             'selection_mode' => ['nullable', Rule::in(['explicit'])],
             'items' => ['required', 'array', 'min:1', 'max:25'],
             'items.*.selected' => ['sometimes', 'boolean'],
-            'items.*.owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'])],
+            'items.*.owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'job', 'workshop'])],
             'items.*.owner_id' => ['nullable', 'integer'],
             'items.*.route_name' => ['nullable', 'string', 'max:150'],
             'items.*.locale' => ['required', 'string', Rule::in($this->localeIds())],
@@ -1016,7 +1035,7 @@ class SeoController extends Controller
                 'owner_id' => $model?->getKey(),
                 'route_name' => $model ? null : $routeName,
             ],
-            'permalink' => $model ? [
+            'permalink' => $model && !in_array($kind, ['job', 'workshop'], true) ? [
                 'slug' => (string) $model->getAttribute('slug'),
                 'editable' => $this->permalinkEditable($model, $kind),
                 'prefix' => $this->permalinkPrefix($kind),
@@ -1034,7 +1053,7 @@ class SeoController extends Controller
             'type' => (string) $request->query('type', 'all'),
             'issue' => (string) $request->query('issue', $hasExplicitFilters ? 'all' : 'needs_attention'),
         ];
-        $allowedTypes = ['all', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'route'];
+        $allowedTypes = ['all', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'job', 'workshop', 'route'];
         $allowedIssues = [
             'all',
             'needs_attention',
@@ -1114,6 +1133,8 @@ class SeoController extends Controller
                 'annual_report' => 'Annual reports',
                 'project' => 'Projects',
                 'donation_cause' => 'Donation causes',
+                'job' => 'Jobs',
+                'workshop' => 'Workshops',
                 'route' => 'Website features',
             ],
         ];
@@ -1173,6 +1194,20 @@ class SeoController extends Controller
         }
         foreach (DonationType::query()->orderBy('name')->get() as $cause) {
             $targets->push($this->dashboardTarget($cause, 'donation_cause', $locale, $modelMetadata->get(DonationType::class . ':' . $cause->getKey())));
+        }
+        foreach (JobPosting::query()
+            ->whereHas('translations', fn ($query) => $query->where('locale', $locale))
+            ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
+            ->latest('id')
+            ->get() as $job) {
+            $targets->push($this->dashboardTarget($job, 'job', $locale, $modelMetadata->get(JobPosting::class . ':' . $job->getKey())));
+        }
+        foreach (Workshop::query()
+            ->whereHas('translations', fn ($query) => $query->where('locale', $locale))
+            ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
+            ->latest('id')
+            ->get() as $workshop) {
+            $targets->push($this->dashboardTarget($workshop, 'workshop', $locale, $modelMetadata->get(Workshop::class . ':' . $workshop->getKey())));
         }
 
         foreach ($this->routeRegistry->all() as $name => $definition) {
@@ -1282,14 +1317,16 @@ class SeoController extends Controller
                 'event' => 'Event / publication',
                 'annual_report' => 'Annual report',
                 'donation_cause' => 'Donation cause · localized SEO',
+                'job' => 'Job · localized SEO',
+                'workshop' => 'Workshop · localized SEO',
                 default => 'Project · shared across languages',
             },
-            $this->modelTitle($model),
+            $this->modelTitle($model, $type, $locale),
             $url,
             route('seo.content.edit', ['type' => $type, 'id' => $model->getKey(), 'locale' => $locale]),
             $locale,
             $seo,
-            $this->fallbackForModel($model, $type),
+            $this->fallbackForModel($model, $type, $locale),
             [
                 'owner_type' => $type,
                 'owner_id' => $model->getKey(),
@@ -1366,32 +1403,34 @@ class SeoController extends Controller
         ];
     }
 
-    private function fallbackForModel(Model $model, string $type): array
+    private function fallbackForModel(Model $model, string $type, ?string $locale = null): array
     {
+        $contentModel = $this->opportunityTranslation($model, $type, $locale) ?: $model;
         $title = $type === 'donation_cause'
-            ? 'Donate to ' . $this->modelTitle($model) . ' | ' . config('app.name')
-            : $this->modelTitle($model);
+            ? 'Donate to ' . $this->modelTitle($model, $type, $locale) . ' | ' . config('app.name')
+            : $this->modelTitle($model, $type, $locale);
         $description = match ($type) {
-            'page' => $model->getAttribute('meta_description') ?: $model->getAttribute('sub_title') ?: $model->getAttribute('description'),
-            'category' => $model->getAttribute('meta_description') ?: $model->getAttribute('description'),
-            'event' => $model->getAttribute('description') ?: $model->getAttribute('sub_title'),
-            'annual_report' => $model->getAttribute('description') ?: $model->getAttribute('sub_title'),
-            'donation_cause' => $model->getAttribute('description'),
+            'page' => $contentModel->getAttribute('meta_description') ?: $contentModel->getAttribute('sub_title') ?: $contentModel->getAttribute('description'),
+            'category' => $contentModel->getAttribute('meta_description') ?: $contentModel->getAttribute('description'),
+            'event' => $contentModel->getAttribute('description') ?: $contentModel->getAttribute('sub_title'),
+            'annual_report' => $contentModel->getAttribute('description') ?: $contentModel->getAttribute('sub_title'),
+            'donation_cause' => $contentModel->getAttribute('description'),
+            'job', 'workshop' => $contentModel->getAttribute('summary') ?: $contentModel->getAttribute('description'),
             default => '',
         };
         $image = match ($type) {
-            'page' => $model->getAttribute('thumbnail'),
-            'category' => $model->getAttribute('path') ?: $model->getAttribute('image'),
-            'event' => $model->getAttribute('image_path'),
-            'annual_report' => $this->annualReportImage($model),
-            'donation_cause' => $model->getAttribute('image'),
+            'page' => $contentModel->getAttribute('thumbnail'),
+            'category' => $contentModel->getAttribute('path') ?: $contentModel->getAttribute('image'),
+            'event' => $contentModel->getAttribute('image_path'),
+            'annual_report' => $this->annualReportImage($contentModel),
+            'donation_cause' => $contentModel->getAttribute('image'),
             default => '',
         };
 
         return [
-            'meta_title' => (string) ($model->getAttribute('meta_title') ?: $title),
+            'meta_title' => (string) ($contentModel->getAttribute('meta_title') ?: $title),
             'meta_description' => trim(strip_tags((string) $description)),
-            'meta_keyword' => (string) $model->getAttribute('meta_keyword'),
+            'meta_keyword' => (string) $contentModel->getAttribute('meta_keyword'),
             'meta_image' => (string) $image,
         ];
     }
@@ -1421,6 +1460,12 @@ class SeoController extends Controller
 
     private function publicUrl(Model $model, string $type, ?string $locale = null): string
     {
+        $locale ??= (string) ($model->getAttribute('language') ?: $this->defaultLocale());
+        $opportunityTranslation = $this->opportunityTranslation($model, $type, $locale);
+        if (in_array($type, ['job', 'workshop'], true)) {
+            abort_unless($opportunityTranslation, 404);
+        }
+
         $url = match ($type) {
             'page' => $this->pagePublicUrl($model),
             'category' => route('frontend.category', ['slug' => $model->getAttribute('slug')]),
@@ -1428,10 +1473,10 @@ class SeoController extends Controller
             'annual_report' => route('frontend.annual_report.show', ['slug' => $model->getAttribute('slug')]),
             'project' => route('frontend.project', ['slug' => $model->getAttribute('slug')]),
             'donation_cause' => route('frontend.donate.cause', ['cause' => $model->getAttribute('slug')]),
+            'job' => route('frontend.jobs.show', ['job' => $opportunityTranslation->getAttribute('slug')]),
+            'workshop' => route('frontend.workshops.show', ['workshop' => $opportunityTranslation->getAttribute('slug')]),
             default => url('/'),
         };
-
-        $locale ??= (string) ($model->getAttribute('language') ?: $this->defaultLocale());
 
         return (string) $this->seo->localizedUrl($url, $locale, $this->defaultLocale());
     }
@@ -1601,6 +1646,13 @@ class SeoController extends Controller
 
     private function englishSource(Model $model, string $type): array
     {
+        if (in_array($type, ['job', 'workshop'], true)) {
+            return [
+                $this->metadataForModel($model, 'en'),
+                $this->fallbackForModel($model, $type, 'en'),
+            ];
+        }
+
         $source = $model;
         if (!in_array($type, ['project', 'donation_cause'], true) && $model->getAttribute('language') !== 'en') {
             $source = match ($type) {
@@ -1883,7 +1935,7 @@ class SeoController extends Controller
         if ($filters['locale'] !== 'all' && !in_array($filters['locale'], $this->localeIds(), true)) {
             $filters['locale'] = 'all';
         }
-        if (!in_array($filters['type'], ['all', 'route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'], true)) {
+        if (!in_array($filters['type'], ['all', 'route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'job', 'workshop'], true)) {
             $filters['type'] = 'all';
         }
 
@@ -1952,7 +2004,7 @@ class SeoController extends Controller
             throw ValidationException::withMessages(['items' => 'A bulk row was assigned to the wrong language and was not saved.']);
         }
         $metadata = $this->metadataForModel($model, $locale);
-        $fallback = $this->fallbackForModel($model, (string) $item['owner_type']);
+        $fallback = $this->fallbackForModel($model, (string) $item['owner_type'], $locale);
         $url = $this->publicUrl($model, (string) $item['owner_type'], $locale);
 
         return [$model, null, null, $metadata, $fallback, $url];
@@ -2139,7 +2191,7 @@ class SeoController extends Controller
         // This cross-feature order is shared with Translation Center. Keep
         // every transaction that can touch several translated owner tables
         // on the same sequence before any owned SEO metadata is locked.
-        foreach (['category', 'event', 'annual_report', 'project', 'donation_cause'] as $type) {
+        foreach (['category', 'event', 'annual_report', 'project', 'donation_cause', 'job', 'workshop'] as $type) {
             $rows = $requested->get($type);
             if (!$rows) {
                 continue;
@@ -2179,6 +2231,8 @@ class SeoController extends Controller
             'annual_report' => AnnualReport::class,
             'project' => Tag::class,
             'donation_cause' => DonationType::class,
+            'job' => JobPosting::class,
+            'workshop' => Workshop::class,
             default => null,
         };
     }
@@ -2229,6 +2283,26 @@ class SeoController extends Controller
             return [
                 'state' => $isLive ? 'published' : ($scheduled && $enabled ? 'scheduled' : 'draft'),
                 'label' => $isLive ? 'Live report' : ($scheduled && $enabled ? 'Scheduled report' : 'Draft report'),
+                'is_live' => $isLive,
+            ];
+        }
+
+        if (in_array($type, ['job', 'workshop'], true)) {
+            $state = trim((string) $model->getAttribute('publication_status')) ?: 'draft';
+            $visibleFrom = $model->getAttribute('visible_from_at');
+            $visibilityReached = $visibleFrom
+                && \Illuminate\Support\Carbon::parse($visibleFrom)->lessThanOrEqualTo(now());
+            $isLive = $state === 'published' && $visibilityReached;
+
+            return [
+                'state' => $isLive ? 'published' : ($state === 'published' ? 'scheduled' : $state),
+                'label' => match (true) {
+                    $isLive && $type === 'job' => 'Live job',
+                    $isLive => 'Live workshop',
+                    $state === 'published' => 'Scheduled for publication',
+                    $state === 'withdrawn' => 'Withdrawn',
+                    default => 'Private draft',
+                },
                 'is_live' => $isLive,
             ];
         }
@@ -2373,7 +2447,7 @@ class SeoController extends Controller
     private function reviewIdentityRules(): array
     {
         return [
-            'owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause'])],
+            'owner_type' => ['required', Rule::in(['route', 'page', 'category', 'event', 'annual_report', 'project', 'donation_cause', 'job', 'workshop'])],
             'owner_id' => ['nullable', 'integer'],
             'route_name' => ['nullable', 'string', 'max:150'],
             'locale' => ['required', 'string', Rule::in($this->localeIds())],
@@ -2408,7 +2482,7 @@ class SeoController extends Controller
                 ->where('seoable_id', $model->getKey())
                 ->where('locale', $locale);
             $metadata = ($lock ? $metadataQuery->lockForUpdate() : $metadataQuery)->first();
-            $fallback = $this->fallbackForModel($model, (string) $data['owner_type']);
+            $fallback = $this->fallbackForModel($model, (string) $data['owner_type'], $locale);
             $url = $this->publicUrl($model, (string) $data['owner_type'], $locale);
         }
 
@@ -2512,6 +2586,8 @@ class SeoController extends Controller
             'annual_report' => [AnnualReport::class, 'Annual report'],
             'project' => [Tag::class, 'Project'],
             'donation_cause' => [DonationType::class, 'Donation cause'],
+            'job' => [JobPosting::class, 'Job'],
+            'workshop' => [Workshop::class, 'Workshop'],
             default => null,
         };
         abort_unless($definition, 404);
@@ -2550,6 +2626,8 @@ class SeoController extends Controller
             AnnualReport::class => 'annual_report',
             Tag::class => 'project',
             DonationType::class => 'donation_cause',
+            JobPosting::class => 'job',
+            Workshop::class => 'workshop',
             default => null,
         };
     }
@@ -2568,7 +2646,7 @@ class SeoController extends Controller
     private function contentIdentity(Model $model, string $type): string
     {
         $identity = match ($type) {
-            'page', 'category', 'project', 'donation_cause' => $model->getAttribute('uuid') ?: $model->getAttribute('slug'),
+            'page', 'category', 'project', 'donation_cause', 'job', 'workshop' => $model->getAttribute('uuid') ?: $model->getAttribute('slug'),
             'event' => $model->getAttribute('translation_key') ?: 'record:' . $model->getKey(),
             'annual_report' => $model->getAttribute('translation_key') ?: 'record:' . $model->getKey(),
             default => null,
@@ -2577,9 +2655,30 @@ class SeoController extends Controller
         return $type . ':' . ($identity ?: $model->getKey());
     }
 
-    private function modelTitle(Model $model): string
+    private function modelTitle(Model $model, ?string $type = null, ?string $locale = null): string
     {
-        return (string) ($model->getAttribute('name') ?: $model->getAttribute('title') ?: $model->getAttribute('slug'));
+        $contentModel = $type ? ($this->opportunityTranslation($model, $type, $locale) ?: $model) : $model;
+
+        return (string) ($contentModel->getAttribute('name') ?: $contentModel->getAttribute('title') ?: $contentModel->getAttribute('slug'));
+    }
+
+    private function opportunityTranslation(Model $model, string $type, ?string $locale = null): ?Model
+    {
+        $locale ??= (string) (app()->getLocale() ?: $this->defaultLocale());
+        if ($type === 'job' && $model instanceof JobPosting) {
+            return ($model->relationLoaded('translations')
+                ? $model->getRelation('translations')->firstWhere('locale', $locale)
+                : null)
+                ?: $model->translations()->where('locale', $locale)->first();
+        }
+        if ($type === 'workshop' && $model instanceof Workshop) {
+            return ($model->relationLoaded('translations')
+                ? $model->getRelation('translations')->firstWhere('locale', $locale)
+                : null)
+                ?: $model->translations()->where('locale', $locale)->first();
+        }
+
+        return null;
     }
 
     private function mediaAssets(): Collection

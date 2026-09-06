@@ -32,12 +32,14 @@ class GalleryController extends Controller
     {
         $title = $request->Lang->Menu->Gallery;
         $search = $request->search;
-        $gallerys = Gallery::select('galleries.*', 'albums.name as album_name')
+        $gallerys = Gallery::select('galleries.*', 'albums.name as album_name', 'albums.status as album_status')
             ->where('galleries.name', 'like', '%' . $search . '%')
             ->leftjoin('albums', 'albums.id', '=', 'galleries.album_id')
             ->where('galleries.type', 'gallery')
             ->where('galleries.language', app()->getLocale())
-            ->orderBy('galleries.id', 'ASC')
+            ->orderByRaw('CASE WHEN galleries.order_by IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('galleries.order_by')
+            ->orderByDesc('galleries.id')
             ->paginate(15);
 
         $gallerys->getCollection()->each(function (Gallery $gallery): void {
@@ -56,33 +58,47 @@ class GalleryController extends Controller
     {
         $title = $request->Lang->Common->New . " " . $request->Lang->Menu->Gallery;
         $translations = Translation::languageList();
-        $albums = Album::where('status', 1)->orderBy('id', 'ASC')->get();
-        return view('admin.gallery.add')->with(compact('title', 'translations', 'albums'));
+        $albums = Album::where('status', 1)->orderBy('name')->orderBy('id')->get();
+        $nextPriority = ((int) (Gallery::where('type', 'gallery')->max('order_by') ?? 0)) + 10;
+
+        return view('admin.gallery.add')->with(compact('title', 'translations', 'albums', 'nextPriority'));
     }
 
     public function store(Request $request)
     {
-        $this->validate(request(), [
-            'language.*' => 'required|string',
+        $request->validate([
+            'language' => 'required|array|min:1',
+            'language.*' => 'required|string|max:10',
+            'image' => 'required|array',
             'image.*' => 'required|mimes:jpeg,png,jpg|max:1000',
-            'album_id.*' => 'required|string',
-            'name.*' => ['required', new ValidateUniqueRule('galleries'), 'nullable'],
+            'album_id' => 'required|array',
+            'album_id.*' => 'required|integer|exists:albums,id',
+            'name' => 'required|array',
+            'name.*' => ['required', 'string', 'max:255', new ValidateUniqueRule('galleries')],
+            'description' => 'nullable|array',
+            'description.*' => 'nullable|string|max:120',
+            'order_by' => 'nullable|integer|min:0|max:1000000',
         ]);
 
         $stagedAssets = [];
         $committed = false;
         try {
             $uuid = Seq::uuidV4();
-            DB::transaction(function () use ($request, $uuid, &$stagedAssets): void {
+            $orderBy = $request->filled('order_by')
+                ? (int) $request->input('order_by')
+                : ((int) (Gallery::where('type', 'gallery')->max('order_by') ?? 0)) + 10;
+            DB::transaction(function () use ($request, $uuid, $orderBy, &$stagedAssets): void {
                 foreach ($request->language as $language) {
+                    $description = trim((string) data_get($request->input('description', []), $language));
                     $gallery = Gallery::create([
                         'uuid' => $uuid,
                         'name' => @$request->name[$language],
-                        'description' => @$request->description[$language],
+                        'description' => $description !== '' ? $description : null,
                         'type' => 'gallery',
                         'album_id' => $request->album_id[$language],
                         'url' => @$request->url[$language],
                         'language' => $language,
+                        'order_by' => $orderBy,
                         'status' => 0,
                     ]);
 
@@ -142,7 +158,17 @@ class GalleryController extends Controller
                     'main',
                 ));
             });
-            $albums = Album::where('status', 1)->orderBy('id', 'ASC')->get();
+            $currentAlbumIds = $galleries->pluck('album_id')->filter()->all();
+            $albums = Album::query()
+                ->where(function ($query) use ($currentAlbumIds): void {
+                    $query->where('status', 1);
+                    if ($currentAlbumIds !== []) {
+                        $query->orWhereIn('id', $currentAlbumIds);
+                    }
+                })
+                ->orderBy('name')
+                ->orderBy('id')
+                ->get();
             return view('admin.gallery.edit')->with(compact('title', 'translations', 'uuid', 'galleries', 'albums'));
         } catch (Exception $e) {
             $notification = array(
@@ -155,11 +181,19 @@ class GalleryController extends Controller
 
     public function update(Request $request)
     {
-        $this->validate(request(), [
-            'name.*' => ['required', new ValidateUniqueRule('galleries|uuid,' . $request->uuid), 'nullable'],
+        $request->validate([
+            'language' => 'required|array|min:1',
+            'language.*' => 'required|string|max:10',
+            'name' => 'required|array',
+            'name.*' => ['required', 'string', 'max:255', new ValidateUniqueRule('galleries|uuid,' . $request->uuid)],
+            'description' => 'nullable|array',
+            'description.*' => 'nullable|string|max:120',
+            'album_id' => 'required|array',
+            'album_id.*' => 'required|integer|exists:albums,id',
             'image.*' => 'mimes:jpeg,png,jpg|max:1500',
-            'id.*' => 'required|string',
-
+            'id' => 'nullable|array',
+            'id.*' => 'nullable|string',
+            'order_by' => 'nullable|integer|min:0|max:1000000',
         ]);
 
         $stagedAssets = [];
@@ -187,17 +221,24 @@ class GalleryController extends Controller
                     throw new Exception('The English source gallery item no longer exists.');
                 }
 
+                $requestedOrder = $request->filled('order_by')
+                    ? (int) $request->input('order_by')
+                    : null;
+                $descriptions = $request->input('description', []);
+
                 foreach ($request->language as $language) {
                     $gallery = $logicalGalleries->get($language);
                     if (!$gallery) {
+                        $description = trim((string) data_get($descriptions, $language));
                         $gallery = Gallery::create([
                             'uuid' => $uuid,
                             'name' => @$request->name[$language],
-                            'description' => @$request->description[$language],
+                            'description' => $description !== '' ? $description : null,
                             'type' => 'gallery',
                             'album_id' => $request->album_id[$language],
                             'url' => @$request->url[$language],
                             'language' => $language,
+                            'order_by' => $requestedOrder ?? $logicalGalleries->get('en')->order_by,
                             'status' => 0,
                         ]);
                         $logicalGalleries->put($language, $gallery);
@@ -213,14 +254,22 @@ class GalleryController extends Controller
                         }
                     }
 
-                    $gallery->update([
+                    $attributes = [
                         'uuid' => $uuid,
                         'name' => $request->name[$language],
-                        'description' => @$request->description[$language],
                         'album_id' => $request->album_id[$language],
                         'url' => @$request->url[$language],
                         'language' => $language,
-                    ] + ($asset ? [
+                    ];
+                    if (array_key_exists($language, $descriptions)) {
+                        $description = trim((string) $descriptions[$language]);
+                        $attributes['description'] = $description !== '' ? $description : null;
+                    }
+                    if ($requestedOrder !== null) {
+                        $attributes['order_by'] = $requestedOrder;
+                    }
+
+                    $gallery->update($attributes + ($asset ? [
                         'image' => $asset->databaseValue,
                         'path' => $asset->databaseValue,
                         'grid_column' => 0,
@@ -262,7 +311,10 @@ class GalleryController extends Controller
                 $data = Gallery::where('uuid', $id)->where('language', 'en')->first();
                 $data->status = $data->status ^ 1;
                 Gallery::where('uuid', $id)->update(['status' => $data->status]);
-                return response(['message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully)], 200);
+                return response([
+                    'message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully),
+                    'status' => (bool) $data->status,
+                ], 200);
             }
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->NotUpdate], 403);

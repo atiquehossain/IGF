@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\District;
+use App\Models\Division;
 use App\Models\Volunteer;
 use App\Models\VolunteerCause;
 use App\Models\NoticeBoard;
 use App\Models\Page;
 use App\Models\PageTagModule;
 use App\Models\Tag;
+use App\Models\Upazila;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -47,6 +50,17 @@ class PublicJourneyIntegrityTest extends TestCase
     {
         Mail::fake();
         $inactive = VolunteerCause::create(['name' => 'Inactive cause', 'status' => false]);
+        $division = Division::create(['name' => 'Volunteer Test Division', 'status' => true]);
+        $district = District::create([
+            'name' => 'Volunteer Test District',
+            'division_id' => $division->id,
+            'status' => true,
+        ]);
+        $upazila = Upazila::create([
+            'name' => 'Volunteer Test Upazila',
+            'district_id' => $district->id,
+            'status' => true,
+        ]);
 
         $payload = [
             'name' => 'Volunteer Tester',
@@ -55,6 +69,17 @@ class PublicJourneyIntegrityTest extends TestCase
             'phone' => '+8801700000000',
             'address' => 'Dhaka',
             'cause_id' => $inactive->id,
+            'sex' => 'female',
+            'date_of_birth' => '1998-05-15',
+            'division_id' => $division->id,
+            'district_id' => $district->id,
+            'upazila_id' => $upazila->id,
+            'occupation' => 'student',
+            'education_level' => 'bachelor_equivalent',
+            'blood_group' => 'AB+',
+            'emergency_response_training' => null,
+            'skill' => 'photography',
+            'consent' => true,
         ];
 
         $this->post(route('frontend.volunteer_registration.store'), $payload)

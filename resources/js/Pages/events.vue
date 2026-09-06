@@ -10,7 +10,11 @@
             <CategoryItemCard v-for="event in items" :key="event.uuid || event.id" :title="event.title"
               :subtitle="event.sub_title" :thumbnail="event.image_url" :image-alt="event.image_alt || event.title"
               :eyebrow="settings.event_card_eyebrow" :link-label="settings.event_card_link_label"
-              :link="route('frontend.event', event.slug)" />
+              :link="route('frontend.event', event.slug)">
+              <template v-if="event.content_kind === 'event'" #meta>
+                <EventFacts :event="event" :settings="settings" :regional="regional" compact />
+              </template>
+            </CategoryItemCard>
           </div>
           <div v-else class="igf-events__empty"><i class="fa-regular fa-calendar" aria-hidden="true" /><h2>{{ settings.events_empty_title }}</h2><p>{{ settings.events_empty_body }}</p></div>
           <v-pagination v-if="properties?.total_page > 1" :model-value="properties.events" :length="properties.total_page"
@@ -26,8 +30,10 @@ import { computed } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import Layout from '../layouts/App';
 import CategoryItemCard from '../Shared/category-item-card.vue';
+import EventFacts from '../Shared/EventFacts.vue';
 const page = usePage();
 const settings = computed(() => page.props.siteSettings?.content_archives || {});
+const regional = computed(() => page.props.siteSettings?.regional || {});
 const title = computed(() => settings.value.events_default_title || page.props.title);
 const properties = computed(() => page.props.properties || {});
 const items = computed(() => page.props.data?.items || []);

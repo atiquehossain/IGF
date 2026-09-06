@@ -14,10 +14,12 @@
     .media-modal[hidden]{display:none}.media-modal{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:22px;background:rgba(25,28,29,.62)}.media-modal__dialog{display:grid;width:min(940px,100%);max-height:min(760px,92vh);grid-template-rows:auto auto minmax(0,1fr);overflow:hidden;border-radius:15px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.28)}.media-modal__head{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 21px;border-bottom:1px solid var(--line)}.media-modal__head h2{margin:0;font:650 25px 'Literata',Georgia,serif}.media-modal__close{display:grid;width:44px;height:44px;place-content:center;border:0;border-radius:8px;background:#f2efec;cursor:pointer}.media-modal__close:focus-visible{outline:3px solid var(--brown);outline-offset:2px}.media-modal__search{padding:14px 20px;border-bottom:1px solid var(--line)}.media-modal__search input{width:100%;height:44px;border:1px solid #d7d1ca;border-radius:8px;padding:9px 12px}.media-modal__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start;gap:12px;overflow:auto;padding:18px 20px 24px}.media-choice{min-height:44px;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff;text-align:left;cursor:pointer}.media-choice:hover,.media-choice:focus-visible{border-color:var(--orange);outline:3px solid var(--brown);outline-offset:2px}.media-choice img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#eee}.media-choice span{display:block;overflow:hidden;padding:10px;color:#4d4844;font-size:11px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}.media-empty{grid-column:1/-1;padding:48px;text-align:center;color:var(--muted)}
     .customizer-read-only{margin:0 0 22px;padding:14px 17px;border:1px solid #edcf9f;border-radius:10px;background:#fff8e8;color:#74501d;font-size:13px;line-height:1.55}.customizer-read-only strong{display:block;margin-bottom:2px;color:#56370d}.customizer-control :disabled{cursor:not-allowed;opacity:.72}
     .customizer-validation{margin:0 0 18px;padding:15px 17px;border:1px solid #e3aaa5;border-left:5px solid #a52c24;border-radius:10px;background:#fff3f1;color:#74251f}.customizer-validation strong{display:block;margin-bottom:6px}.customizer-validation p{margin:0 0 8px}.customizer-validation ul{margin:0;padding-left:20px}.customizer-validation a{color:#74251f;font-weight:800}
+    .customizer-history{margin:0 0 22px;border:1px solid #dfd8d1;border-radius:13px;background:#fff;box-shadow:0 7px 22px rgba(37,40,42,.035)}.customizer-history>summary{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 19px;cursor:pointer;list-style:none}.customizer-history>summary::-webkit-details-marker{display:none}.customizer-history>summary h2{margin:0;font:650 21px 'Literata',Georgia,serif}.customizer-history>summary p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.customizer-history>summary i{color:var(--orange);transition:transform .18s}.customizer-history[open]>summary i{transform:rotate(180deg)}.customizer-history__body{display:grid;gap:10px;border-top:1px solid var(--line);padding:14px 18px 18px}.customizer-history__item{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(280px,1.3fr) auto;align-items:start;gap:16px;border:1px solid #ebe5df;border-radius:10px;padding:14px;background:#fcfbf9}.customizer-history__meta strong{display:block;color:var(--ink);font-size:13px}.customizer-history__meta span{display:block;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}.customizer-history__diff>span{display:block;color:#625c56;font-size:11px;font-weight:750}.customizer-history__diff details{margin-top:7px}.customizer-history__diff summary{color:var(--brown);font-size:11px;font-weight:800;cursor:pointer}.customizer-history__diff ul{display:grid;gap:7px;margin:9px 0 0;padding:0;list-style:none}.customizer-history__diff li{display:grid;gap:2px;border-left:3px solid #efb68c;padding-left:9px;color:#625c56;font-size:10px;line-height:1.45}.customizer-history__diff li strong{color:#3f3a36}.customizer-history__diff code{overflow-wrap:anywhere;color:#625c56;font:10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:normal}.customizer-history__empty{margin:0;padding:16px;color:var(--muted);font-size:12px;text-align:center}.customizer-history__restore{display:grid;justify-items:end;gap:6px}.customizer-history__restore small{max-width:180px;color:#7b746e;font-size:9px;line-height:1.4;text-align:right}
     .payment-provider-status{margin:0 -21px;padding:18px 21px;border-bottom:1px solid #eadfd6;background:#fbfaf8}.payment-provider-status__head{display:flex;align-items:start;justify-content:space-between;gap:18px;margin-bottom:12px}.payment-provider-status__head strong{display:block;color:var(--ink);font-size:14px}.payment-provider-status__head p{max-width:700px;margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.payment-provider-status__head span{border-radius:999px;padding:4px 9px;background:#ece8e4;color:#645e58;font-size:9px;font-weight:850;letter-spacing:.04em;text-transform:uppercase}.payment-provider-status ul{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0;padding:0;list-style:none}.payment-provider-status li{display:grid;grid-template-columns:1fr auto;align-items:start;gap:9px;border:1px solid #e2ddd7;border-radius:9px;padding:12px;background:#fff}.payment-provider-status li>div>strong{display:block;color:var(--ink);font-size:13px}.payment-provider-status li small{display:block;margin-top:4px;color:#766f69;font-size:10px;line-height:1.45}.payment-provider-status li>span{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 7px;background:#f4ece6;color:#8a3f13;font-size:9px;font-weight:850;white-space:nowrap}.payment-provider-status li.is-ready>span{background:#e8f5ec;color:#27713c}
+    .editor-directory{margin:0 0 24px;border:1px solid #e3d6cb;border-radius:14px;background:#fff;box-shadow:0 8px 26px rgba(37,40,42,.045)}.editor-directory>summary{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;cursor:pointer;list-style:none}.editor-directory>summary::-webkit-details-marker{display:none}.editor-directory>summary h2{margin:0;font:650 22px 'Literata',Georgia,serif}.editor-directory>summary p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.5}.editor-directory>summary i{color:var(--orange);transition:transform .18s}.editor-directory[open]>summary i{transform:rotate(180deg)}.editor-directory__body{border-top:1px solid var(--line);padding:16px 18px 19px}.editor-directory__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}.editor-directory__item{display:grid;align-content:start;gap:8px;min-width:0;border:1px solid #ebe5df;border-radius:10px;padding:14px;background:#fcfbf9}.editor-directory__item h3{margin:0;color:var(--ink);font:650 16px 'Literata',Georgia,serif}.editor-directory__item p{margin:0;color:#68625d;font-size:11px;line-height:1.5}.editor-directory__item p strong{color:#4a4540}.editor-directory__actions,.editor-directory__previews{display:flex;flex-wrap:wrap;gap:7px}.editor-directory__actions{margin-top:2px}.editor-directory__actions .igf-btn,.editor-directory__previews .igf-btn{min-height:40px;padding:7px 11px;font-size:11px}.editor-directory__previews{padding-top:8px;border-top:1px solid #eee9e4}.editor-directory__previews .igf-btn{border-color:#ead2c0;color:var(--brown)}.editor-directory__restricted{display:flex;min-height:40px;align-items:center;color:#847d76;font-size:10px;font-weight:700}
     @media(max-width:1150px){.customizer-tools{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:1100px){.igf-customizer{padding-inline:14px}.customizer-head{flex-direction:column}.customizer-head__actions{width:100%;flex-wrap:wrap}.customizer-guide ol{grid-template-columns:1fr 1fr}.customizer-workspace{grid-template-columns:1fr}.customizer-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.customizer-nav__search,.customizer-locale{grid-column:1/-1}.customizer-field{grid-template-columns:1fr}.customizer-field>label{padding-top:0}.customizer-reset{justify-self:start}.customizer-preview__head{align-items:flex-start;flex-direction:column}.donation-builder{grid-template-columns:1fr}.payment-provider-status ul{grid-template-columns:1fr}}
-    @media(max-width:560px){.customizer-guide ol{grid-template-columns:1fr}.customizer-tools{grid-template-columns:repeat(2,1fr)}.customizer-tool{min-height:105px}.customizer-nav{grid-template-columns:1fr}.customizer-nav__search,.customizer-locale{grid-column:auto}.media-setting{grid-template-columns:84px minmax(0,1fr)}.media-setting__preview,.media-setting__preview img{width:84px;height:70px}.customizer-preview__controls{flex-wrap:wrap}.customizer-preview__stage{padding:9px}.media-modal{padding:9px}.media-modal__grid{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:12px}}
+    @media(max-width:1100px){.igf-customizer{padding-inline:14px}.customizer-head{flex-direction:column}.customizer-head__actions{width:100%;flex-wrap:wrap}.customizer-guide ol{grid-template-columns:1fr 1fr}.customizer-workspace{grid-template-columns:1fr}.customizer-nav{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.customizer-nav__search,.customizer-locale{grid-column:1/-1}.customizer-field{grid-template-columns:1fr}.customizer-field>label{padding-top:0}.customizer-reset{justify-self:start}.customizer-preview__head{align-items:flex-start;flex-direction:column}.customizer-history__item{grid-template-columns:1fr}.customizer-history__restore{justify-items:start}.customizer-history__restore small{text-align:left}.donation-builder{grid-template-columns:1fr}.payment-provider-status ul{grid-template-columns:1fr}}
+    @media(max-width:560px){.customizer-guide ol{grid-template-columns:1fr}.customizer-tools{grid-template-columns:repeat(2,1fr)}.customizer-tool{min-height:105px}.editor-directory>summary{align-items:flex-start}.editor-directory__body{padding-inline:10px}.editor-directory__grid{grid-template-columns:1fr}.editor-directory__actions .igf-btn,.editor-directory__previews .igf-btn{min-height:44px}.customizer-nav{grid-template-columns:1fr}.customizer-nav__search,.customizer-locale{grid-column:auto}.media-setting{grid-template-columns:84px minmax(0,1fr)}.media-setting__preview,.media-setting__preview img{width:84px;height:70px}.customizer-preview__controls{flex-wrap:wrap}.customizer-preview__stage{padding:9px}.media-modal{padding:9px}.media-modal__grid{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:12px}}
 </style>
 
 <style>
@@ -32,7 +34,14 @@
     $canUse = fn (string $route): bool => $permissions->allows($admin, $route);
     $canUpdateSettings = $canUse('site.settings.update');
     $canResetSettings = $canUse('site.settings.destroy');
+    $canRestoreSettings = $canUse('site.settings.revisions.restore');
     $isSettingsViewOnly = !$canUpdateSettings && !$canResetSettings;
+    $canViewPageTrash = $canUse('page.trash.index');
+    $canViewContentTrash = $canUse('content.trash.index');
+    $localizedRoute = fn (string $name, array $parameters = []): string => route(
+        $name,
+        array_merge($parameters, ['lang' => $locale])
+    );
     $toolCards = [
         ['route' => 'page.index', 'label' => 'Content Hub', 'description' => 'Edit every page visually', 'icon' => 'fa-file-text-o', 'url' => route('page.index')],
         ['route' => 'site.settings.index', 'label' => 'Design & layout', 'description' => 'Resize headings, images and cards', 'icon' => 'fa-paint-brush', 'url' => route('site.settings.index', ['locale' => $locale]).'#settings-design'],
@@ -41,27 +50,293 @@
         ['route' => 'media.index', 'label' => 'Media Library', 'description' => 'Images and documents', 'icon' => 'fa-picture-o', 'url' => route('media.index')],
         ['route' => 'reusable-blocks.index', 'label' => 'Reusable sections', 'description' => 'Update shared content once', 'icon' => 'fa-clone', 'url' => route('reusable-blocks.index')],
         ['route' => 'seo.index', 'label' => 'Search & Sharing', 'description' => 'Search previews, URLs and sharing', 'icon' => 'fa-search', 'url' => route('seo.index')],
-        ['route' => 'content.trash.index', 'label' => 'Trash & recovery', 'description' => 'Restore deleted content', 'icon' => 'fa-trash', 'url' => route('content.trash.index')],
     ];
+    if ($canViewPageTrash || $canViewContentTrash) {
+        $toolCards[] = [
+            'route' => $canViewPageTrash ? 'page.trash.index' : 'content.trash.index',
+            'label' => 'Recovery center',
+            'description' => $canViewPageTrash && $canViewContentTrash
+                ? 'Restore deleted pages and other content'
+                : ($canViewPageTrash ? 'Restore deleted pages' : 'Restore deleted content'),
+            'icon' => 'fa-trash',
+            'url' => $canViewPageTrash ? route('page.trash.index') : route('content.trash.index'),
+        ];
+    }
     $toolCards = array_values(array_filter($toolCards, fn (array $tool): bool => $canUse($tool['route'])));
     $previewPages = [
-        'Home' => route('frontend.home'),
-        'Contact' => route('frontend.contactUs'),
-        'Donate' => route('frontend.donate.index'),
-        'Sponsor a child' => route('frontend.sponsor_child'),
-        'Volunteer' => route('frontend.volunteer_registration.index'),
-        'Zakat' => route('frontend.zakat'),
-        'Gallery' => route('frontend.gallery'),
-        'Annual reports' => route('frontend.annual_report.index'),
-        'Search' => route('search'),
-        'Member sign in' => route('showLogin'),
+        'Home' => $localizedRoute('frontend.home'),
+        'About us' => $localizedRoute('frontend.about'),
+        'Events & stories' => $localizedRoute('frontend.events'),
+        'Careers' => $localizedRoute('frontend.jobs.index'),
+        'Workshops' => $localizedRoute('frontend.workshops.index'),
+        'Contact' => $localizedRoute('frontend.contactUs'),
+        'Donate' => $localizedRoute('frontend.donate.index'),
+        'Sponsor a child' => $localizedRoute('frontend.sponsor_child'),
+        'Volunteer' => $localizedRoute('frontend.volunteer_registration.index'),
+        'Zakat' => $localizedRoute('frontend.zakat'),
+        'Gallery' => $localizedRoute('frontend.gallery'),
+        'Annual reports' => $localizedRoute('frontend.annual_report.index'),
+        'Search' => $localizedRoute('search'),
+        'Member sign in' => $localizedRoute('showLogin'),
+        'Member registration' => $localizedRoute('register.form'),
+    ];
+    $settingsSectionUrl = fn (string $group): string => route(
+        'site.settings.index',
+        ['locale' => $locale]
+    ).'#settings-'.$group;
+    $settingsActionPermission = $canUpdateSettings ? 'site.settings.update' : 'site.settings.index';
+    $settingsAction = fn (string $group, string $subject): array => [
+        'permission' => $settingsActionPermission,
+        'label' => ($canUpdateSettings ? 'Edit ' : 'Review ').$subject,
+        'url' => $settingsSectionUrl($group),
+    ];
+    $adminAction = fn (string $permission, string $label, string $url): array => compact(
+        'permission',
+        'label',
+        'url'
+    );
+    $publicPreview = fn (string $label, string $url): array => compact('label', 'url');
+    $contentHubAction = $adminAction(
+        'page.index',
+        $canUse('page.builder.edit') ? 'Edit in Content Hub' : 'Open Content Hub',
+        route('page.index', ['language' => $locale])
+    );
+    $editorDirectory = [
+        [
+            'title' => 'Home page',
+            'owner' => 'Page sections are in Content Hub. Rotating hero slides are in Banners; shared fallback labels are here in Website Customizer.',
+            'actions' => [
+                $contentHubAction,
+                $adminAction('banner.index', 'Open home banners', route('banner.index')),
+                $settingsAction('shared_blocks', 'shared home labels'),
+            ],
+            'previews' => [$publicPreview('Preview home', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'About & general pages',
+            'owner' => 'Text, images, and page sections are owned by Content Hub. Choose a page there to use its draft or public preview.',
+            'actions' => [$contentHubAction],
+            'previews' => [$publicPreview('Preview About', $localizedRoute('frontend.about'))],
+        ],
+        [
+            'title' => 'Category pages',
+            'owner' => 'Page and landing sections are in Content Hub. Category names, banners, and listing setup are in Categories.',
+            'actions' => [
+                $contentHubAction,
+                $adminAction('category.index', 'Open categories', route('category.index')),
+            ],
+            'previews' => [],
+        ],
+        [
+            'title' => 'Project pages',
+            'owner' => 'Each project page is in Content Hub. Project Groups only organize those pages into public archive filters.',
+            'actions' => [
+                $contentHubAction,
+                $adminAction('tag.index', 'Open project groups', route('tag.index')),
+            ],
+            'previews' => [$publicPreview('Preview projects', $localizedRoute('frontend.project'))],
+        ],
+        [
+            'title' => 'Header, footer & navigation',
+            'owner' => 'Website Customizer owns the global header and footer details. Header & Footer owns menu links and their order.',
+            'actions' => [
+                $settingsAction('header', 'header settings'),
+                $settingsAction('footer', 'footer settings'),
+                $adminAction('page.menu.index', 'Open menu links', route('page.menu.index')),
+            ],
+            'previews' => [$publicPreview('Preview website', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'Newsletter & confirmation email',
+            'owner' => 'Website Customizer owns the footer signup, consent, confirmation email, and success messages. Subscribers holds the private mailing list.',
+            'actions' => [
+                $settingsAction('footer', 'newsletter introduction'),
+                $settingsAction('shared_blocks', 'newsletter form and email'),
+                $adminAction('subscriber.index', 'Open subscribers', route('subscriber.index')),
+            ],
+            'previews' => [$publicPreview('Preview newsletter', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'Chat assistant & inbox',
+            'owner' => 'Website Customizer owns the public chat labels. Chat Answers owns approved replies; Chat Inbox holds private visitor conversations.',
+            'actions' => [
+                $settingsAction('chat_widget', 'chat labels'),
+                $adminAction('chat.faq.index', 'Open chat answers', route('chat.faq.index')),
+                $adminAction('chat.index', 'Open chat inbox', route('chat.index')),
+            ],
+            'previews' => [$publicPreview('Preview chat', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'Visitor announcement',
+            'owner' => 'Visitor Announcement owns the title, message, image, dates, and visibility. Website Customizer owns the dialog controls and accessible labels.',
+            'actions' => [
+                $adminAction('splash.screen.index', 'Open visitor announcement', route('splash.screen.index')),
+                $settingsAction('splash', 'announcement controls'),
+            ],
+            'previews' => [$publicPreview('Preview announcement', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'Search engines & social sharing',
+            'owner' => 'Search & Sharing owns page titles, descriptions, social previews, redirects, sitemaps, and the broken-address report. Technical sitemap files update automatically.',
+            'actions' => [
+                $adminAction('seo.index', 'Open Search & Sharing', route('seo.index')),
+                $adminAction('seo.technical.index', 'Open technical checks', route('seo.technical.index')),
+            ],
+            'previews' => [],
+        ],
+        [
+            'title' => 'Careers & application forms',
+            'owner' => 'Website Customizer owns careers-page wording. Jobs, application forms, and private applications each have their own admin area.',
+            'actions' => [
+                $settingsAction('career_page', 'careers wording'),
+                $adminAction('recruitment.jobs.index', 'Open jobs', route('recruitment.jobs.index')),
+                $adminAction('recruitment.forms.index', 'Open application forms', route('recruitment.forms.index')),
+                $adminAction('recruitment.applications.index', 'Review applications', route('recruitment.applications.index')),
+            ],
+            'previews' => [$publicPreview('Preview careers', $localizedRoute('frontend.jobs.index'))],
+        ],
+        [
+            'title' => 'Workshops & registration forms',
+            'owner' => 'Website Customizer owns workshops-page wording. Workshops, registration forms, and private registrations are separate admin areas.',
+            'actions' => [
+                $settingsAction('workshop_page', 'workshops wording'),
+                $adminAction('workshops.index', 'Open workshops', route('workshops.index')),
+                $adminAction('workshop.forms.index', 'Open registration forms', route('workshop.forms.index')),
+                $adminAction('workshop.registrations.index', 'Review registrations', route('workshop.registrations.index')),
+            ],
+            'previews' => [$publicPreview('Preview workshops', $localizedRoute('frontend.workshops.index'))],
+        ],
+        [
+            'title' => 'Events & stories',
+            'owner' => 'Events & Updates owns each event or story. Website Customizer owns shared listing, detail-label, and empty-state wording.',
+            'actions' => [
+                $adminAction('notice.board.index', 'Open events & updates', route('notice.board.index')),
+                $settingsAction('content_archives', 'listing wording'),
+            ],
+            'previews' => [$publicPreview('Preview events', $localizedRoute('frontend.events'))],
+        ],
+        [
+            'title' => 'Gallery',
+            'owner' => 'Albums organize the collection, Gallery owns each photo, and Website Customizer owns the public gallery wording.',
+            'actions' => [
+                $adminAction('album.index', 'Open albums', route('album.index')),
+                $adminAction('gallery.index', 'Open gallery photos', route('gallery.index')),
+                $settingsAction('gallery_page', 'gallery wording'),
+            ],
+            'previews' => [$publicPreview('Preview gallery', $localizedRoute('frontend.gallery'))],
+        ],
+        [
+            'title' => 'Annual reports',
+            'owner' => 'Annual Reports owns report files and release details. Website Customizer owns the public listing and download wording.',
+            'actions' => [
+                $adminAction('annual.report.index', 'Open annual reports', route('annual.report.index')),
+                $settingsAction('reports_page', 'reports wording'),
+            ],
+            'previews' => [$publicPreview('Preview reports', $localizedRoute('frontend.annual_report.index'))],
+        ],
+        [
+            'title' => 'Contact page',
+            'owner' => 'Website Customizer owns page wording and office details. Contact Messages is the private visitor-message inbox.',
+            'actions' => [
+                $settingsAction('contact_page', 'contact-page wording'),
+                $settingsAction('contact', 'office details'),
+                $adminAction('contact-message.index', 'Review contact messages', route('contact-message.index')),
+            ],
+            'previews' => [$publicPreview('Preview contact', $localizedRoute('frontend.contactUs'))],
+        ],
+        [
+            'title' => 'Donate & causes',
+            'owner' => 'Website Customizer owns the donation journey. Donation Causes owns public choices; Donations holds private payment records.',
+            'actions' => [
+                $settingsAction('donation_page', 'donation page'),
+                $adminAction('donationType.index', 'Open donation causes', route('donationType.index')),
+                $adminAction('donations.index', 'Review donations', route('donations.index')),
+            ],
+            'previews' => [$publicPreview('Preview donate', $localizedRoute('frontend.donate.index'))],
+        ],
+        [
+            'title' => 'Zakat',
+            'owner' => 'Content Hub owns the page sections. Website Customizer owns calculator wording, approved Nisab inputs, and impact details.',
+            'actions' => [
+                $contentHubAction,
+                $settingsAction('zakat_calculator', 'Zakat calculator'),
+            ],
+            'previews' => [$publicPreview('Preview Zakat', $localizedRoute('frontend.zakat'))],
+        ],
+        [
+            'title' => 'Sponsor a child',
+            'owner' => 'Website Customizer owns every public section and form label. Sponsorship Requests holds the private submissions.',
+            'actions' => [
+                $settingsAction('sponsor_page', 'sponsor page'),
+                $adminAction('sponsorships.index', 'Review sponsor requests', route('sponsorships.index')),
+            ],
+            'previews' => [$publicPreview('Preview sponsor page', $localizedRoute('frontend.sponsor_child'))],
+        ],
+        [
+            'title' => 'Volunteer options & applications',
+            'owner' => 'Website Customizer owns the form wording. Volunteer Opportunities owns the choices; Volunteer Applications holds private submissions.',
+            'actions' => [
+                $settingsAction('volunteer_page', 'volunteer page'),
+                $adminAction('volunteerCause.index', 'Open volunteer options', route('volunteerCause.index')),
+                $adminAction('volunteer.index', 'Review applications', route('volunteer.index')),
+            ],
+            'previews' => [$publicPreview('Preview volunteer form', $localizedRoute('frontend.volunteer_registration.index'))],
+        ],
+        [
+            'title' => 'Search',
+            'owner' => 'Website Customizer owns search labels and empty states. Results come automatically from published pages, program categories, project groups, events, reports, gallery items, donation causes, jobs, and workshops in their own editors.',
+            'actions' => [
+                $settingsAction('search_page', 'search wording'),
+                $contentHubAction,
+            ],
+            'previews' => [$publicPreview('Preview search', $localizedRoute('search'))],
+        ],
+        [
+            'title' => 'Member sign-in & registration',
+            'owner' => 'Website Customizer owns sign-in and registration wording. Member Approvals handles accounts waiting for review.',
+            'actions' => [
+                $settingsAction('member_area', 'member-area wording'),
+                $adminAction('user-approval.index', 'Open member approvals', route('user-approval.index')),
+            ],
+            'previews' => [
+                $publicPreview('Preview sign in', $localizedRoute('showLogin')),
+                $publicPreview('Preview registration', $localizedRoute('register.form')),
+                $publicPreview('Preview secure sign in', $localizedRoute('login2fa')),
+            ],
+        ],
+        [
+            'title' => '404 & payment messages',
+            'owner' => 'Website Customizer owns friendly missing-page and payment-result wording. Technical SEO & 404s handles broken-address follow-up.',
+            'actions' => [
+                $settingsAction('system_pages', 'system messages'),
+                $adminAction('seo.technical.index', 'Open 404 inbox', route('seo.technical.index')),
+            ],
+            'previews' => [
+                $publicPreview('Preview 404', $localizedRoute('frontend.page', ['slug' => '__website-customizer-missing-page__'])),
+            ],
+        ],
+        [
+            'title' => 'Analytics consent',
+            'owner' => 'Website Customizer owns the optional analytics ID, consent explanation, and accept or decline buttons.',
+            'actions' => [$settingsAction('analytics', 'analytics consent')],
+            'previews' => [$publicPreview('Preview on website', $localizedRoute('frontend.home'))],
+        ],
+        [
+            'title' => 'Reusable sections',
+            'owner' => 'Reusable Sections owns content shared by several pages. Attach it from Content Hub and preview it on a page where it is used.',
+            'actions' => [
+                $adminAction('reusable-blocks.index', 'Open reusable sections', route('reusable-blocks.index')),
+                $contentHubAction,
+            ],
+            'previews' => [],
+        ],
     ];
 @endphp
 
 <main class="igf-customizer">
     <header class="customizer-head">
         <div><h1>Website Customizer</h1><p>Change the website without code. Start with a task below, preview the public website, then open only the settings section you need.</p></div>
-        <div class="customizer-head__actions"><a class="igf-btn" href="{{ route('frontend.home') }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Open website</a></div>
+        <div class="customizer-head__actions"><a class="igf-btn" href="{{ $localizedRoute('frontend.home') }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Open website in {{ strtoupper($locale) }}</a></div>
     </header>
 
     @if($canUpdateSettings)
@@ -85,15 +360,105 @@
         <div class="customizer-read-only" role="status"><strong>Limited settings access</strong>You can review current values and use permitted reset actions, but your role cannot save changes.</div>
     @endif
 
-    <details class="customizer-guide"><summary><i class="fa fa-question-circle" aria-hidden="true"></i> New here? Follow these five simple steps</summary><ol><li><strong>Choose your task</strong>Use one shortcut below instead of looking through technical menus.</li><li><strong>Edit a page</strong>Open Content Hub, choose a page, then click text or Add section.</li><li><strong>Choose images</strong>Use Choose image; upload files to the Media Library first when needed.</li><li><strong>Preview safely</strong>Select the page and device here, then refresh after saving.</li><li><strong>Publish confidently</strong>Check Search &amp; Sharing, save, and use Trash &amp; recovery if you make a mistake.</li></ol></details>
+    <details class="customizer-history" id="settings-revision-history" @if($errors->has('restore_confirmation') || $errors->has('global_settings_version')) open @endif>
+        <summary>
+            <div><h2>Revision history</h2><p>Every save and reset keeps the version it replaced for {{ strtoupper($locale) }}. Preview what would change before restoring it.</p></div>
+            <i class="fa fa-chevron-down" aria-hidden="true"></i>
+        </summary>
+        <div class="customizer-history__body">
+            @forelse($settingRevisions as $revision)
+                @php
+                    $revisionDiff = $settingRevisionDiffs->get((string) $revision->uuid, []);
+                @endphp
+                <article class="customizer-history__item">
+                    <div class="customizer-history__meta">
+                        <strong>Restore point #{{ $revision->id }}</strong>
+                        <span>{{ $revision->reason }}</span>
+                        <span>{{ $revision->created_at?->format('M j, Y g:i A') }} by {{ $revision->changedBy?->username ?? 'Administrator' }}</span>
+                    </div>
+                    <div class="customizer-history__diff">
+                        <span>{{ count($revisionDiff) === 0 ? 'This version matches the live settings.' : count($revisionDiff).' '.\Illuminate\Support\Str::plural('setting', count($revisionDiff)).' would change.' }}</span>
+                        <details>
+                            <summary>Preview changes</summary>
+                            @if(count($revisionDiff) === 0)
+                                <p class="customizer-history__empty">No differences from the live {{ strtoupper($locale) }} settings.</p>
+                            @else
+                                <ul>
+                                    @foreach(array_slice($revisionDiff, 0, 8) as $change)
+                                        <li><strong>{{ $change['label'] }}</strong><code>Saved: {{ $change['before'] }} → Live: {{ $change['after'] }}</code></li>
+                                    @endforeach
+                                </ul>
+                                @if(count($revisionDiff) > 8)<p class="customizer-history__empty">Plus {{ count($revisionDiff) - 8 }} more {{ \Illuminate\Support\Str::plural('change', count($revisionDiff) - 8) }}.</p>@endif
+                            @endif
+                        </details>
+                    </div>
+                    <div class="customizer-history__restore">
+                        @if($canRestoreSettings)
+                            <form method="POST" action="{{ route('site.settings.revisions.restore', $revision) }}" onsubmit="return confirm('Restore this saved website version? Your current settings will be backed up first so this can be undone.')">
+                                @csrf
+                                <input type="hidden" name="locale" value="{{ $locale }}">
+                                <input type="hidden" name="global_settings_version" value="{{ $globalSettingsVersion }}">
+                                <input type="hidden" name="restore_confirmation" value="1">
+                                <button class="igf-btn" type="submit"><i class="fa fa-history" aria-hidden="true"></i> Restore this version</button>
+                            </form>
+                            <small>A backup is made first. You can undo the restore from this history.</small>
+                        @else
+                            <small>Ask an administrator with revision-restore permission to recover this version.</small>
+                        @endif
+                    </div>
+                </article>
+            @empty
+                <p class="customizer-history__empty">No restore points yet. The first one will be created automatically when website changes are saved or a field is reset.</p>
+            @endforelse
+        </div>
+    </details>
+
+    <details class="customizer-guide"><summary><i class="fa fa-question-circle" aria-hidden="true"></i> New here? Follow these five simple steps</summary><ol><li><strong>Choose your task</strong>Use one shortcut below instead of looking through technical menus.</li><li><strong>Edit a page</strong>Open Content Hub, choose a page, then click text or Add section.</li><li><strong>Choose images</strong>Use Choose image; upload files to the Media Library first when needed.</li><li><strong>Preview safely</strong>The preview always uses the editing language shown on the left. Select a page and device, then refresh after saving.</li><li><strong>Publish confidently</strong>Check Search &amp; Sharing, save, and use the Recovery center if you make a mistake.</li></ol></details>
 
     <nav class="customizer-tools" aria-label="Website customization tools">
         @foreach($toolCards as $tool)<a class="customizer-tool" href="{{ $tool['url'] }}"><i class="fa {{ $tool['icon'] }}" aria-hidden="true"></i><span><strong>{{ $tool['label'] }}</strong>{{ $tool['description'] }}</span></a>@endforeach
     </nav>
 
+    <details class="editor-directory" data-editor-directory open>
+        <summary>
+            <div><h2>Where do I edit this?</h2><p>Find the public page, then open only the editor or private inbox that owns it. Public previews stay in {{ strtoupper($locale) }}.</p></div>
+            <i class="fa fa-chevron-down" aria-hidden="true"></i>
+        </summary>
+        <div class="editor-directory__body">
+            <div class="editor-directory__grid">
+                @foreach($editorDirectory as $directoryItem)
+                    @php
+                        $allowedDirectoryActions = array_values(array_filter(
+                            $directoryItem['actions'],
+                            fn (array $action): bool => $canUse($action['permission'])
+                        ));
+                    @endphp
+                    <article class="editor-directory__item">
+                        <h3>{{ $directoryItem['title'] }}</h3>
+                        <p><strong>Edit in:</strong> {{ $directoryItem['owner'] }}</p>
+                        <div class="editor-directory__actions" aria-label="Admin actions for {{ $directoryItem['title'] }}">
+                            @forelse($allowedDirectoryActions as $action)
+                                <a class="igf-btn" href="{{ $action['url'] }}"><i class="fa fa-arrow-right" aria-hidden="true"></i> {{ $action['label'] }}</a>
+                            @empty
+                                <span class="editor-directory__restricted">Ask an administrator for editor access.</span>
+                            @endforelse
+                        </div>
+                        @if($directoryItem['previews'] !== [])
+                            <div class="editor-directory__previews" aria-label="Public previews for {{ $directoryItem['title'] }}">
+                                @foreach($directoryItem['previews'] as $preview)
+                                    <a class="igf-btn igf-btn--quiet" href="{{ $preview['url'] }}" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> {{ $preview['label'] }}</a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </article>
+                @endforeach
+            </div>
+        </div>
+    </details>
+
     <section class="customizer-preview" aria-labelledby="customizer-preview-title">
-        <div class="customizer-preview__head"><div><h2 id="customizer-preview-title">Website preview</h2><p>Design presets preview immediately. Save when the result looks right.</p></div><div class="customizer-preview__controls" aria-label="Preview controls"><label class="sr-only" for="customizer-preview-page">Page to preview</label><select id="customizer-preview-page" class="preview-page">@foreach($previewPages as $label => $url)<option value="{{ $url }}">{{ $label }}</option>@endforeach</select><button class="preview-device is-active" type="button" data-preview-width="100%" aria-label="Desktop preview" aria-pressed="true"><i class="fa fa-desktop" aria-hidden="true"></i></button><button class="preview-device" type="button" data-preview-width="768px" aria-label="Tablet preview" aria-pressed="false"><i class="fa fa-tablet" aria-hidden="true"></i></button><button class="preview-device" type="button" data-preview-width="390px" aria-label="Mobile preview" aria-pressed="false"><i class="fa fa-mobile" aria-hidden="true"></i></button><button id="refresh-customizer-preview" class="igf-btn igf-btn--quiet" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button></div></div>
-        <div class="customizer-preview__stage"><iframe id="customizer-preview-frame" src="{{ route('frontend.home') }}" title="Public website preview"></iframe></div>
+        <div class="customizer-preview__head"><div><h2 id="customizer-preview-title">Website preview</h2><p>Previewing <strong>{{ strtoupper($locale) }}</strong>. Design presets preview immediately; save when the result looks right.</p></div><div class="customizer-preview__controls" aria-label="Preview controls"><label class="sr-only" for="customizer-preview-page">Page to preview</label><select id="customizer-preview-page" class="preview-page">@foreach($previewPages as $label => $url)<option value="{{ $url }}">{{ $label }}</option>@endforeach</select><button class="preview-device is-active" type="button" data-preview-width="100%" aria-label="Desktop preview" aria-pressed="true"><i class="fa fa-desktop" aria-hidden="true"></i></button><button class="preview-device" type="button" data-preview-width="768px" aria-label="Tablet preview" aria-pressed="false"><i class="fa fa-tablet" aria-hidden="true"></i></button><button class="preview-device" type="button" data-preview-width="390px" aria-label="Mobile preview" aria-pressed="false"><i class="fa fa-mobile" aria-hidden="true"></i></button><button id="refresh-customizer-preview" class="igf-btn igf-btn--quiet" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> Refresh</button></div></div>
+        <div class="customizer-preview__stage"><iframe id="customizer-preview-frame" src="{{ $localizedRoute('frontend.home') }}" title="Public website preview in {{ strtoupper($locale) }}"></iframe></div>
     </section>
 
     <div class="customizer-workspace">
@@ -105,8 +470,9 @@
 
         <section aria-label="Website settings">
             <div id="customizer-no-results" class="customizer-no-results"><h2>No matching settings</h2><p>Try a shorter or more general search.</p></div>
-            <form id="customizer-form" method="POST" action="{{ route('site.settings.update') }}">
-                @csrf @method('PUT')<input type="hidden" name="locale" value="{{ $locale }}"><input type="hidden" name="global_settings_version" value="{{ $globalSettingsVersion }}">
+            <form id="customizer-form" method="POST" action="{{ route('site.settings.update') }}" enctype="multipart/form-data" data-settings-payload-max="{{ \App\Support\SiteSettingsPayload::MAX_BYTES }}">
+                @csrf @method('PUT')<input type="hidden" name="locale" value="{{ $locale }}"><input type="hidden" name="global_settings_version" value="{{ $globalSettingsVersion }}"><input id="customizer-settings-payload" type="hidden" name="settings_payload" disabled>
+                <div id="customizer-payload-error" class="customizer-validation" role="alert" aria-live="assertive" tabindex="-1" hidden></div>
                 <div class="customizer-groups">
                     @foreach($schema as $groupKey => $group)
                         <details class="customizer-card" id="settings-{{ $groupKey }}" data-settings-group @if($loop->first || $errors->has("settings.$groupKey.*")) open @endif>
@@ -136,7 +502,7 @@
                                     @php($inputName = "settings[$groupKey][$key]") @php($inputId = "setting-$groupKey-$key") @php($value = old("settings.$groupKey.$key", data_get($values, "$groupKey.$key")))
                                     @if($field['type'] === 'faq_list')
                                         @php($faqItems = is_array($value) ? array_values($value) : [])
-                                        <section class="customizer-faq-editor" data-setting-row data-search="{{ strtolower($group['label'].' '.$field['label'].' question answer faq') }}" data-faq-editor data-faq-name="{{ $inputName }}">
+                                        <section class="customizer-faq-editor" data-setting-row data-setting-field data-setting-group="{{ $groupKey }}" data-setting-key="{{ $key }}" data-setting-type="faq_list" data-search="{{ strtolower($group['label'].' '.$field['label'].' question answer faq') }}" data-faq-editor data-faq-name="{{ $inputName }}">
                                             <header class="customizer-faq-editor__head">
                                                 <div><h3>{{ $field['label'] }}</h3><p>Add as many as needed, arrange their public order, or temporarily hide an answer.</p></div>
                                                 <div class="customizer-faq-editor__actions"><span class="customizer-faq-count" data-faq-count>{{ count($faqItems) }} {{ \Illuminate\Support\Str::plural('question', count($faqItems)) }}</span>@if($canUpdateSettings)<button class="igf-btn" type="button" data-faq-add><i class="fa fa-plus" aria-hidden="true"></i> Add FAQ</button>@endif</div>
@@ -162,7 +528,7 @@
                                         </section>
                                         @continue
                                     @endif
-                                    <div class="customizer-field" data-setting-row data-search="{{ strtolower($group['label'].' '.$field['label'].' '.$key) }}">
+                                    <div class="customizer-field" data-setting-row data-setting-field data-setting-group="{{ $groupKey }}" data-setting-key="{{ $key }}" data-setting-type="{{ $field['type'] }}" data-search="{{ strtolower($group['label'].' '.$field['label'].' '.$key) }}">
                                         @if($field['type'] === 'select')
                                             <div id="{{ $inputId }}-label" class="customizer-field__label">{{ $field['label'] }} @if(isset($field['help']))<small>{{ $field['help'] }}</small>@endif @if(!($field['localized'] ?? false))<small>Used in every language</small>@endif</div>
                                         @else
@@ -170,19 +536,19 @@
                                         @endif
                                         <div class="customizer-control">
                                             @if(($field['picker'] ?? null) === 'image')
-                                                <div class="media-setting"><div class="media-setting__preview"><img id="{{ $inputId }}-preview" src="{{ $value }}" alt="Current {{ strtolower($field['label']) }} preview" onerror="this.style.visibility='hidden'"></div><div class="media-setting__actions">@if($canUpdateSettings)<button class="igf-btn" type="button" data-media-open="{{ $inputId }}"><i class="fa fa-images" aria-hidden="true"></i> Choose image</button>@endif @if($canUse('media.index'))<a class="igf-btn igf-btn--quiet" href="{{ route('media.index', ['type' => 'image']) }}" target="_blank" rel="noopener">Upload images</a>@endif<details class="media-setting__advanced"><summary>Advanced: image address</summary><input id="{{ $inputId }}" name="{{ $inputName }}" type="text" value="{{ $value }}" autocomplete="off" @disabled(!$canUpdateSettings)></details></div></div>
+                                                <div class="media-setting"><div class="media-setting__preview"><img id="{{ $inputId }}-preview" src="{{ $value }}" alt="Current {{ strtolower($field['label']) }} preview" onerror="this.style.visibility='hidden'"></div><div class="media-setting__actions">@if($canUpdateSettings)<button class="igf-btn" type="button" data-media-open="{{ $inputId }}"><i class="fa fa-images" aria-hidden="true"></i> Choose image</button>@endif @if($canUse('media.index'))<a class="igf-btn igf-btn--quiet" href="{{ route('media.index', ['type' => 'image']) }}" target="_blank" rel="noopener">Upload images</a>@endif<details class="media-setting__advanced"><summary>Advanced: image address</summary><input id="{{ $inputId }}" name="{{ $inputName }}" type="text" value="{{ $value }}" autocomplete="off" data-setting-control @disabled(!$canUpdateSettings)></details></div></div>
                                             @elseif($field['type'] === 'boolean')
-                                                <input type="hidden" name="{{ $inputName }}" value="0" @disabled(!$canUpdateSettings)><label class="customizer-check"><input id="{{ $inputId }}" type="checkbox" name="{{ $inputName }}" value="1" @checked((bool)$value) @disabled(!$canUpdateSettings)> Enabled</label>
+                                                <input type="hidden" name="{{ $inputName }}" value="0" @disabled(!$canUpdateSettings)><label class="customizer-check"><input id="{{ $inputId }}" type="checkbox" name="{{ $inputName }}" value="1" data-setting-control @checked((bool)$value) @disabled(!$canUpdateSettings)> Enabled</label>
                                             @elseif($field['type'] === 'textarea')
-                                                <textarea id="{{ $inputId }}" name="{{ $inputName }}" @disabled(!$canUpdateSettings)>{{ $value }}</textarea>
+                                                <textarea id="{{ $inputId }}" name="{{ $inputName }}" data-setting-control @disabled(!$canUpdateSettings)>{{ $value }}</textarea>
                                             @elseif($field['type'] === 'select')
                                                 <fieldset class="customizer-presets" aria-labelledby="{{ $inputId }}-label">
                                                     @foreach($field['options'] as $optionValue => $optionLabel)
-                                                        <label class="customizer-preset"><input id="{{ $inputId }}-{{ $optionValue }}" type="radio" name="{{ $inputName }}" value="{{ $optionValue }}" @checked((string)$value === (string)$optionValue) @disabled(!$canUpdateSettings)><span>{{ $optionLabel }}</span></label>
+                                                        <label class="customizer-preset"><input id="{{ $inputId }}-{{ $optionValue }}" type="radio" name="{{ $inputName }}" value="{{ $optionValue }}" data-setting-control @checked((string)$value === (string)$optionValue) @disabled(!$canUpdateSettings)><span>{{ $optionLabel }}</span></label>
                                                     @endforeach
                                                 </fieldset>
                                             @else
-                                                <input id="{{ $inputId }}" name="{{ $inputName }}" type="{{ match($field['type']) { 'integer', 'float' => 'number', 'email', 'color', 'date', 'url' => $field['type'], default => 'text' } }}" @if(in_array($field['type'], ['integer', 'float'], true)) min="{{ $field['min'] ?? ($field['type'] === 'integer' ? 1 : 0.01) }}" max="{{ $field['max'] ?? 10000000 }}" step="{{ $field['type'] === 'integer' ? 1 : ($field['step'] ?? '0.01') }}" @endif @if($field['type'] === 'date') max="{{ now()->toDateString() }}" @endif value="{{ $value }}" @disabled(!$canUpdateSettings)>
+                                                <input id="{{ $inputId }}" name="{{ $inputName }}" type="{{ match($field['type']) { 'integer', 'float' => 'number', 'email', 'color', 'date', 'url' => $field['type'], default => 'text' } }}" @if(in_array($field['type'], ['integer', 'float'], true)) min="{{ $field['min'] ?? ($field['type'] === 'integer' ? 1 : 0.01) }}" max="{{ $field['max'] ?? 10000000 }}" step="{{ $field['type'] === 'integer' ? 1 : ($field['step'] ?? '0.01') }}" @endif @if($field['type'] === 'date') max="{{ now()->toDateString() }}" @endif value="{{ $value }}" data-setting-control @disabled(!$canUpdateSettings)>
                                             @endif
                                             @error("settings.$groupKey.$key")<small class="text-danger">{{ $message }}</small>@enderror
                                         </div>
@@ -197,7 +563,7 @@
         </section>
     </div>
 
-    @if($canResetSettings) @foreach($schema as $groupKey => $group) @foreach($group['fields'] as $key => $field)<form id="reset-{{ $groupKey }}-{{ $key }}" method="POST" action="{{ route('site.settings.destroy', [$groupKey, $key]) }}" onsubmit="return confirm('Reset this setting to its original value?')">@csrf @method('DELETE')<input type="hidden" name="locale" value="{{ $locale }}"></form>@endforeach @endforeach @endif
+    @if($canResetSettings) @foreach($schema as $groupKey => $group) @foreach($group['fields'] as $key => $field)<form id="reset-{{ $groupKey }}-{{ $key }}" method="POST" action="{{ route('site.settings.destroy', [$groupKey, $key]) }}" onsubmit="return confirm('Reset this setting to its original value? The current version will be kept in revision history.')">@csrf @method('DELETE')<input type="hidden" name="locale" value="{{ $locale }}"><input type="hidden" name="global_settings_version" value="{{ $globalSettingsVersion }}"></form>@endforeach @endforeach @endif
 </main>
 
 @if($canUpdateSettings)<div id="media-picker" class="media-modal" role="dialog" aria-modal="true" aria-labelledby="media-picker-title" hidden>
@@ -206,6 +572,7 @@
 @endsection
 
 @section('custom-js')
+@vite('resources/js/admin/siteSettingsPayload.js')
 <script>
 (() => {
     const form = document.getElementById('customizer-form'); const status = document.getElementById('customizer-status'); const saveButton = document.getElementById('customizer-save'); const frame = document.getElementById('customizer-preview-frame'); const modal = document.getElementById('media-picker'); const mediaSearch = document.getElementById('media-picker-search'); let dirty = @json($errors->any()); let activeMediaInput = null;
@@ -228,7 +595,7 @@
     function applyDesignPreview(){try{const root=frame?.contentDocument?.querySelector('[style*="--igf-primary"]');if(!root)return;Object.entries(designPreviewMaps).forEach(([field,presets])=>{const selected=form?.querySelector(`[name="settings[design][${field}]"]:checked`);const variables=presets[selected?.value];if(!variables)return;Object.entries(variables).forEach(([property,value])=>root.style.setProperty(property,value))})}catch(error){/* The preview may still be loading. */}}
     function openHashGroup(){const rawHash=window.location.hash.slice(1);if(!rawHash)return;let id;try{id=decodeURIComponent(rawHash)}catch(error){return}const group=document.getElementById(id);if(group?.matches('[data-settings-group]')){group.open=true;group.scrollIntoView({block:'start'})}}
     function setDirty(value = true){dirty=value;status?.classList.toggle('is-visible',value);if(saveButton)saveButton.disabled=!value}
-    setDirty(dirty); form?.querySelectorAll('input:not([type=hidden]),textarea,select').forEach(control=>control.addEventListener(control.matches('select,input[type=checkbox],input[type=color],input[type=radio]')?'change':'input',()=>setDirty(true))); form?.addEventListener('input',event=>{if(event.target?.name?.startsWith('settings[design]'))applyDesignPreview()}); form?.addEventListener('change',event=>{if(event.target?.name?.startsWith('settings[design]'))applyDesignPreview()}); form?.addEventListener('submit',()=>setDirty(false)); window.addEventListener('beforeunload',event=>{if(!dirty)return;event.preventDefault();event.returnValue=''})
+    setDirty(dirty); form?.querySelectorAll('input:not([type=hidden]),textarea,select').forEach(control=>control.addEventListener(control.matches('select,input[type=checkbox],input[type=color],input[type=radio]')?'change':'input',()=>setDirty(true))); form?.addEventListener('input',event=>{if(event.target?.name?.startsWith('settings[design]'))applyDesignPreview()}); form?.addEventListener('change',event=>{if(event.target?.name?.startsWith('settings[design]'))applyDesignPreview()}); form?.addEventListener('submit',()=>setDirty(false)); form?.addEventListener('customizer:payload-error',()=>setDirty(true)); window.addEventListener('beforeunload',event=>{if(!dirty)return;event.preventDefault();event.returnValue=''})
     frame?.addEventListener('load',applyDesignPreview); document.getElementById('customizer-preview-page')?.addEventListener('change',event=>{frame.src=event.target.value}); document.querySelectorAll('[data-preview-width]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-preview-width]').forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});frame.style.width=button.dataset.previewWidth})); document.getElementById('refresh-customizer-preview')?.addEventListener('click',()=>{const url=new URL(frame.src);url.searchParams.set('preview',String(Date.now()));frame.src=url.toString()});
     const settingRows=[...document.querySelectorAll('[data-setting-row]')]; const settingGroups=[...document.querySelectorAll('[data-settings-group]')]; const noResults=document.getElementById('customizer-no-results'); document.getElementById('customizer-search')?.addEventListener('input',event=>{const query=event.target.value.trim().toLowerCase();let visibleCount=0;settingRows.forEach(row=>{const visible=!query||row.dataset.search.includes(query);row.hidden=!visible;if(visible)visibleCount+=1});settingGroups.forEach(group=>{const visible=[...group.querySelectorAll('[data-setting-row]')].some(row=>!row.hidden);group.hidden=!visible;if(query&&visible)group.open=true});noResults?.classList.toggle('is-visible',visibleCount===0)});
     function closeMediaPicker(){if(!modal)return;modal.hidden=true;activeMediaInput=null} document.querySelectorAll('[data-media-open]').forEach(button=>button.addEventListener('click',()=>{activeMediaInput=document.getElementById(button.dataset.mediaOpen);modal.hidden=false;mediaSearch.value='';document.querySelectorAll('.media-choice').forEach(choice=>{choice.hidden=false});window.setTimeout(()=>mediaSearch.focus(),20)})); document.querySelectorAll('[data-media-close]').forEach(button=>button.addEventListener('click',closeMediaPicker)); modal?.addEventListener('click',event=>{if(event.target===modal)closeMediaPicker()}); document.addEventListener('keydown',event=>{if(event.key==='Escape'&&modal&&!modal.hidden)closeMediaPicker()}); mediaSearch?.addEventListener('input',()=>{const query=mediaSearch.value.trim().toLowerCase();document.querySelectorAll('.media-choice').forEach(choice=>{choice.hidden=Boolean(query)&&!choice.dataset.mediaName.includes(query)})}); document.querySelectorAll('.media-choice').forEach(choice=>choice.addEventListener('click',()=>{if(!activeMediaInput)return;activeMediaInput.value=choice.dataset.mediaUrl;activeMediaInput.dispatchEvent(new Event('input',{bubbles:true}));const preview=document.getElementById(activeMediaInput.id+'-preview');if(preview){preview.src=choice.dataset.mediaUrl;preview.style.visibility='visible'}closeMediaPicker()})); window.addEventListener('hashchange',openHashGroup); openHashGroup();

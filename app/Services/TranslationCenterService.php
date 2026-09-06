@@ -17,6 +17,7 @@ use App\Models\TeamGroup;
 use App\Models\PageMenu;
 use App\Models\SiteSetting;
 use App\Models\SplashScreen;
+use App\Models\Tag;
 use App\Models\Testimonial;
 use App\Models\TranslationLocale;
 use App\Models\TranslationString;
@@ -43,7 +44,7 @@ class TranslationCenterService
         'gallery' => ['class' => Gallery::class, 'label' => 'Gallery', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'album' => ['class' => Album::class, 'label' => 'Album', 'key' => 'uuid', 'fields' => ['name']],
         'testimonial' => ['class' => Testimonial::class, 'label' => 'Testimonial', 'key' => 'uuid', 'fields' => ['name', 'designation', 'testimonial']],
-        'event' => ['class' => NoticeBoard::class, 'label' => 'Event or publication', 'key' => 'translation_key', 'fields' => ['title', 'sub_title', 'description', 'location', 'publisher_name']],
+        'event' => ['class' => NoticeBoard::class, 'label' => 'Event or publication', 'key' => 'translation_key', 'fields' => ['title', 'sub_title', 'description', 'image_alt', 'location', 'publisher_name']],
         'annual_report' => ['class' => AnnualReport::class, 'label' => 'Annual report', 'key' => 'translation_key', 'fields' => ['title', 'sub_title', 'description', 'location', 'publisher_name']],
         'splash_screen' => ['class' => SplashScreen::class, 'label' => 'Visitor announcement', 'key' => 'uuid', 'fields' => ['title', 'details']],
     ];
@@ -71,6 +72,7 @@ class TranslationCenterService
      * translation dictionary and are overlaid at read time.
      */
     private const OVERLAY_CONTENT = [
+        'project_group' => ['class' => Tag::class, 'label' => 'Project group', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'team_group' => ['class' => TeamGroup::class, 'label' => 'Team group', 'key' => 'uuid', 'fields' => ['name', 'description']],
         'team_member' => ['class' => LatestNews::class, 'label' => 'Team member', 'key' => 'id', 'fields' => ['name', 'description', 'biography', 'qualification']],
         'donation_cause_group' => ['class' => DonationCauseGroup::class, 'label' => 'Donation cause group', 'key' => 'uuid', 'fields' => ['name', 'description']],
@@ -812,7 +814,7 @@ class TranslationCenterService
                         Str::headline($field),
                         $sourceValue,
                         (string) ($targets[$storageKey] ?? ''),
-                        $field === 'description' && !in_array($alias, ['team_group', 'donation_cause_group'], true) ? 'html' : 'text',
+                        $field === 'description' && !in_array($alias, ['project_group', 'team_group', 'donation_cause_group'], true) ? 'html' : 'text',
                         $sourceLocale,
                         $targetLocale,
                         $this->isActiveSource($source)
@@ -1319,7 +1321,7 @@ class TranslationCenterService
 
         $field = $identity['field'];
         $cleanValue = $field === 'description'
-            && !in_array($identity['model'], ['team_group', 'donation_cause_group'], true)
+            && !in_array($identity['model'], ['project_group', 'team_group', 'donation_cause_group'], true)
             ? $this->sanitizer->sanitizeHtml($value)
             : trim(strip_tags($value));
         $sourceValue = (string) ($source->{$field} ?? '');

@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 class SeoRouteRegistry
 {
-    /** @return Collection<string, array{label?: string, path: string, page_slug?: string}> */
+    /** @return Collection<string, array{label?: string, path: string, page_slug?: string, settings_backed?: bool}> */
     public function all(): Collection
     {
         return collect(config('seo.routes', []))
@@ -28,7 +28,7 @@ class SeoRouteRegistry
         return $this->all()->has($routeName);
     }
 
-    /** @return array{label?: string, path: string, page_slug?: string}|null */
+    /** @return array{label?: string, path: string, page_slug?: string, settings_backed?: bool}|null */
     public function definition(string $routeName): ?array
     {
         $definition = $this->all()->get($routeName);

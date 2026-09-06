@@ -322,6 +322,7 @@ class MyMenu
             ->selectRaw("IFNULL(icon, '') as icon")
             ->with('children')
             ->where('status', 1)
+            ->withoutStalePageDestinations()
             ->where('type', $type)
             ->where('language', $locale)
             ->whereNull('parent_id')

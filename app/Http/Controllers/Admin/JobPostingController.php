@@ -98,7 +98,7 @@ final class JobPostingController extends Controller
     {
         $this->opportunities->deleteJobDraft($job, $request->user('admin'));
 
-        return redirect()->route('recruitment.jobs.index')->with($this->success('Unused job draft deleted.'));
+        return redirect()->route('recruitment.jobs.index')->with($this->success('Unused job draft moved to Content Trash.'));
     }
 
     /** @return array<string, mixed> */

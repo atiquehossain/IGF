@@ -48,7 +48,7 @@
       </main>
       <AppFooter />
       <WebsiteChat />
-      <!-- <AppCookies /> -->
+      <AnalyticsConsent />
     </div>
   </v-app>
 </template>
@@ -68,6 +68,7 @@ import AppFooter from './AppFooter';
 import SafeStyle from '../Shared/SafeStyle';
 import StructuredData from '../Shared/StructuredData';
 import WebsiteChat from '../Shared/WebsiteChat';
+import AnalyticsConsent from '../Shared/AnalyticsConsent.vue';
 import { resolveSeoAlternates, resolveSeoMetadata, resolveStructuredData } from '../Shared/seoMetadata';
 import { resolvePageCss } from '../Shared/pageCss';
 // import AppCookies from './AppCookies';

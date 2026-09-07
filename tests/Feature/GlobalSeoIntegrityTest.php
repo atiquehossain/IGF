@@ -254,12 +254,12 @@ class GlobalSeoIntegrityTest extends TestCase
 
     public function test_primary_public_routes_have_default_canonicals_and_sitemap_entries(): void
     {
-        foreach (['/contact-us', '/gallery', '/sponsor-child', '/events', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+        foreach (['/contact-us', '/gallery', '/sponsor-child', '/events', '/news', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
             $this->get($path)->assertOk()->assertSee('rel="canonical" href="' . url($path) . '"', false);
         }
 
         $sitemap = $this->get('/sitemap.xml')->assertOk()->getContent();
-        foreach (['/contact-us', '/gallery', '/events', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
+        foreach (['/contact-us', '/gallery', '/events', '/news', '/careers', '/workshops', '/volunteer/register', '/donate', '/annual-report'] as $path) {
             $this->assertStringContainsString('<loc>' . url($path) . '</loc>', $sitemap);
         }
         // Sponsor is settings-backed and remains a complete managed public

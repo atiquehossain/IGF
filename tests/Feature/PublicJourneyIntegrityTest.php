@@ -33,7 +33,25 @@ class PublicJourneyIntegrityTest extends TestCase
                 ->where('meta_tag.meta_title', 'Sponsor a Child | Ignite Global Foundation')
                 ->where('siteSettings.sponsor_page.monthly_amount', 1500)
                 ->where('siteSettings.sponsor_page.benefit_1', 'Quality education')
+                ->where('siteSettings.sponsor_page.selection_step_label', 'Step 1 of 2')
+                ->where('siteSettings.sponsor_page.selection_title', 'Choose your sponsorship plan')
+                ->where('siteSettings.sponsor_page.selection_note', 'This sends a sponsorship request. No payment is taken on this page.')
+                ->where('siteSettings.sponsor_page.success_title', 'Your sponsorship request is received.')
+                ->where('siteSettings.sponsor_page.success_next_body', 'Our team will contact you to answer questions and explain the secure next steps. No payment has been taken.')
             );
+
+        $this->assertSame(
+            'ধাপ ১ / ২',
+            config('site-settings.groups.sponsor_page.fields.selection_step_label.localized_defaults.bn')
+        );
+        $this->assertSame(
+            'এটি একটি স্পনসরশিপ অনুরোধ পাঠায়। এই পৃষ্ঠায় কোনো অর্থ গ্রহণ করা হয় না।',
+            config('site-settings.groups.sponsor_page.fields.selection_note.localized_defaults.bn')
+        );
+        $this->assertSame(
+            'আপনার স্পনসরশিপ অনুরোধ গ্রহণ করা হয়েছে।',
+            config('site-settings.groups.sponsor_page.fields.success_title.localized_defaults.bn')
+        );
 
         $this->get(route('frontend.volunteer_registration.index'))
             ->assertOk()
@@ -151,6 +169,7 @@ class PublicJourneyIntegrityTest extends TestCase
             'slug' => 'media-path-event',
             'description' => 'A published event.',
             'image_path' => '/storage/media/events/community.jpg',
+            'content_kind' => 'event',
             'language' => 'en',
             'status' => 1,
             'published_at' => now(),

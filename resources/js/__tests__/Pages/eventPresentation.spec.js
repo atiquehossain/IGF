@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { usePage } from '@inertiajs/vue3'
+import { router, usePage } from '@inertiajs/vue3'
 import EventDetail from '@/Pages/event.vue'
 import Events from '@/Pages/events.vue'
 import EventFacts from '@/Shared/EventFacts.vue'
@@ -14,11 +14,19 @@ const settings = {
   events_eyebrow: 'Stay involved',
   events_introduction: 'Events and community stories.',
   events_listing_label: 'Events and news',
+  events_empty_title: 'Nothing scheduled yet',
+  events_empty_body: 'Check back for updates.',
+  events_default_title: 'Events & latest news',
+  events_pagination_label: 'Event and news listing pages',
+  events_pagination_page_label: 'Go to page {0}',
+  events_pagination_current_label: 'Current page, page {0}',
+  events_pagination_previous_label: 'Previous page',
+  events_pagination_next_label: 'Next page',
   event_card_eyebrow: 'Event or story',
   event_card_link_label: 'Read more',
-  event_back_label: 'All updates',
+  event_back_label: 'All events',
   event_detail_eyebrow: 'Community update',
-  event_footer_label: 'Back to updates',
+  event_footer_label: 'Back to all events',
   event_facts_label: 'Managed event details',
   event_start_label: 'Begins',
   event_end_label: 'Finishes',
@@ -32,6 +40,20 @@ const settings = {
   event_attendance_offline_label: 'At the venue',
   event_attendance_online_label: 'Join online',
   event_attendance_mixed_label: 'Venue and online',
+}
+
+const paginationStub = {
+  props: [
+    'modelValue',
+    'length',
+    'ariaLabel',
+    'pageAriaLabel',
+    'currentPageAriaLabel',
+    'previousAriaLabel',
+    'nextAriaLabel',
+  ],
+  emits: ['update:modelValue'],
+  template: '<button type="button" data-test="pagination" @click="$emit(\'update:modelValue\', 2)">{{ ariaLabel }}</button>',
 }
 
 const managedEvent = {
@@ -50,7 +72,7 @@ const managedEvent = {
   location: 'Dhaka Community Centre',
 }
 
-function mountPublic(component, props) {
+function mountPublic(component, props, url = '/events') {
   usePage().props = {
     ...props,
     siteSettings: {
@@ -58,12 +80,12 @@ function mountPublic(component, props) {
       regional,
     },
   }
-  usePage().url = '/events'
+  usePage().url = url
 
   return mount(component, {
     global: {
       mocks: { route: globalThis.route },
-      stubs: { App: layoutStub, Layout: layoutStub, 'v-pagination': true },
+      stubs: { App: layoutStub, Layout: layoutStub, 'v-pagination': paginationStub },
     },
   })
 }
@@ -107,8 +129,88 @@ describe('managed public event presentation', () => {
     wrapper.unmount()
   })
 
+  test('uses the selected archive copy and accessible pagination labels', () => {
+    const article = {
+      id: 2,
+      title: 'Field update',
+      sub_title: 'A published story.',
+      slug: 'field-update',
+      content_kind: 'article',
+    }
+    const wrapper = mountPublic(Events, {
+      title: 'Fallback title',
+      archive_kind: 'article',
+      archive_presentation: {
+        title: 'Latest field news',
+        introduction: 'Fresh reporting from our programs.',
+        listing_label: 'Published field news',
+        empty_title: 'No field news yet',
+        empty_body: 'Please check again soon.',
+        card_eyebrow: 'News',
+      },
+      data: { items: [article] },
+      properties: { events: 1, total_page: 2 },
+    })
+
+    expect(wrapper.get('.igf-events__hero h1').text()).toBe('Latest field news')
+    expect(wrapper.get('.igf-events__hero span').text()).toBe('Fresh reporting from our programs.')
+    expect(wrapper.get('.igf-events__content').attributes('aria-label')).toBe('Published field news')
+    expect(wrapper.get('.igf-content-card__eyebrow').text()).toBe('News')
+
+    const pagination = wrapper.getComponent(paginationStub)
+    expect(pagination.props()).toMatchObject({
+      ariaLabel: settings.events_pagination_label,
+      pageAriaLabel: settings.events_pagination_page_label,
+      currentPageAriaLabel: settings.events_pagination_current_label,
+      previousAriaLabel: settings.events_pagination_previous_label,
+      nextAriaLabel: settings.events_pagination_next_label,
+    })
+    wrapper.unmount()
+
+    const emptyWrapper = mountPublic(Events, {
+      title: 'Fallback title',
+      archive_kind: 'article',
+      archive_presentation: {
+        empty_title: 'No field news yet',
+        empty_body: 'Please check again soon.',
+      },
+      data: { items: [] },
+      properties: { events: 1, total_page: 1 },
+    })
+
+    expect(emptyWrapper.get('.igf-events__empty h2').text()).toBe('No field news yet')
+    expect(emptyWrapper.get('.igf-events__empty p').text()).toBe('Please check again soon.')
+    emptyWrapper.unmount()
+  })
+
+  test('keeps the configured locale query and fixed route when changing news pages', async () => {
+    const get = vi.spyOn(router, 'get').mockImplementation(() => {})
+    const wrapper = mountPublic(Events, {
+      title: 'Latest news',
+      archive_kind: 'article',
+      archive_route: 'frontend.news',
+      archive_presentation: {},
+      seoLocale: { query_parameter: 'locale' },
+      data: { items: [{ id: 2, title: 'News', slug: 'news', content_kind: 'article' }] },
+      properties: { events: 1, total_page: 2 },
+    }, '/news?locale=bn')
+
+    await wrapper.get('[data-test="pagination"]').trigger('click')
+
+    expect(get).toHaveBeenCalledWith('/frontend.news/', {
+      page: 2,
+      locale: 'bn',
+    }, { preserveState: true, preserveScroll: true })
+    wrapper.unmount()
+  })
+
   test('shows the same accessible managed facts on an event detail page', () => {
-    const wrapper = mountPublic(EventDetail, { data: { event: managedEvent } })
+    const wrapper = mountPublic(EventDetail, {
+      archive_route: 'frontend.events',
+      archive_url: '/events',
+      archive_presentation: { title: 'All events' },
+      data: { event: managedEvent },
+    })
     const facts = wrapper.get('.igf-event__schedule .igf-event-facts')
 
     expect(facts.attributes('aria-label')).toBe('Managed event details')
@@ -121,6 +223,9 @@ describe('managed public event presentation', () => {
       managedEvent.event_end_at,
     ])
     expect(wrapper.get('.igf-event__image img').attributes('alt')).toBe(managedEvent.image_alt)
+    expect(wrapper.get('.igf-event__hero a').attributes('href')).toBe('/events')
+    expect(wrapper.get('.igf-event__hero a').text()).toContain('All events')
+    expect(wrapper.get('.igf-event__article footer a').attributes('href')).toBe('/events')
 
     wrapper.unmount()
   })
@@ -155,6 +260,9 @@ describe('managed public event presentation', () => {
 
   test('keeps an ordinary news detail as an article with its publication date', () => {
     const wrapper = mountPublic(EventDetail, {
+      archive_route: 'frontend.news',
+      archive_url: '/news',
+      archive_presentation: { title: 'Latest news' },
       data: {
         event: {
           title: 'Field update',
@@ -169,6 +277,9 @@ describe('managed public event presentation', () => {
     expect(wrapper.find('.igf-event__schedule').exists()).toBe(false)
     expect(wrapper.get('.igf-event__meta').text()).toContain('1 September 2026')
     expect(wrapper.get('.igf-event__image img').attributes('alt')).toBe('Field update')
+    expect(wrapper.get('.igf-event__hero a').attributes('href')).toBe('/news')
+    expect(wrapper.get('.igf-event__hero a').text()).toContain('Latest news')
+    expect(wrapper.get('.igf-event__article footer a').attributes('href')).toBe('/news')
     wrapper.unmount()
   })
 })

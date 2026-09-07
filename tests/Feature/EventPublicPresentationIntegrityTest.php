@@ -27,9 +27,15 @@ class EventPublicPresentationIntegrityTest extends TestCase
         $this->assertSame('Starts', $english['event_start_label']);
         $this->assertSame('Moved online', $english['event_status_moved_online_label']);
         $this->assertSame('In person and online', $english['event_attendance_mixed_label']);
+        $this->assertSame('Events', $english['event_archive_title']);
+        $this->assertSame('Latest news', $english['news_archive_title']);
+        $this->assertSame('Go to page {0}', $english['events_pagination_page_label']);
         $this->assertSame('ইভেন্টের সময়সূচি ও অংশগ্রহণের তথ্য', $bangla['event_facts_label']);
         $this->assertSame('বাতিল', $bangla['event_status_cancelled_label']);
         $this->assertSame('সরাসরি ও অনলাইন', $bangla['event_attendance_mixed_label']);
+        $this->assertSame('ইভেন্ট', $bangla['event_archive_title']);
+        $this->assertSame('সর্বশেষ সংবাদ', $bangla['news_archive_title']);
+        $this->assertSame('পৃষ্ঠা {0}-এ যান', $bangla['events_pagination_page_label']);
 
         SiteSetting::create([
             'group' => 'content_archives',
@@ -83,18 +89,27 @@ class EventPublicPresentationIntegrityTest extends TestCase
         $this->get('/events')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
+                ->where('archive_kind', 'event')
                 ->where('data.items.0.id', $event->id)
                 ->where('data.items.0.content_kind', 'event')
                 ->where('data.items.0.event_status', 'postponed')
                 ->where('data.items.0.event_attendance_mode', 'mixed')
                 ->where('data.items.0.location', 'Dhaka Community Centre')
                 ->where('data.items.0.image_alt', 'Volunteers welcoming families at the community day')
-                ->where('data.items.1.id', $article->id)
-                ->where('data.items.1.content_kind', 'article')
-                ->where('data.items.1.image_alt', 'Field update')
-                ->where('data.items.1.event_start_at', null)
-                ->where('data.items.1.event_status', null)
-                ->where('data.items.1.event_attendance_mode', null)
+                ->missing('data.items.1')
+            );
+
+        $this->get('/news')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('archive_kind', 'article')
+                ->where('data.items.0.id', $article->id)
+                ->where('data.items.0.content_kind', 'article')
+                ->where('data.items.0.image_alt', 'Field update')
+                ->where('data.items.0.event_start_at', null)
+                ->where('data.items.0.event_status', null)
+                ->where('data.items.0.event_attendance_mode', null)
+                ->missing('data.items.1')
             );
 
         $this->get('/event/' . $event->slug)

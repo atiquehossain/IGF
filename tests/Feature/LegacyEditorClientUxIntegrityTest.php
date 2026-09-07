@@ -70,7 +70,11 @@ class LegacyEditorClientUxIntegrityTest extends TestCase
         foreach (['NoticeBoardController.php', 'AnnualReportController.php'] as $controller) {
             $source = (string) file_get_contents(app_path('Http/Controllers/Vue/'.$controller));
 
-            $this->assertStringContainsString("->orderBy('order_by', 'desc')", $source, $controller);
+            $this->assertTrue(
+                str_contains($source, "->orderBy('order_by', 'desc')")
+                    || str_contains($source, "->orderByDesc('order_by')"),
+                $controller.' must keep display priority in descending order.'
+            );
         }
     }
 
@@ -116,6 +120,23 @@ class LegacyEditorClientUxIntegrityTest extends TestCase
         $this->assertStringContainsString('switch the admin editing language from the globe menu', $create);
         $this->assertStringContainsString('Editing the {{ strtoupper((string) ($annual_report->language', $edit);
         $this->assertStringContainsString('use the Translation Center', $edit);
+    }
+
+    public function test_events_and_news_manager_explains_each_managed_record_to_ordinary_editors(): void
+    {
+        $index = $this->adminView('notice-board/index.blade.php');
+
+        $this->assertStringContainsString('Add event or news', $index);
+        $this->assertStringContainsString('Search events and news', $index);
+        $this->assertStringContainsString('<strong>Content format</strong>', $index);
+        $this->assertStringContainsString('<strong>Relevant date</strong>', $index);
+        $this->assertStringContainsString('Scheduled event', $index);
+        $this->assertStringContainsString('News / publication', $index);
+        $this->assertStringContainsString('$notice_board->content_kind === \'event\'', $index);
+        $this->assertStringContainsString('$notice_board->event_start_at', $index);
+        $this->assertStringContainsString('Event starts', $index);
+        $this->assertStringContainsString('Published', $index);
+        $this->assertStringNotContainsString("date('M d, Y', strtotime(@\$notice_board->published_at))", $index);
     }
 
     private function adminView(string $path): string

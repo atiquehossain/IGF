@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Vue;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Page;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
 use App\Services\SeoMetadataService;
+use App\Services\SiteSettingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,6 +22,7 @@ class CategoryController extends Controller
         private ContentSanitizer $sanitizer,
         private PageBlockContentResolver $blockResolver,
         private SeoMetadataService $seo,
+        private SiteSettingService $siteSettings,
     ) {
     }
 
@@ -47,6 +50,8 @@ class CategoryController extends Controller
         $category->setAttribute('description', $this->sanitizer->sanitizeHtml($category->description));
         $category->setAttribute('inline_css', $this->sanitizer->sanitizeCss($category->inline_css));
         $landingPage = $this->resolveLandingPage($category);
+        $banner = $this->archiveBanner($category->banner, $category);
+        $archiveDesign = $this->archiveDesign();
 
         $pages = Page::select('pages.*', 'categories.name as category_name')
             ->publiclyAvailable()
@@ -78,7 +83,10 @@ class CategoryController extends Controller
             return $page;
         });
 
-        $categoryImage = $category->path ?: $category->image ?: $landingPage?->thumbnail;
+        $categoryImage = $category->path
+            ?: $category->image
+            ?: ($banner['image_url'] ?? null)
+            ?: $landingPage?->thumbnail;
 
         return Inertia::render('category')->with([
             'status' => true,
@@ -96,13 +104,125 @@ class CategoryController extends Controller
                 'search' => $search,
             ],
             'data' => [
-                'banner' => $category->banner,
+                'banner' => $banner,
                 'category' => $category,
                 'landing_page' => $landingPage,
                 'items' => $pages->items(),
+                'archive_design' => $archiveDesign,
                 'is_awards_category' => hash_equals(self::AWARDS_CATEGORY_UUID, (string) $category->uuid),
             ],
         ]);
+    }
+
+    /**
+     * Publish a deliberately small, allow-listed presentation contract. This
+     * keeps Website Customizer values useful without allowing arbitrary class
+     * names or layout values to leak into the public template.
+     */
+    private function archiveDesign(): array
+    {
+        $settings = data_get(
+            $this->siteSettings->values(app()->getLocale(), true),
+            'content_archives',
+            []
+        );
+        $settings = is_array($settings) ? $settings : [];
+
+        $requestedHeroLayout = $this->allowedSetting(
+            $settings['category_hero_layout'] ?? null,
+            ['compact', 'split'],
+            'compact'
+        );
+        $showBanner = filter_var(
+            $settings['category_show_banner'] ?? true,
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        $cardEyebrow = $this->plainText($settings['category_card_eyebrow'] ?? '');
+        $cardLinkLabel = $this->plainText($settings['category_card_link_label'] ?? 'Explore program');
+        $bottomCta = [
+            'enabled' => filter_var(
+                $settings['category_bottom_cta_enabled'] ?? true,
+                FILTER_VALIDATE_BOOLEAN
+            ),
+            'title' => $this->plainText($settings['category_bottom_cta_title'] ?? ''),
+            'body' => $this->plainText($settings['category_bottom_cta_body'] ?? ''),
+            'label' => $this->plainText($settings['category_bottom_cta_label'] ?? ''),
+            'url' => $this->sanitizer->sanitizeUrl($settings['category_bottom_cta_url'] ?? ''),
+        ];
+        $bottomCta['enabled'] = $bottomCta['enabled']
+            && $bottomCta['title'] !== ''
+            && $bottomCta['label'] !== ''
+            && $bottomCta['url'] !== '';
+
+        return [
+            'hero_layout' => $requestedHeroLayout,
+            'show_banner' => $showBanner,
+            'card_columns' => $this->allowedSetting(
+                $settings['category_card_columns'] ?? null,
+                ['auto', '2', '3', '4'],
+                'auto'
+            ),
+            'card_eyebrow' => $cardEyebrow,
+            'show_card_eyebrow' => filter_var(
+                $settings['category_card_show_eyebrow'] ?? false,
+                FILTER_VALIDATE_BOOLEAN
+            ) && $cardEyebrow !== '',
+            'card_link_label' => $cardLinkLabel,
+            'show_card_link' => filter_var(
+                $settings['category_card_show_link'] ?? true,
+                FILTER_VALIDATE_BOOLEAN
+            ) && $cardLinkLabel !== '',
+            'bottom_cta' => $bottomCta,
+        ];
+    }
+
+    private function archiveBanner(?Banner $banner, Category $category): ?array
+    {
+        if (!$banner) {
+            return null;
+        }
+
+        $headline = $this->plainText($banner->headline);
+        $subheadline = $this->plainText($banner->subheadline);
+        $legacyName = trim((string) $banner->name);
+
+        if ($headline === '' && preg_match('/<b[^>]*>(.*?)<\/b>/is', $legacyName, $matches)) {
+            $headline = $this->plainText($matches[1] ?? '');
+            if ($subheadline === '') {
+                $subheadline = $this->plainText(str_replace($matches[0], '', $legacyName));
+            }
+        } elseif ($headline === '') {
+            $headline = $this->plainText($legacyName);
+        }
+
+        $imageUrl = $this->sanitizer->sanitizeUrl($banner->image_url);
+        $ctaUrl = $this->sanitizer->sanitizeUrl($banner->cta_url ?: $banner->url);
+
+        return [
+            'id' => $banner->getKey(),
+            'uuid' => (string) $banner->uuid,
+            'eyebrow' => $this->plainText($banner->eyebrow),
+            'headline' => $headline,
+            'subheadline' => $subheadline,
+            'description' => $this->plainText($banner->description),
+            'image_url' => $imageUrl,
+            'image_alt' => $this->plainText($banner->image_alt) ?: (string) $category->name,
+            'cta_label' => $this->plainText($banner->cta_label),
+            'cta_url' => $ctaUrl,
+        ];
+    }
+
+    private function allowedSetting(mixed $value, array $allowed, string $fallback): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+
+        return in_array($value, $allowed, true) ? $value : $fallback;
+    }
+
+    private function plainText(mixed $value): string
+    {
+        return trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $value)));
     }
 
     private function resolveLandingPage(Category $category): ?Page

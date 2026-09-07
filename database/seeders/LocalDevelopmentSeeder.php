@@ -599,8 +599,8 @@ class LocalDevelopmentSeeder extends Seeder
                     'items' => [
                         ['eyebrow' => 'Upcoming event', 'heading' => 'Community volunteer orientation', 'body' => 'Meet the team and learn how to support upcoming field activities.', 'url' => '/events'],
                         ['eyebrow' => 'Upcoming event', 'heading' => 'Youth learning workshop', 'body' => 'A practical session for students, educators, and local volunteers.', 'url' => '/events'],
-                        ['eyebrow' => 'Latest news', 'heading' => 'Clean water initiative reaches its next community', 'body' => 'An update from our locally led water and sanitation work.', 'image' => '/image/banner/slider-2-1588.webp', 'image_alt' => 'Community water initiative', 'url' => '/events'],
-                        ['eyebrow' => 'Latest news', 'heading' => 'New livelihood cohort begins training', 'body' => 'Participants start the next phase of skills and market-readiness support.', 'image' => '/image/news.png', 'image_alt' => 'Livelihood program update', 'url' => '/events'],
+                        ['eyebrow' => 'Latest news', 'heading' => 'Clean water initiative reaches its next community', 'body' => 'An update from our locally led water and sanitation work.', 'image' => '/image/banner/slider-2-1588.webp', 'image_alt' => 'Community water initiative', 'url' => '/news'],
+                        ['eyebrow' => 'Latest news', 'heading' => 'New livelihood cohort begins training', 'body' => 'Participants start the next phase of skills and market-readiness support.', 'image' => '/image/news.png', 'image_alt' => 'Livelihood program update', 'url' => '/news'],
                     ],
                 ],
             ],

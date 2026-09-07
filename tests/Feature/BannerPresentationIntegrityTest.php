@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\AuthMenu;
 use App\Models\Banner;
+use App\Models\Category;
 use App\Models\MenuAction;
 use App\Models\Page;
 use App\Models\Role;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -127,6 +129,138 @@ class BannerPresentationIntegrityTest extends TestCase
             );
     }
 
+    public function test_category_archive_receives_banner_and_normalized_no_code_design_controls(): void
+    {
+        $banner = Banner::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => '<b>Our programs</b> Community-led change',
+            'headline' => 'Programs built with communities',
+            'subheadline' => 'Education, health, livelihoods, and resilience',
+            'description' => 'See how local leaders turn support into lasting progress.',
+            'image' => 'program archive.webp',
+            'path' => 'program archive.webp',
+            'image_alt' => 'Young people planting trees together',
+            'cta_label' => 'Support a program',
+            'cta_url' => '/donate',
+            'type' => 'banner-page',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        Category::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Our programs',
+            'slug' => 'our-causes',
+            'description' => 'Programs designed with communities.',
+            'banner_id' => $banner->id,
+            'display_mode' => 'archive',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+
+        $this->putSetting('category_hero_layout', 'split');
+        $this->putSetting('category_show_banner', '1', 'boolean', '*');
+        $this->putSetting('category_card_columns', '4');
+        $this->putSetting('category_card_show_eyebrow', '1', 'boolean', '*');
+        $this->putSetting('category_card_eyebrow', 'Program');
+        $this->putSetting('category_card_show_link', '1', 'boolean', '*');
+        $this->putSetting('category_card_link_label', 'Explore program');
+        $this->putSetting('category_bottom_cta_enabled', '1', 'boolean', '*');
+        $this->putSetting('category_bottom_cta_title', 'Help create lasting change');
+        $this->putSetting('category_bottom_cta_body', 'Choose a program to support.');
+        $this->putSetting('category_bottom_cta_label', 'Donate now');
+        $this->putSetting('category_bottom_cta_url', '/donate', 'text', '*');
+
+        $this->get(route('frontend.category', ['slug' => 'our-causes']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('category')
+                ->where('data.banner.headline', 'Programs built with communities')
+                ->where('data.banner.image_url', '/storage/photos/1/banner/program%20archive.webp')
+                ->where('data.banner.image_alt', 'Young people planting trees together')
+                ->where('data.banner.cta_url', '/donate')
+                ->where('data.archive_design.hero_layout', 'split')
+                ->where('data.archive_design.show_banner', true)
+                ->where('data.archive_design.card_columns', '4')
+                ->where('data.archive_design.card_eyebrow', 'Program')
+                ->where('data.archive_design.show_card_eyebrow', true)
+                ->where('data.archive_design.card_link_label', 'Explore program')
+                ->where('data.archive_design.show_card_link', true)
+                ->where('data.archive_design.bottom_cta', [
+                    'enabled' => true,
+                    'title' => 'Help create lasting change',
+                    'body' => 'Choose a program to support.',
+                    'label' => 'Donate now',
+                    'url' => '/donate',
+                ])
+            );
+    }
+
+    public function test_category_archive_design_preserves_split_fallback_and_rejects_stale_columns_and_incomplete_ctas(): void
+    {
+        Category::create([
+            'uuid' => (string) Str::uuid(),
+            'name' => 'Programs without a banner',
+            'slug' => 'programs-without-banner',
+            'display_mode' => 'archive',
+            'language' => 'en',
+            'status' => 1,
+        ]);
+        $this->putSetting('category_hero_layout', 'split');
+        $this->putSetting('category_card_columns', '12');
+        $this->putSetting('category_bottom_cta_enabled', '1', 'boolean', '*');
+        $this->putSetting('category_bottom_cta_title', 'Unsafe action');
+        $this->putSetting('category_bottom_cta_label', 'Continue');
+        $this->putSetting('category_bottom_cta_url', 'javascript:alert(1)', 'text', '*');
+
+        $this->get(route('frontend.category', ['slug' => 'programs-without-banner']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('data.banner', null)
+                ->where('data.archive_design.hero_layout', 'split')
+                ->where('data.archive_design.show_banner', true)
+                ->where('data.archive_design.card_columns', 'auto')
+                ->where('data.archive_design.bottom_cta.enabled', false)
+                ->where('data.archive_design.bottom_cta.url', '')
+            );
+    }
+
+    public function test_category_archive_controls_are_safe_presets_and_discoverable_in_admin(): void
+    {
+        $fields = config('site-settings.groups.content_archives.fields');
+
+        $this->assertSame(
+            ['compact' => 'Compact introduction', 'split' => 'Text beside selected banner'],
+            $fields['category_hero_layout']['options']
+        );
+        $this->assertSame(
+            ['auto' => 'Use global design setting', '2' => 'Two', '3' => 'Three', '4' => 'Four'],
+            $fields['category_card_columns']['options']
+        );
+        $this->assertSame('Browse programs', $fields['category_browse_label']['default']);
+        $this->assertSame('কর্মসূচিগুলো দেখুন', $fields['category_browse_label']['localized_defaults']['bn']);
+        $this->assertSame('Programs', $fields['category_listing_label']['default']);
+        $this->assertSame('কর্মসূচিসমূহ', $fields['category_listing_label']['localized_defaults']['bn']);
+        $this->assertSame('', $fields['category_card_eyebrow']['default']);
+        $this->assertSame('Explore program', $fields['category_card_link_label']['default']);
+        $this->assertSame('কর্মসূচি দেখুন', $fields['category_card_link_label']['localized_defaults']['bn']);
+        $this->assertTrue($fields['category_bottom_cta_enabled']['default']);
+        $this->assertStringContainsString('Our Programs archive', $fields['category_bottom_cta_enabled']['help']);
+        $this->assertSame('দীর্ঘস্থায়ী পরিবর্তনে সহায়তা করুন', $fields['category_bottom_cta_title']['localized_defaults']['bn']);
+        $this->assertSame('আজই কমিউনিটি-নেতৃত্বাধীন কর্মসূচিকে সহায়তা করার একটি উপায় বেছে নিন।', $fields['category_bottom_cta_body']['localized_defaults']['bn']);
+        $this->assertSame('এখনই অনুদান দিন', $fields['category_bottom_cta_label']['localized_defaults']['bn']);
+        $this->assertSame('url_or_path', $fields['category_bottom_cta_url']['type']);
+
+        foreach (['add.blade.php', 'edit.blade.php'] as $view) {
+            $source = file_get_contents(resource_path('views/admin/category/' . $view));
+            $this->assertStringContainsString('Open archive design controls', $source);
+            $this->assertStringContainsString('#settings-content_archives', $source);
+            $this->assertStringContainsString('split hero', $source);
+        }
+        $customizer = file_get_contents(resource_path('views/admin/site-settings/index.blade.php'));
+        $this->assertStringContainsString("'Programs' => \$localizedRoute('frontend.category'", $customizer);
+        $this->assertStringContainsString("\$settingsAction('content_archives', 'category archive design')", $customizer);
+    }
+
     private function makeAdmin(string $capability): Admin
     {
         $menu = AuthMenu::create(['name' => 'Banners', 'link' => 'banner.index', 'status' => 1]);
@@ -152,6 +286,18 @@ class BannerPresentationIntegrityTest extends TestCase
             'status' => 1,
             'password' => bcrypt('test-password'),
             'must_change_password' => false,
+        ]);
+    }
+
+    private function putSetting(string $key, string $value, string $type = 'text', string $locale = 'en'): void
+    {
+        SiteSetting::create([
+            'group' => 'content_archives',
+            'key' => $key,
+            'locale' => $locale,
+            'value' => $value,
+            'type' => $type,
+            'is_public' => true,
         ]);
     }
 }

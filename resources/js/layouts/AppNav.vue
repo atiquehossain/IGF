@@ -69,8 +69,9 @@ const fallbackNavigation = [
   ] },
   { name: 'Our Work', href: '#', children: [
     { name: 'Program Overview', href: '/category/our-causes' },
-    { name: 'Inclusive Education', href: '/page/education' },
-    { name: 'Visit Ignite School', href: '/category/visit-ignite-school' },
+    { name: 'Inclusive Education', href: '/page/education', children: [
+      { name: 'Visit Ignite School', href: '/category/visit-ignite-school' },
+    ] },
     { name: 'Youth Development', href: '/page/youth-development', children: [
       { name: 'Workshop', href: '/workshops' },
     ] },
@@ -85,7 +86,8 @@ const fallbackNavigation = [
   ] },
   { name: 'News & Stories', href: '#', children: [
     { name: 'Stories', href: '/category/stories' },
-    { name: 'Events & News', href: '/events' },
+    { name: 'Events', href: '/events' },
+    { name: 'News', href: '/news' },
   ] },
   { name: 'Donate', href: '#', children: [
     { name: 'Make a Donation', href: '/make-a-donation' },
@@ -636,7 +638,7 @@ onBeforeUnmount(() => {
 .site-nav__actions { display:flex; align-items:center; gap:14px; }
 .nav-icon { display:grid; width:44px; height:44px; place-content:center; border-radius:50%; color:#56575b; }
 .nav-icon:hover { background:#f0f1f2; color:#9c4500; }
-.donate-button { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 20px; border-radius:var(--igf-button-radius,999px); background:#ff7500; color:#fff; font-size:12px; font-weight:800; letter-spacing:.04em; text-decoration:none; text-transform:uppercase; box-shadow:0 5px 14px rgba(255,117,0,.18); }
+.donate-button { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:0 20px; border-radius:var(--igf-button-radius,999px); background:#ff7500; color:#fff; font-size:12px; font-weight:800; letter-spacing:.04em; text-decoration:none; text-transform:uppercase; white-space:nowrap; box-shadow:0 5px 14px rgba(255,117,0,.18); }
 .donate-button:hover { background:#9c4500; color:#fff; }
 .sponsor-button { display:inline-flex; min-height:44px; align-items:center; justify-content:center; padding:0 15px; border:1px solid #b65a14; border-radius:var(--igf-button-radius,999px); color:#8b3e08; font-size:11px; font-weight:800; letter-spacing:.03em; text-decoration:none; text-transform:uppercase; white-space:nowrap; }
 .sponsor-button:hover { border-color:#9c4500; background:#fff5ed; color:#6f2f00; }

@@ -1786,6 +1786,120 @@ class PageBuilderIntegrityTest extends TestCase
         $this->assertStringContainsString('renderPreview(); renderInspector();', $advancedSource);
     }
 
+    public function test_testimonial_layouts_can_coexist_and_are_validated_per_section(): void
+    {
+        $presentations = [
+            'spotlight' => 'Spotlight story (classic)',
+            'split' => 'Two stories side by side',
+        ];
+        $this->assertSame($presentations, config('page-builder.testimonial_presentations'));
+
+        $admin = $this->makeAuthorizedAdmin();
+        $page = $this->makePage();
+
+        $first = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, ['locale' => 'en', 'type' => 'testimonials'])
+        )->assertCreated()
+            ->assertJsonPath('block.content.display_style', 'spotlight')
+            ->json('block');
+
+        $splitContent = $first['content'];
+        $splitContent['display_style'] = 'split';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $first['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $splitContent])
+        )->assertOk()
+            ->assertJsonPath('block.content.display_style', 'split');
+
+        $second = $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, ['locale' => 'en', 'type' => 'testimonials'])
+        )->assertCreated()
+            ->assertJsonPath('block.content.display_style', 'spotlight')
+            ->json('block');
+
+        $this->assertSame(
+            ['split', 'spotlight'],
+            PageBlock::query()
+                ->whereIn('uuid', [$first['uuid'], $second['uuid']])
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (PageBlock $block): string => (string) data_get($block->content, 'display_style'))
+                ->all()
+        );
+
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.simple.save', $page->uuid),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'blocks' => [
+                    [
+                        'uuid' => $first['uuid'],
+                        'label' => $first['label'],
+                        'content' => $splitContent,
+                        'is_enabled' => true,
+                    ],
+                    [
+                        'uuid' => $second['uuid'],
+                        'label' => $second['label'],
+                        'content' => $second['content'],
+                        'is_enabled' => true,
+                    ],
+                ],
+            ])
+        )->assertOk()
+            ->assertJsonPath('blocks.0.content.display_style', 'split')
+            ->assertJsonPath('blocks.1.content.display_style', 'spotlight');
+
+        $invalidContent = $splitContent;
+        $invalidContent['display_style'] = 'untrusted-layout';
+        $this->actingAs($admin, 'admin')->putJson(
+            route('page.builder.block.update', [$page->uuid, $first['uuid']]),
+            $this->withEditorVersion($page, ['locale' => 'en', 'content' => $invalidContent])
+        )->assertUnprocessable()
+            ->assertJsonValidationErrors('content.display_style');
+
+        $richText = config('page-builder.default_content.rich_text');
+        $richText['display_style'] = 'split';
+        $this->actingAs($admin, 'admin')->postJson(
+            route('page.builder.block.store', $page->uuid),
+            $this->withEditorVersion($page, [
+                'locale' => 'en',
+                'type' => 'rich_text',
+                'content' => $richText,
+            ])
+        )->assertUnprocessable()
+            ->assertJsonValidationErrors('content.display_style');
+
+        foreach ([null, 'advanced'] as $mode) {
+            $parameters = ['uuid' => $page->uuid, 'locale' => 'en'];
+            if ($mode) {
+                $parameters['mode'] = $mode;
+            }
+
+            $response = $this->actingAs($admin, 'admin')
+                ->get(route('page.builder.edit', $parameters))
+                ->assertOk()
+                ->assertSee('Spotlight story (classic)')
+                ->assertSee('Two stories side by side');
+
+            $this->assertSame(
+                $presentations,
+                data_get($response->viewData('blockContentOptions'), 'presentations.testimonials')
+            );
+        }
+
+        $simpleSource = file_get_contents(resource_path('views/admin/page/builder-simple.blade.php'));
+        $advancedSource = file_get_contents(resource_path('views/admin/page/builder.blade.php'));
+        $this->assertStringContainsString('data-testimonial-style', $simpleSource);
+        $this->assertStringContainsString('data-testimonial-layout="split"', $simpleSource);
+        $this->assertStringContainsString('function remapTestimonialPreviewIndexes', $simpleSource);
+        $this->assertStringContainsString('Math.floor((currentPage*previousItemsPerPage)/nextItemsPerPage)', $simpleSource);
+        $this->assertStringContainsString("managedSelect('display_style','Testimonial layout'", $advancedSource);
+        $this->assertStringContainsString('igf-preview-testimonials--split', $advancedSource);
+    }
+
     public function test_every_section_has_a_validated_persistent_presentation_surface(): void
     {
         $presentations = [

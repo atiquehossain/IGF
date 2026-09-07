@@ -22,7 +22,7 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
     {
         $expected = [
             'hero', 'rich_text', 'media_text', 'stats', 'cards', 'ways_to_give',
-            'causes', 'events', 'testimonials', 'team', 'partners', 'faq',
+            'causes', 'events', 'events_news', 'testimonials', 'team', 'partners', 'faq',
             'timeline', 'gallery', 'video', 'cta', 'newsletter', 'layout',
         ];
 
@@ -45,7 +45,7 @@ class PageBuilderClientHandoffRegressionTest extends TestCase
             $source,
             'Every preview root must receive its stable type-specific class through the shared class builder.'
         );
-        foreach (['events', 'team', 'gallery', 'video', 'newsletter', 'faq', 'timeline', 'partners'] as $type) {
+        foreach (['events', 'events-news', 'team', 'gallery', 'video', 'newsletter', 'faq', 'timeline', 'partners'] as $type) {
             $this->assertStringContainsString("simple-preview-{$type}", $preview);
         }
 

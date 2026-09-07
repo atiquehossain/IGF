@@ -10,6 +10,7 @@ return [
         'ways_to_give' => 'Ways to Give',
         'causes' => 'Programs and causes',
         'events' => 'Upcoming events',
+        'events_news' => 'Upcoming events + featured news',
         'testimonials' => 'Testimonials',
         'team' => 'Leadership and team',
         'partners' => 'Partner organizations',
@@ -33,6 +34,7 @@ return [
         'ways_to_give' => ['label' => 'Ways to Give', 'icon' => 'fa-gift', 'description' => 'Offer managed donation causes, Zakat, and child sponsorship without entering links.'],
         'causes' => ['label' => 'Programs and causes', 'icon' => 'fa-heart', 'description' => 'Automatically display active programs.'],
         'events' => ['label' => 'Upcoming events', 'icon' => 'fa-calendar', 'description' => 'Automatically display upcoming events.'],
+        'events_news' => ['label' => 'Upcoming events + featured news', 'icon' => 'fa-newspaper-o', 'description' => 'Show a managed list of future events beside one featured news story.'],
         'testimonials' => ['label' => 'Community stories', 'icon' => 'fa-quote-left', 'description' => 'Automatically display approved testimonials.'],
         'team' => ['label' => 'Leadership and team', 'icon' => 'fa-users', 'description' => 'Automatically display published board or team members.'],
         'partners' => ['label' => 'Partner organizations', 'icon' => 'fa-handshake-o', 'description' => 'Show a polished wall of partner logos with optional website links.'],
@@ -162,6 +164,9 @@ return [
         'events' => [
             'events' => 'Published events and news',
         ],
+        'events_news' => [
+            'events_news' => 'Scheduled events and published news',
+        ],
         'testimonials' => [
             'testimonials' => 'Approved community stories',
         ],
@@ -233,6 +238,11 @@ return [
     'cause_presentations' => [
         'card_grid' => 'Standard image cards',
         'focus_areas' => 'Animated focus areas',
+    ],
+
+    'testimonial_presentations' => [
+        'spotlight' => 'Spotlight story (classic)',
+        'split' => 'Two stories side by side',
     ],
 
     'default_content' => [
@@ -331,8 +341,29 @@ return [
             'view_all_url' => '/events',
             'empty_state' => 'Upcoming events and field updates will appear here automatically.',
         ],
+        'events_news' => [
+            'eyebrow' => 'Stay informed',
+            'body' => '',
+            'events_heading' => 'Upcoming events',
+            'news_heading' => 'Featured news',
+            'content_source' => 'events_news',
+            'events_selection_mode' => 'automatic',
+            'selected_event_ids' => [],
+            'event_limit' => 3,
+            'featured_news_id' => null,
+            'item_link_label' => 'Learn more',
+            'events_view_all_label' => 'View all events',
+            'events_view_all_url' => '/events',
+            'news_view_all_label' => 'View all news',
+            'news_view_all_url' => '/news',
+            'cta_label' => '',
+            'cta_url' => '',
+            'events_empty_state' => 'New events will be announced soon.',
+            'news_empty_state' => 'A featured news story will appear here soon.',
+        ],
         'testimonials' => [
             'eyebrow' => 'Community voices', 'heading' => 'Stories of change', 'body' => '',
+            'display_style' => 'spotlight',
             'content_source' => 'testimonials', 'selection_mode' => 'automatic',
             'selected_items' => [], 'sort' => 'featured', 'limit' => 3,
             'empty_state' => 'Approved community stories will appear here automatically.',

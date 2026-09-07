@@ -105,6 +105,7 @@ class PublicReleaseBoundaryIntegrityTest extends TestCase
             'slug' => $slug,
             'description' => $title . ' details',
             'notice_type' => 'notice-board',
+            'content_kind' => 'event',
             'language' => 'en',
             'published_at' => $publishedAt,
             'file_path' => $filePath,

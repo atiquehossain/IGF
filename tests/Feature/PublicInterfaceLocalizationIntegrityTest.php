@@ -24,8 +24,9 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
         $this->assertSame('View all photos', $values['shared_blocks']['gallery_view_all_label']);
         $this->assertSame('Connect', $values['shared_blocks']['team_linkedin_label']);
         $this->assertSame('Contact details', $values['contact_page']['details_accessible_label']);
-        $this->assertSame('Published stories', $values['content_archives']['category_listing_label']);
+        $this->assertSame('Programs', $values['content_archives']['category_listing_label']);
         $this->assertSame('Events and news', $values['content_archives']['events_listing_label']);
+        $this->assertSame('Go to page {0}', $values['content_archives']['events_pagination_page_label']);
         $this->assertSame('Published projects', $values['content_archives']['project_listing_label']);
         $this->assertSame('000000', $values['member_area']['verification_code_placeholder']);
         $this->assertTrue($values['member_area']['registration_enabled']);
@@ -69,7 +70,10 @@ class PublicInterfaceLocalizationIntegrityTest extends TestCase
         $this->assertStringNotContainsString('const teamCopy =', $pageBlocks);
 
         $this->assertStringContainsString(':aria-label="content.details_accessible_label"', $contact);
-        $this->assertStringContainsString(':aria-label="settings.events_listing_label"', $events);
+        $this->assertStringContainsString(':aria-label="listingLabel"', $events);
+        $this->assertStringContainsString('presentation.value.listing_label || settings.value.events_listing_label', $events);
+        $this->assertStringContainsString(':page-aria-label="settings.events_pagination_page_label"', $events);
+        $this->assertStringContainsString(':previous-aria-label="settings.events_pagination_previous_label"', $events);
         $this->assertStringContainsString(':aria-label="settings.category_listing_label"', $category);
         $this->assertStringContainsString(':aria-label="settings.project_listing_label"', $project);
         $this->assertStringNotContainsString("route('login.google')", $login);

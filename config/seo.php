@@ -17,7 +17,8 @@ return [
             // data, but it is not required for this route to exist.
             'settings_backed' => true,
         ],
-        'frontend.events' => ['label' => 'Events & publications', 'path' => '/events'],
+        'frontend.events' => ['label' => 'Events', 'path' => '/events'],
+        'frontend.news' => ['label' => 'News & stories', 'path' => '/news'],
         'frontend.project' => ['label' => 'Projects', 'path' => '/projects'],
         'frontend.jobs.index' => ['label' => 'Careers', 'path' => '/careers'],
         'frontend.workshops.index' => ['label' => 'Workshops', 'path' => '/workshops'],

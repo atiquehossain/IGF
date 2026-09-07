@@ -589,6 +589,7 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     // Route::get('members', 'HomeController@members')->name('frontend.members');
     // Route::get('publication', 'HomeController@notice')->name('frontend.notice');
     Route::get('events', 'Vue\NoticeBoardController@events')->name('frontend.events');
+    Route::get('news', 'Vue\NoticeBoardController@news')->name('frontend.news');
     Route::get('event/{slug?}', 'Vue\NoticeBoardController@event')->name('frontend.event');
 
     // Public job and free-workshop opportunities. Applicants remain anonymous

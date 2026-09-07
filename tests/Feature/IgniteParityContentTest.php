@@ -113,9 +113,14 @@ class IgniteParityContentTest extends TestCase
         $this->assertSame(6, PageMenu::where('type', 'main')->where('status', 1)->whereNull('parent_id')->count());
         $this->assertFalse(PageMenu::where('type', 'main')->where('status', 1)->where('slug', "founder's-letter")->exists());
         $ourWorkMenu = PageMenu::where('uuid', '67000000-0000-4000-8000-000000000003')->firstOrFail();
+        $educationMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000002')->firstOrFail();
+        $visitSchoolMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000003')->firstOrFail();
         $youthDevelopmentMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000004')->firstOrFail();
         $workshopMenu = PageMenu::where('link', 'frontend.workshops.index')->firstOrFail();
         $directDonationMenu = PageMenu::where('uuid', '68000000-0006-4000-8000-000000000001')->firstOrFail();
+        $this->assertSame($ourWorkMenu->id, $educationMenu->parent_id);
+        $this->assertSame($educationMenu->id, $visitSchoolMenu->parent_id);
+        $this->assertSame(0, $visitSchoolMenu->order_by);
         $this->assertSame($ourWorkMenu->id, $youthDevelopmentMenu->parent_id);
         $this->assertSame($youthDevelopmentMenu->id, $workshopMenu->parent_id);
         $this->assertSame('68000000-0304-4000-8000-000000000001', $workshopMenu->uuid);
@@ -135,15 +140,22 @@ class IgniteParityContentTest extends TestCase
                 ->where('appMenus.1.children.2.name', 'Photo Gallery')
                 ->where('appMenus.1.children.3.name', 'Annual Reports')
                 ->where('appMenus.1.children.4.name', 'Contact Us')
-                ->has('appMenus.2.children.3.children', 1)
-                ->where('appMenus.2.children.3.name', 'Youth Development')
-                ->where('appMenus.2.children.3.children.0.name', 'Workshop')
-                ->where('appMenus.2.children.3.children.0.link', 'frontend.workshops.index')
+                ->has('appMenus.2.children.1.children', 1)
+                ->where('appMenus.2.children.1.name', 'Inclusive Education')
+                ->where('appMenus.2.children.1.children.0.name', 'Visit Ignite School')
+                ->where('appMenus.2.children.1.children.0.link', 'frontend.category')
+                ->where('appMenus.2.children.1.children.0.slug', 'visit-ignite-school')
+                ->has('appMenus.2.children.2.children', 1)
+                ->where('appMenus.2.children.2.name', 'Youth Development')
+                ->where('appMenus.2.children.2.children.0.name', 'Workshop')
+                ->where('appMenus.2.children.2.children.0.link', 'frontend.workshops.index')
                 ->has('data.homePage.visible_blocks', 13)
                 ->has('data.homePage.visible_blocks.0.content.slides', 8)
                 ->where('data.homePage.visible_blocks.1.content.items.0.value', '23,000+')
                 ->has('data.homePage.visible_blocks.3.content.items', 3)
-                ->has('data.homePage.visible_blocks.6.content.items', 3)
+                ->where('data.homePage.visible_blocks.6.type', 'events_news')
+                ->has('data.homePage.visible_blocks.6.content.upcoming_events', 0)
+                ->where('data.homePage.visible_blocks.6.content.featured_news.heading', 'Together for Their Tomorrow')
                 ->has('data.homePage.visible_blocks.7.content.items', 3)
                 ->has('data.homePage.visible_blocks.8.content.items', 3)
                 ->where('data.homePage.visible_blocks.1.content.items.3.value', '400+')

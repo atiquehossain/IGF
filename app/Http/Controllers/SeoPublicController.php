@@ -144,6 +144,10 @@ class SeoPublicController extends Controller
         });
 
         $staticEntries = $this->routes->all()->map(function (array $definition, string $routeName) use ($locale, $routeSeo, $backingPages) {
+            if (in_array($routeName, ['frontend.events', 'frontend.news'], true)) {
+                return null;
+            }
+
             /** @var SeoMetadata|null $routeMetadata */
             $routeMetadata = $routeSeo->get($routeName);
             /** @var Page|null $page */
@@ -170,6 +174,32 @@ class SeoPublicController extends Controller
                 'lastmod' => $this->lastModified($page, $effectiveMetadata),
             ];
         })->filter()->values();
+
+        $publicationArchiveEntries = collect([
+            'frontend.events' => 'event',
+            'frontend.news' => 'article',
+        ])->map(function (string $kind, string $routeName) use ($locale, $routeSeo): ?array {
+            /** @var SeoMetadata|null $routeMetadata */
+            $routeMetadata = $routeSeo->get($routeName);
+            if (!$this->isIndexable($routeMetadata)) {
+                return null;
+            }
+
+            $latest = NoticeBoard::query()
+                ->publiclyReleased()
+                ->where('language', $locale)
+                ->where('content_kind', $kind)
+                ->latest('updated_at')
+                ->first();
+
+            return [
+                'loc' => $this->publicationArchiveSitemapLocation($routeMetadata, $routeName, $locale),
+                'lastmod' => $this->lastModified($latest, $routeMetadata),
+                'alternates' => $this->publicationArchiveSitemapAlternates($routeName),
+            ];
+        })
+            ->filter()
+            ->values();
 
         $pages = Page::with('seo')
             ->publiclyAvailable()
@@ -326,6 +356,7 @@ class SeoPublicController extends Controller
             });
 
         return $staticEntries
+            ->concat($publicationArchiveEntries)
             ->concat($categories)
             ->concat($events)
             ->concat($projects)
@@ -338,6 +369,52 @@ class SeoPublicController extends Controller
             ->sortBy('loc')
             ->unique('loc')
             ->values();
+    }
+
+    /** @return array<int, array{locale: string, url: string}> */
+    private function publicationArchiveSitemapAlternates(string $routeName): array
+    {
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $locales = collect($this->localization->publicLocales());
+        $routeMetadata = SeoMetadata::query()
+            ->where('route_name', $routeName)
+            ->whereIn('locale', $locales->all())
+            ->get()
+            ->keyBy('locale');
+        $eligibleLocales = $this->seo->indexableRouteLocales($routeName, $locales->all());
+        $links = collect($eligibleLocales)
+            ->map(fn (string $locale): array => [
+                'locale' => $locale,
+                'url' => $this->publicationArchiveSitemapLocation($routeMetadata->get($locale), $routeName, $locale),
+            ])
+            ->values();
+
+        $default = $links->firstWhere('locale', $defaultLocale);
+        if ($default) {
+            $links->push(['locale' => 'x-default', 'url' => $default['url']]);
+        }
+
+        return $links->all();
+    }
+
+    private function publicationArchiveSitemapLocation(?SeoMetadata $metadata, string $routeName, string $locale): string
+    {
+        $fallback = route($routeName);
+        $candidate = trim((string) $metadata?->canonical_url);
+        if ($candidate !== ''
+            && $this->seo->isSameOrigin($candidate)
+            && !preg_match('/[\x00-\x1F\x7F]/', $candidate)) {
+            $parts = parse_url($candidate);
+            if ($parts !== false && !isset($parts['user']) && !isset($parts['pass'])) {
+                parse_str((string) ($parts['query'] ?? ''), $query);
+                unset($query['page'], $query[(string) config('seo.locale_query_parameter', 'lang')]);
+                if ($query === []) {
+                    $fallback = url('/' . ltrim((string) ($parts['path'] ?? '/'), '/'));
+                }
+            }
+        }
+
+        return (string) $this->seo->localizedUrl($fallback, $locale);
     }
 
     private function isIndexable(?SeoMetadata $metadata): bool

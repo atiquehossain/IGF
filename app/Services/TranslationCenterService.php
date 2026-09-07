@@ -88,8 +88,9 @@ class TranslationCenterService
         'width', 'background', 'spacing', 'level', 'source_type', 'style', 'path', 'source',
         'section_spacing', 'content_alignment', 'column_count',
         'content_source', 'category_slug', 'tag_slug', 'sort', 'selection_mode',
+        'events_selection_mode', 'event_limit', 'selected_event_ids', 'featured_news_id',
         'selected_items', 'id', 'uuid', 'translation_key', 'slug', 'type',
-        'locale', 'language', 'platform', 'variant', 'layout', 'presentation', 'section_presentation', 'target', 'rel',
+        'locale', 'language', 'platform', 'variant', 'layout', 'presentation', 'display_style', 'section_presentation', 'target', 'rel',
     ];
 
     public function __construct(

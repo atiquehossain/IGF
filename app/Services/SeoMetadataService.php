@@ -320,7 +320,12 @@ class SeoMetadataService
     }
 
     /** @return array{links: array<int, array{locale: string, url: string}>, x_default: string} */
-    public function alternateUrls(string $canonicalUrl, array $locales, ?string $defaultLocale = null): array
+    public function alternateUrls(
+        string $canonicalUrl,
+        array $locales,
+        ?string $defaultLocale = null,
+        ?string $eligibilityRouteName = null,
+    ): array
     {
         $defaultLocale ??= (string) config('app.fallback_locale', 'en');
         $locales = collect($locales)
@@ -331,18 +336,84 @@ class SeoMetadataService
             ->sortBy(fn (string $locale): string => ($locale === $defaultLocale ? '0' : '1') . $locale)
             ->values();
 
+        $eligibilityRouteName ??= $this->publicationArchiveEligibilityRoute();
+        if ($eligibilityRouteName !== null) {
+            $locales = collect($this->indexableRouteLocales($eligibilityRouteName, $locales->all()));
+        }
+
         $contentUrls = $this->contentAlternateUrls($locales, $defaultLocale);
         if ($contentUrls !== null) {
             return $this->alternatePayload($contentUrls, $canonicalUrl, $defaultLocale);
         }
 
+        $links = $locales->map(fn (string $locale) => [
+            'locale' => $locale,
+            'url' => (string) $this->localizedUrl($canonicalUrl, $locale, $defaultLocale),
+        ])->values();
+        $xDefaultLocale = $locales->contains($defaultLocale) ? $defaultLocale : $locales->first();
+
         return [
-            'links' => $locales->map(fn (string $locale) => [
-                'locale' => $locale,
-                'url' => (string) $this->localizedUrl($canonicalUrl, $locale, $defaultLocale),
-            ])->all(),
-            'x_default' => (string) $this->localizedUrl($canonicalUrl, $defaultLocale, $defaultLocale),
+            'links' => $links->all(),
+            'x_default' => $xDefaultLocale === null
+                ? ''
+                : (string) $this->localizedUrl($canonicalUrl, $xDefaultLocale, $defaultLocale),
         ];
+    }
+
+    /**
+     * Keep route-level hreflang eligibility identical to route sitemap
+     * eligibility: missing metadata is permissive, while explicit noindex,
+     * sitemap exclusion, and an external canonical remove that locale.
+     *
+     * @param array<int, string> $locales
+     * @return array<int, string>
+     */
+    public function indexableRouteLocales(string $routeName, array $locales): array
+    {
+        $locales = collect($locales)
+            ->map(fn ($locale): string => trim((string) $locale))
+            ->filter()
+            ->unique()
+            ->values();
+        if ($locales->isEmpty() || !Schema::hasTable('seo_metadata')) {
+            return $locales->all();
+        }
+
+        $metadata = SeoMetadata::query()
+            ->where('route_name', $routeName)
+            ->whereIn('locale', $locales->all())
+            ->get()
+            ->keyBy('locale');
+
+        return $locales
+            ->filter(function (string $locale) use ($metadata): bool {
+                /** @var SeoMetadata|null $routeMetadata */
+                $routeMetadata = $metadata->get($locale);
+                if (!$routeMetadata) {
+                    return true;
+                }
+
+                $canonical = trim((string) $routeMetadata->canonical_url);
+
+                return $routeMetadata->robots_index
+                    && !$routeMetadata->exclude_from_sitemap
+                    && ($canonical === '' || $this->isSameOrigin($canonical));
+            })
+            ->values()
+            ->all();
+    }
+
+    private function publicationArchiveEligibilityRoute(): ?string
+    {
+        if (!app()->bound('request') || !request()->route()) {
+            return null;
+        }
+
+        $routeName = (string) request()->route()->getName();
+
+        return in_array($routeName, ['frontend.events', 'frontend.news'], true)
+            ? $routeName
+            : null;
     }
 
     /**

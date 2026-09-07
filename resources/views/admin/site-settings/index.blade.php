@@ -66,7 +66,9 @@
     $previewPages = [
         'Home' => $localizedRoute('frontend.home'),
         'About us' => $localizedRoute('frontend.about'),
-        'Events & stories' => $localizedRoute('frontend.events'),
+        'Programs' => $localizedRoute('frontend.category', ['slug' => 'our-causes']),
+        'Events' => $localizedRoute('frontend.events'),
+        'News & stories' => $localizedRoute('frontend.news'),
         'Careers' => $localizedRoute('frontend.jobs.index'),
         'Workshops' => $localizedRoute('frontend.workshops.index'),
         'Contact' => $localizedRoute('frontend.contactUs'),
@@ -124,8 +126,11 @@
             'actions' => [
                 $contentHubAction,
                 $adminAction('category.index', 'Open categories', route('category.index')),
+                $settingsAction('content_archives', 'category archive design'),
             ],
-            'previews' => [],
+            'previews' => [
+                $publicPreview('Preview programs', $localizedRoute('frontend.category', ['slug' => 'our-causes'])),
+            ],
         ],
         [
             'title' => 'Project pages',
@@ -213,7 +218,10 @@
                 $adminAction('notice.board.index', 'Open events & updates', route('notice.board.index')),
                 $settingsAction('content_archives', 'listing wording'),
             ],
-            'previews' => [$publicPreview('Preview events', $localizedRoute('frontend.events'))],
+            'previews' => [
+                $publicPreview('Preview events', $localizedRoute('frontend.events')),
+                $publicPreview('Preview news', $localizedRoute('frontend.news')),
+            ],
         ],
         [
             'title' => 'Gallery',

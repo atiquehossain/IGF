@@ -45,6 +45,8 @@
     .simple-preview-card--full-width{grid-column:1/-1}.simple-preview-card[data-preview-card-index]{position:relative;cursor:pointer;transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease}.simple-preview-card[data-preview-card-index]:hover{border-color:var(--orange);box-shadow:0 8px 22px rgba(156,69,0,.12);transform:translateY(-1px)}.simple-preview-card.is-card-selected{border:3px solid var(--orange);box-shadow:0 10px 24px rgba(156,69,0,.2)}.simple-preview-card [data-inline-path]{cursor:text}.simple-preview-card__edit{position:absolute;z-index:3;top:10px;right:10px;display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:7px 10px;border:1px solid #e4c3a7;border-radius:999px;background:#fff;color:var(--brown);box-shadow:0 4px 12px rgba(25,28,29,.12);font-size:10px;font-weight:900;cursor:pointer}.simple-preview-card__edit:hover,.simple-preview-card__edit:focus-visible,.simple-preview-card__edit[aria-pressed=true]{border-color:var(--orange);background:var(--orange);color:#20150c;outline:none}.simple-preview-card__edit:focus-visible{box-shadow:0 0 0 3px rgba(255,117,0,.32),0 4px 12px rgba(25,28,29,.12)}.simple-repeat-item[data-card-editor-index]{scroll-margin-block:18px}.simple-repeat-item.is-current-card{border:2px solid var(--orange);box-shadow:0 0 0 2px rgba(255,117,0,.14)}.simple-repeat-item[data-card-editor-index]>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}.simple-repeat-current{padding:3px 7px;border-radius:999px;background:#ffead8;color:var(--brown);font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.simple-field>.simple-check{margin:0}.simple-field>small{color:var(--muted);font-size:11px;line-height:1.45}
     .simple-preview{container-type:inline-size}.simple-preview-block--focus{padding:clamp(48px,6cqw,72px) clamp(20px,4.6cqw,48px)}.simple-focus-grid{position:relative;display:grid;isolation:isolate;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}.simple-focus-grid::before{position:absolute;z-index:-1;top:50%;left:50%;width:min(900px,100%);height:600px;background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%);content:'';pointer-events:none;transform:translate(-50%,-50%)}.simple-focus-tile{min-width:0;min-height:390px;animation:simple-focus-rise .5s ease-out both;animation-delay:var(--simple-focus-delay,0ms)}.simple-focus-heading{container-type:inline-size;display:flex;overflow:hidden;padding:clamp(28px,4.4cqw,46px);flex-direction:column;justify-content:center;border-radius:16px;background:var(--orange);color:#fff}.simple-focus-heading .simple-preview-eyebrow{color:#572500}.simple-focus-heading h2{max-width:100%;margin:0;font-size:clamp(30px,10.5cqi,44px);line-height:1.08;overflow-wrap:anywhere}.simple-focus-heading>p{margin:18px 0 0;color:rgba(255,255,255,.9)}.simple-focus-view-all{display:inline-flex;width:fit-content;align-items:center;gap:6px;margin-top:28px;color:#fff;font-size:14px;font-weight:800}.simple-focus-card{position:relative;z-index:0;display:flex;overflow:hidden;padding:clamp(26px,3.6cqw,38px);flex-direction:column;align-items:flex-start;isolation:isolate;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(25,28,29,.08);color:var(--ink);transition:color .3s ease-out,border-color .3s ease-out,box-shadow .3s ease-out}.simple-focus-card::before{position:absolute;z-index:-1;inset:0;background:var(--orange);content:'';transform:scaleX(0);transform-origin:left center;transition:transform .5s ease-out}.simple-focus-card:hover,.simple-focus-card:focus-within{border-color:var(--orange);box-shadow:0 14px 32px rgba(156,69,0,.2);color:#fff}.simple-focus-card:hover::before,.simple-focus-card:focus-within::before{transform:scaleX(1)}.simple-focus-card__visual{display:grid;width:72px;height:72px;flex:0 0 auto;margin-bottom:28px;place-items:center;overflow:hidden;border-radius:16px;background:#fff2e8;color:var(--brown);font-size:34px;transition:background-color .3s ease-out,color .3s ease-out}.simple-focus-card__visual img{width:100%;height:100%;border-radius:0;object-fit:cover}.simple-focus-card:hover .simple-focus-card__visual,.simple-focus-card:focus-within .simple-focus-card__visual{background:rgba(255,255,255,.2);color:#fff}.simple-focus-card__copy{display:flex;min-width:0;flex:1;flex-direction:column}.simple-focus-card h3{margin:0 0 16px;font:700 clamp(24px,2.95cqw,31px)/1.22 'Literata',Georgia,serif}.simple-focus-card p{margin:0 0 24px;color:var(--muted);font-size:16px;line-height:1.65;transition:color .3s ease-out}.simple-focus-card:hover p,.simple-focus-card:focus-within p{color:rgba(255,255,255,.92)}.simple-focus-card__link{width:fit-content;margin-top:auto;padding:8px 14px;border:1px dashed currentColor;border-radius:999px;font-size:13px;font-weight:800}.simple-preview[data-viewport=tablet] .simple-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.simple-preview[data-viewport=mobile] .simple-focus-grid{grid-template-columns:1fr}.simple-preview[data-viewport=mobile] .simple-focus-tile{min-height:320px}@container (max-width:960px){.simple-focus-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@container (max-width:560px){.simple-focus-grid{grid-template-columns:1fr}.simple-focus-tile{min-height:320px}}@keyframes simple-focus-rise{from{opacity:0;transform:translateY(100px)}to{opacity:1;transform:translateY(0)}}
     .simple-preview-block--testimonials{background:#242220;color:#fff}.simple-preview-block--testimonials h2{color:#fff}.simple-preview-block--testimonials>p{color:#d4d0cc}.simple-testimonial-card{position:relative;max-width:820px;margin:34px auto 0;padding:clamp(28px,5vw,56px);border:1px solid rgba(255,255,255,.15);border-radius:22px;background:#30302f;text-align:center}.simple-testimonial-card>.fa-quote-left{color:var(--orange);font-size:38px}.simple-testimonial-card blockquote{max-width:690px;margin:20px auto 28px;color:#f1efec;font:500 clamp(20px,3vw,30px)/1.5 'Literata',Georgia,serif}.simple-testimonial-person{display:flex;align-items:center;justify-content:center;gap:13px}.simple-testimonial-person img{width:64px;height:64px;border:3px solid #fff;border-radius:50%;object-fit:cover}.simple-testimonial-person span{display:grid;gap:3px;text-align:left}.simple-testimonial-person strong{color:#fff}.simple-testimonial-person small{color:#bbb}.simple-testimonial-nav{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:28px}.simple-testimonial-nav button{display:grid;min-width:42px;min-height:42px;padding:0;place-items:center;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:transparent;color:#fff;cursor:pointer}.simple-testimonial-nav button:hover,.simple-testimonial-nav button:focus-visible{border-color:var(--orange);background:var(--brown);outline:3px solid rgba(255,117,0,.3);outline-offset:2px}.simple-testimonial-nav .simple-testimonial-dot{min-width:28px;border-color:transparent}.simple-testimonial-dot span{width:8px;height:8px;border-radius:50%;background:#777}.simple-testimonial-dot[aria-current=true] span{width:18px;border-radius:99px;background:var(--orange)}
+    .simple-preview-block--testimonial-split{background:#fafbf7;color:var(--ink)}.simple-preview-block--testimonial-split h2{color:inherit}.simple-preview-block--testimonial-split .simple-preview-heading>p{max-width:760px}.simple-testimonial-split{margin-top:clamp(34px,5cqw,62px)}.simple-testimonial-split__slide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(44px,7cqw,96px)}.simple-testimonial-split-card{display:flex;min-width:0;min-height:240px;padding:clamp(25px,3cqw,38px) 0 10px;flex-direction:column;border-top:2px solid rgba(25,28,29,.14);color:inherit;text-align:left}.simple-testimonial-split-card blockquote{max-width:580px;margin:0 0 34px;color:inherit;font:700 clamp(19px,2cqw,24px)/1.45 'Hanken Grotesk',Arial,sans-serif;letter-spacing:-.015em}.simple-testimonial-split-card .simple-testimonial-person{justify-content:flex-start;margin-top:auto}.simple-preview-block--testimonial-split .simple-testimonial-person img{width:64px;height:64px;border:2px solid #fff;box-shadow:0 5px 16px rgba(25,28,29,.14)}.simple-preview-block--testimonial-split .simple-testimonial-person strong{color:inherit;font-size:17px}.simple-preview-block--testimonial-split .simple-testimonial-person small{color:var(--muted);font-size:15px}.simple-testimonial-initials{display:grid;width:64px;height:64px;flex:0 0 64px;place-items:center;border-radius:50%;background:#f7e4d5;color:var(--brown);font-size:17px;font-weight:900}.simple-testimonial-nav--split{min-height:50px;justify-content:space-between;gap:24px;margin-top:34px}.simple-testimonial-nav__dots,.simple-testimonial-nav__arrows{display:flex;align-items:center;gap:8px}.simple-testimonial-nav--split .simple-testimonial-nav__arrows button{width:48px;height:48px;border-color:rgba(25,28,29,.16);background:#f7e4d5;color:var(--brown)}.simple-testimonial-nav--split .simple-testimonial-nav__arrows button:hover,.simple-testimonial-nav--split .simple-testimonial-nav__arrows button:focus-visible{background:var(--brown);color:#fff}.simple-testimonial-nav--split .simple-testimonial-dot span{background:#aaa}.simple-preview[data-viewport=mobile] .simple-testimonial-split__slide{grid-template-columns:1fr}.simple-preview[data-viewport=mobile] .simple-testimonial-split-card{min-height:280px}.simple-preview[data-viewport=mobile] .simple-testimonial-nav--split{margin-top:26px}
+    .simple-style-picker{display:grid;gap:9px;margin:0 0 16px;padding:0;border:0}.simple-style-picker legend{margin-bottom:7px;color:#514c48;font-size:11px;font-weight:850;letter-spacing:.03em;text-transform:uppercase}.simple-style-choice{position:relative;display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;padding:12px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer}.simple-style-choice:hover{border-color:#efb789;background:#fff9f4}.simple-style-choice:focus-within{outline:3px solid rgba(255,117,0,.25);outline-offset:2px}.simple-style-choice.is-selected{border-color:var(--orange);background:#fff7ef;box-shadow:0 0 0 2px rgba(255,117,0,.1)}.simple-style-choice input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--orange)}.simple-style-choice strong,.simple-style-choice small{display:block}.simple-style-choice strong{font-size:12px}.simple-style-choice small{margin-top:4px;color:var(--muted);font-size:10px;line-height:1.45}.simple-style-picker>small{color:var(--muted);font-size:10px;line-height:1.45}
     .simple-preview-block--cta{padding:clamp(38px,5cqw,58px) clamp(18px,4cqw,42px)}.simple-cta-panel{position:relative;display:grid;overflow:hidden;grid-template-columns:64px minmax(0,1fr) minmax(205px,auto);align-items:center;gap:clamp(20px,3.5cqw,40px);isolation:isolate;padding:clamp(30px,4.5cqw,48px);border-radius:26px;background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20,#292624);box-shadow:0 18px 42px rgba(39,29,22,.18);color:#fff}.simple-cta-panel[data-actions=false]{grid-template-columns:64px minmax(0,1fr)}.simple-cta-panel::before{position:absolute;z-index:-1;top:0;bottom:0;left:0;width:7px;background:linear-gradient(180deg,#ff9b4c,#ff7500 55%,#b94e00);content:''}.simple-cta-signal{display:grid;width:64px;height:64px;place-items:center;align-self:start;border:1px solid rgba(255,172,105,.35);border-radius:19px;background:rgba(255,117,0,.13);color:#ff9b4c;font-size:26px}.simple-cta-content{min-width:0}.simple-cta-content .simple-preview-eyebrow{color:#ffad70}.simple-cta-content h2{margin-bottom:14px;color:#fff;font-size:clamp(31px,5.2cqw,48px);line-height:1.06;overflow-wrap:anywhere}.simple-cta-content p{margin:0;color:#d9d5d1}.simple-cta-actions{display:grid;min-width:0;gap:10px}.simple-cta-actions>:only-child{grid-column:1/-1}.simple-cta-actions .simple-preview-button{min-width:0;min-height:48px;align-items:center;justify-content:space-between;padding:0 18px;border:1px solid #ff7500;border-radius:12px;background:#ff7500;color:#1c1e20;line-height:1.25;overflow-wrap:anywhere}.simple-cta-actions .simple-preview-button::after{margin-left:12px;content:'\2192';font-size:17px}.simple-cta-actions .simple-preview-button--outline{border-color:rgba(255,255,255,.42);background:rgba(255,255,255,.04);color:#fff}@container (max-width:960px){.simple-cta-panel{grid-template-columns:58px minmax(0,1fr)}.simple-cta-signal{width:58px;height:58px}.simple-cta-actions{grid-column:2;grid-template-columns:repeat(2,minmax(0,1fr))}}@container (max-width:520px){.simple-preview-block--cta{padding:30px 14px}.simple-cta-panel{grid-template-columns:1fr;gap:20px;padding:28px 22px;border-radius:22px}.simple-cta-actions{grid-column:auto;grid-template-columns:1fr}.simple-cta-content h2{font-size:clamp(30px,10cqw,39px)}}
     .simple-order{display:grid;grid-template-columns:repeat(2,44px);gap:4px}.simple-order button[data-delete-section]{grid-column:1/-1;width:92px;height:44px;border-color:#e5b6b1;background:#fff8f7;color:#a52c24}.simple-order button[data-delete-section]:hover{border-color:#a52c24;background:#fff0ee}
     .simple-section-item{grid-template-columns:44px minmax(0,1fr);grid-template-areas:'drag select' 'actions actions'}.simple-drag,.simple-drag-placeholder{grid-area:drag}.simple-drag{touch-action:none;user-select:none}.simple-select{grid-area:select;width:100%;padding:0 4px}.simple-order{grid-area:actions;grid-template-columns:repeat(3,44px);justify-content:end}.simple-order button[data-delete-section]{grid-column:auto;width:44px}
@@ -108,6 +110,9 @@
     @media(max-width:880px){.simple-element-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:520px){.simple-element-cards,.simple-document-grid,.simple-help-glossary,.simple-help-modes{grid-template-columns:1fr}.simple-element-picker{padding:14px}.simple-element-picker-fallback__row{grid-template-columns:1fr}.simple-layout-preview-gallery--3,.simple-layout-preview-gallery--4{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .simple-image-actions{display:flex;flex-wrap:wrap;gap:7px}
+    .simple-events-news-guide{margin:0 0 16px;padding:13px;border-left:4px solid var(--orange);border-radius:8px;background:#fff7ef;color:#65472c;font-size:11px;line-height:1.55}.simple-events-news-guide strong{display:block;margin-bottom:3px;color:var(--brown);font-size:12px}.simple-events-news-group{margin:0 0 18px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#faf9f8}.simple-events-news-group>h3{margin:0 0 4px;font:700 15px/1.25 'Literata',Georgia,serif}.simple-events-news-group>p{margin:0 0 13px;color:var(--muted);font-size:10px;line-height:1.45}.simple-events-news-list{display:grid;max-height:430px;gap:8px;margin:0 0 10px;overflow:auto}.simple-events-news-option{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-height:60px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff}.simple-events-news-option.is-unavailable{border-color:#d9a9a4;background:#fff4f2}.simple-events-news-option>input{width:18px;height:18px;accent-color:var(--orange)}.simple-events-news-option strong,.simple-events-news-option small{display:block}.simple-events-news-option small{margin-top:3px;color:var(--muted);font-size:10px;line-height:1.35}.simple-events-news-order{display:flex;gap:4px}.simple-events-news-order button{display:grid;min-width:44px;min-height:44px;place-content:center;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--brown);font-weight:850;cursor:pointer}.simple-events-news-order button:disabled{cursor:not-allowed;opacity:.35}
+    .simple-preview-block--events-news{background:#fff}.simple-events-news-intro{max-width:760px;margin:0 0 clamp(28px,4cqw,48px)}.simple-events-news-intro p{margin:8px 0 0!important;color:var(--muted);font-size:14px;line-height:1.65}.simple-preview-events-news{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(270px,.95fr);gap:clamp(28px,5cqw,64px);align-items:start}.simple-events-news-column{min-width:0}.simple-events-news-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:12px}.simple-events-news-heading h2{margin:0!important;font-size:clamp(27px,4cqw,43px)!important}.simple-events-news-heading h2::after{display:block;width:82px;height:3px;margin-top:10px;border-radius:99px;background:var(--orange);content:''}.simple-events-news-heading span{flex:0 0 auto;color:var(--brown);font-size:11px;font-weight:850}.simple-events-news-list-preview{display:grid;gap:0}.simple-events-news-event{display:grid;grid-template-columns:116px minmax(0,1fr);gap:18px;padding:17px 0;border-bottom:1px solid var(--line)}.simple-events-news-event:first-child{padding-top:0}.simple-events-news-event__media{width:116px;height:102px;overflow:hidden;border-radius:10px;background:#f0ece8}.simple-events-news-event__media img{width:100%;height:100%;object-fit:cover}.simple-events-news-event__media span{display:grid;width:100%;height:100%;place-items:center;color:var(--orange);font-size:27px}.simple-events-news-event__copy{min-width:0}.simple-events-news-event__copy h3{margin:0 0 5px;font:700 clamp(17px,2.25cqw,23px)/1.2 'Literata',Georgia,serif}.simple-events-news-meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin-bottom:7px;color:#807870;font-size:9px;font-weight:750}.simple-events-news-event__copy p{display:-webkit-box;overflow:hidden;margin:0 0 7px!important;color:var(--muted);font-size:11px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}.simple-events-news-link{color:var(--brown);font-size:10px;font-weight:850}.simple-events-news-feature{overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 14px 34px rgba(39,29,22,.09)}.simple-events-news-feature__media{display:grid;width:100%;aspect-ratio:16/10;place-items:center;overflow:hidden;background:linear-gradient(145deg,#fff3e7,#eee8e1);color:var(--orange);font-size:40px}.simple-events-news-feature__media img{width:100%;height:100%;object-fit:cover}.simple-events-news-feature__copy{padding:clamp(20px,3.2cqw,32px)}.simple-events-news-feature__copy h3{margin:0 0 9px;font:700 clamp(22px,3.1cqw,31px)/1.18 'Literata',Georgia,serif}.simple-events-news-feature__copy p{display:-webkit-box;overflow:hidden;margin:0 0 14px!important;color:var(--muted);font-size:12px;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:4}.simple-events-news-cta{display:inline-flex;min-height:42px;align-items:center;margin-top:18px;padding:9px 16px;border-radius:999px;background:var(--orange);color:#20150c;font-size:11px;font-weight:900}.simple-events-news-empty{margin:0;padding:22px;border:1px dashed #d6cbc1;border-radius:11px;background:#faf8f6;color:var(--muted);font-size:11px;line-height:1.5}.simple-preview[data-viewport=tablet] .simple-preview-events-news,.simple-preview[data-viewport=mobile] .simple-preview-events-news{grid-template-columns:1fr}.simple-preview[data-viewport=mobile] .simple-events-news-heading{align-items:flex-start;flex-direction:column}.simple-preview[data-viewport=mobile] .simple-events-news-event{grid-template-columns:82px minmax(0,1fr);gap:12px}.simple-preview[data-viewport=mobile] .simple-events-news-event__media{width:82px;height:78px}@container (max-width:760px){.simple-preview-events-news{grid-template-columns:1fr}}@container (max-width:480px){.simple-events-news-heading{align-items:flex-start;flex-direction:column}.simple-events-news-event{grid-template-columns:82px minmax(0,1fr);gap:12px}.simple-events-news-event__media{width:82px;height:78px}.simple-events-news-option{grid-template-columns:auto minmax(0,1fr)}.simple-events-news-order{grid-column:2}}
+    .simple-events-news-cta{display:flex;width:100%;min-height:48px;align-items:center;justify-content:space-between;padding:0 18px;border-radius:14px;box-shadow:0 8px 20px rgba(255,117,0,.2)}
 </style>
 
 <main class="simple-editor" id="simple-editor">
@@ -352,6 +357,7 @@
 <script>
 (() => {
     const locale = @json($page->language);
+    const eventsNewsTimeZone = @json(config('app.timezone'));
     const pageUuid = @json($page->uuid);
     let editorVersion = @json((int) $page->editor_version);
     const permissions = @json($builderPermissions);
@@ -1413,14 +1419,29 @@
         });
         return items.slice(0, limit);
     }
+    function testimonialDisplayStyle(block) {
+        return block.content?.display_style === 'split' ? 'split' : 'spotlight';
+    }
     function testimonialPreview(block) {
         const items = managedPagePreviewItems(block);
+        const displayStyle = testimonialDisplayStyle(block);
+        const itemsPerPage = displayStyle === 'split' && preview.dataset.viewport !== 'mobile' ? 2 : 1;
+        const pageCount = Math.ceil(items.length / itemsPerPage);
         const requested = Math.trunc(Number(state.testimonialIndexes[block.uuid] || 0));
-        const index = items.length
-            ? Math.min(items.length - 1, Math.max(0, Number.isFinite(requested) ? requested : 0))
+        const index = pageCount
+            ? Math.min(pageCount - 1, Math.max(0, Number.isFinite(requested) ? requested : 0))
             : 0;
+        const stories = items.slice(index * itemsPerPage, (index + 1) * itemsPerPage);
         state.testimonialIndexes[block.uuid] = index;
-        return { items, index, story: items[index] || null };
+        return { items, index, story: stories[0] || null, stories, pageCount, itemsPerPage, displayStyle };
+    }
+    function testimonialStyleField(block) {
+        const displayStyle = testimonialDisplayStyle(block);
+        const name = `testimonial-display-style-${block.uuid}`;
+        const labels = contentOptions.presentations?.testimonials || {};
+        const spotlightLabel = labels.spotlight || 'Spotlight story (classic)';
+        const splitLabel = labels.split || 'Two stories side by side';
+        return `<fieldset class="simple-style-picker"><legend>Story layout</legend><label class="simple-style-choice ${displayStyle==='spotlight'?'is-selected':''}"><input type="radio" name="${escapeHtml(name)}" value="spotlight" data-testimonial-style ${displayStyle==='spotlight'?'checked':''}><span><strong>${escapeHtml(spotlightLabel)}</strong><small>Feature one large, centered story at a time with simple navigation.</small></span></label><label class="simple-style-choice ${displayStyle==='split'?'is-selected':''}"><input type="radio" name="${escapeHtml(name)}" value="split" data-testimonial-style ${displayStyle==='split'?'checked':''}><span><strong>${escapeHtml(splitLabel)}</strong><small>Show two matching story cards on wider screens and one story at a time on phones.</small></span></label><small>This choice applies only to this section, so another Community stories section can use a different layout.</small></fieldset>`;
     }
     function renderAutomaticEditor(block) {
         const content = block.content || (block.content = {});
@@ -1461,8 +1482,69 @@
         const presentationField = block.type === 'causes'
             ? `${selectField('presentation','Content layout',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'}).replace('<select ','<select data-auto-rerender ')}<p style="color:var(--muted);font-size:11px">Animated focus areas places this heading in the first tile, reveals each tile with a short stagger, and adds a left-to-right hover effect. Five items fill two complete desktop rows.</p>`
             : '';
+        const testimonialStyle = block.type === 'testimonials' ? testimonialStyleField(block) : '';
 
-        return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true})}${presentationField}${sourceChoiceField(block)}${sourceSpecific}${contentManagementLinks(block,source)}${selectField('sort','Item order',content.sort,contentOptions.sorts || {})}<label class="simple-field"><span>Maximum number of items</span><input data-content-key="limit" type="number" min="1" max="12" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></label>${selectField('selection_mode','How should items be chosen?',content.selection_mode,{automatic:'Keep this section updated automatically',manual:'Choose specific managed items'}).replace('<select ','<select data-auto-rerender ')}${selection}${linkFields}${viewAllFields}${textField('empty_state','Message when there are no published items',content.empty_state || '',{textarea:true,max:300})}<p style="color:var(--muted);font-size:11px">Only published content appears to visitors. Update the individual records in the relevant Content manager.</p>`;
+        return `${textField('eyebrow','Small heading',content.eyebrow || '')}${textField('heading','Section heading',content.heading || '')}${textField('body','Introduction',content.body || '',{textarea:true})}${presentationField}${testimonialStyle}${sourceChoiceField(block)}${sourceSpecific}${contentManagementLinks(block,source)}${selectField('sort','Item order',content.sort,contentOptions.sorts || {})}<label class="simple-field"><span>Maximum number of items</span><input data-content-key="limit" type="number" min="1" max="12" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></label>${selectField('selection_mode','How should items be chosen?',content.selection_mode,{automatic:'Keep this section updated automatically',manual:'Choose specific managed items'}).replace('<select ','<select data-auto-rerender ')}${selection}${linkFields}${viewAllFields}${textField('empty_state','Message when there are no published items',content.empty_state || '',{textarea:true,max:300})}<p style="color:var(--muted);font-size:11px">Only published content appears to visitors. Update the individual records in the relevant Content manager.</p>`;
+    }
+    function eventsNewsOptions(kind) {
+        const key = kind === 'news' ? 'news_options' : 'event_options';
+        return Array.isArray(contentOptions[key]) ? contentOptions[key] : [];
+    }
+    function eventsNewsDate(raw) {
+        if (raw === null || raw === undefined || raw === '') return null;
+        let date;
+        if (typeof raw === 'number' || /^\d{9,13}$/.test(String(raw))) {
+            const number = Number(raw);
+            date = new Date(number < 100000000000 ? number * 1000 : number);
+        } else date = new Date(raw);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+    function eventsNewsDateLabel(item, includeTime = false) {
+        const date = eventsNewsDate(item?.event_start_at || item?.event_date || item?.start_date || item?.published_at);
+        if (!date) return '';
+        const language = locale === 'bn' ? 'bn-BD' : 'en-US';
+        return new Intl.DateTimeFormat(language, includeTime
+            ? {day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',timeZone:eventsNewsTimeZone}
+            : {day:'numeric',month:'short',year:'numeric',timeZone:eventsNewsTimeZone}).format(date);
+    }
+    function eventsNewsOptionMeta(item, kind = 'event') {
+        const parts = [];
+        const date = eventsNewsDateLabel(item, kind === 'event');
+        if (date) parts.push(date);
+        if (kind === 'event' && (item.location || item.venue || item.event_attendance_mode || item.attendance_mode)) parts.push(item.location || item.venue || item.event_attendance_mode || item.attendance_mode);
+        return parts.join(' · ') || (kind === 'event' ? 'Scheduled event' : 'Published news');
+    }
+    function renderEventsNewsEditor(block) {
+        const content = block.content || (block.content = {});
+        content.events_selection_mode = ['automatic','manual'].includes(content.events_selection_mode) ? content.events_selection_mode : 'automatic';
+        content.event_limit = Math.min(6,Math.max(1,Number(content.event_limit || 3)));
+        content.selected_event_ids = Array.isArray(content.selected_event_ids) ? [...new Set(content.selected_event_ids.map(String))] : [];
+        content.featured_news_id = String(content.featured_news_id || '');
+
+        const events = eventsNewsOptions('event');
+        const news = eventsNewsOptions('news');
+        const eventMap = new Map(events.map(item => [String(item.value),item]));
+        const selectedSet = new Set(content.selected_event_ids);
+        const selectedRows = content.selected_event_ids.map((token,index) => {
+            const item = eventMap.get(token) || {value:token,label:'Unavailable event',unavailable:true};
+            const id = `events-news-selected-${block.uuid}-${index}`;
+            return `<div class="simple-events-news-option${item.unavailable?' is-unavailable':''}"><input id="${escapeHtml(id)}" type="checkbox" data-events-news-event-toggle value="${escapeHtml(token)}" checked><label for="${escapeHtml(id)}"><strong>${escapeHtml(item.label || 'Scheduled event')}</strong><small>${escapeHtml(item.unavailable?'This event is no longer eligible. Remove it or publish and schedule it again.':eventsNewsOptionMeta(item))}</small></label><span class="simple-events-news-order"><button type="button" data-events-news-event-move="up" data-events-news-event-index="${index}" aria-label="Move ${escapeHtml(item.label || 'event')} up" ${index===0?'disabled':''}>↑</button><button type="button" data-events-news-event-move="down" data-events-news-event-index="${index}" aria-label="Move ${escapeHtml(item.label || 'event')} down" ${index===content.selected_event_ids.length-1?'disabled':''}>↓</button></span></div>`;
+        }).join('');
+        const availableRows = events.filter(item => !selectedSet.has(String(item.value))).map((item,index) => {
+            const id = `events-news-available-${block.uuid}-${index}`;
+            return `<div class="simple-events-news-option"><input id="${escapeHtml(id)}" type="checkbox" data-events-news-event-toggle value="${escapeHtml(item.value)}"><label for="${escapeHtml(id)}"><strong>${escapeHtml(item.label || 'Scheduled event')}</strong><small>${escapeHtml(eventsNewsOptionMeta(item))}</small></label><span></span></div>`;
+        }).join('');
+        const eventChooser = content.events_selection_mode === 'manual'
+            ? `<div class="simple-events-news-list" role="group" aria-label="Upcoming events in website order">${selectedRows}${availableRows || (!selectedRows?'<p class="simple-banner-guidance">No eligible upcoming events are available yet.</p>':'')}</div><p style="color:var(--muted);font-size:11px">Checked events appear in this exact order. Use the arrow buttons to reorder them. You can choose up to six.</p>`
+            : '<p class="simple-events-news-guide"><strong>Automatic event list</strong>The soonest eligible upcoming events are kept current for you.</p>';
+
+        const selectedNews = news.some(item => String(item.value) === content.featured_news_id);
+        const missingNews = content.featured_news_id && !selectedNews
+            ? `<option value="${escapeHtml(content.featured_news_id)}" selected>Previously selected news is unavailable</option>`
+            : '';
+        const newsOptions = news.map(item => `<option value="${escapeHtml(item.value)}" ${String(item.value)===content.featured_news_id?'selected':''}>${escapeHtml(item.label || 'Published news')}${eventsNewsDateLabel(item)?` — ${escapeHtml(eventsNewsDateLabel(item))}`:''}</option>`).join('');
+
+        return `<div class="simple-events-news-guide"><strong>One managed section, two current lists</strong>Add or update the actual event and news records using the buttons below. Only eligible upcoming events and published news can be shown here; there are no IDs or JSON to enter.</div>${contentManagementLinks(block,'events_news')}<section class="simple-events-news-group"><h3>Section introduction and headings</h3><p>Every visible heading and introductory line can be changed here.</p>${textField('eyebrow','Small heading',content.eyebrow || '',{max:120})}${textField('body','Introduction',content.body || '',{textarea:true,max:600})}${textField('events_heading','Events heading',content.events_heading || 'Upcoming Events',{max:180})}${textField('news_heading','News heading',content.news_heading || 'Featured News',{max:180})}</section><section class="simple-events-news-group"><h3>Upcoming events</h3><p>Keep the list automatic or choose and order particular scheduled events.</p>${selectField('events_selection_mode','How are events chosen?',content.events_selection_mode,{automatic:'Automatically show the next events',manual:'Choose and order events myself'}).replace('<select ','<select data-events-news-rerender ')}<label class="simple-field"><span>Maximum events to show</span><input data-content-key="event_limit" type="number" min="1" max="6" value="${content.event_limit}"><small>The public layout stays readable with one to six events.</small></label>${eventChooser}</section><section class="simple-events-news-group"><h3>Featured news</h3><p>Automatic uses the highest-priority published story. Set story priority in Events &amp; News, or choose one story here.</p><label class="simple-field"><span>Story to feature</span><select data-content-key="featured_news_id"><option value="" ${content.featured_news_id?'':'selected'}>Automatic — highest-priority published news</option>${missingNews}${newsOptions}</select></label></section><section class="simple-events-news-group"><h3>Links and fallback messages</h3><p>Use friendly link text. Leave the optional call-to-action text empty to hide that button.</p>${textField('item_link_label','Event and news link text',content.item_link_label || 'Learn more',{max:80})}${textField('events_view_all_label','Events “view all” text',content.events_view_all_label || 'View all events',{max:80})}${linkField('events_view_all_url','Events “view all” destination',content.events_view_all_url || '')}${textField('news_view_all_label','News “view all” text',content.news_view_all_label || 'View all news',{max:80})}${linkField('news_view_all_url','News “view all” destination',content.news_view_all_url || '')}${textField('cta_label','Optional call-to-action text',content.cta_label || '',{max:80})}${linkField('cta_url','Optional call-to-action destination',content.cta_url || '')}${textField('events_empty_state','Message when there are no upcoming events',content.events_empty_state || 'No upcoming events are scheduled right now.',{textarea:true,max:300})}${textField('news_empty_state','Message when there is no featured news',content.news_empty_state || 'No featured news is available right now.',{textarea:true,max:300})}</section>`;
     }
     function renderWaysToGiveEditor(block) {
         const content = block.content || (block.content = {});
@@ -1919,6 +2001,7 @@
         if (block.type === 'hero') return renderHeroEditor(block);
         if (block.type === 'stats') return renderStatsEditor(block);
         if (block.type === 'ways_to_give') return renderWaysToGiveEditor(block);
+        if (block.type === 'events_news') return renderEventsNewsEditor(block);
         if (contentOptions.sources?.[block.type]) {
             const source = contentSource(block);
             if (source !== 'manual') return renderAutomaticEditor(block);
@@ -2197,6 +2280,12 @@
                 if (control.id !== 'simple-block-enabled') captureOnFocus(control);
             });
             inspector.querySelectorAll('[data-content-key]').forEach(input => input.addEventListener('input', () => { block.content[input.dataset.contentKey] = input.type === 'checkbox' ? input.checked : input.type === 'number' || ['animation_duration','animation_delay','interval'].includes(input.dataset.contentKey) ? Number(input.value) : input.value; markDirty('block'); renderPreview(); }));
+            inspector.querySelectorAll('[data-testimonial-style]').forEach(input => input.addEventListener('change', () => {
+                if (!input.checked) return;
+                block.content.display_style = input.value === 'split' ? 'split' : 'spotlight';
+                state.testimonialIndexes[block.uuid] = 0;
+                markDirty('block'); renderInspector(); renderPreview();
+            }));
             inspector.querySelector('[data-media-type-rerender]')?.addEventListener('change', event => { block.content.media_type=event.target.value;markDirty('block');renderInspector();renderPreview(); });
             inspector.querySelectorAll('[data-content-array-key]').forEach(input => input.addEventListener('change', () => { block.content[input.dataset.contentArrayKey] = [...input.selectedOptions].map(option => option.value); markDirty('block'); renderPreview(); }));
             inspector.querySelectorAll('[data-auto-rerender]').forEach(input => input.addEventListener('change', () => { block.content[input.dataset.contentKey] = input.value; if (input.dataset.contentKey === 'content_source') block.content.selected_items = []; markDirty('block'); renderInspector(); renderPreview(); }));
@@ -2216,6 +2305,28 @@
                 if (target < 0 || target >= block.content.selected_items.length) return;
                 recordHistory();
                 [block.content.selected_items[index],block.content.selected_items[target]] = [block.content.selected_items[target],block.content.selected_items[index]];
+                markDirty('block'); renderAll();
+            }));
+            inspector.querySelectorAll('[data-events-news-rerender]').forEach(input => input.addEventListener('change', () => {
+                block.content.events_selection_mode = input.value === 'manual' ? 'manual' : 'automatic';
+                markDirty('block'); renderInspector(); renderPreview();
+            }));
+            inspector.querySelectorAll('[data-events-news-event-toggle]').forEach(input => input.addEventListener('change', () => {
+                recordHistory();
+                const selected = Array.isArray(block.content.selected_event_ids) ? block.content.selected_event_ids.map(String) : [];
+                if (input.checked && selected.length >= 6) {
+                    input.checked = false;
+                    return notify('Choose no more than six upcoming events.');
+                }
+                block.content.selected_event_ids = input.checked ? [...selected,input.value] : selected.filter(token => token !== input.value);
+                markDirty('block'); renderAll();
+            }));
+            inspector.querySelectorAll('[data-events-news-event-move]').forEach(button => button.addEventListener('click', () => {
+                const index = Number(button.dataset.eventsNewsEventIndex);
+                const target = button.dataset.eventsNewsEventMove === 'up' ? index - 1 : index + 1;
+                if (target < 0 || target >= block.content.selected_event_ids.length) return;
+                recordHistory();
+                [block.content.selected_event_ids[index],block.content.selected_event_ids[target]] = [block.content.selected_event_ids[target],block.content.selected_event_ids[index]];
                 markDirty('block'); renderAll();
             }));
             inspector.querySelectorAll('[data-giving-rerender]').forEach(input => input.addEventListener('change', () => {
@@ -2346,7 +2457,7 @@
         return `<header class="simple-preview-heading">${inlineElement('div',content.eyebrow||'','eyebrow','small heading',{className:'simple-preview-eyebrow',single:true})}${inlineElement('h2',content.heading||block.label,'heading','section heading',{single:true})}${body?inlineElement('p',body,'body','introduction'):''}${options.viewAll && content.view_all_label?`<span class="simple-preview-view-all">${inlineElement('span',content.view_all_label,'view_all_label','view-all link text',{single:true})} <span aria-hidden="true">→</span></span>`:''}</header>`;
     }
     function previewEventDate(item) {
-        const raw = item?.event_date || item?.start_date || item?.date || item?.published_at;
+        const raw = item?.event_start_at || item?.event_date || item?.start_date || item?.date || item?.published_at;
         let date = null;
         if (typeof raw === 'number' || /^\d{9,13}$/.test(String(raw || ''))) {
             const number = Number(raw);
@@ -2354,7 +2465,35 @@
         } else if (raw) date = new Date(raw);
         if (!date || Number.isNaN(date.getTime())) return {day:'—',month:'Date'};
         const language = locale === 'bn' ? 'bn-BD' : 'en-US';
-        return {day:new Intl.DateTimeFormat(language,{day:'2-digit'}).format(date),month:new Intl.DateTimeFormat(language,{month:'short'}).format(date)};
+        return {day:new Intl.DateTimeFormat(language,{day:'2-digit',timeZone:eventsNewsTimeZone}).format(date),month:new Intl.DateTimeFormat(language,{month:'short',timeZone:eventsNewsTimeZone}).format(date)};
+    }
+    function eventsNewsPreviewItems(block) {
+        const content = block.content || {};
+        const limit = Math.min(6,Math.max(1,Number(content.event_limit || 3)));
+        const candidates = eventsNewsOptions('event');
+        let upcoming;
+        if (content.events_selection_mode === 'manual') {
+            const known = new Map(candidates.map(item => [String(item.value),item]));
+            upcoming = (Array.isArray(content.selected_event_ids) ? content.selected_event_ids : []).map(token => known.get(String(token))).filter(Boolean);
+        } else {
+            upcoming = [...candidates].sort((left,right) => {
+                const leftDate = eventsNewsDate(left?.event_start_at || left?.event_date || left?.start_date)?.getTime() || Number.MAX_SAFE_INTEGER;
+                const rightDate = eventsNewsDate(right?.event_start_at || right?.event_date || right?.start_date)?.getTime() || Number.MAX_SAFE_INTEGER;
+                return leftDate - rightDate;
+            });
+        }
+        const news = eventsNewsOptions('news');
+        const automaticNews = [...news].sort((left,right) => {
+            const priority = Number(right?.featured_order || 0) - Number(left?.featured_order || 0);
+            if (priority !== 0) return priority;
+            const published = Number(right?.published_at || 0) - Number(left?.published_at || 0);
+            if (published !== 0) return published;
+            return Number(right?.sort_id || 0) - Number(left?.sort_id || 0);
+        });
+        const featured = content.featured_news_id
+            ? news.find(item => String(item.value) === String(content.featured_news_id)) || null
+            : automaticNews[0] || null;
+        return {upcoming:upcoming.slice(0,limit),featured};
     }
     function previewLayoutElement(block, row, column, element, rowIndex, columnIndex, elementIndex) {
         const type = layoutElementType(element);
@@ -2513,6 +2652,25 @@
             return `<section ${previewSectionMeta(block)}>${previewHeading(block,{viewAll:true})}<div class="simple-preview-cards">${items.map(item=>`<article class="simple-preview-card">${previewItemImage(item)?`<img src="${escapeHtml(previewItemImage(item))}" alt="${escapeHtml(item.image_alt||previewItemName(item))}">`:`<span class="simple-preview-card__placeholder">${previewIcon(item.icon,'fa-compass')}</span>`}<div><h3>${escapeHtml(previewItemName(item)||'Published program')}</h3>${item.body?`<p>${escapeHtml(plainText(item.body))}</p>`:''}<span class="simple-preview-card__link">${escapeHtml(item.link_label||c.item_link_label||'Learn more')} →</span></div></article>`).join('')}</div>${items.length?'':previewEmpty(c,'No published programs are available for this selection.')}</section>`;
         }
 
+        if (block.type === 'events_news') {
+            const resolved = eventsNewsPreviewItems(block);
+            const eventRows = resolved.upcoming.map(item => {
+                const image = previewItemImage(item);
+                const date = eventsNewsDateLabel(item,true);
+                const location = item.location || item.venue || item.event_attendance_mode || item.attendance_mode || '';
+                const body = plainText(item.body || item.excerpt || item.description || '');
+                return `<article class="simple-events-news-event"><div class="simple-events-news-event__media">${image?`<img src="${escapeHtml(image)}" alt="${escapeHtml(item.image_alt||previewItemName(item)||'')}">`:`<span>${previewIcon('calendar','fa-calendar')}</span>`}</div><div class="simple-events-news-event__copy"><h3>${escapeHtml(previewItemName(item)||'Upcoming event')}</h3>${date||location?`<div class="simple-events-news-meta">${date?`<span>${previewIcon('calendar','fa-calendar')} ${escapeHtml(date)}</span>`:''}${location?`<span>${previewIcon('map','fa-map-marker')} ${escapeHtml(location)}</span>`:''}</div>`:''}${body?`<p>${escapeHtml(body)}</p>`:''}<span class="simple-events-news-link">${escapeHtml(c.item_link_label||item.link_label||'Learn more')} →</span></div></article>`;
+            }).join('');
+            const featured = resolved.featured;
+            const featuredImage = previewItemImage(featured);
+            const featuredBody = featured ? plainText(featured.body || featured.excerpt || featured.description || '') : '';
+            const featuredCard = featured
+                ? `<article class="simple-events-news-feature"><div class="simple-events-news-feature__media">${featuredImage?`<img src="${escapeHtml(featuredImage)}" alt="${escapeHtml(featured.image_alt||previewItemName(featured)||'')}">`:previewIcon('news','fa-newspaper-o')}</div><div class="simple-events-news-feature__copy">${eventsNewsDateLabel(featured)?`<div class="simple-events-news-meta"><span>${escapeHtml(eventsNewsDateLabel(featured))}</span></div>`:''}<h3>${escapeHtml(previewItemName(featured)||'Featured news')}</h3>${featuredBody?`<p>${escapeHtml(featuredBody)}</p>`:''}<span class="simple-events-news-link">${escapeHtml(c.item_link_label||featured.link_label||'Learn more')} →</span>${c.cta_label?`<span class="simple-events-news-cta">${inlineElement('span',c.cta_label,'cta_label','call-to-action text',{single:true})}<span aria-hidden="true">→</span></span>`:''}</div></article>`
+                : `<p class="simple-events-news-empty">${escapeHtml(c.news_empty_state||'No featured news is available right now.')}</p>`;
+            const introduction = plainText(c.body || '');
+            return `<section ${previewSectionMeta(block,' simple-preview-block--events-news')}><header class="simple-events-news-intro">${inlineElement('div',c.eyebrow||'','eyebrow','small heading',{className:'simple-preview-eyebrow',single:true})}${introduction?inlineElement('p',introduction,'body','introduction'):''}</header><div class="simple-preview-events-news"><section class="simple-events-news-column" aria-label="Upcoming events preview"><header class="simple-events-news-heading">${inlineElement('h2',c.events_heading||'Upcoming Events','events_heading','events heading',{single:true})}${c.events_view_all_label?`<span>${inlineElement('span',c.events_view_all_label,'events_view_all_label','events view-all text',{single:true})} →</span>`:''}</header><div class="simple-events-news-list-preview">${eventRows || `<p class="simple-events-news-empty">${escapeHtml(c.events_empty_state||'No upcoming events are scheduled right now.')}</p>`}</div></section><section class="simple-events-news-column" aria-label="Featured news preview"><header class="simple-events-news-heading">${inlineElement('h2',c.news_heading||'Featured News','news_heading','news heading',{single:true})}${c.news_view_all_label?`<span>${inlineElement('span',c.news_view_all_label,'news_view_all_label','news view-all text',{single:true})} →</span>`:''}</header>${featuredCard}</section></div></section>`;
+        }
+
         if (block.type === 'events') {
             const items = managedPagePreviewItems(block);
             return `<section ${previewSectionMeta(block)}>${previewHeading(block,{viewAll:true})}<div class="simple-preview-events">${items.map(item=>{const date=previewEventDate(item);return `<article class="simple-preview-event">${previewItemImage(item)?`<img src="${escapeHtml(previewItemImage(item))}" alt="${escapeHtml(item.image_alt||previewItemName(item))}">`:''}<span class="simple-preview-event__date"><strong>${escapeHtml(date.day)}</strong><small>${escapeHtml(date.month)}</small></span><div><h3>${escapeHtml(previewItemName(item)||'Published event')}</h3>${item.body?`<p>${escapeHtml(plainText(item.body))}</p>`:''}<b>${escapeHtml(item.link_label||c.item_link_label||'Read more')} →</b></div></article>`}).join('')}</div>${items.length?'':previewEmpty(c,'Upcoming events and field updates will appear here automatically.')}</section>`;
@@ -2530,9 +2688,20 @@
             const testimonial = testimonialPreview(block);
             const story = testimonial.story;
             const photo = previewItemImage(story);
-            const navigation = testimonial.items.length > 1 ? `<nav class="simple-testimonial-nav" aria-label="Community story preview navigation"><button type="button" data-testimonial-step="-1" aria-label="Previous community story">${previewIcon('', 'fa-arrow-left')}</button>${testimonial.items.map((item,index)=>`<button type="button" class="simple-testimonial-dot" data-testimonial-index="${index}" aria-label="Show community story ${index+1} of ${testimonial.items.length}" ${index===testimonial.index?'aria-current="true"':''}><span></span></button>`).join('')}<button type="button" data-testimonial-step="1" aria-label="Next community story">${previewIcon('', 'fa-arrow-right')}</button></nav>` : '';
+            const previous = `<button type="button" data-testimonial-step="-1" aria-label="Previous community story">${previewIcon('', 'fa-arrow-left')}</button>`;
+            const next = `<button type="button" data-testimonial-step="1" aria-label="Next community story">${previewIcon('', 'fa-arrow-right')}</button>`;
+            const dots = Array.from({length:testimonial.pageCount},(_,index)=>{const first=index*testimonial.itemsPerPage+1;const last=Math.min(testimonial.items.length,first+testimonial.itemsPerPage-1);const label=testimonial.displayStyle==='split'?`Show community stories ${first} to ${last} of ${testimonial.items.length}`:`Show community story ${first} of ${testimonial.items.length}`;return `<button type="button" class="simple-testimonial-dot" data-testimonial-index="${index}" aria-label="${label}" ${index===testimonial.index?'aria-current="true"':''}><span></span></button>`}).join('');
+            const navigation = testimonial.pageCount > 1 ? (testimonial.displayStyle === 'split'
+                ? `<nav class="simple-testimonial-nav simple-testimonial-nav--split" aria-label="Community story preview navigation"><div class="simple-testimonial-nav__dots">${dots}</div><div class="simple-testimonial-nav__arrows">${previous}${next}</div></nav>`
+                : `<nav class="simple-testimonial-nav" aria-label="Community story preview navigation">${previous}${dots}${next}</nav>`) : '';
             const card = story ? `<div class="simple-testimonial-card" aria-live="polite">${previewIcon('', 'fa-quote-left')}<blockquote>${escapeHtml(story.quote||story.body||'')}</blockquote><div class="simple-testimonial-person">${photo?`<img src="${escapeHtml(photo)}" alt="${escapeHtml(previewItemName(story))}">`:''}<span><strong>${escapeHtml(previewItemName(story)||'Community member')}</strong>${story.designation?`<small>${escapeHtml(story.designation)}</small>`:''}</span></div>${navigation}</div>` : previewEmpty(c,'Approved community stories will appear here automatically.');
-            return `<section ${previewSectionMeta(block)}>${previewHeading(block)}${card}</section>`;
+            if (testimonial.displayStyle === 'split') {
+                const splitCards = testimonial.stories.map(item=>{const itemName=previewItemName(item)||'Community member';const itemPhoto=previewItemImage(item);const initials=itemName.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]||'').join('').toUpperCase();return `<article class="simple-testimonial-split-card"><blockquote>${escapeHtml(item.quote||item.body||'')}</blockquote><div class="simple-testimonial-person">${itemPhoto?`<img src="${escapeHtml(itemPhoto)}" alt="${escapeHtml(itemName)}">`:`<span class="simple-testimonial-initials" aria-hidden="true">${escapeHtml(initials||'IGF')}</span>`}<span><strong>${escapeHtml(itemName)}</strong>${item.designation?`<small>${escapeHtml(item.designation)}</small>`:''}</span></div></article>`}).join('');
+                const status = `Community story page ${testimonial.index+1} of ${testimonial.pageCount}`;
+                const split = testimonial.stories.length ? `<div class="simple-testimonial-split" data-testimonial-layout="split"><div class="simple-testimonial-split__slide" role="group" aria-roledescription="slide" aria-label="${status}" aria-live="polite">${splitCards}</div>${navigation}</div>` : previewEmpty(c,'Approved community stories will appear here automatically.');
+                return `<section ${previewSectionMeta(block,' simple-preview-block--testimonial-split')}>${previewHeading(block)}${split}</section>`;
+            }
+            return `<section ${previewSectionMeta(block)} data-testimonial-layout="spotlight">${previewHeading(block)}${card}</section>`;
         }
 
         if (block.type === 'team') {
@@ -2661,11 +2830,11 @@
                 const block = state.blocks.find(item => item.uuid === uuid);
                 if (!block) return;
                 const testimonial = testimonialPreview(block);
-                if (!testimonial.items.length) return;
+                if (!testimonial.pageCount) return;
                 const requestedIndex = button.hasAttribute('data-testimonial-index')
                     ? Number(button.dataset.testimonialIndex)
                     : testimonial.index + Number(button.dataset.testimonialStep || 0);
-                state.testimonialIndexes[uuid] = (requestedIndex + testimonial.items.length) % testimonial.items.length;
+                state.testimonialIndexes[uuid] = (requestedIndex + testimonial.pageCount) % testimonial.pageCount;
                 renderPreview();
             });
         });
@@ -3038,7 +3207,17 @@
     document.getElementById('simple-confirm-delete')?.addEventListener('click',confirmDeleteSection);
     document.querySelectorAll('.simple-modal').forEach(modal=>modal.addEventListener('click',event=>{if(event.target!==modal)return;if(modal.id==='simple-delete-modal')closeDeleteConfirmation();else closeModal(modal)}));
     document.addEventListener('keydown',event=>{const modal=document.querySelector('.simple-modal:not([hidden])');if(!modal)return;if(event.key==='Escape'){if(modal.id==='simple-delete-modal')closeDeleteConfirmation();else closeModal(modal);return}if(event.key!=='Tab')return;const focusable=[...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href]')].filter(item=>item.getClientRects().length);if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}});
-    function setPreviewViewport(viewport){document.querySelectorAll('.simple-viewport [data-viewport]').forEach(item=>{const active=item.dataset.viewport===viewport;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});preview.dataset.viewport=viewport}
+    function remapTestimonialPreviewIndexes(previousViewport,nextViewport){
+        if(previousViewport===nextViewport)return;
+        const previousItemsPerPage=previousViewport==='mobile'?1:2;
+        const nextItemsPerPage=nextViewport==='mobile'?1:2;
+        state.blocks.forEach(block=>{
+            if(block.type!=='testimonials'||testimonialDisplayStyle(block)!=='split')return;
+            const currentPage=Math.max(0,Math.trunc(Number(state.testimonialIndexes[block.uuid]||0)));
+            state.testimonialIndexes[block.uuid]=Math.floor((currentPage*previousItemsPerPage)/nextItemsPerPage);
+        });
+    }
+    function setPreviewViewport(viewport){const previousViewport=preview.dataset.viewport||'desktop';remapTestimonialPreviewIndexes(previousViewport,viewport);document.querySelectorAll('.simple-viewport [data-viewport]').forEach(item=>{const active=item.dataset.viewport===viewport;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))});preview.dataset.viewport=viewport;renderPreview()}
     document.querySelectorAll('.simple-viewport [data-viewport]').forEach(button=>button.addEventListener('click',()=>setPreviewViewport(button.dataset.viewport)));
     document.querySelectorAll('[data-editor-mode]').forEach(button=>button.addEventListener('click',()=>setEditorMode(button.dataset.editorMode)));
     document.getElementById('simple-selection-breadcrumb')?.addEventListener('click',event=>{

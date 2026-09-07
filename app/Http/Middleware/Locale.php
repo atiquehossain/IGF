@@ -27,7 +27,8 @@ class Locale
             if (!in_array($fallback, $locales, true)) {
                 $fallback = (string) ($locales[0] ?? 'en');
             }
-            $queryLocale = (string) $request->query(config('seo.locale_query_parameter', 'lang'), '');
+            $rawQueryLocale = $request->query(config('seo.locale_query_parameter', 'lang'), '');
+            $queryLocale = is_string($rawQueryLocale) ? $rawQueryLocale : '';
             if ($queryLocale !== '' && in_array($queryLocale, $locales, true)) {
                 $segment = $queryLocale;
             } elseif (!in_array($segment, $locales, true)) {

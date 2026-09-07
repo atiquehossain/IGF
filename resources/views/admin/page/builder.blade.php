@@ -152,6 +152,7 @@
     .igf-preview-block--stats h2 { font-size:34px; }
     .igf-preview-block--stats .igf-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
     .igf-preview-giving { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:24px; }.igf-preview-giving article { padding:20px; border:1px solid #e3ded9; border-radius:12px; background:#fff8f2; }.igf-preview-giving i { color:var(--igf-orange); font-size:28px; }.igf-preview-giving h3 { margin:12px 0 7px; font:700 18px/1.25 'Literata',serif; }.igf-preview-giving p { margin:0; color:#747379; font-size:12px; }.igf-preview-giving--single { grid-template-columns:1fr; max-width:720px; }.igf-preview-giving--banner { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); padding:18px; border-radius:14px; background:#2c2723; }
+    .igf-preview-block--testimonials { background:#242220; color:#fff; }.igf-preview-block--testimonials h2 { color:inherit; }.igf-preview-testimonials { display:grid; gap:20px; margin-top:28px; }.igf-preview-testimonials article { min-width:0; }.igf-preview-testimonials blockquote { margin:0; font:650 clamp(17px,2.4cqw,24px)/1.45 'Hanken Grotesk',sans-serif; }.igf-preview-testimonial-person { display:flex; align-items:center; gap:12px; margin-top:24px; }.igf-preview-testimonial-person img,.igf-preview-testimonial-avatar { width:52px; height:52px; flex:0 0 52px; border-radius:50%; object-fit:cover; }.igf-preview-testimonial-avatar { display:grid; place-items:center; background:#f4d8c3; color:var(--igf-primary); font-weight:900; }.igf-preview-testimonial-person span { display:grid; gap:2px; }.igf-preview-testimonial-person small { color:inherit; opacity:.72; }.igf-preview-testimonials--spotlight { max-width:760px; margin-inline:auto; }.igf-preview-testimonials--spotlight article { padding:clamp(28px,5cqw,52px); border:1px solid rgba(255,255,255,.18); border-radius:20px; background:#30302f; text-align:center; }.igf-preview-testimonials--spotlight .igf-preview-testimonial-person { justify-content:center; text-align:left; }.igf-preview-block--testimonials-split { background:#f8f7f2; color:var(--igf-ink); }.igf-preview-testimonials--split { grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(28px,6cqw,72px); }.igf-preview-testimonials--split article { display:flex; min-height:210px; flex-direction:column; padding:20px 0; }.igf-preview-testimonials--split .igf-preview-testimonial-person { margin-top:auto; }.igf-preview-testimonial-controls { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-top:26px; }.igf-preview-testimonial-dots { display:flex; gap:7px; }.igf-preview-testimonial-dots i { width:7px; height:7px; border-radius:50%; background:#b9b4ad; }.igf-preview-testimonial-dots i:first-child { background:var(--igf-primary); }.igf-preview-testimonial-arrows { display:flex; gap:8px; }.igf-preview-testimonial-arrows i { display:grid; width:42px; height:42px; place-items:center; border-radius:50%; background:#ead8c8; color:var(--igf-primary); font-style:normal; font-weight:900; }.igf-preview-testimonial-arrows i:last-child { background:var(--igf-primary); color:#fff; } @container (max-width:560px) { .igf-preview-testimonials--split { grid-template-columns:1fr; } .igf-preview-testimonials--split article:nth-child(n+2) { display:none; } }
     .igf-preview-block--focus { padding:clamp(48px,6cqw,72px) clamp(20px,4.6cqw,48px); }.igf-preview-focus-grid { position:relative; display:grid; isolation:isolate; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; align-items:stretch; }.igf-preview-focus-grid::before { position:absolute; z-index:-1; top:50%; left:50%; width:min(900px,100%); height:600px; background:radial-gradient(circle,rgba(255,117,0,.18) 0,rgba(255,117,0,0) 70%); content:""; pointer-events:none; transform:translate(-50%,-50%); }.igf-preview-focus-tile { min-width:0; min-height:390px; animation:igf-builder-focus-rise .5s ease-out both; animation-delay:var(--focus-preview-delay,0ms); }.igf-preview-focus-heading { container-type:inline-size; display:flex; overflow:hidden; padding:clamp(28px,4.4cqw,46px); flex-direction:column; justify-content:center; border-radius:16px; background:var(--igf-orange); color:#fff; }.igf-preview-focus-heading .igf-eyebrow { color:#572500; }.igf-preview-focus-heading h2 { max-width:100%; margin:0; font-size:clamp(30px,10.5cqi,44px); line-height:1.08; overflow-wrap:anywhere; }.igf-preview-focus-heading>p { margin:18px 0 0; color:rgba(255,255,255,.9); }.igf-preview-focus-view-all { display:inline-flex; width:fit-content; align-items:center; gap:6px; margin-top:28px; color:#fff; font-size:14px; font-weight:800; }.igf-preview-focus-card { position:relative; z-index:0; display:flex; overflow:hidden; padding:clamp(26px,3.6cqw,38px); flex-direction:column; align-items:flex-start; isolation:isolate; border:1px solid #e3ded9; border-radius:16px; background:#fff; box-shadow:0 8px 22px rgba(25,28,29,.08); color:var(--igf-ink); transition:color .3s ease-out,border-color .3s ease-out,box-shadow .3s ease-out; }.igf-preview-focus-card::before { position:absolute; z-index:-1; inset:0; background:var(--igf-orange); content:""; transform:scaleX(0); transform-origin:left center; transition:transform .5s ease-out; }.igf-preview-focus-card:hover,.igf-preview-focus-card:focus-within { border-color:var(--igf-orange); box-shadow:0 14px 32px rgba(156,69,0,.2); color:#fff; }.igf-preview-focus-card:hover::before,.igf-preview-focus-card:focus-within::before { transform:scaleX(1); }.igf-preview-focus-card img { width:72px; height:72px; flex:0 0 auto; margin-bottom:28px; border-radius:16px; background:#fff2e8; object-fit:cover; transition:background-color .3s ease-out; }.igf-preview-focus-card>i { display:grid; width:72px; height:72px; flex:0 0 auto; margin-bottom:28px; place-items:center; border-radius:16px; background:#fff2e8; color:var(--igf-primary); font-size:34px; transition:background-color .3s ease-out,color .3s ease-out; }.igf-preview-focus-card:hover img,.igf-preview-focus-card:focus-within img,.igf-preview-focus-card:hover>i,.igf-preview-focus-card:focus-within>i { background:rgba(255,255,255,.2); color:#fff; }.igf-preview-focus-card h3 { margin:0 0 16px; font:700 clamp(24px,2.95cqw,31px)/1.22 'Literata',serif; }.igf-preview-focus-card p { margin:0 0 24px; color:var(--igf-muted); font-size:16px; line-height:1.65; transition:color .3s ease-out; }.igf-preview-focus-card:hover p,.igf-preview-focus-card:focus-within p { color:rgba(255,255,255,.92); }.igf-preview-focus-card span { width:fit-content; margin-top:auto; padding:8px 14px; border:1px dashed currentColor; border-radius:999px; background:transparent; color:inherit; font-size:13px; font-weight:800; } @container (max-width:960px) { .igf-preview-focus-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } } @container (max-width:560px) { .igf-preview-focus-grid { grid-template-columns:1fr; } .igf-preview-focus-tile { min-height:320px; } } @keyframes igf-builder-focus-rise { from { opacity:0; transform:translateY(100px); } to { opacity:1; transform:translateY(0); } }
     .igf-preview-block--cta { padding:clamp(38px,5cqw,58px) clamp(18px,4cqw,42px); }
     .igf-preview-cta-panel { position:relative; display:grid; overflow:hidden; grid-template-columns:64px minmax(0,1fr) minmax(205px,auto); align-items:center; gap:clamp(20px,3.5cqw,40px); isolation:isolate; padding:clamp(30px,4.5cqw,48px); border-radius:26px; background:radial-gradient(circle at 92% 2%,rgba(255,117,0,.24),transparent 30%),linear-gradient(135deg,#1c1e20,#292624); box-shadow:0 18px 42px rgba(39,29,22,.18); color:#fff; }
@@ -229,6 +230,9 @@
     .igf-preview-block--presentation-contrast{background-color:#282421;color:#fff;box-shadow:inset 0 5px 0 var(--igf-orange)}
     .igf-preview-block--presentation-contrast :is(h1,h2,h3,p,blockquote){color:inherit}
     .igf-preview-block--presentation-contrast :is(.igf-preview-giving article,.igf-preview-focus-card,.igf-stat){background-color:#fff;color:var(--igf-ink)}
+    .igf-events-news-guide{margin:0 0 16px;padding:12px;border-left:4px solid var(--igf-orange);border-radius:7px;background:#fff7ee;color:#65472c;font-size:11px;line-height:1.5}.igf-events-news-guide strong{display:block;margin-bottom:3px;color:var(--igf-primary);font-size:12px}.igf-events-news-group{margin:0 0 17px;padding:13px;border:1px solid #dddfe1;border-radius:9px;background:#fafafa}.igf-events-news-group>h4{margin:0 0 4px;font:700 15px/1.25 'Literata',serif}.igf-events-news-group>p{margin:0 0 12px;color:var(--igf-muted);font-size:10px;line-height:1.45}.igf-events-news-list{display:grid;max-height:410px;gap:8px;margin:0 0 10px;overflow:auto}.igf-events-news-option{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-height:58px;padding:9px;border:1px solid #dddfe1;border-radius:8px;background:#fff}.igf-events-news-option.is-unavailable{border-color:#d9a9a4;background:#fff4f2}.igf-events-news-option>input{width:18px;height:18px;accent-color:var(--igf-primary)}.igf-events-news-option strong,.igf-events-news-option small{display:block}.igf-events-news-option small{margin-top:3px;color:var(--igf-muted);font-size:10px;line-height:1.35}.igf-events-news-order{display:flex;gap:4px}.igf-events-news-order button{display:grid;min-width:44px;min-height:44px;place-content:center;border:1px solid #d8dadd;border-radius:7px;background:#fff;color:var(--igf-primary);font-weight:850;cursor:pointer}.igf-events-news-order button:disabled{cursor:not-allowed;opacity:.35}
+    .igf-preview-block--events-news{background:#fff}.igf-preview-events-news__intro{max-width:760px;margin:0 0 clamp(28px,4cqw,48px)}.igf-preview-events-news__intro p{margin:8px 0 0;color:var(--igf-muted);font-size:14px;line-height:1.65}.igf-preview-events-news{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(270px,.95fr);gap:clamp(28px,5cqw,64px);align-items:start}.igf-preview-events-news__column{min-width:0}.igf-preview-events-news__heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid #e3ded9}.igf-preview-events-news__heading h2{margin:0!important;font-size:clamp(27px,4cqw,43px)!important}.igf-preview-events-news__heading h2::after{display:block;width:82px;height:3px;margin-top:10px;border-radius:99px;background:var(--igf-orange);content:''}.igf-preview-events-news__heading span{flex:0 0 auto;color:var(--igf-primary);font-size:11px;font-weight:850}.igf-preview-events-news__list{display:grid}.igf-preview-events-news__event{display:grid;grid-template-columns:116px minmax(0,1fr);gap:18px;padding:17px 0;border-bottom:1px solid #e3ded9}.igf-preview-events-news__event:first-child{padding-top:0}.igf-preview-events-news__event-media{display:grid;width:116px;height:102px;place-items:center;overflow:hidden;border-radius:10px;background:#f2ece6;color:var(--igf-orange);font-size:27px}.igf-preview-events-news__event-media img{width:100%;height:100%;object-fit:cover}.igf-preview-events-news__event-copy{min-width:0}.igf-preview-events-news__event-copy h3{margin:0 0 5px;font:700 clamp(17px,2.25cqw,23px)/1.2 'Literata',serif}.igf-preview-events-news__meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin-bottom:7px;color:#807870;font-size:9px;font-weight:750}.igf-preview-events-news__event-copy p{display:-webkit-box;overflow:hidden;margin:0 0 7px;color:var(--igf-muted);font-size:11px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}.igf-preview-events-news__link{color:var(--igf-primary);font-size:10px;font-weight:850}.igf-preview-events-news__feature{overflow:hidden;border:1px solid #e3ded9;border-radius:18px;background:#fff;box-shadow:0 14px 34px rgba(39,29,22,.09)}.igf-preview-events-news__feature-media{display:grid;width:100%;aspect-ratio:16/10;place-items:center;overflow:hidden;background:linear-gradient(145deg,#fff3e7,#eee8e1);color:var(--igf-orange);font-size:40px}.igf-preview-events-news__feature-media img{width:100%;height:100%;object-fit:cover}.igf-preview-events-news__feature-copy{padding:clamp(20px,3.2cqw,32px)}.igf-preview-events-news__feature-copy h3{margin:0 0 9px;font:700 clamp(22px,3.1cqw,31px)/1.18 'Literata',serif}.igf-preview-events-news__feature-copy p{display:-webkit-box;overflow:hidden;margin:0 0 14px;color:var(--igf-muted);font-size:12px;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:4}.igf-preview-events-news__cta{display:inline-flex;min-height:42px;align-items:center;margin-top:18px;padding:9px 16px;border-radius:999px;background:var(--igf-orange);color:#20150c;font-size:11px;font-weight:900}.igf-preview-events-news__empty{margin:0;padding:22px;border:1px dashed #d6cbc1;border-radius:11px;background:#faf8f6;color:var(--igf-muted);font-size:11px;line-height:1.5}.igf-builder__preview[data-viewport="tablet"] .igf-preview-events-news,.igf-builder__preview[data-viewport="mobile"] .igf-preview-events-news{grid-template-columns:1fr}.igf-builder__preview[data-viewport="mobile"] .igf-preview-events-news__heading{align-items:flex-start;flex-direction:column}.igf-builder__preview[data-viewport="mobile"] .igf-preview-events-news__event{grid-template-columns:82px minmax(0,1fr);gap:12px}.igf-builder__preview[data-viewport="mobile"] .igf-preview-events-news__event-media{width:82px;height:78px}@container (max-width:760px){.igf-preview-events-news{grid-template-columns:1fr}}@container (max-width:480px){.igf-preview-events-news__heading{align-items:flex-start;flex-direction:column}.igf-preview-events-news__event{grid-template-columns:82px minmax(0,1fr);gap:12px}.igf-preview-events-news__event-media{width:82px;height:78px}.igf-events-news-option{grid-template-columns:auto minmax(0,1fr)}.igf-events-news-order{grid-column:2}}
+    .igf-preview-events-news__cta{display:flex;width:100%;min-height:48px;align-items:center;justify-content:space-between;padding:0 18px;border-radius:14px;box-shadow:0 8px 20px rgba(255,117,0,.2)}
 </style>
 
 <div class="igf-builder" id="igf-builder">
@@ -449,6 +453,7 @@
 (() => {
     const pageUuid = @json($page->uuid);
     const locale = @json($page->language);
+    const eventsNewsTimeZone = @json(config('app.timezone'));
     let editorVersion = @json((int) $page->editor_version);
     const revisionReusableVersions = @json($revisionReusableVersions);
     const permissions = @json($builderPermissions);
@@ -599,7 +604,9 @@
         if (typeof entry === 'string') links.push({url:entry,label:`Manage ${blockTypeLabels[block.type] || 'content'}`,icon:'fa-pencil'});
         else if (entry && typeof entry === 'object') {
             const manageUrl = entry.manage_url || entry.url;
+            const addUrl = entry.add_url || entry.create_url;
             if (manageUrl) links.push({url:manageUrl,label:entry.manage_label || entry.label || 'Manage content',icon:'fa-pencil'});
+            if (addUrl) links.push({url:addUrl,label:entry.add_label || `Add ${entry.item_label || 'content'}`,icon:'fa-plus'});
         }
         const guidedCreate = guidedPageCreateLink(block, source);
         if (guidedCreate) links.push(guidedCreate);
@@ -666,9 +673,77 @@
         const viewAll = ['cards','causes','events','gallery'].includes(block.type) ? `<div class="igf-field"><label for="managed-view-all-label">View-all link text</label><input id="managed-view-all-label" data-content-key="view_all_label" value="${escapeHtml(content.view_all_label || '')}"></div><div class="igf-field"><label for="managed-view-all-url">View-all destination</label><input id="managed-view-all-url" data-content-key="view_all_url" value="${escapeHtml(content.view_all_url || '')}"></div>` : '';
         const presentation = block.type === 'causes'
             ? `${managedSelect('presentation','Content layout',content.presentation || 'card_grid',contentOptions.presentations?.causes || {card_grid:'Standard image cards',focus_areas:'Animated focus areas'},true)}<p class="igf-muted">Animated focus areas uses the heading as the first tile, then reveals program cards in a short stagger. Five items fill two complete desktop rows.</p>`
-            : '';
+            : block.type === 'testimonials'
+                ? `${managedSelect('display_style','Testimonial layout',content.display_style || 'spotlight',contentOptions.presentations?.testimonials || {spotlight:'Spotlight story (classic)',split:'Two stories side by side'},true)}<p class="igf-muted">Choose the classic dark single-story slider or the light two-story layout. Add another Community stories section to use both designs on one page.</p>`
+                : '';
 
         return `<div class="igf-field"><label for="managed-eyebrow">Small heading</label><input id="managed-eyebrow" data-content-key="eyebrow" value="${escapeHtml(content.eyebrow || '')}"></div><div class="igf-field"><label for="managed-heading">Section heading</label><input id="managed-heading" data-content-key="heading" value="${escapeHtml(content.heading || '')}"></div><div class="igf-field"><label for="managed-body">Introduction</label><textarea id="managed-body" data-content-key="body">${escapeHtml(content.body || '')}</textarea></div>${presentation}${sourceField}${sourceSpecific}${contentManagementLinks(block,source)}${managedSelect('sort','Item order',content.sort,contentOptions.sorts || {})}<div class="igf-field"><label for="managed-limit">Maximum items</label><input id="managed-limit" type="number" min="1" max="12" data-content-key="limit" value="${Math.min(12,Math.max(1,Number(content.limit || 3)))}"></div>${managedSelect('selection_mode','How items are chosen',content.selection_mode,{automatic:'Keep updated automatically',manual:'Choose specific managed items'},true)}${selection}${itemLink}${viewAll}<div class="igf-field"><label for="managed-empty">Empty-section message</label><textarea id="managed-empty" maxlength="300" data-content-key="empty_state">${escapeHtml(content.empty_state || '')}</textarea></div>`;
+    }
+
+    function eventsNewsOptions(kind) {
+        const key = kind === 'news' ? 'news_options' : 'event_options';
+        return Array.isArray(contentOptions[key]) ? contentOptions[key] : [];
+    }
+    function eventsNewsDate(raw) {
+        if (raw === null || raw === undefined || raw === '') return null;
+        let date;
+        if (typeof raw === 'number' || /^\d{9,13}$/.test(String(raw))) {
+            const number = Number(raw);
+            date = new Date(number < 100000000000 ? number * 1000 : number);
+        } else date = new Date(raw);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+    function eventsNewsDateLabel(item, includeTime = false) {
+        const date = eventsNewsDate(item?.event_start_at || item?.event_date || item?.start_date || item?.published_at);
+        if (!date) return '';
+        const language = locale === 'bn' ? 'bn-BD' : 'en-US';
+        return new Intl.DateTimeFormat(language, includeTime
+            ? {day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',timeZone:eventsNewsTimeZone}
+            : {day:'numeric',month:'short',year:'numeric',timeZone:eventsNewsTimeZone}).format(date);
+    }
+    function eventsNewsOptionMeta(item, kind = 'event') {
+        const parts = [];
+        const date = eventsNewsDateLabel(item, kind === 'event');
+        if (date) parts.push(date);
+        if (kind === 'event' && (item.location || item.venue || item.event_attendance_mode || item.attendance_mode)) parts.push(item.location || item.venue || item.event_attendance_mode || item.attendance_mode);
+        return parts.join(' · ') || (kind === 'event' ? 'Scheduled event' : 'Published news');
+    }
+    function eventsNewsField(key, label, value, options = {}) {
+        const id = `events-news-${key}`;
+        const maximum = options.max ? ` maxlength="${Number(options.max)}"` : '';
+        const help = options.help ? `<small class="igf-field-help">${escapeHtml(options.help)}</small>` : '';
+        return `<div class="igf-field"><label for="${escapeHtml(id)}">${escapeHtml(label)}</label>${options.textarea?`<textarea id="${escapeHtml(id)}" data-content-key="${escapeHtml(key)}"${maximum}>${escapeHtml(value || '')}</textarea>`:`<input id="${escapeHtml(id)}" data-content-key="${escapeHtml(key)}" value="${escapeHtml(value || '')}"${maximum}>`}${help}</div>`;
+    }
+    function renderEventsNewsInspector(block) {
+        const content = block.content || (block.content = {});
+        content.events_selection_mode = ['automatic','manual'].includes(content.events_selection_mode) ? content.events_selection_mode : 'automatic';
+        content.event_limit = Math.min(6,Math.max(1,Number(content.event_limit || 3)));
+        content.selected_event_ids = Array.isArray(content.selected_event_ids) ? [...new Set(content.selected_event_ids.map(String))] : [];
+        content.featured_news_id = String(content.featured_news_id || '');
+
+        const events = eventsNewsOptions('event');
+        const news = eventsNewsOptions('news');
+        const eventMap = new Map(events.map(item => [String(item.value),item]));
+        const selectedSet = new Set(content.selected_event_ids);
+        const selectedRows = content.selected_event_ids.map((token,index) => {
+            const item = eventMap.get(token) || {value:token,label:'Unavailable event',unavailable:true};
+            const id = `advanced-events-news-selected-${block.uuid}-${index}`;
+            return `<div class="igf-events-news-option${item.unavailable?' is-unavailable':''}"><input id="${escapeHtml(id)}" type="checkbox" data-events-news-event-toggle value="${escapeHtml(token)}" checked><label for="${escapeHtml(id)}"><strong>${escapeHtml(item.label || 'Scheduled event')}</strong><small>${escapeHtml(item.unavailable?'This event is no longer eligible. Remove it or publish and schedule it again.':eventsNewsOptionMeta(item))}</small></label><span class="igf-events-news-order"><button type="button" data-events-news-event-move="up" data-events-news-event-index="${index}" aria-label="Move ${escapeHtml(item.label || 'event')} up" ${index===0?'disabled':''}>↑</button><button type="button" data-events-news-event-move="down" data-events-news-event-index="${index}" aria-label="Move ${escapeHtml(item.label || 'event')} down" ${index===content.selected_event_ids.length-1?'disabled':''}>↓</button></span></div>`;
+        }).join('');
+        const availableRows = events.filter(item => !selectedSet.has(String(item.value))).map((item,index) => {
+            const id = `advanced-events-news-available-${block.uuid}-${index}`;
+            return `<div class="igf-events-news-option"><input id="${escapeHtml(id)}" type="checkbox" data-events-news-event-toggle value="${escapeHtml(item.value)}"><label for="${escapeHtml(id)}"><strong>${escapeHtml(item.label || 'Scheduled event')}</strong><small>${escapeHtml(eventsNewsOptionMeta(item))}</small></label><span></span></div>`;
+        }).join('');
+        const eventChooser = content.events_selection_mode === 'manual'
+            ? `<div class="igf-events-news-list" role="group" aria-label="Upcoming events in website order">${selectedRows}${availableRows || (!selectedRows?'<p class="igf-banner-guidance">No eligible upcoming events are available yet.</p>':'')}</div><p class="igf-muted">Checked events appear in this exact order. Use the arrow buttons to reorder them. You can choose up to six.</p>`
+            : '<p class="igf-events-news-guide"><strong>Automatic event list</strong>The soonest eligible upcoming events are kept current for you.</p>';
+        const selectedNews = news.some(item => String(item.value) === content.featured_news_id);
+        const missingNews = content.featured_news_id && !selectedNews
+            ? `<option value="${escapeHtml(content.featured_news_id)}" selected>Previously selected news is unavailable</option>`
+            : '';
+        const newsOptions = news.map(item => `<option value="${escapeHtml(item.value)}" ${String(item.value)===content.featured_news_id?'selected':''}>${escapeHtml(item.label || 'Published news')}${eventsNewsDateLabel(item)?` — ${escapeHtml(eventsNewsDateLabel(item))}`:''}</option>`).join('');
+
+        return `<div class="igf-events-news-guide"><strong>One managed section, two current lists</strong>Add or update the actual event and news records using the buttons below. Only eligible upcoming events and published news can be shown here; there are no IDs or JSON to enter.</div>${contentManagementLinks(block,'events_news')}<section class="igf-events-news-group"><h4>Section introduction and headings</h4><p>Every visible heading and introductory line can be changed here.</p>${eventsNewsField('eyebrow','Small heading',content.eyebrow || '',{max:120})}${eventsNewsField('body','Introduction',content.body || '',{textarea:true,max:600})}${eventsNewsField('events_heading','Events heading',content.events_heading || 'Upcoming Events',{max:180})}${eventsNewsField('news_heading','News heading',content.news_heading || 'Featured News',{max:180})}</section><section class="igf-events-news-group"><h4>Upcoming events</h4><p>Keep the list automatic or choose and order particular scheduled events.</p>${managedSelect('events_selection_mode','How are events chosen?',content.events_selection_mode,{automatic:'Automatically show the next events',manual:'Choose and order events myself'},false).replace('<select ','<select data-events-news-rerender ')}<div class="igf-field"><label for="events-news-event-limit">Maximum events to show</label><input id="events-news-event-limit" data-content-key="event_limit" type="number" min="1" max="6" value="${content.event_limit}"><small class="igf-field-help">The public layout stays readable with one to six events.</small></div>${eventChooser}</section><section class="igf-events-news-group"><h4>Featured news</h4><p>Automatic uses the highest-priority published story. Set story priority in Events &amp; News, or choose one story here.</p><div class="igf-field"><label for="events-news-featured">Story to feature</label><select id="events-news-featured" data-content-key="featured_news_id"><option value="" ${content.featured_news_id?'':'selected'}>Automatic — highest-priority published news</option>${missingNews}${newsOptions}</select></div></section><section class="igf-events-news-group"><h4>Links and fallback messages</h4><p>Use friendly link text. Leave the optional call-to-action text empty to hide that button.</p>${eventsNewsField('item_link_label','Event and news link text',content.item_link_label || 'Learn more',{max:80})}${eventsNewsField('events_view_all_label','Events “view all” text',content.events_view_all_label || 'View all events',{max:80})}${eventsNewsField('events_view_all_url','Events “view all” destination',content.events_view_all_url || '',{help:'Choose a page path such as /events, or enter a full web address.'})}${eventsNewsField('news_view_all_label','News “view all” text',content.news_view_all_label || 'View all news',{max:80})}${eventsNewsField('news_view_all_url','News “view all” destination',content.news_view_all_url || '',{help:'Choose a page path such as /news, or enter a full web address.'})}${eventsNewsField('cta_label','Optional call-to-action text',content.cta_label || '',{max:80})}${eventsNewsField('cta_url','Optional call-to-action destination',content.cta_url || '')}${eventsNewsField('events_empty_state','Message when there are no upcoming events',content.events_empty_state || 'No upcoming events are scheduled right now.',{textarea:true,max:300})}${eventsNewsField('news_empty_state','Message when there is no featured news',content.news_empty_state || 'No featured news is available right now.',{textarea:true,max:300})}</section>`;
     }
 
     function renderWaysToGiveInspector(block) {
@@ -808,6 +883,37 @@
         return `${field('eyebrow','Small heading',content.eyebrow)}${field('heading','Section heading',content.heading)}${field('body','Body text',content.body,true)}${typeField}${mediaFields}${position}${field('link_label','Link text',content.link_label)}${field('link_url','Link destination',content.link_url)}`;
     };
 
+    function eventsNewsPreviewItems(block) {
+        const content = block.content || {};
+        const limit = Math.min(6,Math.max(1,Number(content.event_limit || 3)));
+        const candidates = eventsNewsOptions('event');
+        let upcoming;
+        if (content.events_selection_mode === 'manual') {
+            const known = new Map(candidates.map(item => [String(item.value),item]));
+            upcoming = (Array.isArray(content.selected_event_ids) ? content.selected_event_ids : []).map(token => known.get(String(token))).filter(Boolean);
+        } else {
+            upcoming = [...candidates].sort((left,right) => {
+                const leftDate = eventsNewsDate(left?.event_start_at || left?.event_date || left?.start_date)?.getTime() || Number.MAX_SAFE_INTEGER;
+                const rightDate = eventsNewsDate(right?.event_start_at || right?.event_date || right?.start_date)?.getTime() || Number.MAX_SAFE_INTEGER;
+                return leftDate - rightDate;
+            });
+        }
+        const news = eventsNewsOptions('news');
+        const automaticNews = [...news].sort((left,right) => {
+            const priority = Number(right?.featured_order || 0) - Number(left?.featured_order || 0);
+            if (priority !== 0) return priority;
+            const published = Number(right?.published_at || 0) - Number(left?.published_at || 0);
+            if (published !== 0) return published;
+            return Number(right?.sort_id || 0) - Number(left?.sort_id || 0);
+        });
+        const featured = content.featured_news_id
+            ? news.find(item => String(item.value) === String(content.featured_news_id)) || null
+            : automaticNews[0] || null;
+        return {upcoming:upcoming.slice(0,limit),featured};
+    }
+    const eventsNewsImage = item => item?.image || item?.thumbnail || item?.photo || '';
+    const eventsNewsPlainText = value => String(value || '').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+
     function renderPreviewBlock(block) {
         const content = block.content || {};
         const selected = ` igf-preview-block--presentation-${normalizedSectionPresentation(content.section_presentation)}${block.uuid === state.selected ? ' is-selected' : ''}`;
@@ -838,6 +944,38 @@
             if (content.layout === 'single_cta') options = options.slice(0,1);
             const layoutClass = content.layout === 'single_cta' ? ' igf-preview-giving--single' : content.layout === 'banner' ? ' igf-preview-giving--banner' : '';
             return `<section class="igf-preview-block${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2><p>${escapeHtml(String(content.body || '').replace(/<[^>]*>/g,' '))}</p><div class="igf-preview-giving${layoutClass}">${options.map(option => `<article><i class="fa fa-gift" aria-hidden="true"></i><h3>${escapeHtml(option.label)}</h3><p>${escapeHtml(option.destination || 'Managed giving destination')}</p></article>`).join('')}</div>${options.length?'':`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No giving options selected.')}</p>`}</section>`;
+        }
+        if (block.type === 'events_news') {
+            const resolved = eventsNewsPreviewItems(block);
+            const eventRows = resolved.upcoming.map(item => {
+                const image = eventsNewsImage(item);
+                const date = eventsNewsDateLabel(item,true);
+                const location = item.location || item.venue || item.event_attendance_mode || item.attendance_mode || '';
+                const body = eventsNewsPlainText(item.body || item.excerpt || item.description || '');
+                return `<article class="igf-preview-events-news__event"><div class="igf-preview-events-news__event-media">${image?`<img src="${escapeHtml(image)}" alt="${escapeHtml(item.image_alt||item.label||'')}">`:'<i class="fa fa-calendar" aria-hidden="true"></i>'}</div><div class="igf-preview-events-news__event-copy"><h3>${escapeHtml(item.label||'Upcoming event')}</h3>${date||location?`<div class="igf-preview-events-news__meta">${date?`<span><i class="fa fa-calendar" aria-hidden="true"></i> ${escapeHtml(date)}</span>`:''}${location?`<span><i class="fa fa-map-marker" aria-hidden="true"></i> ${escapeHtml(location)}</span>`:''}</div>`:''}${body?`<p>${escapeHtml(body)}</p>`:''}<span class="igf-preview-events-news__link">${escapeHtml(content.item_link_label||item.link_label||'Learn more')} →</span></div></article>`;
+            }).join('');
+            const featured = resolved.featured;
+            const featuredImage = eventsNewsImage(featured);
+            const featuredBody = featured ? eventsNewsPlainText(featured.body || featured.excerpt || featured.description || '') : '';
+            const feature = featured
+                ? `<article class="igf-preview-events-news__feature"><div class="igf-preview-events-news__feature-media">${featuredImage?`<img src="${escapeHtml(featuredImage)}" alt="${escapeHtml(featured.image_alt||featured.label||'')}">`:'<i class="fa fa-newspaper-o" aria-hidden="true"></i>'}</div><div class="igf-preview-events-news__feature-copy">${eventsNewsDateLabel(featured)?`<div class="igf-preview-events-news__meta"><span>${escapeHtml(eventsNewsDateLabel(featured))}</span></div>`:''}<h3>${escapeHtml(featured.label||'Featured news')}</h3>${featuredBody?`<p>${escapeHtml(featuredBody)}</p>`:''}<span class="igf-preview-events-news__link">${escapeHtml(content.item_link_label||featured.link_label||'Learn more')} →</span>${content.cta_label?`<span class="igf-preview-events-news__cta"><span>${escapeHtml(content.cta_label)}</span><span aria-hidden="true">→</span></span>`:''}</div></article>`
+                : `<p class="igf-preview-events-news__empty">${escapeHtml(content.news_empty_state||'No featured news is available right now.')}</p>`;
+            const introduction = eventsNewsPlainText(content.body || '');
+            return `<section class="igf-preview-block igf-preview-block--events-news${selected}" data-block="${escapeHtml(block.uuid)}" data-label="${escapeHtml(block.label)}"${visibility}><header class="igf-preview-events-news__intro">${content.eyebrow?`<div class="igf-eyebrow">${escapeHtml(content.eyebrow)}</div>`:''}${introduction?`<p>${escapeHtml(introduction)}</p>`:''}</header><div class="igf-preview-events-news"><section class="igf-preview-events-news__column" aria-label="Upcoming events preview"><header class="igf-preview-events-news__heading"><h2>${escapeHtml(content.events_heading||'Upcoming Events')}</h2>${content.events_view_all_label?`<span>${escapeHtml(content.events_view_all_label)} →</span>`:''}</header><div class="igf-preview-events-news__list">${eventRows||`<p class="igf-preview-events-news__empty">${escapeHtml(content.events_empty_state||'No upcoming events are scheduled right now.')}</p>`}</div></section><section class="igf-preview-events-news__column" aria-label="Featured news preview"><header class="igf-preview-events-news__heading"><h2>${escapeHtml(content.news_heading||'Featured News')}</h2>${content.news_view_all_label?`<span>${escapeHtml(content.news_view_all_label)} →</span>`:''}</header>${feature}</section></div></section>`;
+        }
+        if (block.type === 'testimonials') {
+            const options = managedPreviewItems(block);
+            const split = content.display_style === 'split';
+            const visible = options.slice(0, split ? 2 : 1);
+            const cards = visible.map(option => {
+                const initials = String(option.label || 'Community member').split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
+                const portrait = option.photo
+                    ? `<img src="${escapeHtml(option.photo)}" alt="${escapeHtml(option.label || '')}">`
+                    : `<span class="igf-preview-testimonial-avatar" aria-hidden="true">${escapeHtml(initials)}</span>`;
+                return `<article><blockquote>${escapeHtml(option.quote || '')}</blockquote><div class="igf-preview-testimonial-person">${portrait}<span><strong>${escapeHtml(option.label || 'Community member')}</strong>${option.designation?`<small>${escapeHtml(option.designation)}</small>`:''}</span></div></article>`;
+            }).join('');
+            const style = split ? 'split' : 'spotlight';
+            return `<section class="igf-preview-block igf-preview-block--testimonials igf-preview-block--testimonials-${style}${selected}" data-block="${block.uuid}" data-label="${escapeHtml(block.label)}"${visibility}><div class="igf-eyebrow">${escapeHtml(content.eyebrow || '')}</div><h2>${escapeHtml(content.heading || block.label)}</h2>${content.body?`<p>${escapeHtml(String(content.body).replace(/<[^>]*>/g,' '))}</p>`:''}<div class="igf-preview-testimonials igf-preview-testimonials--${style}">${cards}</div>${options.length?`<div class="igf-preview-testimonial-controls" aria-hidden="true"><span class="igf-preview-testimonial-dots"><i></i><i></i><i></i></span><span class="igf-preview-testimonial-arrows"><i>←</i><i>→</i></span></div>`:`<p class="igf-banner-guidance">${escapeHtml(content.empty_state || 'No approved community stories are available.')}</p>`}</section>`;
         }
         if (block.type === 'causes' && content.presentation === 'focus_areas') {
             const options = managedPreviewItems(block);
@@ -1026,6 +1164,8 @@
                 ? renderMediaTextInspector(block)
             : block.type === 'ways_to_give'
                 ? renderWaysToGiveInspector(block)
+                : block.type === 'events_news'
+                    ? renderEventsNewsInspector(block)
                 : contentOptions.sources?.[block.type]
                     ? renderManagedInspector(block)
                     : Object.entries(inspectorContent).filter(([key]) => key !== 'section_presentation').map(([key, value]) => {
@@ -1083,8 +1223,8 @@
             }
             inspector.querySelectorAll('input,textarea,select').forEach(input => {
                 if (!input.disabled) input.addEventListener('input', () => {
-                    if (block.type === 'ways_to_give' && input.dataset.contentKey) {
-                        block.content[input.dataset.contentKey] = input.type === 'checkbox' ? input.checked : input.value;
+                    if (['ways_to_give','events_news'].includes(block.type) && input.dataset.contentKey) {
+                        block.content[input.dataset.contentKey] = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value;
                         renderPreview();
                     }
                     setDirty(true, blockScope(block.uuid));
@@ -1102,6 +1242,26 @@
                     renderInspector();
                 });
                 inspector.querySelectorAll('[data-managed-rerender]').forEach(input => input.addEventListener('change', () => { if (input.dataset.contentKey === 'content_source') block.content.selected_items = []; block.content[input.dataset.contentKey] = input.value; setDirty(true, blockScope(block.uuid)); renderPreview(); renderInspector(); }));
+                inspector.querySelectorAll('[data-events-news-rerender]').forEach(input => input.addEventListener('change', () => {
+                    block.content.events_selection_mode = input.value === 'manual' ? 'manual' : 'automatic';
+                    setDirty(true,blockScope(block.uuid)); renderPreview(); renderInspector();
+                }));
+                inspector.querySelectorAll('[data-events-news-event-toggle]').forEach(input => input.addEventListener('change', () => {
+                    const selectedEvents = Array.isArray(block.content.selected_event_ids) ? block.content.selected_event_ids.map(String) : [];
+                    if (input.checked && selectedEvents.length >= 6) {
+                        input.checked = false;
+                        return notify('Choose no more than six upcoming events.');
+                    }
+                    block.content.selected_event_ids = input.checked ? [...selectedEvents,input.value] : selectedEvents.filter(token => token !== input.value);
+                    setDirty(true,blockScope(block.uuid)); renderPreview(); renderInspector();
+                }));
+                inspector.querySelectorAll('[data-events-news-event-move]').forEach(button => button.addEventListener('click', () => {
+                    const index = Number(button.dataset.eventsNewsEventIndex);
+                    const target = button.dataset.eventsNewsEventMove === 'up' ? index - 1 : index + 1;
+                    if (target < 0 || target >= block.content.selected_event_ids.length) return;
+                    [block.content.selected_event_ids[index],block.content.selected_event_ids[target]] = [block.content.selected_event_ids[target],block.content.selected_event_ids[index]];
+                    setDirty(true,blockScope(block.uuid)); renderPreview(); renderInspector();
+                }));
                 inspector.querySelectorAll('[data-giving-rerender]').forEach(input => input.addEventListener('change', () => {
                     block.content[input.dataset.contentKey] = input.value;
                     if (block.content.selection_mode !== 'manual' || !['single_cta','banner'].includes(block.content.layout) || block.content.selected_items?.length !== 1) block.content.project_uuid = '';

@@ -15,6 +15,7 @@
         contentAlignmentClass(block),
         columnCountClass(block),
         visibilityClass(block),
+        testimonialStyleClass(block),
       ]"
       :style="blockStyle(block)"
       :aria-label="block.type === 'hero' ? shared.hero_carousel_label : null"
@@ -283,11 +284,180 @@
         <p v-else class="igf-dynamic-empty">{{ blockLabel(block, 'empty_state', 'events_empty_state', 'Upcoming events and field updates will appear here automatically.') }}</p>
       </div>
 
+      <div v-else-if="block.type === 'events_news'" class="igf-page-block__inner igf-events-news">
+        <header v-if="block.content?.eyebrow || block.content?.body" class="igf-events-news__intro">
+          <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
+          <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
+        </header>
+        <div class="igf-events-news__grid">
+          <section class="igf-events-news__region igf-events-news__region--events" :aria-labelledby="eventsNewsHeadingId(block, 'events')">
+            <header class="igf-events-news__heading">
+              <h2 :id="eventsNewsHeadingId(block, 'events')">{{ eventsNewsText(block, 'events_heading') }}</h2>
+              <span aria-hidden="true" />
+            </header>
+            <div v-if="upcomingEvents(block).length" class="igf-events-news__list">
+              <article v-for="item in upcomingEvents(block)" :key="eventsNewsItemKey(item)" class="igf-events-news__event">
+                <div class="igf-events-news__event-media">
+                  <img
+                    v-if="item.image"
+                    :src="item.image"
+                    :srcset="responsiveImage(item.image, '(max-width: 520px) 100vw, 150px').webpSrcset || undefined"
+                    :sizes="responsiveImage(item.image, '(max-width: 520px) 100vw, 150px').sizes"
+                    :width="responsiveImage(item.image).width"
+                    :height="responsiveImage(item.image).height"
+                    :alt="item.image_alt || item.heading || ''"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                  <span v-else aria-hidden="true"><i class="fa-regular fa-calendar" /></span>
+                </div>
+                <div class="igf-events-news__event-copy">
+                  <h3>{{ item.heading }}</h3>
+                  <p v-if="eventsNewsHasEventMeta(item)" class="igf-events-news__meta">
+                    <span v-if="eventsNewsEventStart(item)" class="igf-events-news__schedule">
+                      <span class="sr-only">{{ eventsNewsArchiveLabel('event_start_label') }}: </span>
+                      <time :datetime="eventsNewsDateTime(item.event_start_at)">{{ eventsNewsEventStart(item) }}</time>
+                      <template v-if="eventsNewsEventEnd(item)">
+                        <span aria-hidden="true">–</span>
+                        <span class="sr-only">{{ eventsNewsArchiveLabel('event_end_label') }}: </span>
+                        <time :datetime="eventsNewsDateTime(item.event_end_at)">{{ eventsNewsEventEnd(item) }}</time>
+                      </template>
+                    </span>
+                    <span v-if="eventsNewsStatusLabel(item)" class="igf-events-news__status">
+                      <span class="sr-only">{{ eventsNewsArchiveLabel('event_status_label') }}: </span>
+                      <i class="fa-regular fa-clock" aria-hidden="true" /> {{ eventsNewsStatusLabel(item) }}
+                    </span>
+                    <span v-if="eventsNewsAttendanceLabel(item)" class="igf-events-news__attendance">
+                      <span class="sr-only">{{ eventsNewsArchiveLabel('event_attendance_label') }}: </span>
+                      <i class="fa-solid fa-users" aria-hidden="true" /> {{ eventsNewsAttendanceLabel(item) }}
+                    </span>
+                    <span v-if="item.location"><i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ item.location }}</span>
+                  </p>
+                  <p v-if="item.body" class="igf-events-news__excerpt">{{ item.body }}</p>
+                  <a
+                    v-if="safeHref(item.url)"
+                    class="igf-events-news__item-link"
+                    :href="safeHref(item.url)"
+                    :aria-label="eventsNewsItemLinkLabel(item, block)"
+                  >{{ eventsNewsItemLabel(item, block) }} <span aria-hidden="true">→</span></a>
+                </div>
+              </article>
+            </div>
+            <p v-else class="igf-dynamic-empty">{{ eventsNewsText(block, 'events_empty_state') }}</p>
+            <a
+              v-if="block.content?.events_view_all_label && safeHref(block.content?.events_view_all_url)"
+              class="igf-events-news__view-all"
+              :href="safeHref(block.content.events_view_all_url)"
+            >{{ block.content.events_view_all_label }} <span aria-hidden="true">→</span></a>
+          </section>
+
+          <section class="igf-events-news__region igf-events-news__region--news" :aria-labelledby="eventsNewsHeadingId(block, 'news')">
+            <header class="igf-events-news__heading">
+              <h2 :id="eventsNewsHeadingId(block, 'news')">{{ eventsNewsText(block, 'news_heading') }}</h2>
+              <span aria-hidden="true" />
+            </header>
+            <article v-if="featuredNews(block)" class="igf-events-news__featured">
+              <div class="igf-events-news__featured-media">
+                <img
+                  v-if="featuredNews(block).image"
+                  :src="featuredNews(block).image"
+                  :srcset="responsiveImage(featuredNews(block).image, '(max-width: 600px) 100vw, (max-width: 960px) 48vw, 300px').webpSrcset || undefined"
+                  :sizes="responsiveImage(featuredNews(block).image, '(max-width: 600px) 100vw, (max-width: 960px) 48vw, 300px').sizes"
+                  :width="responsiveImage(featuredNews(block).image).width"
+                  :height="responsiveImage(featuredNews(block).image).height"
+                  :alt="featuredNews(block).image_alt || featuredNews(block).heading || ''"
+                  loading="lazy"
+                  decoding="async"
+                >
+                <span v-else aria-hidden="true"><i class="fa-regular fa-newspaper" /></span>
+              </div>
+              <div class="igf-events-news__featured-copy">
+                <p v-if="eventsNewsPublishedDate(featuredNews(block))" class="igf-events-news__meta">
+                  <time :datetime="eventsNewsDateTime(featuredNews(block).published_at)">{{ eventsNewsPublishedDate(featuredNews(block)) }}</time>
+                </p>
+                <h3>{{ featuredNews(block).heading }}</h3>
+                <p v-if="featuredNews(block).body" class="igf-events-news__excerpt">{{ featuredNews(block).body }}</p>
+                <a
+                  v-if="safeHref(featuredNews(block).url)"
+                  class="igf-events-news__item-link"
+                  :href="safeHref(featuredNews(block).url)"
+                  :aria-label="eventsNewsItemLinkLabel(featuredNews(block), block)"
+                >{{ eventsNewsItemLabel(featuredNews(block), block) }} <span aria-hidden="true">→</span></a>
+                <a
+                  v-if="block.content?.cta_label && safeHref(block.content?.cta_url)"
+                  class="igf-button igf-button--primary igf-events-news__cta"
+                  :href="safeHref(block.content.cta_url)"
+                >{{ block.content.cta_label }} <span aria-hidden="true">→</span></a>
+              </div>
+            </article>
+            <p v-else class="igf-dynamic-empty">{{ eventsNewsText(block, 'news_empty_state') }}</p>
+            <a
+              v-if="block.content?.news_view_all_label && safeHref(block.content?.news_view_all_url)"
+              class="igf-events-news__view-all"
+              :href="safeHref(block.content.news_view_all_url)"
+            >{{ block.content.news_view_all_label }} <span aria-hidden="true">→</span></a>
+          </section>
+        </div>
+      </div>
+
       <div v-else-if="block.type === 'testimonials'" class="igf-page-block__inner igf-testimonials">
         <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
         <h2>{{ block.content?.heading }}</h2>
         <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
-        <div v-if="block.content?.items?.length" class="igf-testimonial-card" aria-live="polite">
+        <div v-if="block.content?.items?.length && isSplitTestimonial(block)" class="igf-testimonial-split">
+          <div
+            class="igf-testimonial-split__slide"
+            role="group"
+            aria-roledescription="slide"
+            :aria-label="testimonialSlideLabel(block)"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <article
+              v-for="(item, index) in activeSplitTestimonials(block)"
+              :key="splitTestimonialItemKey(item, index)"
+              class="igf-testimonial-split__item"
+            >
+              <blockquote>{{ item.quote }}</blockquote>
+              <footer class="igf-testimonial-split__person">
+                <img
+                  v-if="item.photo"
+                  :src="item.photo"
+                  :srcset="responsiveImage(item.photo, '72px').webpSrcset || undefined"
+                  sizes="72px"
+                  :width="responsiveImage(item.photo).width"
+                  :height="responsiveImage(item.photo).height"
+                  :alt="item.name || ''"
+                  loading="lazy"
+                  decoding="async"
+                >
+                <span v-else class="igf-testimonial-split__initials" aria-hidden="true">{{ initials(item.name) }}</span>
+                <span class="igf-testimonial-split__identity">
+                  <strong>{{ item.name }}</strong>
+                  <small v-if="item.designation">{{ item.designation }}</small>
+                </span>
+              </footer>
+            </article>
+          </div>
+          <nav v-if="testimonialSlideCount(block) > 1" class="igf-testimonial-split__navigation" :aria-label="shared.testimonials_navigation_label">
+            <div class="igf-testimonial-split__dots">
+              <button
+                v-for="slideIndex in testimonialSlideCount(block)"
+                :key="slideIndex"
+                type="button"
+                :aria-label="testimonialSplitDotLabel(block, slideIndex - 1)"
+                :aria-current="slideIndex - 1 === activeTestimonialIndex(block) ? 'true' : null"
+                class="igf-testimonial-dot"
+                @click="goToTestimonial(block, slideIndex - 1)"
+              ><span /></button>
+            </div>
+            <div class="igf-testimonial-split__arrows">
+              <button type="button" :aria-label="shared.testimonials_previous_label" @click="previousTestimonial(block)"><i class="fa-solid fa-arrow-left" aria-hidden="true" /></button>
+              <button type="button" :aria-label="shared.testimonials_next_label" @click="nextTestimonial(block)"><i class="fa-solid fa-arrow-right" aria-hidden="true" /></button>
+            </div>
+          </nav>
+        </div>
+        <div v-else-if="block.content?.items?.length" class="igf-testimonial-card" aria-live="polite">
           <i class="fa-solid fa-quote-left" aria-hidden="true" />
           <blockquote>{{ activeTestimonial(block).quote }}</blockquote>
           <div class="igf-testimonial-person">
@@ -323,7 +493,7 @@
             </a>
           </div>
           <div>
-            <header><h3>{{ block.content?.news_title || shared.updates_news_title }}</h3><a :href="safeHref(block.content?.news_url || shared.updates_news_url, '/events')">{{ block.content?.news_link_label || shared.updates_news_link_label }}</a></header>
+            <header><h3>{{ block.content?.news_title || shared.updates_news_title }}</h3><a :href="safeHref(block.content?.news_url || shared.updates_news_url, '/news')">{{ block.content?.news_link_label || shared.updates_news_link_label }}</a></header>
             <a v-for="(item, index) in newsItems(block)" :key="index" class="igf-news-row" :href="safeHref(item.url, '#')">
               <img v-if="item.image" :src="item.image" :srcset="responsiveImage(item.image, '96px').webpSrcset || undefined" sizes="96px" :width="responsiveImage(item.image).width" :height="responsiveImage(item.image).height" :alt="item.image_alt || ''" loading="lazy" decoding="async">
               <span><small>{{ item.date || item.eyebrow }}</small><strong>{{ item.heading }}</strong></span>
@@ -1172,8 +1342,58 @@ const layoutElementTypes = new Set([
   'heading', 'rich_text', 'image', 'video', 'button', 'divider', 'spacer',
   'icon', 'file', 'card', 'stat', 'quote', 'gallery', 'accordion', 'timeline', 'callout',
 ]);
+const eventsNewsFallbackCopy = Object.freeze({
+  en: Object.freeze({
+    events_heading: 'Upcoming events',
+    news_heading: 'Featured news',
+    item_link_label: 'Learn more',
+    events_empty_state: 'New events will be announced soon.',
+    news_empty_state: 'New stories will appear here soon.',
+    event_start_label: 'Starts',
+    event_end_label: 'Ends',
+    event_status_label: 'Status',
+    event_attendance_label: 'Attendance',
+    event_status_postponed_label: 'Postponed',
+    event_status_rescheduled_label: 'Rescheduled',
+    event_status_moved_online_label: 'Moved online',
+    event_status_cancelled_label: 'Cancelled',
+    event_attendance_offline_label: 'In person',
+    event_attendance_online_label: 'Online',
+    event_attendance_mixed_label: 'In person and online',
+  }),
+  bn: Object.freeze({
+    events_heading: 'আসন্ন ইভেন্ট',
+    news_heading: 'বিশেষ সংবাদ',
+    item_link_label: 'আরও জানুন',
+    events_empty_state: 'নতুন ইভেন্ট শিগগিরই ঘোষণা করা হবে।',
+    news_empty_state: 'নতুন গল্প শিগগিরই এখানে প্রকাশিত হবে।',
+    event_start_label: 'শুরু',
+    event_end_label: 'শেষ',
+    event_status_label: 'অবস্থা',
+    event_attendance_label: 'অংশগ্রহণের ধরন',
+    event_status_postponed_label: 'স্থগিত',
+    event_status_rescheduled_label: 'পুনর্নির্ধারিত',
+    event_status_moved_online_label: 'অনলাইনে স্থানান্তরিত',
+    event_status_cancelled_label: 'বাতিল',
+    event_attendance_offline_label: 'সরাসরি উপস্থিতি',
+    event_attendance_online_label: 'অনলাইন',
+    event_attendance_mixed_label: 'সরাসরি ও অনলাইন',
+  }),
+});
+const eventsNewsStatusSettingKeys = Object.freeze({
+  postponed: 'event_status_postponed_label',
+  rescheduled: 'event_status_rescheduled_label',
+  'moved-online': 'event_status_moved_online_label',
+  cancelled: 'event_status_cancelled_label',
+});
+const eventsNewsAttendanceSettingKeys = Object.freeze({
+  offline: 'event_attendance_offline_label',
+  online: 'event_attendance_online_label',
+  mixed: 'event_attendance_mixed_label',
+});
 const page = usePage();
 const shared = computed(() => page.props.siteSettings?.shared_blocks || {});
+const contentArchives = computed(() => page.props.siteSettings?.content_archives || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
 const donationSettings = computed(() => page.props.siteSettings?.donation_page || {});
 const campaignAmountOptions = computed(() => {
@@ -1200,6 +1420,7 @@ const heroIndexes = ref({});
 const heroUserPaused = ref({});
 const heroInteractionPaused = ref({});
 const testimonialIndexes = ref({});
+const testimonialIsMobile = ref(false);
 const galleryIndexes = ref({});
 const galleryLightbox = ref(null);
 const layoutGalleryLightbox = ref(null);
@@ -1215,6 +1436,7 @@ let heroClock = null;
 let statObserver = null;
 let teamObserver = null;
 let focusAreaObserver = null;
+let testimonialMobileQuery = null;
 const statAnimationFrames = new Set();
 
 const iconMap = {
@@ -1282,10 +1504,67 @@ function galleryDotLabel(index, total) {
 function testimonialDotLabel(index, total) {
   return interpolateSetting(shared.value.testimonials_show_label || 'Show story {current} of {total}', { current: index + 1, total });
 }
+function isSplitTestimonial(block) {
+  return String(block?.content?.display_style || '').trim().toLowerCase() === 'split';
+}
+function testimonialStyleClass(block) {
+  return block?.type === 'testimonials' && isSplitTestimonial(block) ? 'igf-page-block--testimonials-split' : null;
+}
+function testimonialItemsPerSlide(block) {
+  return isSplitTestimonial(block) && !testimonialIsMobile.value ? 2 : 1;
+}
+function testimonialSlideCount(block) {
+  const length = block?.content?.items?.length || 0;
+  return Math.ceil(length / testimonialItemsPerSlide(block));
+}
+function activeSplitTestimonials(block) {
+  const start = activeTestimonialIndex(block) * testimonialItemsPerSlide(block);
+  return (block?.content?.items || []).slice(start, start + testimonialItemsPerSlide(block));
+}
+function splitTestimonialItemKey(item, index) {
+  return item?.uuid || item?.id || `${item?.name || 'testimonial'}-${index}`;
+}
+function testimonialSlideLabel(block) {
+  const range = testimonialStoryRange(block, activeTestimonialIndex(block));
+  return interpolateSetting(
+    shared.value.testimonials_show_label || 'Show story {current} of {total}',
+    range,
+  );
+}
+function testimonialStoryRange(block, slideIndex) {
+  const total = block?.content?.items?.length || 0;
+  const perSlide = testimonialItemsPerSlide(block);
+  const first = Math.min(total, (slideIndex * perSlide) + 1);
+  const last = Math.min(total, first + perSlide - 1);
+  return { current: first === last ? String(first) : `${first}–${last}`, total };
+}
+function testimonialSplitDotLabel(block, slideIndex) {
+  return interpolateSetting(
+    shared.value.testimonials_show_label || 'Show story {current} of {total}',
+    testimonialStoryRange(block, slideIndex),
+  );
+}
+function syncTestimonialViewport(mediaQuery) {
+  const nextIsMobile = Boolean(mediaQuery?.matches);
+  if (nextIsMobile === testimonialIsMobile.value) return;
+
+  const previousItemsPerSlide = testimonialIsMobile.value ? 1 : 2;
+  const nextItemsPerSlide = nextIsMobile ? 1 : 2;
+  const remappedIndexes = { ...testimonialIndexes.value };
+
+  props.blocks.forEach(block => {
+    if (!isSplitTestimonial(block)) return;
+    const firstVisibleItem = activeTestimonialIndex(block) * previousItemsPerSlide;
+    remappedIndexes[block.uuid] = Math.floor(firstVisibleItem / nextItemsPerSlide);
+  });
+
+  testimonialIndexes.value = remappedIndexes;
+  testimonialIsMobile.value = nextIsMobile;
+}
 function safeHref(value, fallback = '') {
   if (typeof value !== 'string') return fallback;
   const href = value.trim().replace(/[\p{Cc}\p{Cf}\s]+/gu, '');
-  if (!href) return fallback;
+  if (!href || href.includes('\\') || /%5c/i.test(href)) return fallback;
   if (href.startsWith('//')) return `https:${href}`;
   if (href.startsWith('#') || href.startsWith('/')) return href;
 
@@ -2179,13 +2458,13 @@ function trapGalleryLightboxFocus(event) {
   }
 }
 function activeTestimonialIndex(block) {
-  const length = block.content?.items?.length || 0;
+  const length = isSplitTestimonial(block) ? testimonialSlideCount(block) : (block.content?.items?.length || 0);
   const current = Number(testimonialIndexes.value[block.uuid] || 0);
   return length ? Math.min(length - 1, Math.max(0, current)) : 0;
 }
 function activeTestimonial(block) { return block.content?.items?.[activeTestimonialIndex(block)] || {}; }
 function goToTestimonial(block, index) {
-  const length = block.content?.items?.length || 0;
+  const length = isSplitTestimonial(block) ? testimonialSlideCount(block) : (block.content?.items?.length || 0);
   if (!length) return;
   testimonialIndexes.value = { ...testimonialIndexes.value, [block.uuid]: (index + length) % length };
 }
@@ -2195,6 +2474,10 @@ onMounted(() => {
   setupStatAnimations();
   setupTeamCardViewportAnimations();
   setupFocusAreaReveals();
+  testimonialMobileQuery = window.matchMedia?.('(max-width: 767px)') || null;
+  syncTestimonialViewport(testimonialMobileQuery);
+  if (testimonialMobileQuery?.addEventListener) testimonialMobileQuery.addEventListener('change', syncTestimonialViewport);
+  else testimonialMobileQuery?.addListener?.(syncTestimonialViewport);
   const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   heroClock = window.setInterval(() => {
     if (reducedMotion || document.visibilityState === 'hidden') return;
@@ -2212,6 +2495,8 @@ onBeforeUnmount(() => {
   statObserver?.disconnect();
   teamObserver?.disconnect();
   focusAreaObserver?.disconnect();
+  if (testimonialMobileQuery?.removeEventListener) testimonialMobileQuery.removeEventListener('change', syncTestimonialViewport);
+  else testimonialMobileQuery?.removeListener?.(syncTestimonialViewport);
   statAnimationFrames.forEach(frame => window.cancelAnimationFrame(frame));
   statAnimationFrames.clear();
 });
@@ -2222,6 +2507,83 @@ function eventDay(item) {
 }
 function eventMonth(item, fallback = '') {
   return formatDate(item?.published_at, regional.value, { month: 'short' }) || item?.month || fallback;
+}
+function upcomingEvents(block) {
+  const items = Array.isArray(block?.content?.upcoming_events) ? block.content.upcoming_events : [];
+  const limit = Math.min(6, Math.max(1, Number(block?.content?.event_limit) || 3));
+  return items.slice(0, limit);
+}
+function featuredNews(block) {
+  const item = block?.content?.featured_news;
+  return item && typeof item === 'object' && !Array.isArray(item) ? item : null;
+}
+function eventsNewsItemKey(item) {
+  return item?.id || item?.uuid || item?.url || item?.heading;
+}
+function eventsNewsHeadingId(block, region) {
+  return `igf-events-news-${newsletterDomToken(block)}-${region}-heading`;
+}
+function eventsNewsLocale() {
+  return String(page.props.locale || '').trim().toLowerCase().split(/[-_]/)[0] === 'bn' ? 'bn' : 'en';
+}
+function eventsNewsFallback(key) {
+  return eventsNewsFallbackCopy[eventsNewsLocale()]?.[key] || eventsNewsFallbackCopy.en[key] || '';
+}
+function eventsNewsText(block, key) {
+  const configured = String(block?.content?.[key] || '').trim();
+  return configured || eventsNewsFallback(key);
+}
+function eventsNewsArchiveLabel(key) {
+  const configured = String(contentArchives.value?.[key] || '').trim();
+  return configured || eventsNewsFallback(key);
+}
+function eventsNewsDateTime(value) {
+  const formatted = formatDate(value, regional.value, { year: 'numeric', month: 'short', day: 'numeric' });
+  if (!formatted) return '';
+  return String(value || '').trim().replace(' ', 'T');
+}
+function eventsNewsEventStart(item) {
+  return formatDate(item?.event_start_at, regional.value, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+  });
+}
+function eventsNewsEventEnd(item) {
+  if (!eventsNewsDateTime(item?.event_end_at)) return '';
+  const startDay = formatDate(item?.event_start_at, regional.value, { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const endDay = formatDate(item.event_end_at, regional.value, { year: 'numeric', month: '2-digit', day: '2-digit' });
+  const sameDay = startDay !== '' && startDay === endDay;
+  return formatDate(item.event_end_at, regional.value, sameDay
+    ? { hour: 'numeric', minute: '2-digit' }
+    : { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+function eventsNewsStatusLabel(item) {
+  const settingKey = eventsNewsStatusSettingKeys[String(item?.event_status || '').trim().toLowerCase()];
+  return settingKey ? eventsNewsArchiveLabel(settingKey) : '';
+}
+function eventsNewsAttendanceLabel(item) {
+  const mode = String(item?.event_attendance_mode || '').trim().toLowerCase();
+  const settingKey = eventsNewsAttendanceSettingKeys[mode];
+  if (!settingKey || (mode === 'offline' && String(item?.location || '').trim())) return '';
+  return eventsNewsArchiveLabel(settingKey);
+}
+function eventsNewsHasEventMeta(item) {
+  return Boolean(
+    eventsNewsEventStart(item)
+    || eventsNewsStatusLabel(item)
+    || eventsNewsAttendanceLabel(item)
+    || String(item?.location || '').trim(),
+  );
+}
+function eventsNewsPublishedDate(item) {
+  return formatDate(item?.published_at, regional.value, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+function eventsNewsItemLabel(item, block) {
+  return String(item?.link_label || block?.content?.item_link_label || contentArchives.value?.event_card_link_label || '').trim()
+    || eventsNewsFallback('item_link_label');
+}
+function eventsNewsItemLinkLabel(item, block) {
+  const label = eventsNewsItemLabel(item, block);
+  return item?.heading ? `${label}: ${item.heading}` : label;
 }
 function money(value) { return formatMoney(value, regional.value); }
 function newsletterDomToken(block) { return String(block?.uuid || 'block').replace(/[^a-zA-Z0-9_-]/g, '-'); }
@@ -2722,6 +3084,45 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
 .igf-event-cards__copy h3 { margin-bottom:11px; }
 .igf-event-cards__copy p { margin:0 0 20px; font-size:14px; line-height:1.6; }
 .igf-event-cards__copy b { margin-top:auto; color:var(--brown); font-size:13px; }
+.igf-page-block--events_news { background:#fff; }
+.igf-events-news__intro { max-width:760px; margin-bottom:clamp(30px,4vw,48px); }
+.igf-events-news__intro .igf-section-lead { margin:0; }
+.igf-events-news__grid { display:grid; grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr); gap:clamp(42px,5vw,72px); align-items:start; }
+.igf-events-news__region { min-width:0; }
+.igf-events-news__heading { min-height:82px; margin-bottom:22px; }
+.igf-events-news__heading h2 { max-width:none; margin:0; font-family:'Hanken Grotesk',Arial,sans-serif; font-size:clamp(34px,3.7vw,48px); font-weight:750; letter-spacing:-.035em; line-height:1.05; }
+.igf-events-news__heading>span { display:block; width:120px; height:3px; margin-top:14px; border-radius:999px; background:linear-gradient(90deg,var(--orange),#d95d00); transform:rotate(-3deg); }
+.igf-events-news__list { display:grid; gap:4px; }
+.igf-events-news__event { display:grid; min-width:0; grid-template-columns:150px minmax(0,1fr); gap:22px; padding:18px 0; border-bottom:1px solid var(--line); }
+.igf-events-news__event:first-child { padding-top:0; }
+.igf-events-news__event-media { display:grid; overflow:hidden; min-height:116px; place-items:center; align-self:start; border-radius:13px; background:#f0ece8; color:var(--brown); }
+.igf-events-news__event-media img { display:block; width:100%; height:116px; object-fit:cover; }
+.igf-events-news__event-media>span { font-size:30px; }
+.igf-events-news__event-copy { display:flex; min-width:0; flex-direction:column; align-items:flex-start; }
+.igf-events-news__event-copy h3,.igf-events-news__featured-copy h3 { margin:0; color:var(--ink); font-family:'Hanken Grotesk',Arial,sans-serif; font-weight:780; letter-spacing:-.025em; line-height:1.2; overflow-wrap:anywhere; }
+.igf-events-news__event-copy h3 { font-size:clamp(20px,2vw,25px); }
+.igf-events-news__meta { display:flex; flex-wrap:wrap; align-items:center; gap:5px 12px; margin:8px 0 0!important; color:var(--muted); font-size:12px!important; line-height:1.4!important; }
+.igf-events-news__meta>*+*::before { margin-right:12px; color:#b9aba0; content:'|'; }
+.igf-events-news__schedule { display:inline-flex; flex-wrap:wrap; align-items:center; gap:5px; }
+.igf-events-news__status { padding:3px 8px; border-radius:999px; background:#fff0e3; color:#743300; font-weight:800; }
+.igf-events-news__meta i { margin-right:4px; color:var(--brown); }
+.igf-events-news__excerpt { display:-webkit-box; overflow:hidden; margin:10px 0 0!important; color:var(--muted); font-size:14px!important; line-height:1.55!important; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.igf-events-news__item-link,.igf-events-news__view-all { color:var(--brown); font-size:14px; font-weight:800; text-underline-offset:4px; }
+.igf-events-news__item-link { display:inline-flex; align-items:center; gap:5px; margin-top:12px; }
+.igf-events-news__item-link:hover,.igf-events-news__view-all:hover { color:#6f3100; }
+.igf-events-news__view-all { display:flex; width:fit-content; align-items:center; gap:6px; margin:24px 0 0 auto; }
+.igf-events-news__featured { display:grid; overflow:hidden; min-height:500px; grid-template-columns:minmax(0,1.06fr) minmax(220px,.94fr); border:1px solid #e2ded9; border-radius:24px; background:#f4f5f4; box-shadow:0 16px 38px rgba(34,30,27,.1); }
+.igf-events-news__featured-media { display:grid; min-width:0; min-height:500px; place-items:center; overflow:hidden; background:#e7e3df; color:var(--brown); }
+.igf-events-news__featured-media img { display:block; width:100%; height:100%; min-height:500px; object-fit:cover; }
+.igf-events-news__featured-media>span { font-size:50px; }
+.igf-events-news__featured-copy { display:flex; min-width:0; padding:clamp(24px,3vw,36px); flex-direction:column; align-items:flex-start; justify-content:center; }
+.igf-events-news__featured-copy h3 { margin-top:9px; font-size:clamp(25px,2.35vw,33px); }
+.igf-events-news__featured-copy .igf-events-news__excerpt { display:block; margin-top:18px!important; font-size:15px!important; -webkit-line-clamp:unset; }
+.igf-events-news__featured-copy .igf-events-news__item-link { margin-top:20px; }
+.igf-events-news__cta { width:100%; min-width:0; min-height:54px; margin-top:28px; justify-content:space-between; padding:0 22px; border-radius:14px; color:#fff; white-space:nowrap; box-shadow:0 10px 24px rgba(255,117,0,.22); }
+.igf-events-news__cta>span { margin-left:14px; font-size:18px; line-height:1; transition:transform .18s ease; }
+.igf-events-news__cta:hover>span { transform:translateX(4px); }
+.igf-events-news :is(a,.igf-button):focus-visible { outline:3px solid #773400; outline-offset:4px; }
 .igf-page-block--testimonials { overflow:hidden; background:#242220; color:#fff; }
 .igf-testimonials>h2 { color:#fff; }
 .igf-testimonial-card { position:relative; max-width:920px; margin:42px auto 0; padding:clamp(30px,6vw,65px); border:1px solid var(--igf-card-border,rgba(255,255,255,.15)); border-radius:var(--igf-card-radius,24px); background:#30302f; box-shadow:var(--igf-card-shadow,none); text-align:center; }
@@ -2739,6 +3140,29 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
 .igf-testimonial-card nav .igf-testimonial-dot { min-width:28px; border-color:transparent; }
 .igf-testimonial-dot span { width:8px; height:8px; border-radius:50%; background:#777; }
 .igf-testimonial-dot[aria-current="true"] span { width:18px; border-radius:99px; background:var(--orange); }
+.igf-page-block--testimonials-split { background:#fafbf7; color:var(--ink); }
+.igf-page-block--testimonials-split .igf-testimonials>h2 { color:inherit; }
+.igf-page-block--testimonials-split .igf-testimonials>.igf-section-lead { max-width:760px; margin-top:14px; }
+.igf-testimonial-split { margin-top:clamp(34px,5vw,62px); }
+.igf-testimonial-split__slide { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(44px,7vw,96px); }
+.igf-testimonial-split__item { display:flex; min-width:0; min-height:240px; flex-direction:column; padding:clamp(25px,3vw,38px) 0 10px; border-top:2px solid color-mix(in srgb,currentColor 14%,transparent); color:inherit; }
+.igf-testimonial-split__item blockquote { max-width:580px; margin:0 0 34px; color:inherit; font:700 clamp(19px,2vw,24px)/1.45 'Hanken Grotesk',Arial,sans-serif; letter-spacing:-.015em; }
+.igf-testimonial-split__person { display:flex; min-width:0; align-items:center; gap:16px; margin-top:auto; }
+.igf-testimonial-split__person img,.igf-testimonial-split__initials { width:64px; height:64px; flex:0 0 64px; border-radius:50%; }
+.igf-testimonial-split__person img { border:2px solid #fff; object-fit:cover; box-shadow:0 5px 16px rgba(25,28,29,.14); }
+.igf-testimonial-split__initials { display:grid; place-items:center; background:var(--peach); color:var(--brown); font-size:17px; font-weight:900; }
+.igf-testimonial-split__identity { display:grid; min-width:0; gap:4px; }
+.igf-testimonial-split__identity strong { color:inherit; font-size:17px; line-height:1.2; }
+.igf-testimonial-split__identity small { color:color-mix(in srgb,currentColor 66%,transparent); font-size:15px; line-height:1.35; }
+.igf-testimonial-split__navigation { display:flex; min-height:50px; align-items:center; justify-content:space-between; gap:24px; margin-top:34px; }
+.igf-testimonial-split__dots,.igf-testimonial-split__arrows { display:flex; align-items:center; gap:8px; }
+.igf-testimonial-split__navigation button { display:grid; place-items:center; border:0; background:transparent; color:inherit; cursor:pointer; }
+.igf-testimonial-split__dots .igf-testimonial-dot { width:30px; height:42px; padding:0; }
+.igf-testimonial-split__dots .igf-testimonial-dot span { width:8px; height:8px; border-radius:50%; background:color-mix(in srgb,currentColor 30%,transparent); transition:width .18s ease,background-color .18s ease; }
+.igf-testimonial-split__dots .igf-testimonial-dot[aria-current="true"] span { width:24px; border-radius:99px; background:var(--brown); }
+.igf-testimonial-split__arrows button { width:48px; height:48px; border:1px solid color-mix(in srgb,currentColor 16%,transparent); border-radius:50%; background:var(--peach); color:var(--brown); transition:background-color .18s ease,color .18s ease,transform .18s ease; }
+.igf-testimonial-split__arrows button:hover { background:var(--brown); color:#fff; transform:translateY(-2px); }
+.igf-testimonial-split__navigation button:focus-visible { outline:3px solid color-mix(in srgb,var(--orange) 50%,white); outline-offset:3px; }
 .igf-page-block--programs { background:var(--surface); }
 .igf-page-block--programs .igf-card { min-height:230px; }
 .igf-campaign { display:grid; overflow:hidden; grid-template-columns:minmax(0,.82fr) minmax(420px,1.18fr); border:1px solid #e3d8d0; border-radius:26px; background:#fff; box-shadow:0 24px 60px rgba(41,31,23,.13); }
@@ -2878,6 +3302,17 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
 }
 .igf-page-block--presentation-contrast :is(.igf-stat,.igf-card,.igf-giving-card,.igf-event-cards>a,.igf-faq details,.igf-timeline li,.igf-testimonial-card) :is(h2,h3,h4,p,li,blockquote,span,strong,small) { color:inherit; }
 .igf-page-block--presentation-contrast .igf-text-link { color:#ffbd87; }
+.igf-page-block--presentation-contrast .igf-events-news__event-copy h3 { color:#fff; }
+.igf-page-block--presentation-contrast .igf-events-news__event-copy :is(.igf-events-news__meta,.igf-events-news__excerpt) { color:#e3dcd6; }
+.igf-page-block--presentation-contrast .igf-events-news :is(.igf-events-news__event .igf-events-news__item-link,.igf-events-news__view-all) { color:#ffc28f; }
+.igf-page-block--presentation-contrast .igf-events-news :is(.igf-events-news__event .igf-events-news__item-link,.igf-events-news__view-all):hover { color:#ffe0c5; }
+.igf-page-block--presentation-contrast .igf-events-news__featured { border-color:#d4cec8; background:#f4f5f4; color:#191c1d; }
+.igf-page-block--presentation-contrast .igf-events-news__featured :is(h3,p) { color:inherit; }
+.igf-page-block--presentation-contrast .igf-events-news__featured :is(.igf-events-news__meta,.igf-events-news__excerpt) { color:#55585d; }
+.igf-page-block--presentation-contrast .igf-events-news__featured .igf-events-news__item-link { color:#743300; }
+.igf-page-block--presentation-contrast .igf-events-news .igf-dynamic-empty { border-color:#cbc3bc; background:#f8f9fa; color:#303437; }
+.igf-page-block--presentation-contrast .igf-events-news :is(a,.igf-button):focus-visible { outline-color:#ffc28f; }
+.igf-page-block--presentation-contrast .igf-events-news__featured :is(a,.igf-button):focus-visible { outline-color:#773400; }
 .igf-page-block--hero.igf-page-block--presentation-soft .igf-page-block__hero-content {
   padding:clamp(24px,4vw,46px); border:1px solid rgba(255,255,255,.72); border-radius:24px; background:rgba(255,250,245,.9); color:var(--ink); box-shadow:0 22px 60px rgba(0,0,0,.18); backdrop-filter:blur(8px);
 }
@@ -2914,6 +3349,7 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-focus-areas { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-giving__options { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-event-cards { grid-template-columns:repeat(2,1fr); }
+  .igf-events-news__grid { grid-template-columns:minmax(0,1fr); gap:64px; }
   .igf-gallery__grid { grid-template-columns:repeat(2,1fr); }
   .igf-partner-list { width:min(calc(100% - 28px),700px); grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
   .igf-partner-card { min-height:82px; padding:10px 12px; }
@@ -2949,6 +3385,7 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-page-blocks h2 { font-size:var(--igf-heading-2-mobile,34px); }
   .igf-page-block__actions { align-items:stretch; flex-direction:column; }
   .igf-button { width:100%; }
+  .igf-events-news__cta { min-height:52px; }
   .igf-page-block--stats { margin-top:-50px; padding-top:0; padding-bottom:72px; }
   .igf-stats,.igf-card-grid,.igf-media-text,.igf-media-text--reverse { grid-template-columns:1fr; }
   .igf-focus-areas { grid-template-columns:1fr; }
@@ -2960,6 +3397,12 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-giving--banner { padding:26px 20px; border-radius:18px; }
   .igf-giving--banner .igf-giving__options { grid-template-columns:1fr; }
   .igf-event-cards { grid-template-columns:1fr; }
+  .igf-testimonial-split { margin-top:32px; }
+  .igf-testimonial-split__slide { grid-template-columns:minmax(0,1fr); gap:0; }
+  .igf-testimonial-split__item { min-height:280px; padding:24px 0 8px; }
+  .igf-testimonial-split__item blockquote { margin-bottom:30px; font-size:clamp(19px,5.8vw,23px); }
+  .igf-testimonial-split__navigation { margin-top:26px; }
+  .igf-testimonial-split__arrows button { width:46px; height:46px; }
   .igf-team-grid,.igf-gallery__grid { grid-template-columns:1fr; }
   .igf-page-block--contributions .igf-card-grid,.igf-page-block--campus-gallery .igf-gallery__grid { grid-template-columns:1fr; }
   .igf-team-card { justify-self:center; }
@@ -3025,10 +3468,31 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-campus-lightbox__dialog { height:88vh; grid-template-columns:48px minmax(0,1fr) 48px; }
   .igf-campus-lightbox__close,.igf-campus-lightbox__nav { width:42px; height:42px; }
 }
+@media (max-width:600px) {
+  .igf-events-news__heading { min-height:0; margin-bottom:24px; }
+  .igf-events-news__heading h2 { font-size:34px; }
+  .igf-events-news__event { grid-template-columns:112px minmax(0,1fr); gap:16px; padding:16px 0; }
+  .igf-events-news__event-media { min-height:96px; border-radius:10px; }
+  .igf-events-news__event-media img { height:96px; }
+  .igf-events-news__event-copy h3 { font-size:20px; }
+  .igf-events-news__excerpt { -webkit-line-clamp:3; }
+  .igf-events-news__featured { min-height:0; grid-template-columns:minmax(0,1fr); }
+  .igf-events-news__featured-media { min-height:0; aspect-ratio:16/10; }
+  .igf-events-news__featured-media img { height:100%; min-height:0; }
+  .igf-events-news__featured-copy { padding:28px 24px 30px; }
+  .igf-events-news__featured-copy h3 { font-size:28px; }
+  .igf-events-news__cta { width:100%; }
+}
 @media (max-width:560px) {
   .igf-partner-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .igf-partner-card { min-height:92px; }
   .igf-partner-card img { height:64px; }
+}
+@media (max-width:520px) {
+  .igf-events-news__event { grid-template-columns:minmax(0,1fr); }
+  .igf-events-news__event-media { aspect-ratio:16/9; }
+  .igf-events-news__event-media img { height:100%; }
+  .igf-events-news__view-all { margin-left:0; }
 }
 @media (max-width:680px) {
   .igf-team-grid { grid-template-columns:280px; }

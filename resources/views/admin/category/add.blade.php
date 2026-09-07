@@ -5,6 +5,7 @@
         $permission = app(\App\Http\Middleware\Permission::class);
         $admin = auth('admin')->user();
         $canCreatePage = $permission->allows($admin, 'page.create');
+        $canCustomizeSite = $permission->allows($admin, 'site.settings.index');
     @endphp
     <div class="content pb-0">
 
@@ -123,6 +124,7 @@
                                                     </option>
                                                     @endforeach
                                                 </select>
+                                                <small class="form-text text-muted">The public archive can show this banner's image and optional button in its split hero. The Category name and description remain the hero heading and introduction; banner image, alternative text, and button are managed in Banners.</small>
                                                 @if ($errors->has('banner_id.'. $lang))
                                                 <small class="help-block form-text text-danger">{{ $errors->first('banner_id.'. $lang) }}</small>
                                                 @endif
@@ -169,6 +171,15 @@
                                                 @endif
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="alert alert-info" role="note">
+                                        <strong>Archive design:</strong> Choose the compact or split hero, card columns, card labels, and optional closing call to action in Website Customizer.
+                                        @if($canCustomizeSite)
+                                            <a class="btn btn-sm btn-outline-primary ml-2" href="{{ route('site.settings.index', ['locale' => $lang]) }}#settings-content_archives">Open archive design controls</a>
+                                        @else
+                                            Ask a Website Customizer editor to change the shared archive design.
+                                        @endif
                                     </div>
 
                                     <div class="form-group has-success">

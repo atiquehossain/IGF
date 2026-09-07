@@ -314,7 +314,7 @@ class TranslationCenterIntegrityTest extends TestCase
     public function test_content_and_section_presentations_remain_machine_fields_during_translation(): void
     {
         [$page] = $this->makeEnglishPage();
-        $block = PageBlock::create([
+        $causeBlock = PageBlock::create([
             'page_id' => $page->id,
             'uuid' => (string) Str::uuid(),
             'translation_key' => (string) Str::uuid(),
@@ -330,34 +330,73 @@ class TranslationCenterIntegrityTest extends TestCase
             'show_on_desktop' => true,
             'show_on_mobile' => true,
         ]);
+        $testimonialBlock = PageBlock::create([
+            'page_id' => $page->id,
+            'uuid' => (string) Str::uuid(),
+            'translation_key' => (string) Str::uuid(),
+            'type' => 'testimonials',
+            'label' => 'Community stories',
+            'content' => [
+                'heading' => 'Stories of change',
+                'display_style' => 'split',
+                'section_presentation' => 'soft',
+            ],
+            'sort_order' => 5,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+        ]);
         $service = app(TranslationCenterService::class);
-        $prepared = $service->prepareBlockTranslationContent($block->content);
+        $preparedCause = $service->prepareBlockTranslationContent($causeBlock->content);
+        $preparedTestimonial = $service->prepareBlockTranslationContent($testimonialBlock->content);
 
-        $this->assertSame('', $prepared['heading']);
-        $this->assertSame('focus_areas', $prepared['presentation']);
-        $this->assertSame('contrast', $prepared['section_presentation']);
+        $this->assertSame('', $preparedCause['heading']);
+        $this->assertSame('focus_areas', $preparedCause['presentation']);
+        $this->assertSame('contrast', $preparedCause['section_presentation']);
+        $this->assertSame('', $preparedTestimonial['heading']);
+        $this->assertSame('split', $preparedTestimonial['display_style']);
+        $this->assertSame('soft', $preparedTestimonial['section_presentation']);
 
-        $blockRows = $service->rows('en', 'bn')->filter(fn (array $row) =>
+        $rows = $service->rows('en', 'bn');
+        $causeRows = $rows->filter(fn (array $row) =>
             ($row['identity']['type'] ?? null) === 'block'
-            && ($row['identity']['source_block_id'] ?? null) === $block->id
+            && ($row['identity']['source_block_id'] ?? null) === $causeBlock->id
         );
-        $paths = $blockRows->pluck('identity.path');
-        $this->assertFalse($paths->contains('presentation'));
-        $this->assertFalse($paths->contains('section_presentation'));
-        $headingRow = $blockRows->firstWhere('identity.path', 'heading');
-        $this->assertNotNull($headingRow);
+        $testimonialRows = $rows->filter(fn (array $row) =>
+            ($row['identity']['type'] ?? null) === 'block'
+            && ($row['identity']['source_block_id'] ?? null) === $testimonialBlock->id
+        );
+        $this->assertFalse($causeRows->pluck('identity.path')->contains('presentation'));
+        $this->assertFalse($causeRows->pluck('identity.path')->contains('section_presentation'));
+        $this->assertFalse($testimonialRows->pluck('identity.path')->contains('display_style'));
+        $this->assertFalse($testimonialRows->pluck('identity.path')->contains('section_presentation'));
+        $causeHeadingRow = $causeRows->firstWhere('identity.path', 'heading');
+        $testimonialHeadingRow = $testimonialRows->firstWhere('identity.path', 'heading');
+        $this->assertNotNull($causeHeadingRow);
+        $this->assertNotNull($testimonialHeadingRow);
 
-        $service->save('en', 'bn', [[
-            'key' => $headingRow['key'],
-            'precondition' => $headingRow['precondition'],
-            'value' => 'কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি',
-        ]], null);
+        $service->save('en', 'bn', [
+            [
+                'key' => $causeHeadingRow['key'],
+                'precondition' => $causeHeadingRow['precondition'],
+                'value' => 'কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি',
+            ],
+            [
+                'key' => $testimonialHeadingRow['key'],
+                'precondition' => $testimonialHeadingRow['precondition'],
+                'value' => 'পরিবর্তনের গল্প',
+            ],
+        ], null);
 
         $translatedPage = Page::where('uuid', $page->uuid)->where('language', 'bn')->firstOrFail();
-        $translatedBlock = $translatedPage->blocks()->where('translation_key', $block->translation_key)->firstOrFail();
-        $this->assertSame('কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি', $translatedBlock->content['heading']);
-        $this->assertSame('focus_areas', $translatedBlock->content['presentation']);
-        $this->assertSame('contrast', $translatedBlock->content['section_presentation']);
+        $translatedCause = $translatedPage->blocks()->where('translation_key', $causeBlock->translation_key)->firstOrFail();
+        $translatedTestimonial = $translatedPage->blocks()->where('translation_key', $testimonialBlock->translation_key)->firstOrFail();
+        $this->assertSame('কমিউনিটির সঙ্গে পরিকল্পিত কর্মসূচি', $translatedCause->content['heading']);
+        $this->assertSame('focus_areas', $translatedCause->content['presentation']);
+        $this->assertSame('contrast', $translatedCause->content['section_presentation']);
+        $this->assertSame('পরিবর্তনের গল্প', $translatedTestimonial->content['heading']);
+        $this->assertSame('split', $translatedTestimonial->content['display_style']);
+        $this->assertSame('soft', $translatedTestimonial->content['section_presentation']);
     }
 
     public function test_media_choice_and_sources_are_machine_fields_while_the_caption_is_translatable(): void

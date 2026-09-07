@@ -111,9 +111,14 @@ class PublicPresentationIntegrityTest extends TestCase
         $this->assertStringContainsString('data-test="locked-donation-cause"', $donateTemplate);
         $this->assertStringContainsString('role="status"', $donateTemplate);
         $this->assertStringNotContainsString('id="donation-cause"', $donateTemplate);
-        $this->assertStringContainsString(':aria-label="settings.interval_field_label"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
+        $sponsorTemplate = file_get_contents(resource_path('js/Pages/sponsor_child.vue'));
+        $this->assertStringContainsString('role="radiogroup" :aria-label="settings.interval_field_label"', $sponsorTemplate);
+        $this->assertStringContainsString('role="radio"', $sponsorTemplate);
+        $this->assertStringContainsString(':aria-checked="sponsorship.contributionInterval === interval.value"', $sponsorTemplate);
+        $this->assertStringContainsString("'(max-width: 960px) 100vw, 45vw'", $sponsorTemplate);
+        $this->assertStringContainsString('.igf-sponsor__hero-media{display:block;order:-1', $sponsorTemplate);
         $this->assertStringContainsString(':aria-label="settings.cause_field_label"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
-        $this->assertStringContainsString('for="sponsorship-interval"', file_get_contents(resource_path('js/Pages/sponsor_child.vue')));
+        $this->assertStringContainsString('for="sponsor-children-count"', $sponsorTemplate);
         $this->assertStringContainsString('for="volunteer-cause"', file_get_contents(resource_path('js/Pages/volunteer-registration.vue')));
     }
 

@@ -68,6 +68,7 @@ class PublicRegionalDateContractTest extends TestCase
             'title' => 'Community day',
             'slug' => 'community-day',
             'description' => 'A public event.',
+            'content_kind' => 'event',
             'language' => 'en',
             'status' => 1,
             'order_by' => 10,

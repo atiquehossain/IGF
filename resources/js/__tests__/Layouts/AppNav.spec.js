@@ -19,6 +19,18 @@ describe('AppNav recursive disclosure navigation', () => {
       children: [
         { name: 'Program Overview', uuid: 'program-overview-menu', href: '/category/our-causes' },
         {
+          name: 'Inclusive Education',
+          uuid: 'inclusive-education-menu',
+          href: '/page/education',
+          children: [
+            {
+              name: 'Visit Ignite School',
+              uuid: 'visit-ignite-school-menu',
+              href: '/category/visit-ignite-school',
+            },
+          ],
+        },
+        {
           name: 'Youth Development',
           description: 'Programs led with young people.',
           uuid: 'youth-development-menu',
@@ -152,6 +164,34 @@ describe('AppNav recursive disclosure navigation', () => {
 
     expect(wrapper.get('.desktop-nav a[href="/workshops"]').attributes('aria-current')).toBe('page');
     expect(wrapper.get('.desktop-nav a[href="/page/youth-development"]').attributes('aria-current')).toBeUndefined();
+  });
+
+  test('renders Visit Ignite School beneath Inclusive Education on desktop and mobile', async () => {
+    window.history.replaceState({}, '', '/category/visit-ignite-school');
+    const wrapper = mountNav();
+    const desktop = wrapper.get('.desktop-nav');
+    const desktopVisit = desktop.get('a[href="/category/visit-ignite-school"]');
+    const education = itemForLink(desktop, 'a[href="/page/education"]', '.desktop-nav__entry');
+    const ourWork = itemForLink(desktop, 'a[href="/category/visit-ignite-school"]', '.desktop-nav__item');
+    const visitItem = itemForLink(education, 'a[href="/category/visit-ignite-school"]', '.desktop-nav__entry');
+
+    expect(desktop.findAll('a[href="/category/visit-ignite-school"]')).toHaveLength(1);
+    expect(education.get('a[href="/page/education"]').text()).toContain('Inclusive Education');
+    expect(education.get('.desktop-nav__toggle').exists()).toBe(true);
+    expect(visitItem.attributes('data-nav-depth')).toBe('3');
+    expect(desktopVisit.attributes('aria-current')).toBe('page');
+    expect(ourWork.classes()).toContain('is-active');
+    expect(education.classes()).toContain('is-active');
+
+    await wrapper.get('.menu-button').trigger('click');
+    const mobile = wrapper.get('.mobile-nav');
+    const mobileVisit = mobile.get('a[href="/category/visit-ignite-school"]');
+    const mobileEducation = itemForLink(mobile, 'a[href="/page/education"]', '.mobile-nav__entry');
+    const mobileOurWork = itemForLink(mobile, 'a[href="/category/visit-ignite-school"]', '.mobile-nav__group');
+
+    expect(mobileOurWork.get('.mobile-nav__parent').attributes('aria-expanded')).toBe('true');
+    expect(mobileEducation.get('.mobile-nav__toggle').attributes('aria-expanded')).toBe('true');
+    expect(mobileVisit.isVisible()).toBe(true);
   });
 
   test('keeps the mobile navigation IDREF target mounted while collapsed', async () => {
@@ -312,28 +352,38 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(wrapper.get('.mobile-nav__sign-in').exists()).toBe(true);
   });
 
-  test('uses the fallback only when appMenus is absent and nests Workshop under Our Work and Youth Development', async () => {
+  test('uses the fallback only when appMenus is absent and preserves both configured third-level branches', async () => {
     delete usePage().props.appMenus;
     const wrapper = mountNav();
     const desktop = wrapper.get('.desktop-nav');
     const workshop = desktop.get('a[href="/workshops"]');
     const youth = itemForLink(desktop, 'a[href="/page/youth-development"]', '.desktop-nav__entry');
+    const visitSchool = desktop.get('a[href="/category/visit-ignite-school"]');
+    const education = itemForLink(desktop, 'a[href="/page/education"]', '.desktop-nav__entry');
     const ourWork = itemForLink(desktop, 'a[href="/workshops"]', '.desktop-nav__item');
     const getInvolved = itemForLink(desktop, 'a[href="/careers"]', '.desktop-nav__item');
 
     expect(ourWork.get('.desktop-nav__trigger').text()).toContain('Our Work');
     expect(youth.get('a[href="/page/youth-development"]').text()).toContain('Youth Development');
     expect(youth.element.contains(workshop.element)).toBe(true);
+    expect(education.element.contains(visitSchool.element)).toBe(true);
     expect(getInvolved.find('a[href="/workshops"]').exists()).toBe(false);
     expect(desktop.findAll('a[href="/workshops"]')).toHaveLength(1);
     expect(desktop.get('a[href="/make-a-donation"]').text()).toBe('Make a Donation');
+    expect(desktop.get('a[href="/events"]').text()).toBe('Events');
+    expect(desktop.get('a[href="/news"]').text()).toBe('News');
+    expect(desktop.text()).not.toContain('Events & News');
     expect(desktop.text()).not.toContain('Opportunities');
     expect(desktop.text()).not.toContain("Founder's Letter");
 
     await wrapper.get('.menu-button').trigger('click');
     const mobile = wrapper.get('.mobile-nav');
     const mobileYouth = itemForLink(mobile, 'a[href="/page/youth-development"]', '.mobile-nav__entry');
+    const mobileEducation = itemForLink(mobile, 'a[href="/page/education"]', '.mobile-nav__entry');
     expect(mobileYouth.findAll('a[href="/workshops"]')).toHaveLength(1);
+    expect(mobileEducation.findAll('a[href="/category/visit-ignite-school"]')).toHaveLength(1);
+    expect(mobile.get('a[href="/events"]').text()).toBe('Events');
+    expect(mobile.get('a[href="/news"]').text()).toBe('News');
     expect(mobile.text()).not.toContain('Opportunities');
   });
 
@@ -464,6 +514,7 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(appNavSource).toContain('@media(max-width:1180px)');
     expect(appNavSource).toContain('@media(min-width:1181px)');
     expect(appNavSource).toContain('.site-nav__actions>.site-nav__inline-action { display:none; }');
+    expect(appNavSource).toMatch(/\.donate-button \{[^}]*white-space:nowrap;/);
     expect(appNavSource).toContain('.desktop-nav__dropdown[hidden]');
     expect(appNavSource).toContain('.mobile-nav[hidden] { display:none; }');
     expect(appNavSource).toContain('.mobile-nav__group.is-active>:is(.mobile-nav__link,.mobile-nav__parent)');

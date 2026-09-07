@@ -13,12 +13,15 @@ use App\Models\Testimonial;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Str;
 
 class PageBlockContentResolver
 {
     private const DEFAULT_SOURCES = [
         'causes' => 'category',
         'events' => 'events',
+        'events_news' => 'events_news',
         'testimonials' => 'testimonials',
         'team' => 'team',
         'gallery' => 'gallery',
@@ -66,6 +69,9 @@ class PageBlockContentResolver
             $content['items'] = $this->pageItems($source, $content, $limit);
         } elseif ($block->type === 'events' && $source === 'events') {
             $content['items'] = $this->eventItems($content, $limit);
+        } elseif ($block->type === 'events_news' && $source === 'events_news') {
+            $content['upcoming_events'] = $this->upcomingEventItems($content);
+            $content['featured_news'] = $this->featuredNewsItem($content);
         } elseif ($block->type === 'testimonials' && $source === 'testimonials') {
             $content['items'] = $this->testimonialItems($content, $limit);
         } elseif ($block->type === 'team' && $source === 'team') {
@@ -372,15 +378,203 @@ class PageBlockContentResolver
         $events = $this->records($query, $content, $limit, 'id', 'title', 'published_at');
         $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
 
-        return $events->map(fn (NoticeBoard $event) => [
+        return $events
+            ->map(fn (NoticeBoard $event): array => $this->noticeItem($event, $itemLinkLabel))
+            ->values()
+            ->all();
+    }
+
+    private function upcomingEventItems(array $content): array
+    {
+        $limit = min(6, max(1, (int) ($content['event_limit'] ?? 3)));
+        $query = NoticeBoard::query()
+            ->publiclyReleased()
+            ->where('language', app()->getLocale())
+            ->where('content_kind', 'event')
+            ->whereNotNull('event_start_at')
+            ->where('event_start_at', '>=', now())
+            ->where(function (Builder $status): void {
+                $status->whereNull('event_status')->orWhere('event_status', '!=', 'cancelled');
+            });
+        $selectionMode = (string) ($content['events_selection_mode'] ?? 'automatic');
+
+        if ($selectionMode === 'manual') {
+            $references = $this->normalizedNoticeReferences($content['selected_event_ids'] ?? [], 6);
+            if ($references->isEmpty()) {
+                return [];
+            }
+
+            $events = $this->noticeItemsByReferences($query, $references)
+                ->take($limit)
+                ->values();
+        } else {
+            $events = $query
+                ->orderBy('event_start_at')
+                ->orderBy('id')
+                ->limit($limit)
+                ->get();
+        }
+
+        $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
+
+        return $events
+            ->map(fn (NoticeBoard $event): array => $this->noticeItem($event, $itemLinkLabel))
+            ->all();
+    }
+
+    private function featuredNewsItem(array $content): ?array
+    {
+        $query = NoticeBoard::query()
+            ->publiclyReleased()
+            ->where('language', app()->getLocale())
+            ->where('content_kind', 'article');
+        $requestedId = trim((string) ($content['featured_news_id'] ?? ''));
+
+        if ($requestedId !== '') {
+            $references = $this->normalizedNoticeReferences([$requestedId], 1);
+            if ($references->isEmpty()) {
+                return null;
+            }
+            $news = $this->noticeItemsByReferences($query, $references)->first();
+        } else {
+            $news = $query
+                ->orderByDesc('order_by')
+                ->orderByDesc('published_at')
+                ->orderByDesc('id')
+                ->first();
+        }
+
+        return $news
+            ? $this->noticeItem($news, trim((string) ($content['item_link_label'] ?? '')))
+            : null;
+    }
+
+    /**
+     * Normalize the stable UUID references used by new blocks while retaining
+     * positive numeric IDs from blocks saved before that contract was added.
+     */
+    private function normalizedNoticeReferences(iterable $values, int $limit): SupportCollection
+    {
+        return collect($values)
+            ->map(static function ($value): ?string {
+                if (is_int($value)) {
+                    return $value > 0 ? (string) $value : null;
+                }
+                if (!is_string($value)) {
+                    return null;
+                }
+
+                $reference = trim($value);
+                if (Str::isUuid($reference)) {
+                    return strtolower($reference);
+                }
+                if (!ctype_digit($reference)) {
+                    return null;
+                }
+
+                $normalized = ltrim($reference, '0');
+
+                return $normalized !== '' ? $normalized : null;
+            })
+            ->filter()
+            ->unique()
+            ->take($limit)
+            ->values();
+    }
+
+    /**
+     * Resolve requested records in editor order against the active locale.
+     * A legacy numeric ID first matches a current-locale record directly, then
+     * falls back through that record's translation identity.
+     */
+    private function noticeItemsByReferences(Builder $eligibleQuery, SupportCollection $references): SupportCollection
+    {
+        $numericReferences = $references
+            ->filter(static fn (string $reference): bool => ctype_digit($reference))
+            ->values();
+        $legacyIdentities = $numericReferences->isEmpty()
+            ? collect()
+            : NoticeBoard::withTrashed()
+                ->whereIn('id', $numericReferences->all())
+                ->get(['id', 'translation_key'])
+                ->keyBy(static fn (NoticeBoard $notice): string => (string) $notice->id);
+        $translationKeys = $references
+            ->reject(static fn (string $reference): bool => ctype_digit($reference))
+            ->merge($legacyIdentities->pluck('translation_key'))
+            ->filter(static fn ($key): bool => is_string($key) && Str::isUuid($key))
+            ->map(static fn (string $key): string => strtolower($key))
+            ->unique()
+            ->values();
+
+        $candidateQuery = clone $eligibleQuery;
+        $candidates = $candidateQuery
+            ->where(function (Builder $lookup) use ($numericReferences, $translationKeys): void {
+                if ($numericReferences->isNotEmpty()) {
+                    $lookup->whereIn('id', $numericReferences->all());
+                    if ($translationKeys->isNotEmpty()) {
+                        $lookup->orWhereIn('translation_key', $translationKeys->all());
+                    }
+
+                    return;
+                }
+
+                $lookup->whereIn('translation_key', $translationKeys->all());
+            })
+            ->get();
+        $candidatesById = $candidates->keyBy(static fn (NoticeBoard $notice): string => (string) $notice->id);
+        $candidatesByTranslationKey = $candidates
+            ->filter(static fn (NoticeBoard $notice): bool => is_string($notice->translation_key))
+            ->keyBy(static fn (NoticeBoard $notice): string => strtolower((string) $notice->translation_key));
+        $seen = [];
+
+        return $references
+            ->map(function (string $reference) use (
+                $candidatesById,
+                $candidatesByTranslationKey,
+                $legacyIdentities,
+                &$seen
+            ): ?NoticeBoard {
+                if (ctype_digit($reference)) {
+                    $notice = $candidatesById->get($reference);
+                    if (!$notice) {
+                        $translationKey = strtolower((string) optional($legacyIdentities->get($reference))->translation_key);
+                        $notice = $translationKey !== ''
+                            ? $candidatesByTranslationKey->get($translationKey)
+                            : null;
+                    }
+                } else {
+                    $notice = $candidatesByTranslationKey->get(strtolower($reference));
+                }
+
+                if (!$notice || isset($seen[$notice->id])) {
+                    return null;
+                }
+                $seen[$notice->id] = true;
+
+                return $notice;
+            })
+            ->filter()
+            ->values();
+    }
+
+    private function noticeItem(NoticeBoard $event, string $itemLinkLabel): array
+    {
+        return [
+            'id' => (int) $event->id,
+            'content_kind' => $event->content_kind ?: 'article',
             'heading' => $event->title,
             'body' => $event->sub_title ?: str($event->description)->stripTags()->limit(140)->toString(),
             'image' => $this->publicImage($event->getRawOriginal('image_path'), 'notice_board'),
             'image_alt' => $event->image_alt ?: $event->title,
             'published_at' => $event->published_at ? Carbon::parse($event->published_at)->toDateString() : '',
+            'event_start_at' => $event->event_start_at?->toIso8601String(),
+            'event_end_at' => $event->event_end_at?->toIso8601String(),
+            'event_status' => $event->event_status,
+            'event_attendance_mode' => $event->event_attendance_mode,
+            'location' => $event->location,
             'url' => '/event/' . $event->slug,
             'link_label' => $itemLinkLabel,
-        ])->values()->all();
+        ];
     }
 
     private function testimonialItems(array $content, int $limit): array

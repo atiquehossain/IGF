@@ -5,7 +5,7 @@
     <div v-if="event" class="igf-event">
       <header class="igf-event__hero">
         <div class="igf-shell">
-          <a :href="route('frontend.events')"><span aria-hidden="true">&larr;</span> {{ archiveSettings.event_back_label }}</a>
+          <a :href="archiveUrl"><span aria-hidden="true">&larr;</span> {{ event.content_kind === 'event' ? (archiveSettings.event_back_label || archiveLabel) : archiveLabel }}</a>
           <p>{{ archiveSettings.event_detail_eyebrow }}</p>
           <h1>{{ event.title }}</h1>
           <div v-if="articlePublishedDate || event.location" class="igf-event__meta"><span v-if="articlePublishedDate"><i class="fa-regular fa-calendar" aria-hidden="true" /> {{ articlePublishedDate }}</span><span v-if="event.location"><i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ event.location }}</span></div>
@@ -18,7 +18,7 @@
       <article class="igf-event__article">
         <p v-if="event.sub_title" class="igf-event__lead">{{ event.sub_title }}</p>
         <div v-html="event.description" />
-        <footer><a :href="route('frontend.events')"><span aria-hidden="true">&larr;</span> {{ archiveSettings.event_footer_label }}</a></footer>
+        <footer><a :href="archiveUrl"><span aria-hidden="true">&larr;</span> {{ event.content_kind === 'event' ? (archiveSettings.event_footer_label || archiveLabel) : archiveLabel }}</a></footer>
       </article>
     </div>
   </Layout>
@@ -32,7 +32,13 @@ import EventFacts from '../Shared/EventFacts.vue';
 import { formatDate } from '../Shared/composables/siteSettings';
 const page = usePage();
 const event = computed(() => page.props.data?.event || null);
+const archiveRoute = computed(() => ['frontend.events', 'frontend.news'].includes(page.props.archive_route)
+  ? page.props.archive_route
+  : (event.value?.content_kind === 'event' ? 'frontend.events' : 'frontend.news'));
+const archiveUrl = computed(() => page.props.archive_url || route(archiveRoute.value));
 const archiveSettings = computed(() => page.props.siteSettings?.content_archives || {});
+const archiveLabel = computed(() => page.props.archive_presentation?.title
+  || (event.value?.content_kind === 'event' ? 'Events' : 'Latest news'));
 const regional = computed(() => page.props.siteSettings?.regional || {});
 const articlePublishedDate = computed(() => event.value?.content_kind === 'event'
   ? ''

@@ -98,7 +98,10 @@ describe('active public page regional formatting', () => {
   test('formats event-detail raw ISO dates with the configured locale', () => {
     const publishedAt = '2026-08-19'
     const wrapper = mountPage(EventDetail, {
-      data: { event: { title: 'Community day', published_at: publishedAt, description: '' } },
+      archive_route: 'frontend.news',
+      archive_url: '/news',
+      archive_presentation: { title: 'Latest news' },
+      data: { event: { title: 'Community day', content_kind: 'article', published_at: publishedAt, description: '' } },
       siteSettings: { content_archives: {} },
     })
 

@@ -2,23 +2,28 @@
   <Layout>
     <div class="igf-events">
       <header class="igf-events__hero">
-        <div class="igf-shell"><p>{{ settings.events_eyebrow }}</p><h1>{{ title }}</h1><span>{{ settings.events_introduction }}</span></div>
+        <div class="igf-shell"><p>{{ settings.events_eyebrow }}</p><h1>{{ title }}</h1><span>{{ introduction }}</span></div>
       </header>
-      <section class="igf-events__content" :aria-label="settings.events_listing_label">
+      <section class="igf-events__content" :aria-label="listingLabel">
         <div class="igf-shell">
           <div v-if="items.length" class="igf-events__grid">
             <CategoryItemCard v-for="event in items" :key="event.uuid || event.id" :title="event.title"
               :subtitle="event.sub_title" :thumbnail="event.image_url" :image-alt="event.image_alt || event.title"
-              :eyebrow="settings.event_card_eyebrow" :link-label="settings.event_card_link_label"
+              :eyebrow="cardEyebrow" :link-label="settings.event_card_link_label"
               :link="route('frontend.event', event.slug)">
               <template v-if="event.content_kind === 'event'" #meta>
                 <EventFacts :event="event" :settings="settings" :regional="regional" compact />
               </template>
             </CategoryItemCard>
           </div>
-          <div v-else class="igf-events__empty"><i class="fa-regular fa-calendar" aria-hidden="true" /><h2>{{ settings.events_empty_title }}</h2><p>{{ settings.events_empty_body }}</p></div>
+          <div v-else class="igf-events__empty"><i class="fa-regular fa-calendar" aria-hidden="true" /><h2>{{ emptyTitle }}</h2><p>{{ emptyBody }}</p></div>
           <v-pagination v-if="properties?.total_page > 1" :model-value="properties.events" :length="properties.total_page"
-            class="igf-pagination" @update:model-value="onPageChange" />
+            class="igf-pagination" :aria-label="settings.events_pagination_label"
+            :page-aria-label="settings.events_pagination_page_label"
+            :current-page-aria-label="settings.events_pagination_current_label"
+            :previous-aria-label="settings.events_pagination_previous_label"
+            :next-aria-label="settings.events_pagination_next_label"
+            @update:model-value="onPageChange" />
         </div>
       </section>
     </div>
@@ -34,10 +39,30 @@ import EventFacts from '../Shared/EventFacts.vue';
 const page = usePage();
 const settings = computed(() => page.props.siteSettings?.content_archives || {});
 const regional = computed(() => page.props.siteSettings?.regional || {});
-const title = computed(() => settings.value.events_default_title || page.props.title);
+const archiveKind = computed(() => ['event', 'article'].includes(page.props.archive_kind) ? page.props.archive_kind : null);
+const archiveRoute = computed(() => ['frontend.events', 'frontend.news'].includes(page.props.archive_route)
+  ? page.props.archive_route
+  : (archiveKind.value === 'article' ? 'frontend.news' : 'frontend.events'));
+const presentation = computed(() => page.props.archive_presentation || {});
+const title = computed(() => archiveKind.value ? (presentation.value.title || page.props.title) : (settings.value.events_default_title || page.props.title));
+const introduction = computed(() => archiveKind.value ? (presentation.value.introduction || settings.value.events_introduction) : settings.value.events_introduction);
+const listingLabel = computed(() => archiveKind.value ? (presentation.value.listing_label || settings.value.events_listing_label) : settings.value.events_listing_label);
+const cardEyebrow = computed(() => archiveKind.value ? (presentation.value.card_eyebrow || settings.value.event_card_eyebrow) : settings.value.event_card_eyebrow);
+const emptyTitle = computed(() => archiveKind.value ? (presentation.value.empty_title || settings.value.events_empty_title) : settings.value.events_empty_title);
+const emptyBody = computed(() => archiveKind.value ? (presentation.value.empty_body || settings.value.events_empty_body) : settings.value.events_empty_body);
 const properties = computed(() => page.props.properties || {});
 const items = computed(() => page.props.data?.items || []);
-function onPageChange(number) { router.get(page.url, {page:number}, {preserveState:true, preserveScroll:true}); }
+const localeQueryParameter = computed(() => {
+  const candidate = String(page.props.seoLocale?.query_parameter || 'lang');
+  return /^[A-Za-z][A-Za-z0-9_-]{0,31}$/.test(candidate) ? candidate : 'lang';
+});
+function onPageChange(number) {
+  const query = new URLSearchParams(String(page.url || '').split('?')[1] || '');
+  const data = { page: number };
+  const locale = query.get(localeQueryParameter.value);
+  if (locale) data[localeQueryParameter.value] = locale;
+  router.get(route(archiveRoute.value), data, {preserveState:true, preserveScroll:true});
+}
 </script>
 
 <style scoped lang="scss">

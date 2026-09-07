@@ -1192,12 +1192,32 @@ class PageBuilderController extends Controller
             'content.content_source' => ['sometimes', 'string', Rule::in(
                 collect(config('page-builder.automatic_sources', []))->flatMap(fn (array $sources) => array_keys($sources))->unique()->values()->all()
             )],
+            'content.events_heading' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'content.news_heading' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'content.events_selection_mode' => ['sometimes', 'string', Rule::in(['automatic', 'manual'])],
+            'content.selected_event_ids' => ['sometimes', 'array', 'max:6'],
+            'content.selected_event_ids.*' => ['required', $this->noticeBoardReferenceRule(), 'distinct'],
+            'content.event_limit' => ['sometimes', 'integer', 'between:1,6'],
+            'content.featured_news_id' => ['sometimes', 'nullable', $this->noticeBoardReferenceRule()],
+            'content.events_view_all_label' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'content.events_view_all_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.news_view_all_label' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'content.news_view_all_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.cta_label' => ['sometimes', 'nullable', 'string', 'max:80'],
+            'content.cta_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'content.events_empty_state' => ['sometimes', 'nullable', 'string', 'max:300'],
+            'content.news_empty_state' => ['sometimes', 'nullable', 'string', 'max:300'],
             'content.category_slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'content.tag_slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'content.sort' => ['sometimes', 'string', Rule::in(array_keys(config('page-builder.automatic_sort_options', [])))],
             'content.limit' => ['sometimes', 'integer', 'between:1,12'],
             'content.selection_mode' => ['sometimes', 'string', Rule::in(['automatic', 'manual'])],
             'content.presentation' => ['sometimes', 'string', Rule::in(['card_grid', 'focus_areas'])],
+            'content.display_style' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.testimonial_presentations', []))),
+            ],
             'content.section_presentation' => [
                 'sometimes',
                 'string',
@@ -1262,6 +1282,42 @@ class PageBuilderController extends Controller
     }
 
     /**
+     * New builder selections use NoticeBoard translation identities so the
+     * choice survives an EN/BN page translation. Positive numeric IDs remain
+     * valid for blocks saved before the stable-reference contract existed.
+     */
+    private function noticeBoardReferenceRule(): \Closure
+    {
+        return static function (string $attribute, mixed $value, \Closure $fail): void {
+            if (is_int($value) && $value > 0) {
+                return;
+            }
+
+            if (!is_string($value)) {
+                $fail("The {$attribute} field must be a valid managed event or news reference.");
+
+                return;
+            }
+
+            $reference = trim($value);
+            if (Str::isUuid($reference)) {
+                return;
+            }
+
+            $digits = ltrim($reference, '0');
+            $maximum = (string) PHP_INT_MAX;
+            $isPositiveLegacyId = ctype_digit($reference)
+                && $digits !== ''
+                && (strlen($digits) < strlen($maximum)
+                    || (strlen($digits) === strlen($maximum) && strcmp($digits, $maximum) <= 0));
+
+            if (!$isPositiveLegacyId) {
+                $fail("The {$attribute} field must be a valid managed event or news reference.");
+            }
+        };
+    }
+
+    /**
      * Validate fields whose allowed values depend on the section type. The
      * generic rules deliberately continue accepting legacy variant keys; only
      * editor-owned source and layout selectors are coupled to a type here.
@@ -1281,8 +1337,34 @@ class PageBuilderController extends Controller
         if (array_key_exists('presentation', $content) && $type !== 'causes') {
             $errors[$errorPrefix . '.presentation'] = 'This presentation choice is only available for program and cause sections.';
         }
+        if (array_key_exists('display_style', $content) && $type !== 'testimonials') {
+            $errors[$errorPrefix . '.display_style'] = 'This testimonial layout choice is only available for community story sections.';
+        }
         if (array_key_exists('layout', $content) && $type !== 'ways_to_give') {
             $errors[$errorPrefix . '.layout'] = 'This layout choice is only available for Ways to Give sections.';
+        }
+        $eventsNewsOnlyFields = [
+            'events_heading',
+            'news_heading',
+            'events_selection_mode',
+            'selected_event_ids',
+            'event_limit',
+            'featured_news_id',
+            'events_view_all_label',
+            'events_view_all_url',
+            'news_view_all_label',
+            'news_view_all_url',
+            'cta_label',
+            'cta_url',
+            'events_empty_state',
+            'news_empty_state',
+        ];
+        if ($type !== 'events_news') {
+            foreach ($eventsNewsOnlyFields as $field) {
+                if (array_key_exists($field, $content)) {
+                    $errors[$errorPrefix . '.' . $field] = 'This setting is only available for Upcoming events + featured news sections.';
+                }
+            }
         }
         if (($content['column_count'] ?? 'auto') !== 'auto'
             && !in_array($type, config('page-builder.column_count_block_types', []), true)) {
@@ -2047,6 +2129,7 @@ class PageBuilderController extends Controller
             ['label' => 'Contact us', 'url' => '/contact-us'],
             ['label' => 'Projects', 'url' => '/projects'],
             ['label' => 'Events', 'url' => '/events'],
+            ['label' => 'News', 'url' => '/news'],
             ['label' => 'Gallery', 'url' => '/gallery'],
             ['label' => 'Annual reports', 'url' => '/annual-report'],
         ]);
@@ -2213,12 +2296,21 @@ class PageBuilderController extends Controller
         };
         $eventOption = function (NoticeBoard $event): array {
             return [
-                'value' => (string) $event->id,
+                'value' => (string) ($event->translation_key ?: $event->id),
+                'id' => (int) $event->id,
+                'translation_key' => (string) $event->translation_key,
                 'label' => $event->title,
                 'body' => $event->sub_title ?: str($event->description)->stripTags()->limit(140)->toString(),
                 'image' => $this->builderPublicImage($event->getRawOriginal('image_path'), 'notice_board'),
                 'image_alt' => $event->image_alt ?: $event->title,
+                'kind' => $event->content_kind ?: 'article',
+                'content_kind' => $event->content_kind ?: 'article',
                 'published_at' => $event->published_at ? strtotime((string) $event->published_at) : 0,
+                'event_start_at' => $event->event_start_at?->toIso8601String(),
+                'event_end_at' => $event->event_end_at?->toIso8601String(),
+                'event_status' => $event->event_status,
+                'event_attendance_mode' => $event->event_attendance_mode,
+                'location' => $event->location,
                 'url' => '/event/' . ltrim((string) $event->slug, '/'),
                 'featured_order' => (int) ($event->order_by ?? 0),
                 'sort_id' => (int) $event->id,
@@ -2261,6 +2353,38 @@ class PageBuilderController extends Controller
                 'sort_id' => (int) $photo->id,
             ];
         };
+        $publications = NoticeBoard::query()
+            ->where('language', $locale)
+            ->publiclyReleased()
+            ->orderBy('title')
+            ->get([
+                'id', 'translation_key', 'title', 'sub_title', 'description', 'image_path', 'image_alt',
+                'content_kind', 'published_at', 'event_start_at', 'event_end_at',
+                'event_status', 'event_attendance_mode', 'location', 'slug', 'order_by',
+            ]);
+        // Preserve numeric values for the legacy generic events block. The
+        // dedicated events_news editor uses the locale-stable values below.
+        $publicationOptions = $publications
+            ->map(fn (NoticeBoard $publication): array => array_replace(
+                $eventOption($publication),
+                ['value' => (string) $publication->id]
+            ))
+            ->values();
+        $eventOptions = $publications
+            ->filter(fn (NoticeBoard $event): bool => $event->content_kind === 'event'
+                && $event->event_start_at !== null
+                && $event->event_start_at->greaterThanOrEqualTo(now())
+                && $event->event_status !== 'cancelled')
+            ->sortBy(fn (NoticeBoard $event): array => [
+                $event->event_start_at?->getTimestamp() ?? PHP_INT_MAX,
+                (int) $event->id,
+            ])
+            ->map($eventOption)
+            ->values();
+        $newsOptions = $publications
+            ->filter(fn (NoticeBoard $event): bool => ($event->content_kind ?: 'article') === 'article')
+            ->map($eventOption)
+            ->values();
 
         return [
             'sources' => config('page-builder.automatic_sources', []),
@@ -2268,6 +2392,7 @@ class PageBuilderController extends Controller
             'presentations' => [
                 'sections' => config('page-builder.section_presentations', []),
                 'causes' => config('page-builder.cause_presentations', []),
+                'testimonials' => config('page-builder.testimonial_presentations', []),
             ],
             'design' => [
                 'section_spacing' => config('page-builder.section_spacing_options', []),
@@ -2281,6 +2406,8 @@ class PageBuilderController extends Controller
                 'element_catalog' => PageBuilderElementManifest::grouped(),
             ]),
             'manage_urls' => $this->managedContentUrls($locale),
+            'event_options' => $eventOptions,
+            'news_options' => $newsOptions,
             'categories' => Category::query()
                 ->where('language', $locale)
                 ->where('status', 1)
@@ -2316,16 +2443,8 @@ class PageBuilderController extends Controller
                     ->map(fn (Page $page) => $pageOption($page) + [
                         'category' => $page->category?->slug,
                     ])->values(),
-                'events' => NoticeBoard::query()
-                    ->where('language', $locale)
-                    ->publiclyReleased()
-                    ->orderBy('title')
-                    ->get([
-                        'id', 'title', 'sub_title', 'description', 'image_path', 'published_at',
-                        'slug', 'order_by',
-                    ])
-                    ->map($eventOption)
-                    ->values(),
+                'events' => $publicationOptions,
+                'events_news' => $eventOptions->concat($newsOptions)->values(),
                 'testimonials' => Testimonial::query()
                     ->where('language', $locale)
                     ->where('status', 1)
@@ -2387,6 +2506,17 @@ class PageBuilderController extends Controller
                 'permission' => 'notice.board.index',
                 'label' => 'Manage events and updates',
                 'url' => route('notice.board.index'),
+                'add_permission' => 'notice.board.create',
+                'add_label' => 'Add event or update',
+                'add_url' => route('notice.board.create'),
+            ],
+            'events_news' => [
+                'permission' => 'notice.board.index',
+                'label' => 'Manage events and news',
+                'url' => route('notice.board.index'),
+                'add_permission' => 'notice.board.create',
+                'add_label' => 'Add event or news',
+                'add_url' => route('notice.board.create'),
             ],
             'testimonials' => [
                 'permission' => 'testimonial.index',
@@ -2417,10 +2547,20 @@ class PageBuilderController extends Controller
 
         return collect($definitions)
             ->filter(fn (array $entry): bool => $permission->allows($admin, $entry['permission']))
-            ->map(fn (array $entry): array => [
-                'label' => $entry['label'],
-                'url' => $entry['url'],
-            ])
+            ->map(function (array $entry) use ($admin, $permission): array {
+                $managed = [
+                    'label' => $entry['label'],
+                    'url' => $entry['url'],
+                ];
+
+                if (isset($entry['add_permission'], $entry['add_url'])
+                    && $permission->allows($admin, $entry['add_permission'])) {
+                    $managed['add_label'] = $entry['add_label'] ?? 'Add content';
+                    $managed['add_url'] = $entry['add_url'];
+                }
+
+                return $managed;
+            })
             ->all();
     }
 

@@ -69,13 +69,17 @@ const sharedInterfaceSettings = {
   gallery_next_image_label: 'Next image',
   gallery_view_all_label: 'View all photos',
   gallery_view_all_url: '/gallery',
+  testimonials_navigation_label: 'Testimonial navigation',
+  testimonials_previous_label: 'Previous testimonials',
+  testimonials_next_label: 'Next testimonials',
+  testimonials_show_label: 'Show story {current} of {total}',
   campaign_form_title: 'Make a donation',
   campaign_custom_amount_label: 'Custom donation amount',
   campaign_custom_amount_placeholder: 'Enter a custom amount',
   campaign_submit_label: 'Donate now',
 };
 
-function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional = {} } = {}) {
+function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional = {}, contentArchives = {} } = {}) {
   usePage().props = {
     locale,
     siteSettings: {
@@ -106,12 +110,13 @@ function setPageSettings({ locale = 'en', shared = {}, donation = {}, regional =
         gateway_heading: 'Secure payment options',
         ...donation,
       },
+      content_archives: contentArchives,
     },
   };
 }
 
 const sectionTypes = [
-  'hero', 'stats', 'rich_text', 'media_text', 'cards', 'ways_to_give', 'causes', 'events',
+  'hero', 'stats', 'rich_text', 'media_text', 'cards', 'ways_to_give', 'causes', 'events', 'events_news',
   'testimonials', 'team', 'partners', 'faq', 'timeline', 'gallery', 'video', 'cta',
   'newsletter', 'layout', 'spacer', 'custom_html',
 ];
@@ -187,6 +192,151 @@ describe('PageBlocks section presentations', () => {
     });
     expect(pageBlocksSource).toContain('.igf-page-block--hero.igf-page-block--presentation-soft');
     expect(pageBlocksSource).toContain('@media (max-width:767px)');
+  });
+});
+
+describe('PageBlocks testimonial presentations', () => {
+  const items = [
+    { id: 1, quote: 'Education creates lasting opportunity.', name: 'Amina Rahman', designation: 'Community educator', photo: '/image/amina.jpg' },
+    { id: 2, quote: 'Local leadership makes every project stronger.', name: 'Karim Hasan', designation: 'Program partner', photo: '/image/karim.jpg' },
+    { id: 3, quote: 'Young people are leading meaningful change.', name: 'Nadia Islam', designation: 'Youth volunteer', photo: '' },
+    { id: 4, quote: 'Prepared communities recover with confidence.', name: 'Sajid Khan', designation: 'Response coordinator', photo: '/image/sajid.jpg' },
+    { id: 5, quote: 'Small actions can create a much wider impact.', name: 'Tania Noor', designation: 'Supporter', photo: '/image/tania.jpg' },
+  ];
+  const testimonialBlock = (displayStyle, uuid = 'testimonial-presentation') => ({
+    uuid,
+    type: 'testimonials',
+    label: 'Testimonials',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      eyebrow: 'Community voices',
+      heading: 'Testimonials',
+      body: 'Stories shared by the people closest to the work.',
+      ...(displayStyle ? { display_style: displayStyle } : {}),
+      items,
+    },
+  });
+
+  function mockViewport(isMobile) {
+    const listeners = new Set();
+    const testimonialQuery = {
+      matches: isMobile,
+      media: '(max-width: 767px)',
+      addEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.add(listener); }),
+      removeEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.delete(listener); }),
+    };
+    window.matchMedia = vi.fn(query => query === testimonialQuery.media ? testimonialQuery : ({
+      matches: false,
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    return {
+      setMobile(matches) {
+        testimonialQuery.matches = matches;
+        listeners.forEach(listener => listener(testimonialQuery));
+      },
+    };
+  }
+
+  beforeEach(() => {
+    mockViewport(false);
+    setPageSettings();
+  });
+
+  test('keeps the existing spotlight carousel as the default presentation', async () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [testimonialBlock()] } });
+
+    expect(wrapper.find('.igf-testimonial-card').exists()).toBe(true);
+    expect(wrapper.find('.igf-testimonial-split').exists()).toBe(false);
+    expect(wrapper.get('.igf-testimonial-card blockquote').text()).toBe(items[0].quote);
+
+    await wrapper.get('button[aria-label="Next testimonials"]').trigger('click');
+    expect(wrapper.get('.igf-testimonial-card blockquote').text()).toBe(items[1].quote);
+
+    wrapper.unmount();
+  });
+
+  test('falls back to the classic spotlight for an unsupported stored presentation', () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [testimonialBlock('unknown-layout')] } });
+
+    expect(wrapper.find('.igf-testimonial-card').exists()).toBe(true);
+    expect(wrapper.find('.igf-testimonial-split').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  test('shows two authored testimonials per desktop slide with grouped controls', async () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [testimonialBlock('split')] } });
+    const section = wrapper.get('section.igf-page-block--testimonials');
+    const slide = wrapper.get('.igf-testimonial-split__slide');
+
+    expect(section.classes()).toContain('igf-page-block--testimonials-split');
+    expect(wrapper.find('.igf-testimonial-card').exists()).toBe(false);
+    expect(slide.attributes('aria-roledescription')).toBe('slide');
+    expect(slide.attributes('aria-label')).toBe('Show story 1–2 of 5');
+    expect(wrapper.findAll('.igf-testimonial-split__item')).toHaveLength(2);
+    expect(slide.text()).toContain(items[0].quote);
+    expect(slide.text()).toContain(items[1].quote);
+    expect(wrapper.get('img[alt="Amina Rahman"]').attributes('src')).toBe('/image/amina.jpg');
+    expect(wrapper.findAll('.igf-testimonial-split__dots button')).toHaveLength(3);
+    expect(wrapper.get('.igf-testimonial-split__navigation').attributes('aria-label')).toBe('Testimonial navigation');
+
+    await wrapper.get('button[aria-label="Next testimonials"]').trigger('click');
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[2].quote);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[3].quote);
+    expect(wrapper.get('.igf-testimonial-split__initials').text()).toBe('NI');
+    expect(wrapper.get('.igf-testimonial-split__slide').attributes('aria-label')).toBe('Show story 3–4 of 5');
+
+    wrapper.unmount();
+  });
+
+  test('shows one testimonial per slide on mobile without changing the authored content', async () => {
+    mockViewport(true);
+    const wrapper = mount(PageBlocks, { props: { blocks: [testimonialBlock('split', 'mobile-testimonials')] } });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAll('.igf-testimonial-split__item')).toHaveLength(1);
+    expect(wrapper.findAll('.igf-testimonial-split__dots button')).toHaveLength(5);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[0].quote);
+
+    await wrapper.get('button[aria-label="Next testimonials"]').trigger('click');
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[1].quote);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).not.toContain(items[0].quote);
+
+    wrapper.unmount();
+  });
+
+  test('keeps the current story visible when the viewport crosses the mobile breakpoint', async () => {
+    const viewport = mockViewport(true);
+    const wrapper = mount(PageBlocks, { props: { blocks: [testimonialBlock('split', 'responsive-testimonials')] } });
+    await wrapper.vm.$nextTick();
+
+    await wrapper.get('button[aria-label="Next testimonials"]').trigger('click');
+    await wrapper.get('button[aria-label="Next testimonials"]').trigger('click');
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[2].quote);
+
+    viewport.setMobile(false);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAll('.igf-testimonial-split__item')).toHaveLength(2);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[2].quote);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[3].quote);
+
+    viewport.setMobile(true);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.findAll('.igf-testimonial-split__item')).toHaveLength(1);
+    expect(wrapper.get('.igf-testimonial-split__slide').text()).toContain(items[2].quote);
+
+    wrapper.unmount();
+  });
+
+  test('ships the split layout styling and its single-column mobile treatment', () => {
+    expect(pageBlocksSource).toContain('.igf-page-block--testimonials-split');
+    expect(pageBlocksSource).toContain('.igf-testimonial-split__slide { display:grid; grid-template-columns:repeat(2,minmax(0,1fr));');
+    expect(pageBlocksSource).toContain('.igf-testimonial-split__slide { grid-template-columns:minmax(0,1fr);');
+    expect(pageBlocksSource).toContain('.igf-testimonial-split__navigation button:focus-visible');
   });
 });
 
@@ -1102,6 +1252,362 @@ describe('PageBlocks regional event dates', () => {
       .toBe(new Intl.DateTimeFormat('bn-BD', { day: '2-digit', timeZone: 'Asia/Dhaka' }).format(date));
     expect(wrapper.get('.igf-event-cards__date small').text())
       .toBe(new Intl.DateTimeFormat('bn-BD', { month: 'short', timeZone: 'Asia/Dhaka' }).format(date));
+    wrapper.unmount();
+  });
+});
+
+describe('PageBlocks upcoming events and featured news', () => {
+  const upcoming = [
+    {
+      id: 11,
+      content_kind: 'event',
+      heading: 'Community learning day',
+      body: 'Families and volunteers will share a practical day of learning.',
+      image: '/image/community-day.jpg',
+      image_alt: 'Children learning together at a community programme',
+      published_at: '2020-01-01',
+      event_start_at: '2026-10-10T10:00:00+06:00',
+      event_end_at: '2026-10-10T14:00:00+06:00',
+      event_status: 'postponed',
+      event_attendance_mode: 'mixed',
+      location: 'Dhaka Community Centre',
+      url: '/event/community-learning-day',
+    },
+    {
+      id: 12,
+      content_kind: 'event',
+      heading: 'Volunteer orientation',
+      body: 'New volunteers can meet the programme team.',
+      image: '',
+      image_alt: '',
+      event_start_at: '2026-10-18T09:30:00+06:00',
+      event_end_at: '2026-10-19T11:00:00+06:00',
+      event_status: 'rescheduled',
+      event_attendance_mode: 'offline',
+      location: 'Ignite office',
+      url: '/event/volunteer-orientation',
+    },
+    {
+      id: 13,
+      content_kind: 'event',
+      heading: 'Youth workshop',
+      body: 'A workshop led by young community facilitators.',
+      event_start_at: '2026-10-24T13:00:00+06:00',
+      event_status: 'moved-online',
+      event_attendance_mode: 'online',
+      location: '',
+      url: '/event/youth-workshop',
+    },
+    {
+      id: 14,
+      content_kind: 'event',
+      heading: 'Fourth event hidden by the section limit',
+      event_start_at: '2026-11-02T11:00:00+06:00',
+      url: '/event/fourth-event',
+    },
+  ];
+  const news = {
+    id: 21,
+    content_kind: 'article',
+    heading: 'Clean water programme reaches another community',
+    body: 'Local partners opened a dependable new source of clean water.',
+    image: '/image/clean-water.jpg',
+    image_alt: 'Children and local partners beside a clean-water installation',
+    published_at: '2026-09-05',
+    url: '/event/clean-water-programme',
+  };
+  const block = (content = {}) => ({
+    uuid: 'homepage-events-news',
+    type: 'events_news',
+    is_enabled: true,
+    show_on_desktop: true,
+    show_on_mobile: true,
+    content: {
+      eyebrow: 'Stay involved',
+      body: 'Join an upcoming activity or read the latest story from the field.',
+      events_heading: 'Upcoming Events',
+      news_heading: 'Featured News',
+      event_limit: 3,
+      item_link_label: 'Explore details',
+      events_view_all_label: 'View all events',
+      events_view_all_url: '/events',
+      news_view_all_label: 'View all news',
+      news_view_all_url: '/news',
+      cta_label: 'Donate now',
+      cta_url: '/donate',
+      events_empty_state: 'New events will be announced soon.',
+      news_empty_state: 'New stories will appear here soon.',
+      upcoming_events: upcoming,
+      featured_news: news,
+      ...content,
+    },
+  });
+
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
+    setPageSettings({ regional: { date_locale: 'en-GB', timezone: 'Asia/Dhaka' } });
+  });
+
+  test('renders labelled event and news regions from the managed content contract', () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [block()] } });
+    const eventRegion = wrapper.get('.igf-events-news__region--events');
+    const newsRegion = wrapper.get('.igf-events-news__region--news');
+
+    expect(eventRegion.attributes('aria-labelledby')).toBe('igf-events-news-homepage-events-news-events-heading');
+    expect(eventRegion.get('#igf-events-news-homepage-events-news-events-heading').text()).toBe('Upcoming Events');
+    expect(newsRegion.attributes('aria-labelledby')).toBe('igf-events-news-homepage-events-news-news-heading');
+    expect(newsRegion.get('#igf-events-news-homepage-events-news-news-heading').text()).toBe('Featured News');
+    expect(eventRegion.findAll('article.igf-events-news__event')).toHaveLength(3);
+    expect(eventRegion.text()).not.toContain('Fourth event hidden by the section limit');
+    expect(eventRegion.get('img').attributes('alt')).toBe('Children learning together at a community programme');
+    expect(eventRegion.text()).toContain('Dhaka Community Centre');
+    expect(eventRegion.text()).toContain('Postponed');
+    expect(eventRegion.text()).toContain('In person and online');
+    expect(eventRegion.text()).toContain('Families and volunteers will share a practical day of learning.');
+    expect(eventRegion.get('.igf-events-news__item-link').text()).toContain('Explore details');
+    expect(eventRegion.get('.igf-events-news__item-link').attributes('aria-label')).toBe('Explore details: Community learning day');
+    expect(eventRegion.get('.igf-events-news__view-all').attributes('href')).toBe('/events');
+
+    expect(newsRegion.findAll('article.igf-events-news__featured')).toHaveLength(1);
+    expect(newsRegion.get('.igf-events-news__featured-media img').attributes('alt')).toBe('Children and local partners beside a clean-water installation');
+    expect(newsRegion.text()).toContain('Clean water programme reaches another community');
+    expect(newsRegion.get('.igf-events-news__item-link').text()).toContain('Explore details');
+    expect(newsRegion.get('.igf-events-news__item-link').attributes('href')).toBe('/event/clean-water-programme');
+    expect(newsRegion.get('.igf-events-news__view-all').attributes('href')).toBe('/news');
+    expect(newsRegion.get('.igf-events-news__cta').attributes('href')).toBe('/donate');
+    expect(newsRegion.findAll('a a')).toHaveLength(0);
+
+    wrapper.unmount();
+  });
+
+  test('uses the true event start and the news publication date as semantic localized times', () => {
+    const wrapper = mount(PageBlocks, { props: { blocks: [block()] } });
+    const eventTimes = wrapper.get('.igf-events-news__event').findAll('time');
+    const newsTime = wrapper.get('.igf-events-news__featured time');
+    const expectedEventStart = new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Dhaka',
+    }).format(new Date(upcoming[0].event_start_at));
+    const expectedEventEnd = new Intl.DateTimeFormat('en-GB', {
+      hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Dhaka',
+    }).format(new Date(upcoming[0].event_end_at));
+    const expectedNewsDate = new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Dhaka',
+    }).format(new Date(news.published_at));
+
+    expect(eventTimes).toHaveLength(2);
+    expect(eventTimes[0].attributes('datetime')).toBe('2026-10-10T10:00:00+06:00');
+    expect(eventTimes[0].text()).toBe(expectedEventStart);
+    expect(eventTimes[0].text()).not.toContain('2020');
+    expect(eventTimes[1].attributes('datetime')).toBe('2026-10-10T14:00:00+06:00');
+    expect(eventTimes[1].text()).toBe(expectedEventEnd);
+    expect(newsTime.attributes('datetime')).toBe('2026-09-05');
+    expect(newsTime.text()).toBe(expectedNewsDate);
+
+    wrapper.unmount();
+  });
+
+  test('keeps event metadata compact while exposing meaningful status and attendance changes', () => {
+    const scheduledAtVenue = {
+      ...upcoming[0],
+      id: 31,
+      event_end_at: null,
+      event_status: 'scheduled',
+      event_attendance_mode: 'offline',
+    };
+    const movedOnline = {
+      ...upcoming[2],
+      id: 32,
+    };
+    const wrapper = mount(PageBlocks, {
+      props: { blocks: [block({ event_limit: 2, upcoming_events: [scheduledAtVenue, movedOnline] })] },
+    });
+    const cards = wrapper.findAll('.igf-events-news__event');
+
+    expect(cards[0].find('.igf-events-news__status').exists()).toBe(false);
+    expect(cards[0].find('.igf-events-news__attendance').exists()).toBe(false);
+    expect(cards[0].text()).toContain('Dhaka Community Centre');
+    expect(cards[1].get('.igf-events-news__status').text()).toContain('Moved online');
+    expect(cards[1].get('.igf-events-news__attendance').text()).toContain('Online');
+
+    wrapper.unmount();
+  });
+
+  test('shows independent empty states for either managed source', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          { ...block({ upcoming_events: [] }), uuid: 'events-news-without-events' },
+          { ...block({ featured_news: null }), uuid: 'events-news-without-news' },
+        ],
+      },
+    });
+
+    const emptyStates = wrapper.findAll('.igf-dynamic-empty').map(item => item.text());
+    expect(emptyStates).toEqual(['New events will be announced soon.', 'New stories will appear here soon.']);
+
+    wrapper.unmount();
+  });
+
+  test('keeps featured content but drops active schemes and literal or encoded backslash links', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [block({
+          upcoming_events: [{ ...upcoming[0], url: String.raw`\\attacker.test/event` }],
+          featured_news: { ...news, url: '/%5c%5cattacker.test/story' },
+          events_view_all_url: 'javascript:alert(1)',
+          news_view_all_url: 'data:text/html,bad',
+          cta_url: String.raw`\attacker.test\donate`,
+        })],
+      },
+    });
+
+    expect(wrapper.find('.igf-events-news__featured').exists()).toBe(true);
+    expect(wrapper.findAll('.igf-events-news__item-link')).toHaveLength(0);
+    expect(wrapper.findAll('.igf-events-news__view-all')).toHaveLength(0);
+    expect(wrapper.find('.igf-events-news__cta').exists()).toBe(false);
+    expect(wrapper.html()).not.toContain('javascript:');
+    expect(wrapper.html()).not.toContain('data:text');
+    expect(wrapper.html().toLowerCase()).not.toContain('%5c');
+    expect(wrapper.html()).not.toContain('attacker.test');
+
+    wrapper.unmount();
+  });
+
+  test('uses localized client-managed event labels and Bangla fallbacks without English defaults', () => {
+    setPageSettings({
+      locale: 'bn',
+      regional: { date_locale: 'bn-BD', timezone: 'Asia/Dhaka' },
+      contentArchives: {
+        event_start_label: 'শুরু হবে',
+        event_end_label: 'শেষ হবে',
+        event_status_label: 'বর্তমান অবস্থা',
+        event_status_postponed_label: 'পরে অনুষ্ঠিত হবে',
+        event_attendance_label: 'অংশ নেওয়ার ধরন',
+        event_attendance_mixed_label: 'সরাসরি এবং অনলাইন',
+        event_card_link_label: 'বিস্তারিত দেখুন',
+      },
+    });
+    const localizedEvent = {
+      ...upcoming[0],
+      heading: 'কমিউনিটি শিক্ষা দিবস',
+      body: '',
+      link_label: '',
+    };
+    const localizedNews = {
+      ...news,
+      heading: 'কমিউনিটির নতুন সংবাদ',
+      body: '',
+      link_label: '',
+    };
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [block({
+          eyebrow: '',
+          body: '',
+          events_heading: '',
+          news_heading: '',
+          item_link_label: '',
+          upcoming_events: [localizedEvent],
+          featured_news: localizedNews,
+        })],
+      },
+    });
+
+    expect(wrapper.get('.igf-events-news__region--events h2').text()).toBe('আসন্ন ইভেন্ট');
+    expect(wrapper.get('.igf-events-news__region--news h2').text()).toBe('বিশেষ সংবাদ');
+    expect(wrapper.get('.igf-events-news__status').text()).toContain('পরে অনুষ্ঠিত হবে');
+    expect(wrapper.get('.igf-events-news__meta').text()).toContain('সরাসরি এবং অনলাইন');
+    expect(wrapper.get('.igf-events-news__status .sr-only').text()).toBe('বর্তমান অবস্থা:');
+    expect(wrapper.get('.igf-events-news__attendance .sr-only').text()).toBe('অংশ নেওয়ার ধরন:');
+    expect(wrapper.get('.igf-events-news__schedule').findAll('.sr-only').map(label => label.text())).toEqual([
+      'শুরু হবে:', 'শেষ হবে:',
+    ]);
+    expect(wrapper.findAll('.igf-events-news__item-link').map(link => link.text())).toEqual([
+      'বিস্তারিত দেখুন →', 'বিস্তারিত দেখুন →',
+    ]);
+
+    wrapper.unmount();
+
+    const emptyWrapper = mount(PageBlocks, {
+      props: {
+        blocks: [block({
+          eyebrow: '', body: '', events_heading: '', news_heading: '',
+          events_empty_state: '', news_empty_state: '',
+          upcoming_events: [], featured_news: null,
+        })],
+      },
+    });
+    expect(emptyWrapper.findAll('.igf-dynamic-empty').map(item => item.text())).toEqual([
+      'নতুন ইভেন্ট শিগগিরই ঘোষণা করা হবে।',
+      'নতুন গল্প শিগগিরই এখানে প্রকাশিত হবে।',
+    ]);
+    emptyWrapper.unmount();
+  });
+
+  test('preserves the classic events grid and legacy manual updates renderer', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          {
+            uuid: 'classic-events', type: 'events',
+            content: { heading: 'Classic events', items: [{ heading: 'Classic card', published_at: '2026-10-10', url: '/event/classic' }] },
+          },
+          {
+            uuid: 'legacy-updates', type: 'cards',
+            content: { variant: 'updates', heading: 'Legacy updates', items: [{ eyebrow: 'Latest news', heading: 'Legacy news', url: '/event/legacy' }] },
+          },
+          block(),
+        ],
+      },
+    });
+
+    expect(wrapper.findAll('.igf-event-cards')).toHaveLength(1);
+    expect(wrapper.findAll('.igf-update-columns')).toHaveLength(1);
+    expect(wrapper.findAll('.igf-events-news__grid')).toHaveLength(1);
+    expect(wrapper.findAll('.igf-update-columns > div')[1].get('header a').attributes('href')).toBe('/news');
+
+    wrapper.unmount();
+  });
+
+  test('ships the two-column reference layout and responsive stack treatments', () => {
+    expect(pageBlocksSource).toContain('.igf-events-news__grid { display:grid; grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);');
+    expect(pageBlocksSource).toContain('@media (max-width:960px)');
+    expect(pageBlocksSource).toContain('.igf-events-news__grid { grid-template-columns:minmax(0,1fr); gap:64px; }');
+    expect(pageBlocksSource).toContain('@media (max-width:600px)');
+    expect(pageBlocksSource).toContain('.igf-events-news__featured { min-height:0; grid-template-columns:minmax(0,1fr); }');
+    expect(pageBlocksSource).toContain('@media (max-width:520px)');
+    expect(pageBlocksSource).toContain('.igf-events-news__event { grid-template-columns:minmax(0,1fr); }');
+    expect(pageBlocksSource).toContain('.igf-events-news :is(a,.igf-button):focus-visible');
+  });
+
+  test('renders the contrast presentation with readable light cards, empty states, and surface-aware links', () => {
+    const wrapper = mount(PageBlocks, {
+      props: {
+        blocks: [
+          block({ section_presentation: 'contrast' }),
+          {
+            ...block({ section_presentation: 'contrast', upcoming_events: [], featured_news: null }),
+            uuid: 'contrast-events-news-empty',
+          },
+        ],
+      },
+    });
+
+    wrapper.findAll('section.igf-page-block--events_news').forEach(section => {
+      expect(section.classes()).toContain('igf-page-block--presentation-contrast');
+    });
+    expect(wrapper.find('.igf-events-news__featured').exists()).toBe(true);
+    expect(wrapper.findAll('.igf-page-block--presentation-contrast .igf-dynamic-empty')).toHaveLength(2);
+    expect(pageBlocksSource).toContain('.igf-page-block--presentation-contrast .igf-events-news__featured {');
+    expect(pageBlocksSource).toContain('.igf-page-block--presentation-contrast .igf-events-news .igf-dynamic-empty {');
+    expect(pageBlocksSource).toContain('.igf-page-block--presentation-contrast .igf-events-news :is(.igf-events-news__event .igf-events-news__item-link,.igf-events-news__view-all) { color:#ffc28f; }');
+    expect(pageBlocksSource).toContain('.igf-events-news__cta { width:100%; min-width:0; min-height:54px; margin-top:28px; justify-content:space-between; padding:0 22px; border-radius:14px; color:#fff;');
+    expect(pageBlocksSource).toMatch(/\.igf-events-news__cta \{[^}]*white-space:nowrap;/);
+    expect(pageBlocksSource).toContain('.igf-events-news__cta:hover>span { transform:translateX(4px); }');
+    expect(pageBlocksSource).toContain('.igf-events-news__cta { min-height:52px; }');
+    expect(pageBlocksSource).toContain('.igf-events-news :is(a,.igf-button):focus-visible { outline:3px solid #773400;');
+    expect(pageBlocksSource).toContain('.igf-page-block--presentation-contrast .igf-events-news__featured :is(a,.igf-button):focus-visible { outline-color:#773400; }');
+
     wrapper.unmount();
   });
 });

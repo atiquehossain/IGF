@@ -762,8 +762,9 @@ class IgniteParityContentSeeder extends Seeder
             ]],
             ['uuid' => '67000000-0000-4000-8000-000000000003', 'name' => 'Our Work', 'link' => 'custom', 'slug' => '#', 'order' => 2, 'children' => [
                 ['uuid' => '68000000-0003-4000-8000-000000000001', 'name' => 'Program Overview', 'link' => 'frontend.category', 'slug' => 'our-causes', 'order' => 0],
-                ['uuid' => '68000000-0003-4000-8000-000000000002', 'name' => 'Inclusive Education', 'link' => 'frontend.page', 'slug' => 'education', 'order' => 1],
-                ['uuid' => '68000000-0003-4000-8000-000000000003', 'name' => 'Visit Ignite School', 'link' => 'frontend.category', 'slug' => 'visit-ignite-school', 'order' => 2],
+                ['uuid' => '68000000-0003-4000-8000-000000000002', 'name' => 'Inclusive Education', 'link' => 'frontend.page', 'slug' => 'education', 'order' => 1, 'children' => [
+                    ['uuid' => '68000000-0003-4000-8000-000000000003', 'name' => 'Visit Ignite School', 'link' => 'frontend.category', 'slug' => 'visit-ignite-school', 'order' => 0],
+                ]],
                 ['uuid' => '68000000-0003-4000-8000-000000000004', 'name' => 'Youth Development', 'link' => 'frontend.page', 'slug' => 'youth-development', 'order' => 3, 'children' => [
                     ['uuid' => self::WORKSHOP_MENU_UUIDS[0], 'name' => 'Workshop', 'link' => 'frontend.workshops.index', 'slug' => null, 'order' => 0, 'workshop' => true],
                 ]],
@@ -778,7 +779,8 @@ class IgniteParityContentSeeder extends Seeder
             ]],
             ['uuid' => '67000000-0000-4000-8000-000000000005', 'name' => 'News & Stories', 'link' => 'custom', 'slug' => '#', 'order' => 4, 'children' => [
                 ['uuid' => '68000000-0005-4000-8000-000000000001', 'name' => 'Stories', 'link' => 'frontend.category', 'slug' => 'stories', 'order' => 0],
-                ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events & News', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
+                ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
+                ['uuid' => '68000000-0005-4000-8000-000000000003', 'name' => 'News', 'link' => 'frontend.news', 'slug' => null, 'order' => 2],
             ]],
             ['uuid' => '67000000-0000-4000-8000-000000000006', 'name' => 'Donate', 'link' => 'custom', 'slug' => '#', 'order' => 5, 'children' => [
                 ['uuid' => '68000000-0006-4000-8000-000000000001', 'name' => 'Make a Donation', 'link' => 'frontend.donate.direct', 'slug' => null, 'order' => 0],
@@ -1191,8 +1193,27 @@ class IgniteParityContentSeeder extends Seeder
                     ['status' => 'Current', 'location' => 'Bangladesh', 'heading' => 'Project ONNO', 'body' => 'Food security and emergency meals for families facing hardship.', 'image' => self::MEDIA . 'rsz-edited-size-630-e2949cd0a7-398-px-e13-1-f7f7e3a09ec6.jpg', 'image_alt' => 'Volunteers preparing food assistance', 'url' => '/page/project-onno'],
                 ],
             ]],
-            ['44444444-4444-4444-8444-000000000007', 'events', 'Events and News', ['eyebrow' => 'Stay involved', 'heading' => 'Events & latest news', 'limit' => 3]],
-            ['44444444-4444-4444-8444-000000000013', 'testimonials', 'Community Stories', ['eyebrow' => 'Voices from our community', 'heading' => 'Stories of change', 'limit' => 5]],
+            ['44444444-4444-4444-8444-000000000007', 'events_news', 'Upcoming Events and Featured News', [
+                'eyebrow' => 'Stay connected',
+                'body' => '',
+                'events_heading' => 'Upcoming events',
+                'news_heading' => 'Featured news',
+                'content_source' => 'events_news',
+                'events_selection_mode' => 'automatic',
+                'selected_event_ids' => [],
+                'event_limit' => 3,
+                'featured_news_id' => '',
+                'item_link_label' => 'Learn more',
+                'events_view_all_label' => 'View all events',
+                'events_view_all_url' => '/events',
+                'news_view_all_label' => 'View all news',
+                'news_view_all_url' => '/news',
+                'cta_label' => 'Donate now',
+                'cta_url' => '/donate',
+                'events_empty_state' => 'New events will be announced soon.',
+                'news_empty_state' => 'New stories will appear here soon.',
+            ]],
+            ['44444444-4444-4444-8444-000000000013', 'testimonials', 'Community Stories', ['eyebrow' => 'Voices from our community', 'heading' => 'Stories of change', 'display_style' => 'split', 'limit' => 5]],
             ['44444444-4444-4444-8444-000000000014', 'cards', 'Awards and Recognition', [
                 'variant' => 'awards', 'eyebrow' => 'Recognition', 'heading' => 'Awards & recognition', 'view_all_label' => 'View all', 'view_all_url' => '/category/awards-&-recognition',
                 'content_source' => 'category', 'category_slug' => 'awards-&-recognition', 'selection_mode' => 'automatic',

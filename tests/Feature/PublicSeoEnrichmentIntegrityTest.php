@@ -302,6 +302,7 @@ class PublicSeoEnrichmentIntegrityTest extends TestCase
             NoticeBoard::create([
                 'title' => "Event {$locale} {$index}",
                 'slug' => "event-{$locale}-{$index}",
+                'content_kind' => 'event',
                 'language' => $locale,
                 'published_at' => now()->subDays($index),
                 'order_by' => $index,

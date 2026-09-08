@@ -42,6 +42,19 @@ class PageBuilderController extends Controller
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
+    private const TEAM_DIRECTORY_DIVISION_KEYS = [
+        'rangpur',
+        'rajshahi',
+        'mymensingh',
+        'sylhet',
+        'khulna',
+        'dhaka',
+        'barishal',
+        'chattogram',
+    ];
+
+    private const TEAM_DIRECTORY_MAP_MAX_BYTES = 1048576;
+
     public function __construct(
         private PageRevisionService $revisions,
         private ContentSanitizer $sanitizer,
@@ -1218,6 +1231,25 @@ class PageBuilderController extends Controller
                 'string',
                 Rule::in(array_keys(config('page-builder.testimonial_presentations', []))),
             ],
+            'content.team_presentation' => [
+                'sometimes',
+                'string',
+                Rule::in(array_merge(
+                    array_keys(config('page-builder.team_presentations', [])),
+                    ['map_directory', 'list', 'compact']
+                )),
+            ],
+            'content.show_map' => ['sometimes', 'boolean'],
+            'content.map_position' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.team_map_position_options', []))),
+            ],
+            'content.profile_behavior' => [
+                'sometimes',
+                'string',
+                Rule::in(array_keys(config('page-builder.team_profile_behavior_options', []))),
+            ],
             'content.section_presentation' => [
                 'sometimes',
                 'string',
@@ -1340,6 +1372,11 @@ class PageBuilderController extends Controller
         if (array_key_exists('display_style', $content) && $type !== 'testimonials') {
             $errors[$errorPrefix . '.display_style'] = 'This testimonial layout choice is only available for community story sections.';
         }
+        foreach (['team_presentation', 'show_map', 'map_position', 'profile_behavior'] as $field) {
+            if (array_key_exists($field, $content) && $type !== 'team') {
+                $errors[$errorPrefix . '.' . $field] = 'This setting is only available for leadership and team sections.';
+            }
+        }
         if (array_key_exists('layout', $content) && $type !== 'ways_to_give') {
             $errors[$errorPrefix . '.layout'] = 'This layout choice is only available for Ways to Give sections.';
         }
@@ -1383,6 +1420,10 @@ class PageBuilderController extends Controller
     ): array {
         if ($type === 'layout') {
             $content = $this->layoutBlocks->normalizeAndValidate($content, $errorPrefix);
+        }
+
+        if ($type === 'team' && ($content['team_presentation'] ?? null) === 'map_directory') {
+            $content['team_presentation'] = 'directory_map';
         }
 
         $this->validateBlockContentForType($type, $content, $errorPrefix);
@@ -2319,6 +2360,8 @@ class PageBuilderController extends Controller
         $teamOption = function (LatestNews $member): array {
             $name = trim((string) $member->name);
             $description = trim((string) $member->description);
+            $divisionName = trim((string) $member->division?->name);
+            $divisionSlug = trim((string) $member->division?->slug);
 
             return [
                 'value' => (string) $member->id,
@@ -2333,6 +2376,16 @@ class PageBuilderController extends Controller
                 'group_id' => $member->teamGroup ? (int) $member->teamGroup->id : null,
                 'group_name' => $member->teamGroup ? (string) $member->teamGroup->name : '',
                 'group_slug' => $member->teamGroup ? (string) $member->teamGroup->slug : '',
+                'division_id' => $member->division ? (int) $member->division->id : null,
+                'division_slug' => $divisionSlug,
+                'division_name' => $divisionName,
+                'division_label' => $divisionName,
+                'division' => $member->division ? [
+                    'id' => (int) $member->division->id,
+                    'slug' => $divisionSlug,
+                    'name' => $divisionName,
+                    'label' => $divisionName,
+                ] : null,
                 'featured_order' => (int) ($member->order_by ?? 0),
                 'sort_id' => (int) $member->id,
             ];
@@ -2393,6 +2446,12 @@ class PageBuilderController extends Controller
                 'sections' => config('page-builder.section_presentations', []),
                 'causes' => config('page-builder.cause_presentations', []),
                 'testimonials' => config('page-builder.testimonial_presentations', []),
+                'team' => config('page-builder.team_presentations', []),
+            ],
+            'team_directory' => [
+                'map_positions' => config('page-builder.team_map_position_options', []),
+                'profile_behaviors' => config('page-builder.team_profile_behavior_options', []),
+                'map' => $this->teamDirectoryMapOptions(),
             ],
             'design' => [
                 'section_spacing' => config('page-builder.section_spacing_options', []),
@@ -2463,10 +2522,13 @@ class PageBuilderController extends Controller
                                 ->where('status', 1)
                                 ->where('language', $locale));
                     })
-                    ->with('teamGroup:id,name,slug,status,language')
+                    ->with([
+                        'teamGroup:id,name,slug,status,language',
+                        'division:id,name,slug,status',
+                    ])
                     ->orderBy('name')
                     ->get([
-                        'id', 'team_group_id', 'name', 'description', 'biography', 'qualification',
+                        'id', 'team_group_id', 'division_id', 'name', 'description', 'biography', 'qualification',
                         'image', 'path', 'url', 'order_by',
                     ])
                     ->map($teamOption)
@@ -2562,6 +2624,115 @@ class PageBuilderController extends Controller
                 return $managed;
             })
             ->all();
+    }
+
+    /**
+     * Return only the small, display-safe subset of the bundled map contract.
+     * The source metadata remains in the JSON asset for provenance, while the
+     * editor receives no unchecked SVG markup or arbitrary attributes.
+     *
+     * @return array{viewBox: string, divisions: list<array{
+     *     key: string,
+     *     names: array{en: string, bn: string},
+     *     path: string,
+     *     labelX: int|float,
+     *     labelY: int|float
+     * }>}
+     */
+    private function teamDirectoryMapOptions(): array
+    {
+        $fallback = ['viewBox' => '0 0 420 560', 'divisions' => []];
+        $filename = resource_path('data/bangladesh-divisions.json');
+        $size = is_file($filename) ? filesize($filename) : false;
+        if ($size === false || $size < 1 || $size > self::TEAM_DIRECTORY_MAP_MAX_BYTES) {
+            return $fallback;
+        }
+
+        $json = file_get_contents($filename);
+        if (!is_string($json) || $json === '') {
+            return $fallback;
+        }
+
+        $decoded = json_decode($json, true, 32);
+        if (!is_array($decoded) || json_last_error() !== JSON_ERROR_NONE) {
+            return $fallback;
+        }
+
+        $viewBox = trim((string) ($decoded['viewBox'] ?? ''));
+        $viewBoxParts = preg_split('/\s+/', $viewBox) ?: [];
+        if (count($viewBoxParts) !== 4 || collect($viewBoxParts)->contains(
+            static fn (string $part): bool => !is_numeric($part) || !is_finite((float) $part)
+        )) {
+            return $fallback;
+        }
+
+        [$minimumX, $minimumY, $width, $height] = array_map('floatval', $viewBoxParts);
+        if ($width <= 0 || $height <= 0 || max(array_map('abs', [$minimumX, $minimumY, $width, $height])) > 100000) {
+            return $fallback;
+        }
+
+        $rawDivisions = $decoded['divisions'] ?? null;
+        if (!is_array($rawDivisions) || count($rawDivisions) !== count(self::TEAM_DIRECTORY_DIVISION_KEYS)) {
+            return $fallback;
+        }
+
+        $divisions = [];
+        $seen = [];
+        foreach ($rawDivisions as $division) {
+            if (!is_array($division)) {
+                return $fallback;
+            }
+
+            $key = trim((string) ($division['key'] ?? ''));
+            $englishName = trim((string) data_get($division, 'names.en', ''));
+            $banglaName = trim((string) data_get($division, 'names.bn', ''));
+            $path = trim((string) ($division['path'] ?? ''));
+            $labelX = $division['labelX'] ?? null;
+            $labelY = $division['labelY'] ?? null;
+            if (!in_array($key, self::TEAM_DIRECTORY_DIVISION_KEYS, true)
+                || isset($seen[$key])
+                || $englishName === ''
+                || $banglaName === ''
+                || mb_strlen($englishName) > 80
+                || mb_strlen($banglaName) > 80
+                || $path === ''
+                || strlen($path) > 262144
+                || preg_match('/\A[Mm]/', $path) !== 1
+                || preg_match('/[Zz]/', $path) !== 1
+                || preg_match('/\A[MmZzLlHhVvCcSsQqTtAaEe0-9+.,\s-]+\z/', $path) !== 1
+                || !is_numeric($labelX)
+                || !is_numeric($labelY)
+                || !is_finite((float) $labelX)
+                || !is_finite((float) $labelY)) {
+                return $fallback;
+            }
+
+            $labelX = (float) $labelX;
+            $labelY = (float) $labelY;
+            if ($labelX < $minimumX || $labelX > $minimumX + $width
+                || $labelY < $minimumY || $labelY > $minimumY + $height) {
+                return $fallback;
+            }
+
+            $seen[$key] = true;
+            $divisions[] = [
+                'key' => $key,
+                'names' => ['en' => $englishName, 'bn' => $banglaName],
+                'path' => $path,
+                'labelX' => floor($labelX) === $labelX ? (int) $labelX : $labelX,
+                'labelY' => floor($labelY) === $labelY ? (int) $labelY : $labelY,
+            ];
+        }
+
+        $keys = array_keys($seen);
+        $expectedKeys = self::TEAM_DIRECTORY_DIVISION_KEYS;
+        sort($keys);
+        sort($expectedKeys);
+        if ($keys !== $expectedKeys) {
+            return $fallback;
+        }
+
+        return ['viewBox' => $viewBox, 'divisions' => $divisions];
     }
 
     private function builderPublicImage(?string $value, string $legacyDirectory): string

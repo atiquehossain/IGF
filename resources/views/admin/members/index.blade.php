@@ -203,6 +203,32 @@
                                         @if($errors->has('team_group_id'))<small class="help-block form-text text-danger">{{ $errors->first('team_group_id') }}</small>@endif
                                     </div>
 
+                                    <div class="form-group has-success">
+                                        <label for="division_id">Primary work division (optional)</label>
+                                        <select id="division_id" class="form-control" name="division_id">
+                                            <option value="">National (shown across Bangladesh)</option>
+                                            @foreach($divisions as $division)
+                                                <option value="{{ $division->id }}" @selected((string) old('division_id') === (string) $division->id)>{{ $division->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <small class="form-text text-muted">Choose where this person works. This is a public program responsibility, not a home address.</small>
+                                        @if($errors->has('division_id'))<small class="help-block form-text text-danger">{{ $errors->first('division_id') }}</small>@endif
+                                    </div>
+
+                                    <div class="form-group has-success">
+                                        <label for="district_id">Primary work district (optional)</label>
+                                        <select id="district_id" class="form-control" name="district_id">
+                                            <option value="">Entire selected division</option>
+                                            @foreach($districts as $district)
+                                                <option value="{{ $district->id }}" data-division-id="{{ $district->division_id }}" @selected((string) old('district_id') === (string) $district->id)>{{ $district->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <small class="form-text text-muted">Choose a division first. Leave this blank for division-wide work.</small>
+                                        @if($errors->has('district_id'))<small class="help-block form-text text-danger">{{ $errors->first('district_id') }}</small>@endif
+                                    </div>
+
+                                    <div id="create_directory_scope_summary" class="alert alert-light border py-2" role="status" aria-live="polite"></div>
+
 
                                     <div class="form-group has-success">
                                         <label for="qualification" class="control-label mb-1">Qualification</label>
@@ -303,6 +329,7 @@
                                 <th width="20%" class="avatar"><strong>{{ $Lang->Common->Form->Avatar }} </strong></th>
                                 <th width="20%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
                                 <th width="15%"><strong>Group</strong></th>
+                                <th width="15%"><strong>Directory scope</strong></th>
                                 <th width="35%"><strong>{{ $Lang->Common->Form->Designation }}</strong></th>
                                 <th width="25%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                             </tr>
@@ -321,6 +348,16 @@
 
                                 <td> <span class="name">{{@$news->name}}</span> </td>
                                 <td><span>{{ $news->teamGroup?->name ?: 'Unassigned' }}</span></td>
+                                <td>
+                                    @if($news->district && $news->division)
+                                        <span class="badge badge-light">{{ $news->division->name }}</span>
+                                        <small class="d-block mt-1">{{ $news->district->name }} District</small>
+                                    @elseif($news->division)
+                                        <span class="badge badge-light">{{ $news->division->name }} Division</span>
+                                    @else
+                                        <span class="badge badge-light">National</span>
+                                    @endif
+                                </td>
                                 <td> <span>{{@$news->description}}</span> </td>
                                 <td>
                                     @if($canEditMembers)
@@ -422,6 +459,32 @@
                         @if($errors->has('team_group_id'))<small class="help-block form-text text-danger">{{ $errors->first('team_group_id') }}</small>@endif
                     </div>
 
+                    <div class="form-group has-success">
+                        <label for="e_division_id">Primary work division (optional)</label>
+                        <select id="e_division_id" class="form-control" name="division_id">
+                            <option value="">National (shown across Bangladesh)</option>
+                            @foreach($divisions as $division)
+                                <option value="{{ $division->id }}" @selected((string) old('division_id') === (string) $division->id)>{{ $division->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">Choose where this person works. This is a public program responsibility, not a home address.</small>
+                        @if($errors->has('division_id'))<small class="help-block form-text text-danger">{{ $errors->first('division_id') }}</small>@endif
+                    </div>
+
+                    <div class="form-group has-success">
+                        <label for="e_district_id">Primary work district (optional)</label>
+                        <select id="e_district_id" class="form-control" name="district_id">
+                            <option value="">Entire selected division</option>
+                            @foreach($districts as $district)
+                                <option value="{{ $district->id }}" data-division-id="{{ $district->division_id }}" @selected((string) old('district_id') === (string) $district->id)>{{ $district->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">Choose a division first. Leave this blank for division-wide work.</small>
+                        @if($errors->has('district_id'))<small class="help-block form-text text-danger">{{ $errors->first('district_id') }}</small>@endif
+                    </div>
+
+                    <div id="edit_directory_scope_summary" class="alert alert-light border py-2" role="status" aria-live="polite"></div>
+
 
                     <div class="form-group has-success">
                         <label for="e_qualification" class="control-label mb-1">Qualification</label>
@@ -508,6 +571,44 @@
         var oldSocialLinks = @json(array_values((array) old('social_links', [])));
         var oldMemberId = @json(old('id'));
 
+        function syncDirectoryScope(scope, preferredDistrict) {
+            var prefix = scope === 'edit' ? 'e_' : '';
+            var division = $('#' + prefix + 'division_id');
+            var district = $('#' + prefix + 'district_id');
+            var summary = $('#' + scope + '_directory_scope_summary');
+            var divisionId = String(division.val() || '');
+            var districtId = preferredDistrict === undefined
+                ? String(district.val() || '')
+                : String(preferredDistrict || '');
+
+            district.find('option[data-division-id]').each(function () {
+                var available = divisionId !== '' && String($(this).data('division-id')) === divisionId;
+                $(this).prop('disabled', !available).prop('hidden', !available);
+            });
+
+            var preferredOption = district.find('option[value="' + districtId + '"]');
+            if (districtId !== '' && preferredOption.length && !preferredOption.prop('disabled')) {
+                district.val(districtId);
+            } else {
+                district.val('');
+            }
+
+            district.prop('disabled', divisionId === '');
+            district.find('option[value=""]').text(
+                divisionId === '' ? 'Choose a division first' : 'Entire selected division'
+            );
+
+            var divisionName = division.find('option:selected').text().trim();
+            var districtName = district.find('option:selected').text().trim();
+            if (divisionId === '') {
+                summary.html('<strong>Directory scope:</strong> National — this profile can appear in the countrywide directory.');
+            } else if (district.val()) {
+                summary.html('<strong>Directory scope:</strong> ' + $('<div>').text(districtName + ' District, ' + divisionName + ' Division').html() + '.');
+            } else {
+                summary.html('<strong>Directory scope:</strong> ' + $('<div>').text(divisionName + ' Division').html() + ' — all districts in this division.');
+            }
+        }
+
         function addSocialLink(scope, link) {
             if (!socialContainers[scope]) {
                 return;
@@ -566,6 +667,13 @@
 
         hydrateSocialLinks('create', oldMemberId ? [] : oldSocialLinks);
         hydrateSocialLinks('edit', oldMemberId ? oldSocialLinks : []);
+        syncDirectoryScope('create', @json(old('district_id')));
+        syncDirectoryScope('edit', @json(old('district_id')));
+
+        $('#division_id').on('change', function () { syncDirectoryScope('create'); });
+        $('#district_id').on('change', function () { syncDirectoryScope('create'); });
+        $('#e_division_id').on('change', function () { syncDirectoryScope('edit'); });
+        $('#e_district_id').on('change', function () { syncDirectoryScope('edit'); });
 
         @if($canEditMembers)
         if (oldMemberId) {
@@ -579,7 +687,9 @@
             if (form) {
                 form.reset();
             }
-            hydrateSocialLinks($(this).closest('.fileUploadFormEdit').length ? 'edit' : 'create', []);
+            var scope = $(this).closest('.fileUploadFormEdit').length ? 'edit' : 'create';
+            hydrateSocialLinks(scope, []);
+            syncDirectoryScope(scope, '');
         });
 
         @if($canEditMembers)
@@ -602,6 +712,8 @@
                         form.find('#e_name').val(res.data.name);
                         form.find('#e_designation').val(res.data.description || '');
                         form.find('#e_team_group_id').val(String(res.data.team_group_id || ''));
+                        form.find('#e_division_id').val(String(res.data.division_id || ''));
+                        syncDirectoryScope('edit', res.data.district_id || '');
                         form.find('#e_qualification').val(res.data.qualification || '');
                         form.find('#e_biography').val(res.data.biography || '');
                         form.find('#e_order_by').val(res.data.order_by || 0);

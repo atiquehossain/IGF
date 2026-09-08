@@ -43,6 +43,8 @@
                                         @endif
                                     </div>
 
+                                    @include('admin.district._heroes_fields', ['fieldPrefix' => '', 'editing' => false])
+
                                     <div class="form-actions form-group text-right">
                                         <button type="submit" class="btn igf-btn igf-btn-primary submit_ mt-3"><i class="fa fa-plus" aria-hidden="true"></i> Create district</button>
                                         <button type="button" class="btn igf-btn igf-btn-secondary cancel mt-3"><i class="fa fa-times" aria-hidden="true"></i>&nbsp;{{ $Lang->Common->Cancel }}</button>
@@ -82,8 +84,9 @@
                         <thead>
                             <tr>
                                 <th width="10%" class="serial"><strong>#{{ $Lang->Common->Form->ID }} </strong></th>
-                                <th width="35%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
-                                <th width="30%"><strong>{{ $Lang->DivisionTitle }}</strong></th>
+                                <th width="25%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
+                                <th width="20%"><strong>{{ $Lang->DivisionTitle }}</strong></th>
+                                <th width="20%"><strong>Public-page content</strong></th>
                                 <th width="25%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                             </tr>
                         </thead>
@@ -93,6 +96,12 @@
                                 <td> #{{@$district->id}} </td>
                                 <td> <span class="name">{{@$district->name}}</span> </td>
                                 <td> <span class="name">{{@$district->division->name}}</span> </td>
+                                <td>
+                                    <small class="text-muted d-block">/{{ $district->slug }}</small>
+                                    <span class="badge badge-{{ filled($district->description) ? 'success' : 'secondary' }}">EN {{ filled($district->description) ? 'ready' : 'empty' }}</span>
+                                    <span class="badge badge-{{ filled($district->description_bn) ? 'success' : 'secondary' }}">BN {{ filled($district->description_bn) ? 'ready' : 'empty' }}</span>
+                                    <span class="badge badge-{{ filled($district->hero_image) ? 'success' : 'secondary' }}">Image {{ filled($district->hero_image) ? 'ready' : 'empty' }}</span>
+                                </td>
                                 <td>
                                     <?=App\Link::action(@$district->id, @$district->status, 'district ' . ($district->name ?? '')) ?>
                                 </td>
@@ -147,6 +156,14 @@
                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                         @endif
                     </div>
+
+                    <div class="form-group">
+                        <label for="e_slug" class="control-label mb-1">Website address</label>
+                        <input id="e_slug" type="text" class="form-control" readonly aria-describedby="e-district-slug-help">
+                        <small id="e-district-slug-help" class="form-text text-muted">Kept stable automatically so existing links do not break.</small>
+                    </div>
+
+                    @include('admin.district._heroes_fields', ['fieldPrefix' => 'e_', 'editing' => true])
 
                 </div>
                 <div class="modal-footer">
@@ -203,6 +220,17 @@
                     $('.modal #e_id').val(res.data.id);
                     $('.modal #e_name').val(res.data.name);
                     $('.modal #e_division_id').val(res.data.division_id);
+                    $('.modal #e_slug').val('/meet-the-heroes/district/' + (res.data.slug || ''));
+                    $('.modal #e_description').val(res.data.description || '');
+                    $('.modal #e_description_bn').val(res.data.description_bn || '');
+                    $('.modal #e_hero_image_alt').val(res.data.hero_image_alt || '');
+                    $('.modal #e_hero_image_alt_bn').val(res.data.hero_image_alt_bn || '');
+                    $('.modal #e_hero_image_media_uuid').val(res.data.hero_image_media_uuid || '');
+                    $('.modal #e_remove_hero_image').prop('checked', false);
+                    setDistrictImagePreview(
+                        document.getElementById('e_hero_image_preview'),
+                        res.data.hero_image_url || ''
+                    );
 
                 }
                 spinner.hide();
@@ -213,6 +241,35 @@
             }
         });
 
+    });
+
+    function setDistrictImagePreview(preview, url) {
+        if (!preview) return;
+        preview.src = url || '';
+        preview.style.display = url ? '' : 'none';
+    }
+
+    $('[data-district-media-select]').on('change', function () {
+        var option = this.options[this.selectedIndex];
+        var previewId = this.id.indexOf('e_') === 0 ? 'e_hero_image_preview' : 'hero_image_preview';
+        setDistrictImagePreview(document.getElementById(previewId), option ? (option.dataset.imageUrl || '') : '');
+        if (this.value) {
+            var uploadId = this.id.indexOf('e_') === 0 ? 'e_hero_image_upload' : 'hero_image_upload';
+            var upload = document.getElementById(uploadId);
+            if (upload) upload.value = '';
+        }
+    });
+
+    $('[data-district-image-upload]').on('change', function () {
+        var file = this.files && this.files[0];
+        if (!file) return;
+        var preview = document.getElementById(this.dataset.previewId);
+        var reader = new FileReader();
+        reader.onload = function (event) { setDistrictImagePreview(preview, event.target.result); };
+        reader.readAsDataURL(file);
+        var mediaId = this.id.indexOf('e_') === 0 ? 'e_hero_image_media_uuid' : 'hero_image_media_uuid';
+        var media = document.getElementById(mediaId);
+        if (media) media.value = '';
     });
 </script>
 

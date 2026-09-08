@@ -100,10 +100,10 @@ class ProfilePictureUploadSecurityTest extends TestCase
     {
         $user = $this->activeUser();
         $this->actingAs($user);
-        $division = Division::create(['name' => 'Dhaka', 'status' => 1]);
-        $otherDivision = Division::create(['name' => 'Other', 'status' => 1]);
-        $district = District::create(['name' => 'Dhaka', 'division_id' => $division->id, 'status' => 1]);
-        $upazila = Upazila::create(['name' => 'Mirpur', 'district_id' => $district->id, 'status' => 1]);
+        $division = Division::create(['name' => 'Profile Test Division', 'status' => 1]);
+        $otherDivision = Division::create(['name' => 'Other Profile Test Division', 'status' => 1]);
+        $district = District::create(['name' => 'Profile Test District', 'division_id' => $division->id, 'status' => 1]);
+        $upazila = Upazila::create(['name' => 'Profile Test Upazila', 'district_id' => $district->id, 'status' => 1]);
 
         $base = [
             'name' => 'Profile Owner',

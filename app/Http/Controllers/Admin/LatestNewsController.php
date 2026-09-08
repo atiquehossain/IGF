@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 
+use App\Models\District;
+use App\Models\Division;
 use App\Models\LatestNews;
 use App\Models\TeamGroup;
 
@@ -49,7 +51,7 @@ class LatestNewsController extends Controller {
         $search = $request->search;
         $groupFilter = $request->integer('group_id') ?: null;
         $latestNews = $this->memberQuery()
-                ->with('teamGroup')
+                ->with(['teamGroup', 'division', 'district'])
                 ->where('name', 'like', '%' . $search . '%')
                 ->when($groupFilter, fn (Builder $query, int $groupId) => $query->where('team_group_id', $groupId))
                 ->orderByDesc('order_by')
@@ -73,7 +75,26 @@ class LatestNewsController extends Controller {
             ->orderBy('name')
             ->get();
 
-        return view('admin.members.index')->with(compact('title', 'latestNews', 'groups', 'search', 'groupFilter'));
+        $divisions = Division::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $districts = District::query()
+            ->where('status', 1)
+            ->whereIn('division_id', $divisions->pluck('id'))
+            ->orderBy('name')
+            ->get(['id', 'division_id', 'name']);
+
+        return view('admin.members.index')->with(compact(
+            'title',
+            'latestNews',
+            'groups',
+            'divisions',
+            'districts',
+            'search',
+            'groupFilter'
+        ));
     }
 
     public function create() {
@@ -91,6 +112,8 @@ class LatestNewsController extends Controller {
                         'name' => $validated['name'],
                         'category_id' => $validated['category_id'] ?? null,
                         'team_group_id' => $this->memberGroupId($validated),
+                        'division_id' => $this->nullableDivisionId($validated),
+                        'district_id' => $this->nullableDistrictId($validated),
                         'description' => $validated['designation'],
                         'biography' => $this->nullableText($validated['biography'] ?? null),
                         'qualification' => $this->nullableText($validated['qualification'] ?? null),
@@ -141,6 +164,8 @@ class LatestNewsController extends Controller {
                 'id',
                 'category_id',
                 'team_group_id',
+                'division_id',
+                'district_id',
                 'name',
                 'url',
                 'social_links',
@@ -189,6 +214,8 @@ class LatestNewsController extends Controller {
                     'name' => $validated['name'],
                     'category_id' => $validated['category_id'] ?? null,
                     'team_group_id' => $this->memberGroupId($validated, $latestnews),
+                    'division_id' => $this->nullableDivisionId($validated, $latestnews),
+                    'district_id' => $this->nullableDistrictId($validated, $latestnews),
                     'description' => $validated['designation'],
                     'biography' => $this->nullableText($validated['biography'] ?? null),
                     'qualification' => $this->nullableText($validated['qualification'] ?? null),
@@ -225,6 +252,9 @@ class LatestNewsController extends Controller {
         try {
             if ($request->ajax()) {
                 $data = $this->memberQuery()->findOrFail($request->route('id'));
+                if (!(bool) $data->status && ($message = $this->inactiveGeographyMessage($data))) {
+                    return response(['message' => $message], 409);
+                }
                 $data->status = $data->status ^ 1;
                 $data->update();
                 return response(['message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully)], 200);
@@ -232,6 +262,26 @@ class LatestNewsController extends Controller {
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->NotUpdate], 403);
         }
+    }
+
+    private function inactiveGeographyMessage(LatestNews $member): ?string
+    {
+        if ($member->division_id !== null
+            && ! Division::query()->whereKey($member->division_id)->where('status', 1)->exists()) {
+            return 'Publish the selected work division before publishing this team profile.';
+        }
+
+        if ($member->district_id !== null
+            && ! District::query()
+                ->whereKey($member->district_id)
+                ->where('division_id', $member->division_id)
+                ->where('status', 1)
+                ->whereHas('division', fn (Builder $query) => $query->where('status', 1))
+                ->exists()) {
+            return 'Choose an active district inside an active work division before publishing this team profile.';
+        }
+
+        return null;
     }
 
     public function destroy($id = null, Request $request) {
@@ -262,6 +312,23 @@ class LatestNewsController extends Controller {
                 'integer',
                 Rule::exists('team_groups', 'id')->where(fn ($query) => $query
                     ->where('language', app()->getLocale())),
+            ],
+            'division_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('divisions', 'id')->where(fn ($query) => $query->where('status', 1)),
+            ],
+            'district_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    if ($value !== null && $value !== '' && ! $request->filled('division_id')) {
+                        $fail('Choose a primary work division before choosing a district.');
+                    }
+                },
+                Rule::exists('districts', 'id')->where(fn ($query) => $query
+                    ->where('status', 1)
+                    ->where('division_id', $request->input('division_id'))),
             ],
 
             'url' => ['nullable', 'string', 'max:2048', function ($attribute, $value, $fail) {
@@ -391,6 +458,32 @@ class LatestNewsController extends Controller {
         );
 
         return (int) $group->id;
+    }
+
+    private function nullableDivisionId(array $validated, ?LatestNews $member = null): ?int
+    {
+        if (!array_key_exists('division_id', $validated)) {
+            return $member?->division_id === null ? null : (int) $member->division_id;
+        }
+
+        return empty($validated['division_id']) ? null : (int) $validated['division_id'];
+    }
+
+    private function nullableDistrictId(array $validated, ?LatestNews $member = null): ?int
+    {
+        if (array_key_exists('district_id', $validated)) {
+            return empty($validated['district_id']) ? null : (int) $validated['district_id'];
+        }
+
+        if (! array_key_exists('division_id', $validated)) {
+            return $member?->district_id === null ? null : (int) $member->district_id;
+        }
+
+        if (empty($validated['division_id']) || (int) $validated['division_id'] !== (int) $member?->division_id) {
+            return null;
+        }
+
+        return $member?->district_id === null ? null : (int) $member->district_id;
     }
 
 }

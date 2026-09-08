@@ -362,6 +362,7 @@ describe('AppNav recursive disclosure navigation', () => {
     const education = itemForLink(desktop, 'a[href="/page/education"]', '.desktop-nav__entry');
     const ourWork = itemForLink(desktop, 'a[href="/workshops"]', '.desktop-nav__item');
     const getInvolved = itemForLink(desktop, 'a[href="/careers"]', '.desktop-nav__item');
+    const stories = itemForLink(desktop, 'a[href="/news"]', '.desktop-nav__item');
 
     expect(ourWork.get('.desktop-nav__trigger').text()).toContain('Our Work');
     expect(youth.get('a[href="/page/youth-development"]').text()).toContain('Youth Development');
@@ -372,6 +373,8 @@ describe('AppNav recursive disclosure navigation', () => {
     expect(desktop.get('a[href="/make-a-donation"]').text()).toBe('Make a Donation');
     expect(desktop.get('a[href="/events"]').text()).toBe('Events');
     expect(desktop.get('a[href="/news"]').text()).toBe('News');
+    expect(stories.get('.desktop-nav__trigger').text()).toContain('Stories');
+    expect(desktop.text()).not.toContain('News & Stories');
     expect(desktop.text()).not.toContain('Events & News');
     expect(desktop.text()).not.toContain('Opportunities');
     expect(desktop.text()).not.toContain("Founder's Letter");
@@ -380,10 +383,13 @@ describe('AppNav recursive disclosure navigation', () => {
     const mobile = wrapper.get('.mobile-nav');
     const mobileYouth = itemForLink(mobile, 'a[href="/page/youth-development"]', '.mobile-nav__entry');
     const mobileEducation = itemForLink(mobile, 'a[href="/page/education"]', '.mobile-nav__entry');
+    const mobileStories = itemForLink(mobile, 'a[href="/news"]', '.mobile-nav__group');
     expect(mobileYouth.findAll('a[href="/workshops"]')).toHaveLength(1);
     expect(mobileEducation.findAll('a[href="/category/visit-ignite-school"]')).toHaveLength(1);
     expect(mobile.get('a[href="/events"]').text()).toBe('Events');
     expect(mobile.get('a[href="/news"]').text()).toBe('News');
+    expect(mobileStories.get('.mobile-nav__parent').text()).toContain('Stories');
+    expect(mobile.text()).not.toContain('News & Stories');
     expect(mobile.text()).not.toContain('Opportunities');
   });
 

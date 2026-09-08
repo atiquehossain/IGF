@@ -43,7 +43,7 @@
                   <th width="25%"><strong>{{ $Lang->Common->Form->Title }}</strong></th>
                   <th width="13%"><strong>Content format</strong></th>
                   <th width="10%"><strong>Language</strong></th>
-                  <th width="12%"><strong>{{ $Lang->Common->Form->Location }}</strong></th>
+                  <th width="12%"><strong>Location / directory scope</strong></th>
                   <th width="12%"><strong>Relevant date</strong></th>
                   <th width="8%"><strong>Display priority</strong></th>
                   <th width="10%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
@@ -77,6 +77,13 @@
                     </td>
                     <td>
                       {{ $notice_board->location ?: ($notice_board->content_kind === 'event' && $notice_board->event_attendance_mode === 'online' ? 'Online' : '—') }}
+                      @if($notice_board->district && $notice_board->division)
+                        <small class="d-block text-muted mt-1">Directory: {{ $notice_board->district->name }} District, {{ $notice_board->division->name }}</small>
+                      @elseif($notice_board->division)
+                        <small class="d-block text-muted mt-1">Directory: {{ $notice_board->division->name }} Division</small>
+                      @else
+                        <small class="d-block text-muted mt-1">Directory: National</small>
+                      @endif
                     </td>
                     <td>
                       @php

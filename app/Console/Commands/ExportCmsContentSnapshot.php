@@ -21,6 +21,8 @@ class ExportCmsContentSnapshot extends Command
         'chat_settings',
         'donation_cause_groups',
         'donation_types',
+        'divisions',
+        'districts',
         'galleries',
         'latest_news',
         'media_assets',
@@ -196,21 +198,39 @@ class ExportCmsContentSnapshot extends Command
             'banners',
             'categories',
             'donation_cause_groups',
+            'districts',
+            'divisions',
             'page_menus',
             'pages',
             'reusable_blocks',
             'tags',
             'team_groups',
+            'latest_news',
         ] as $table) {
             $maps[$table] = [];
             foreach ($tables[$table] ?? [] as $record) {
-                if (isset($record['id'], $record['uuid']) && trim((string) $record['uuid']) !== '') {
+                $identityColumn = match ($table) {
+                    'districts', 'divisions' => 'slug',
+                    'latest_news' => 'name',
+                    default => 'uuid',
+                };
+                if (
+                    isset($record['id'], $record[$identityColumn])
+                    && trim((string) $record[$identityColumn]) !== ''
+                ) {
                     $maps[$table][(string) $record['id']] = [
-                        'uuid' => (string) $record['uuid'],
+                        $identityColumn => trim((string) $record[$identityColumn]),
                         'language' => isset($record['language']) && trim((string) $record['language']) !== ''
                             ? (string) $record['language']
                             : null,
                     ];
+
+                    if ($table === 'latest_news') {
+                        $groupId = $record['team_group_id'] ?? null;
+                        $maps[$table][(string) $record['id']]['team_group_uuid'] = $groupId === null
+                            ? null
+                            : ($maps['team_groups'][(string) $groupId]['uuid'] ?? null);
+                    }
                 }
             }
         }
@@ -241,11 +261,13 @@ class ExportCmsContentSnapshot extends Command
             $record['sitemap_priority'] = (float) $record['sitemap_priority'];
         }
 
-        foreach ($this->relationMap($table) as $column => [$targetTable, $snapshotColumn]) {
+        foreach ($this->relationMap($table) as $column => $relation) {
+            [$targetTable, $snapshotColumn] = $relation;
+            $identityColumn = $relation[2] ?? 'uuid';
             $value = $record[$column] ?? null;
             unset($record[$column]);
             $identity = $this->resolveRelation($table, $column, $value, $targetTable, $maps);
-            $record[$snapshotColumn] = $identity['uuid'] ?? null;
+            $record[$snapshotColumn] = $identity[$identityColumn] ?? null;
 
             if (in_array($targetTable, self::LOCALIZED_RELATION_TABLES, true)) {
                 $record[$this->relationLanguageColumn($snapshotColumn)] = $identity['language'] ?? null;
@@ -272,7 +294,86 @@ class ExportCmsContentSnapshot extends Command
             $record['seoable_language'] = $identity['language'] ?? null;
         }
 
+        if ($table === 'page_blocks') {
+            $record = $this->normalizePageBlockContentRelations($record, $maps);
+        }
+
+        if ($table === 'translation_strings') {
+            $record = $this->normalizeTranslationStringRelations($record, $maps);
+        }
+
         return $this->sortRecursively($record);
+    }
+
+    private function normalizePageBlockContentRelations(array $record, array $maps): array
+    {
+        if (($record['type'] ?? null) !== 'team' || ! is_string($record['content'] ?? null)) {
+            return $record;
+        }
+
+        $content = json_decode($record['content'], true, 512, JSON_THROW_ON_ERROR);
+        if (
+            ! is_array($content)
+            || ($content['selection_mode'] ?? 'automatic') !== 'manual'
+            || ! is_array($content['selected_items'] ?? null)
+        ) {
+            return $record;
+        }
+
+        $content['selected_items'] = array_map(
+            function (mixed $selected) use ($maps, $record): array {
+                $reference = $maps['latest_news'][(string) $selected] ?? null;
+                if (! is_array($reference)) {
+                    throw new RuntimeException(
+                        'Cannot export page_blocks.content.selected_items for team block ['
+                        .($record['uuid'] ?? 'unknown').']: member ['.(string) $selected.'] is missing.'
+                    );
+                }
+
+                return [
+                    'name' => $reference['name'],
+                    'language' => $reference['language'],
+                    'team_group_uuid' => $reference['team_group_uuid'],
+                ];
+            },
+            $content['selected_items']
+        );
+        $record['content'] = json_encode(
+            $content,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+        );
+
+        return $record;
+    }
+
+    private function normalizeTranslationStringRelations(array $record, array $maps): array
+    {
+        $key = $record['key'] ?? null;
+        if (
+            ! is_string($key)
+            || preg_match(
+                '/\Acontent\.team_member\.(\d+)\.(name|description|biography|qualification)\z/',
+                $key,
+                $matches
+            ) !== 1
+        ) {
+            return $record;
+        }
+
+        $reference = $maps['latest_news'][$matches[1]] ?? null;
+        if (! is_array($reference)) {
+            throw new RuntimeException(
+                "Cannot export translation_strings.key [{$key}]: the team member is missing."
+            );
+        }
+
+        unset($record['key']);
+        $record['team_member_name'] = $reference['name'];
+        $record['team_member_language'] = $reference['language'];
+        $record['team_member_group_uuid'] = $reference['team_group_uuid'];
+        $record['team_member_field'] = $matches[2];
+
+        return $record;
     }
 
     private function relationMap(string $table): array
@@ -287,9 +388,18 @@ class ExportCmsContentSnapshot extends Command
             'donation_types' => [
                 'donation_cause_group_id' => ['donation_cause_groups', 'donation_cause_group_uuid'],
             ],
+            'districts' => [
+                'division_id' => ['divisions', 'division_slug', 'slug'],
+            ],
             'latest_news' => [
                 'category_id' => ['categories', 'category_uuid'],
                 'team_group_id' => ['team_groups', 'team_group_uuid'],
+                'division_id' => ['divisions', 'division_slug', 'slug'],
+                'district_id' => ['districts', 'district_slug', 'slug'],
+            ],
+            'notice_boards' => [
+                'division_id' => ['divisions', 'division_slug', 'slug'],
+                'district_id' => ['districts', 'district_slug', 'slug'],
             ],
             'page_blocks' => [
                 'page_id' => ['pages', 'page_uuid'],

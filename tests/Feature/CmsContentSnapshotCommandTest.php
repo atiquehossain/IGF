@@ -126,8 +126,10 @@ final class CmsContentSnapshotCommandTest extends TestCase
         $teamMember = $this->row($snapshot, 'latest_news', 'name', 'Snapshot team member');
         $this->assertSame($ids['category_uuid'], $teamMember['category_uuid']);
         $this->assertSame($ids['team_group_uuid'], $teamMember['team_group_uuid']);
+        $this->assertSame('snapshot-division', $teamMember['division_slug']);
         $this->assertArrayNotHasKey('category_id', $teamMember);
         $this->assertArrayNotHasKey('team_group_id', $teamMember);
+        $this->assertArrayNotHasKey('division_id', $teamMember);
         $this->assertArrayNotHasKey('email', $teamMember);
 
         $gallery = $this->row($snapshot, 'galleries', 'uuid', $ids['gallery_uuid']);
@@ -301,6 +303,325 @@ final class CmsContentSnapshotCommandTest extends TestCase
                 "A second seed duplicated {$table}.{$field}={$value}."
             );
         }
+    }
+
+    public function test_seeder_restores_team_member_division_by_stable_slug_after_its_numeric_id_changes(): void
+    {
+        $now = '2026-08-29 10:00:00';
+        $oldDivisionId = DB::table('divisions')->insertGetId([
+            'name' => 'Snapshot relationship division',
+            'slug' => 'snapshot-relationship-division',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('latest_news')->insert([
+            'name' => 'Snapshot division relationship member',
+            'type' => 'our-members',
+            'division_id' => $oldDivisionId,
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+        $snapshot = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $member = $this->row(
+            $snapshot,
+            'latest_news',
+            'name',
+            'Snapshot division relationship member'
+        );
+
+        $this->assertSame('snapshot-relationship-division', $member['division_slug']);
+        $this->assertArrayNotHasKey('division_id', $member);
+
+        DB::table('latest_news')->where('name', 'Snapshot division relationship member')->delete();
+        DB::table('divisions')->where('id', $oldDivisionId)->delete();
+        DB::table('divisions')->insert([
+            'name' => 'Numeric ID decoy division',
+            'slug' => 'numeric-id-decoy-division',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $this->mockSeederSnapshot($json);
+        $this->app->make(CmsContentSnapshotSeeder::class)->run();
+
+        $newDivisionId = (int) DB::table('divisions')
+            ->where('slug', 'snapshot-relationship-division')
+            ->value('id');
+        $this->assertNotSame($oldDivisionId, $newDivisionId);
+
+        $this->assertSame(
+            $newDivisionId,
+            (int) DB::table('latest_news')
+                ->where('name', 'Snapshot division relationship member')
+                ->value('division_id')
+        );
+    }
+
+    public function test_snapshot_restores_district_content_and_member_and_activity_scope_by_stable_slugs(): void
+    {
+        $now = '2026-09-08 11:00:00';
+        $oldDivisionId = DB::table('divisions')->insertGetId([
+            'name' => 'Snapshot Heroes Division',
+            'slug' => 'snapshot-heroes-division',
+            'description' => 'English division copy.',
+            'description_bn' => 'বাংলা বিভাগের লেখা।',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $oldDistrictId = DB::table('districts')->insertGetId([
+            'name' => 'Snapshot Heroes District',
+            'slug' => 'snapshot-heroes-district',
+            'division_id' => $oldDivisionId,
+            'description' => 'English district copy.',
+            'description_bn' => 'বাংলা জেলার লেখা।',
+            'hero_image' => '/storage/media/snapshot-heroes.jpg',
+            'hero_image_alt' => 'Community heroes together',
+            'hero_image_alt_bn' => 'কমিউনিটি হিরোরা একসঙ্গে',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('latest_news')->insert([
+            'name' => 'Snapshot scoped hero',
+            'type' => 'our-members',
+            'division_id' => $oldDivisionId,
+            'district_id' => $oldDistrictId,
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('notice_boards')->insert([
+            'translation_key' => '92700000-0000-4000-8000-000000000001',
+            'title' => 'Snapshot scoped activity',
+            'slug' => 'snapshot-scoped-activity',
+            'division_id' => $oldDivisionId,
+            'district_id' => $oldDistrictId,
+            'language' => 'en',
+            'notice_type' => 'notice-board',
+            'content_kind' => 'article',
+            'published_at' => $now,
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+        $snapshot = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+        $division = $this->row($snapshot, 'divisions', 'slug', 'snapshot-heroes-division');
+        $district = $this->row($snapshot, 'districts', 'slug', 'snapshot-heroes-district');
+        $member = $this->row($snapshot, 'latest_news', 'name', 'Snapshot scoped hero');
+        $activity = $this->row($snapshot, 'notice_boards', 'title', 'Snapshot scoped activity');
+        $this->assertSame('English division copy.', $division['description']);
+        $this->assertSame('snapshot-heroes-division', $district['division_slug']);
+        $this->assertSame('/storage/media/snapshot-heroes.jpg', $district['hero_image']);
+        $this->assertSame('Community heroes together', $district['hero_image_alt']);
+        $this->assertSame('কমিউনিটি হিরোরা একসঙ্গে', $district['hero_image_alt_bn']);
+        $this->assertSame('snapshot-heroes-district', $member['district_slug']);
+        $this->assertSame('snapshot-heroes-division', $activity['division_slug']);
+        $this->assertSame('snapshot-heroes-district', $activity['district_slug']);
+        $this->assertArrayNotHasKey('division_id', $district);
+        $this->assertArrayNotHasKey('district_id', $member);
+
+        DB::table('notice_boards')->where('title', 'Snapshot scoped activity')->delete();
+        DB::table('latest_news')->where('name', 'Snapshot scoped hero')->delete();
+        DB::table('districts')->where('id', $oldDistrictId)->delete();
+        DB::table('divisions')->where('id', $oldDivisionId)->delete();
+        DB::table('divisions')->insert([
+            'name' => 'Snapshot ID Decoy',
+            'slug' => 'snapshot-id-decoy',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $this->mockSeederSnapshot($json);
+        $this->app->make(CmsContentSnapshotSeeder::class)->run();
+
+        $newDivisionId = (int) DB::table('divisions')->where('slug', 'snapshot-heroes-division')->value('id');
+        $newDistrictId = (int) DB::table('districts')->where('slug', 'snapshot-heroes-district')->value('id');
+        $this->assertNotSame($oldDivisionId, $newDivisionId);
+        $this->assertNotSame($oldDistrictId, $newDistrictId);
+        $this->assertDatabaseHas('districts', [
+            'id' => $newDistrictId,
+            'division_id' => $newDivisionId,
+            'hero_image_alt' => 'Community heroes together',
+            'hero_image_alt_bn' => 'কমিউনিটি হিরোরা একসঙ্গে',
+        ]);
+        $this->assertDatabaseHas('latest_news', [
+            'name' => 'Snapshot scoped hero',
+            'division_id' => $newDivisionId,
+            'district_id' => $newDistrictId,
+        ]);
+        $this->assertDatabaseHas('notice_boards', [
+            'title' => 'Snapshot scoped activity',
+            'division_id' => $newDivisionId,
+            'district_id' => $newDistrictId,
+        ]);
+    }
+
+    public function test_seeder_restores_manual_team_and_translation_references_after_member_ids_change(): void
+    {
+        $now = '2026-09-08 10:00:00';
+        $groupUuid = '92500000-0000-4000-8000-000000000001';
+        $pageUuid = '92500000-0000-4000-8000-000000000002';
+        $blockUuid = '92500000-0000-4000-8000-000000000003';
+        $groupId = DB::table('team_groups')->insertGetId([
+            'uuid' => $groupUuid,
+            'name' => 'Snapshot regional heroes',
+            'slug' => 'snapshot-regional-heroes',
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $firstOldId = DB::table('latest_news')->insertGetId([
+            'name' => 'Snapshot regional hero one',
+            'type' => 'our-members',
+            'team_group_id' => $groupId,
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $secondOldId = DB::table('latest_news')->insertGetId([
+            'name' => 'Snapshot regional hero two',
+            'type' => 'our-members',
+            'team_group_id' => $groupId,
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $pageId = DB::table('pages')->insertGetId([
+            'uuid' => $pageUuid,
+            'name' => 'Snapshot team page',
+            'sub_title' => 'Snapshot team page',
+            'slug' => 'snapshot-team-page',
+            'language' => 'en',
+            'status' => 1,
+            'publication_status' => 'published',
+            'visibility' => 'public',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('page_blocks')->insert([
+            'uuid' => $blockUuid,
+            'page_id' => $pageId,
+            'type' => 'team',
+            'label' => 'Snapshot regional heroes',
+            'content' => json_encode([
+                'content_source' => 'team',
+                'selection_mode' => 'manual',
+                'selected_items' => [(string) $secondOldId, (string) $firstOldId],
+            ], JSON_THROW_ON_ERROR),
+            'sort_order' => 1,
+            'is_enabled' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        DB::table('translation_strings')->insert([
+            'key' => "content.team_member.{$firstOldId}.name",
+            'locale' => 'bn',
+            'value' => 'স্ন্যাপশট আঞ্চলিক নায়ক',
+            'source_hash' => hash('sha256', 'Snapshot regional hero one'),
+            'status' => 'translated',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        [$outputOption, $outputPath] = $this->temporaryOutput();
+        $this->exportSnapshot($outputOption);
+        $json = File::get($outputPath);
+        $snapshot = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $block = $this->row($snapshot, 'page_blocks', 'uuid', $blockUuid);
+        $content = json_decode($block['content'], true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame([
+            [
+                'name' => 'Snapshot regional hero two',
+                'language' => 'en',
+                'team_group_uuid' => $groupUuid,
+            ],
+            [
+                'name' => 'Snapshot regional hero one',
+                'language' => 'en',
+                'team_group_uuid' => $groupUuid,
+            ],
+        ], $content['selected_items']);
+
+        $translation = collect($snapshot['tables']['translation_strings'])
+            ->firstWhere('value', 'স্ন্যাপশট আঞ্চলিক নায়ক');
+        $this->assertIsArray($translation);
+        $this->assertArrayNotHasKey('key', $translation);
+        $this->assertSame('Snapshot regional hero one', $translation['team_member_name']);
+        $this->assertSame('en', $translation['team_member_language']);
+        $this->assertSame($groupUuid, $translation['team_member_group_uuid']);
+        $this->assertSame('name', $translation['team_member_field']);
+
+        DB::table('translation_strings')
+            ->where('key', "content.team_member.{$firstOldId}.name")
+            ->delete();
+        DB::table('latest_news')->whereIn('id', [$firstOldId, $secondOldId])->delete();
+        DB::table('latest_news')->insert([
+            'name' => 'Numeric ID decoy regional hero',
+            'type' => 'our-members',
+            'language' => 'en',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $this->mockSeederSnapshot($json, reads: 2);
+        $seeder = $this->app->make(CmsContentSnapshotSeeder::class);
+        $seeder->run();
+
+        $firstNewId = (int) DB::table('latest_news')
+            ->where('name', 'Snapshot regional hero one')
+            ->where('language', 'en')
+            ->value('id');
+        $secondNewId = (int) DB::table('latest_news')
+            ->where('name', 'Snapshot regional hero two')
+            ->where('language', 'en')
+            ->value('id');
+        $this->assertNotSame($firstOldId, $firstNewId);
+        $this->assertNotSame($secondOldId, $secondNewId);
+
+        $restoredContent = json_decode(
+            (string) DB::table('page_blocks')->where('uuid', $blockUuid)->value('content'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $this->assertSame(
+            [(string) $secondNewId, (string) $firstNewId],
+            $restoredContent['selected_items']
+        );
+        $this->assertDatabaseHas('translation_strings', [
+            'key' => "content.team_member.{$firstNewId}.name",
+            'locale' => 'bn',
+            'value' => 'স্ন্যাপশট আঞ্চলিক নায়ক',
+        ]);
+
+        $seeder->run();
+        $this->assertSame(
+            1,
+            DB::table('translation_strings')
+                ->where('key', "content.team_member.{$firstNewId}.name")
+                ->where('locale', 'bn')
+                ->count()
+        );
     }
 
     public function test_seeder_adopts_the_fresh_migration_team_group_without_duplicate_slug_conflicts(): void
@@ -824,11 +1145,19 @@ final class CmsContentSnapshotCommandTest extends TestCase
             'created_at' => $now,
             'updated_at' => $now,
         ]);
+        $divisionId = DB::table('divisions')->insertGetId([
+            'name' => 'Snapshot division',
+            'slug' => 'snapshot-division',
+            'status' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
         DB::table('latest_news')->insert([
             'name' => 'Snapshot team member',
             'type' => 'our-members',
             'category_id' => $categoryId,
             'team_group_id' => $teamGroupId,
+            'division_id' => $divisionId,
             'email' => 'LATEST-NEWS-PRIVATE-EMAIL-CANARY@example.test',
             'language' => 'en',
             'status' => 1,

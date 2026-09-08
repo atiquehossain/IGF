@@ -3,14 +3,19 @@
 namespace Tests\Feature;
 
 use App\Models\AnnualReport;
+use App\Models\Album;
 use App\Models\Category;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MediaAsset;
 use App\Models\NoticeBoard;
 use App\Models\Page;
+use App\Models\PageBlock;
 use App\Models\PageMenu;
 use App\Models\SeoMetadata;
+use App\Models\TeamGroup;
 use App\Models\Testimonial;
 use Database\Seeders\IgniteParityContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,17 +27,67 @@ class IgniteParityContentTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_bangla_heroes_navigation_is_seeded_once_and_then_remains_admin_managed(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+
+        Album::create([
+            'uuid' => '65000000-0000-4000-8000-000000000001',
+            'name' => 'কমিউনিটি কর্মসূচি',
+            'language' => 'bn',
+            'status' => 1,
+        ]);
+
+        PageMenu::create([
+            'uuid' => '67000000-0000-4000-8000-000000000002',
+            'name' => 'আমাদের সম্পর্কে',
+            'type' => 'main',
+            'link' => 'custom',
+            'slug' => '#',
+            'language' => 'bn',
+            'order_by' => 1,
+            'status' => 1,
+        ]);
+
+        $this->seed(IgniteParityContentSeeder::class);
+        $menu = PageMenu::query()
+            ->where('uuid', '68000000-0002-4000-8000-000000000007')
+            ->where('language', 'bn')
+            ->firstOrFail();
+        $this->assertSame('পরিবর্তনের নায়কেরা', $menu->name);
+        $this->assertSame('frontend.heroes.index', $menu->link);
+        $this->assertDatabaseHas('albums', [
+            'uuid' => '65000000-0000-4000-8000-000000000001',
+            'language' => 'bn',
+            'name' => 'কমিউনিটি কর্মসূচি',
+        ]);
+
+        $menu->update(['name' => 'আমাদের নায়কেরা', 'order_by' => 2]);
+        $this->seed(IgniteParityContentSeeder::class);
+        $this->assertSame(1, PageMenu::withTrashed()
+            ->where('uuid', $menu->uuid)
+            ->where('language', 'bn')
+            ->count());
+        $this->assertSame('আমাদের নায়কেরা', $menu->fresh()->name);
+        $this->assertSame(2, $menu->fresh()->order_by);
+
+        $menu->delete();
+        $this->seed(IgniteParityContentSeeder::class);
+        $this->assertTrue($menu->fresh()->trashed());
+    }
+
     public function test_reference_content_navigation_and_dynamic_sections_are_complete(): void
     {
         Storage::fake('local');
         Storage::fake('public');
         $this->seed(IgniteParityContentSeeder::class);
 
-        $this->assertSame(6, NoticeBoard::where('status', 1)->count());
+        $this->assertSame(14, NoticeBoard::where('status', 1)->count());
         $this->assertSame(3, Testimonial::where('status', 1)->count());
         $this->assertSame(2, AnnualReport::where('status', 1)->count());
         $this->assertSame(16, Gallery::where('status', 1)->count());
-        $this->assertSame(7, LatestNews::where('type', 'our-members')->where('status', 1)->count());
+        $this->assertSame(18, LatestNews::where('type', 'our-members')->where('status', 1)->count());
         $this->assertSame(5, Page::whereHas('pageTags.tag', fn ($query) => $query->where('slug', 'current-project'))->count());
         $this->assertSame(2, Page::whereHas('pageTags.tag', fn ($query) => $query->where('slug', 'completed-project'))->count());
 
@@ -117,6 +172,15 @@ class IgniteParityContentTest extends TestCase
         $visitSchoolMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000003')->firstOrFail();
         $youthDevelopmentMenu = PageMenu::where('uuid', '68000000-0003-4000-8000-000000000004')->firstOrFail();
         $workshopMenu = PageMenu::where('link', 'frontend.workshops.index')->firstOrFail();
+        $storiesMenu = PageMenu::where('uuid', '67000000-0000-4000-8000-000000000005')->firstOrFail();
+        $heroesMenu = PageMenu::query()
+            ->where('uuid', '68000000-0002-4000-8000-000000000007')
+            ->where('language', 'en')
+            ->firstOrFail();
+        $aboutMenu = PageMenu::query()
+            ->where('uuid', '67000000-0000-4000-8000-000000000002')
+            ->where('language', 'en')
+            ->firstOrFail();
         $directDonationMenu = PageMenu::where('uuid', '68000000-0006-4000-8000-000000000001')->firstOrFail();
         $this->assertSame($ourWorkMenu->id, $educationMenu->parent_id);
         $this->assertSame($educationMenu->id, $visitSchoolMenu->parent_id);
@@ -126,20 +190,85 @@ class IgniteParityContentTest extends TestCase
         $this->assertSame('68000000-0304-4000-8000-000000000001', $workshopMenu->uuid);
         $this->assertSame('Workshop', $workshopMenu->name);
         $this->assertSame(0, $workshopMenu->order_by);
+        $this->assertSame('Stories', $storiesMenu->name);
+        $this->assertSame($aboutMenu->id, $heroesMenu->parent_id);
+        $this->assertSame('Meet the Heroes', $heroesMenu->name);
+        $this->assertSame('frontend.heroes.index', $heroesMenu->link);
+        $this->assertSame(5, $heroesMenu->order_by);
         $this->assertSame('frontend.donate.direct', $directDonationMenu->link);
         $this->assertNull($directDonationMenu->slug);
+
+        $demoGroup = TeamGroup::query()->where('slug', 'regional-heroes-demo')->firstOrFail();
+        $regionalDemoMembers = LatestNews::query()
+            ->where('type', 'our-members')
+            ->where('team_group_id', $demoGroup->id)
+            ->whereNotNull('division_id')
+            ->whereNotNull('district_id')
+            ->get();
+        $this->assertCount(10, $regionalDemoMembers);
+        $this->assertSame(8, $regionalDemoMembers->pluck('division_id')->unique()->count());
+        $this->assertSame(10, $regionalDemoMembers->pluck('district_id')->unique()->count());
+        $this->assertTrue($regionalDemoMembers->every(fn (LatestNews $member): bool =>
+            str_ends_with($member->name, '(Demo)')
+            && blank($member->qualification)
+            && blank($member->biography)
+            && filled($member->image)
+            && filled($member->path)
+            && count($member->social_links ?? []) === 2
+        ));
+        $nationalDemoMember = LatestNews::query()
+            ->where('team_group_id', $demoGroup->id)
+            ->where('name', 'Samira Chowdhury (Demo)')
+            ->whereNull('division_id')
+            ->whereNull('district_id')
+            ->firstOrFail();
+        $this->assertNotEmpty($nationalDemoMember->image);
+        $this->assertNotEmpty($nationalDemoMember->path);
+        $this->assertStringContainsString("\n\n", (string) $nationalDemoMember->biography);
+        $this->assertCount(2, $nationalDemoMember->social_links ?? []);
+        $rangpurDivision = Division::query()->where('slug', 'rangpur')->firstOrFail();
+        $this->assertSame(3, $regionalDemoMembers->where('division_id', $rangpurDivision->id)->count());
+        $this->assertSame(3, $regionalDemoMembers->where('division_id', $rangpurDivision->id)
+            ->filter(fn (LatestNews $member): bool => filled($member->image))->count());
+        $this->assertSame(8, Division::query()->whereNotNull('description')->count());
+        $this->assertSame(10, District::query()->whereNotNull('hero_image')->count());
+        $this->assertSame(10, District::query()
+            ->where('hero_image', '/storage/media/ignite-live/dms2sp0pfxgane9lzjpco3enlkyd4xjeygndfbym-24b5036254cd.jpg')
+            ->count());
+        $this->assertSame(1, NoticeBoard::query()
+            ->where('slug', 'light-in-their-hands')
+            ->where('image_path', '/storage/media/ignite-live/y3oylo6tegbtxwlpcbsromnlhmn1gdlwtehqu9sl-30d4e0add7c6.jpg')
+            ->count());
+        $this->assertSame(8, NoticeBoard::query()->where('title', 'like', '%(Demo)')->count());
+        $rangpurActivities = NoticeBoard::query()
+            ->where('division_id', $rangpurDivision->id)
+            ->where('title', 'like', '%(Demo)')
+            ->get();
+        $this->assertCount(4, $rangpurActivities);
+        $this->assertSame(3, $rangpurActivities->whereNotNull('district_id')->count());
+        $this->assertSame(4, $rangpurActivities->pluck('published_at')->unique()->count());
+
+        $heroesBlock = PageBlock::query()
+            ->where('uuid', '69000000-0000-4000-8000-00000000d001')
+            ->firstOrFail();
+        $this->assertSame('heroes_showcase', $heroesBlock->content['team_presentation'] ?? null);
+        $this->assertSame('manual', $heroesBlock->content['selection_mode'] ?? null);
+        $this->assertCount(10, $heroesBlock->content['selected_items'] ?? []);
 
         $this->get(route('frontend.home'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Home/home')
                 ->has('appMenus', 6)
-                ->has('appMenus.1.children', 5)
+                ->where('appMenus.4.name', 'Stories')
+                ->has('appMenus.1.children', 6)
                 ->where('appMenus.1.children.0.name', 'Who We Are')
                 ->where('appMenus.1.children.1.name', 'Awards & Recognition')
                 ->where('appMenus.1.children.2.name', 'Photo Gallery')
                 ->where('appMenus.1.children.3.name', 'Annual Reports')
                 ->where('appMenus.1.children.4.name', 'Contact Us')
+                ->where('appMenus.1.children.5.name', 'Meet the Heroes')
+                ->where('appMenus.1.children.5.link', 'frontend.heroes.index')
                 ->has('appMenus.2.children.1.children', 1)
                 ->where('appMenus.2.children.1.name', 'Inclusive Education')
                 ->where('appMenus.2.children.1.children.0.name', 'Visit Ignite School')
@@ -162,7 +291,7 @@ class IgniteParityContentTest extends TestCase
             );
 
         $this->get('/about-us')->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->has('data.about_us.visible_blocks', 7)
+            ->has('data.about_us.visible_blocks', 8)
             ->where('data.about_us.visible_blocks.0.type', 'cards')
             ->where('data.about_us.visible_blocks.0.content.variant', 'about-pillars')
             ->where('data.about_us.visible_blocks.0.content.items.0.eyebrow', 'Our mission')
@@ -181,6 +310,9 @@ class IgniteParityContentTest extends TestCase
             ->has('data.about_us.visible_blocks.5.content.items', 20)
             ->where('data.about_us.visible_blocks.5.content.items.0.heading', 'Bangladesh Brand Forum')
             ->where('data.about_us.visible_blocks.5.content.items.19.heading', 'What’s On Guide')
+            ->where('data.about_us.visible_blocks.7.type', 'team')
+            ->where('data.about_us.visible_blocks.7.content.team_presentation', 'heroes_showcase')
+            ->has('data.about_us.visible_blocks.7.content.items', 10)
         );
 
         $this->get('/page/our-mission')->assertOk();

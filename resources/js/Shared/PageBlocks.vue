@@ -16,6 +16,7 @@
         columnCountClass(block),
         visibilityClass(block),
         testimonialStyleClass(block),
+        isTeamHeroesShowcase(block) ? 'igf-page-block--team-heroes-showcase' : null,
       ]"
       :style="blockStyle(block)"
       :aria-label="block.type === 'hero' ? shared.hero_carousel_label : null"
@@ -616,15 +617,15 @@
       </div>
 
       <div v-else-if="block.type === 'team'" class="igf-page-block__inner">
-        <div class="igf-section-heading">
+        <div v-if="!isTeamHeroesShowcase(block)" class="igf-section-heading">
           <div>
             <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow">{{ block.content.eyebrow }}</p>
             <h2>{{ block.content?.heading }}</h2>
-            <p v-if="block.content?.body" class="igf-section-lead">{{ block.content.body }}</p>
+            <p v-if="block.content?.body || block.content?.intro" class="igf-section-lead">{{ block.content.body || block.content.intro }}</p>
           </div>
         </div>
         <div
-          v-if="hasTeamTabs(block)"
+          v-if="teamRendersTabs(block)"
           class="igf-team-tabs"
           role="tablist"
           aria-orientation="horizontal"
@@ -653,20 +654,562 @@
             :id="teamPanelId(block, group)"
             :key="group.key"
             class="igf-team-panel"
-            :role="hasTeamTabs(block) ? 'tabpanel' : null"
-            :aria-labelledby="hasTeamTabs(block) ? teamTabId(block, group) : null"
-            :aria-describedby="group.description ? teamPanelDescriptionId(block, group) : null"
-            :tabindex="hasTeamTabs(block) ? 0 : null"
+            :role="teamRendersTabs(block) ? 'tabpanel' : null"
+            :aria-labelledby="teamRendersTabs(block) ? teamTabId(block, group) : null"
+            :aria-describedby="group.description && !isTeamHeroesShowcase(block) ? teamPanelDescriptionId(block, group) : null"
+            :tabindex="teamRendersTabs(block) ? 0 : null"
             :hidden="!isActiveTeamGroup(block, group)"
           >
             <p
-              v-if="group.description"
+              v-if="group.description && !isTeamHeroesShowcase(block)"
               :id="teamPanelDescriptionId(block, group)"
               class="igf-team-panel__description"
             >
               {{ group.description }}
             </p>
-            <div class="igf-team-grid">
+            <div
+              v-if="isTeamHeroesShowcase(block)"
+              class="igf-team-showcase"
+              :class="[
+                `is-map-${teamDirectoryMapPosition(block)}`,
+                {
+                  'has-visual-map': teamDirectoryShowMap(block),
+                  'is-motion-enabled': teamDirectoryMotionEnabled(block),
+                },
+              ]"
+              @mouseenter="pauseTeamShowcaseInteraction(block, true)"
+              @mouseleave="pauseTeamShowcaseInteraction(block, false)"
+              @focusin="pauseTeamShowcaseInteraction(block, true)"
+              @focusout="releaseTeamShowcaseFocus(block, $event)"
+            >
+              <div class="igf-team-showcase__content">
+                <header class="igf-team-showcase__heading">
+                  <p v-if="block.content?.eyebrow" class="igf-page-block__eyebrow"><span class="igf-team-showcase__eyebrow-marks" aria-hidden="true"><span /><span /></span>{{ block.content.eyebrow }}</p>
+                  <h2 :id="teamShowcaseHeadingId(block, group)">
+                    <span v-if="teamShowcaseHeadingParts(block.content?.heading).prefix">{{ teamShowcaseHeadingParts(block.content?.heading).prefix }}</span>{{ ' ' }}<strong>{{ teamShowcaseHeadingParts(block.content?.heading).emphasis }}</strong>
+                  </h2>
+                  <p v-if="block.content?.body || block.content?.intro" class="igf-section-lead">{{ block.content.body || block.content.intro }}</p>
+                </header>
+
+                <div
+                  :id="teamShowcaseRailId(block, group)"
+                  class="igf-team-showcase__rail"
+                  role="group"
+                  :aria-label="teamShowcaseText(block, 'people_label')"
+                  @pointerdown="startTeamShowcaseDrag(block, group, $event)"
+                  @pointermove="moveTeamShowcaseDrag(block, group, $event)"
+                  @pointerup="endTeamShowcaseDrag(block, group, $event)"
+                  @pointercancel="endTeamShowcaseDrag(block, group, $event)"
+                  @lostpointercapture="endTeamShowcaseDrag(block, group, $event)"
+                >
+                  <button
+                    v-for="entry in teamDirectoryFilteredEntries(block, group)"
+                    :id="teamShowcaseMemberId(block, group, entry)"
+                    :key="entry.key"
+                    type="button"
+                    class="igf-team-showcase__person"
+                    :class="{'is-active': isActiveTeamDirectoryMember(block, group, entry)}"
+                    :aria-pressed="isActiveTeamDirectoryMember(block, group, entry) ? 'true' : 'false'"
+                    :aria-controls="teamShowcaseProfileId(block, group)"
+                    :tabindex="isActiveTeamDirectoryMember(block, group, entry) ? 0 : -1"
+                    @click="activateTeamShowcaseMember(block, group, entry, $event)"
+                    @keydown="handleTeamShowcasePersonKeydown(block, group, entry, $event)"
+                  >
+                    <span class="igf-team-showcase__portrait">
+                      <img
+                        v-if="teamImageAvailable(block, entry.item, entry.index)"
+                        :src="entry.item.image"
+                        alt=""
+                        width="150"
+                        height="150"
+                        loading="lazy"
+                        decoding="async"
+                        @error="markTeamImageFailed(block, entry.item, entry.index)"
+                      >
+                      <span v-else aria-hidden="true">{{ initials(entry.item.heading) }}</span>
+                    </span>
+                    <strong>{{ entry.item.heading }}</strong>
+                    <small v-if="teamDesignation(entry.item)">{{ teamDesignation(entry.item) }}</small>
+                  </button>
+                </div>
+
+                <p v-if="!teamDirectoryFilteredEntries(block, group).length" class="igf-team-showcase__empty" role="status">
+                  {{ teamDirectoryText(block, 'empty_division') }}
+                </p>
+
+                <div
+                  v-if="teamDirectoryFilteredEntries(block, group).length"
+                  class="igf-team-showcase__navigation"
+                  :aria-label="teamShowcaseText(block, 'navigation_label')"
+                >
+                  <button
+                    type="button"
+                    class="igf-team-showcase__arrow"
+                    :disabled="teamDirectoryFilteredEntries(block, group).length < 2"
+                    :aria-label="teamShowcaseText(block, 'previous_person')"
+                    @click="moveTeamShowcase(block, group, -1, true)"
+                  >
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true" />
+                  </button>
+                  <div class="igf-team-showcase__dots" role="group" :aria-label="teamShowcaseText(block, 'person_picker_label')">
+                    <button
+                      v-for="(entry, entryIndex) in teamDirectoryFilteredEntries(block, group)"
+                      :key="`showcase-dot-${entry.key}`"
+                      type="button"
+                      :class="{'is-active': isActiveTeamDirectoryMember(block, group, entry)}"
+                      :aria-label="teamShowcaseDotLabel(block, group, entry, entryIndex)"
+                      :aria-current="isActiveTeamDirectoryMember(block, group, entry) ? 'true' : null"
+                      @click="selectTeamShowcaseMember(block, group, entry, true)"
+                    ><span aria-hidden="true" /></button>
+                  </div>
+                  <button
+                    v-if="teamShowcaseCanAutoplay(block) && teamDirectoryFilteredEntries(block, group).length > 1"
+                    type="button"
+                    class="igf-team-showcase__autoplay"
+                    :aria-label="teamShowcasePaused(block) ? teamShowcaseText(block, 'play') : teamShowcaseText(block, 'pause')"
+                    :aria-pressed="teamShowcasePaused(block) ? 'false' : 'true'"
+                    @click="toggleTeamShowcaseAutoplay(block)"
+                  >
+                    <i :class="teamShowcasePaused(block) ? 'fa-solid fa-play' : 'fa-solid fa-pause'" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    class="igf-team-showcase__arrow"
+                    :disabled="teamDirectoryFilteredEntries(block, group).length < 2"
+                    :aria-label="teamShowcaseText(block, 'next_person')"
+                    @click="moveTeamShowcase(block, group, 1, true)"
+                  >
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <article
+                  v-if="activeTeamDirectoryEntry(block, group)"
+                  :id="teamShowcaseProfileId(block, group)"
+                  :key="activeTeamDirectoryEntry(block, group).key"
+                  class="igf-team-showcase__profile"
+                  role="region"
+                  :aria-labelledby="teamShowcaseProfileHeadingId(block, group)"
+                  >
+                    <div class="igf-team-showcase__profile-heading">
+                      <p v-if="teamDesignation(activeTeamDirectoryEntry(block, group).item)" class="igf-team-showcase__role">
+                        {{ teamDesignation(activeTeamDirectoryEntry(block, group).item) }}
+                      </p>
+                      <h3 :id="teamShowcaseProfileHeadingId(block, group)">{{ activeTeamDirectoryEntry(block, group).item.heading }}</h3>
+                      <ul
+                        v-if="teamSocialLinks(activeTeamDirectoryEntry(block, group).item).length"
+                        class="igf-team-showcase__socials"
+                        :aria-label="teamText('social_links')"
+                      >
+                        <li
+                          v-for="(link, linkIndex) in teamSocialLinks(activeTeamDirectoryEntry(block, group).item)"
+                          :key="`showcase-${link.platform}-${link.url}-${linkIndex}`"
+                        >
+                          <a
+                            :href="link.url"
+                            :target="link.external ? '_blank' : null"
+                            :rel="link.external ? 'noopener noreferrer' : null"
+                            :aria-label="teamSocialAriaLabel(link, activeTeamDirectoryEntry(block, group).item)"
+                          >
+                            <i :class="teamSocialIcon(link.platform)" aria-hidden="true" />
+                            <span class="sr-only">{{ teamSocialCtaLabel(link) }}</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div v-if="activeTeamDirectoryEntry(block, group).item.biography" class="igf-team-showcase__biography">
+                      <span class="sr-only">{{ teamText('biography') }}: </span>
+                      <p v-for="(paragraph, paragraphIndex) in teamBiographyParagraphs(activeTeamDirectoryEntry(block, group).item.biography)" :key="`showcase-biography-${paragraphIndex}`">{{ paragraph }}</p>
+                    </div>
+                    <p v-if="activeTeamDirectoryEntry(block, group).item.qualification" class="igf-team-showcase__qualification">
+                      <strong>{{ teamText('qualification') }}:</strong> {{ activeTeamDirectoryEntry(block, group).item.qualification }}
+                    </p>
+                </article>
+
+                <p
+                  :id="teamShowcaseStatusId(block, group)"
+                  class="sr-only"
+                  role="status"
+                  :aria-live="teamShowcaseStatusLive(block)"
+                  aria-atomic="true"
+                >{{ teamDirectoryStatus(block, group) }}</p>
+              </div>
+
+              <aside
+                v-if="teamDirectoryShowMap(block)"
+                class="igf-team-showcase__map"
+                :aria-labelledby="teamShowcaseMapHeadingId(block, group)"
+              >
+                <div class="igf-team-showcase__map-heading">
+                  <h3 :id="teamShowcaseMapHeadingId(block, group)" class="sr-only">{{ teamDirectoryText(block, 'map_heading') }}</h3>
+                  <button
+                    v-if="activeTeamDirectoryDivision(block, group) !== 'all'"
+                    type="button"
+                    :class="{'is-active': activeTeamDirectoryDivision(block, group) === 'all'}"
+                    :aria-pressed="activeTeamDirectoryDivision(block, group) === 'all' ? 'true' : 'false'"
+                    @click="selectTeamShowcaseDivision(block, group, 'all')"
+                  >{{ teamDirectoryText(block, 'all_divisions') }}</button>
+                </div>
+                <p class="sr-only">{{ teamDirectoryText(block, 'map_help') }}</p>
+                <div class="igf-team-showcase__map-stage">
+                  <svg
+                    class="igf-team-showcase__map-svg"
+                    :viewBox="bangladeshDivisionViewBox"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <g
+                      v-for="division in bangladeshDivisions"
+                      :key="`showcase-path-${division.key}`"
+                      class="igf-team-showcase__map-division"
+                      :class="{
+                        'is-active': activeTeamDirectoryDivision(block, group) === division.key,
+                        'is-preview': isPreviewTeamDirectoryDivision(block, group, division.key),
+                      }"
+                      @click="selectTeamShowcaseMapDivision(block, group, division)"
+                      @mouseenter="previewTeamDirectoryDivision(block, group, division.key)"
+                      @mouseleave="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                    >
+                      <a
+                        v-if="teamShowcaseDivisionHref(block, division)"
+                        :href="teamShowcaseDivisionHref(block, division)"
+                        tabindex="-1"
+                        aria-hidden="true"
+                      ><path :d="division.path" fill-rule="evenodd" /></a>
+                      <path v-else :d="division.path" fill-rule="evenodd" />
+                    </g>
+                  </svg>
+                  <component
+                    v-for="division in bangladeshDivisions"
+                    :key="`showcase-control-${division.key}`"
+                    :is="teamShowcaseDivisionHref(block, division) ? 'a' : 'button'"
+                    :type="teamShowcaseDivisionHref(block, division) ? null : 'button'"
+                    :href="teamShowcaseDivisionHref(block, division) || null"
+                    class="igf-team-showcase__map-control"
+                    :class="{'is-active': activeTeamDirectoryDivision(block, group) === division.key}"
+                    :style="teamShowcaseMapControlStyle(division)"
+                    :aria-label="teamDivisionControlLabel(block, group, division)"
+                    :aria-pressed="teamShowcaseDivisionHref(block, division) ? null : (activeTeamDirectoryDivision(block, group) === division.key ? 'true' : 'false')"
+                    @click="teamShowcaseDivisionHref(block, division) ? null : selectTeamShowcaseDivision(block, group, division.key)"
+                    @mouseenter="previewTeamDirectoryDivision(block, group, division.key)"
+                    @mouseleave="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                    @focus="previewTeamDirectoryDivision(block, group, division.key)"
+                    @blur="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                  >
+                    <i :class="activeTeamDirectoryDivision(block, group) === division.key ? 'fa-solid fa-check' : 'fa-solid fa-location-dot'" aria-hidden="true" />
+                  </component>
+                  <Transition name="igf-team-showcase-tooltip">
+                    <div
+                      v-if="teamShowcaseTooltipDivision(block, group)"
+                      :key="teamShowcaseTooltipDivision(block, group).key"
+                      class="igf-team-showcase__map-tooltip"
+                      :style="teamShowcaseMapControlStyle(teamShowcaseTooltipDivision(block, group))"
+                      aria-hidden="true"
+                    >{{ teamDivisionName(teamShowcaseTooltipDivision(block, group)) }}</div>
+                  </Transition>
+                </div>
+              </aside>
+            </div>
+            <div
+              v-else-if="isTeamDirectoryPresentation(block)"
+              class="igf-team-directory"
+              :class="[
+                `is-map-${teamDirectoryMapPosition(block)}`,
+                `is-profile-${teamDirectoryProfileBehavior(block)}`,
+                {
+                  'is-motion-enabled': teamDirectoryMotionEnabled(block),
+                  'has-visual-map': teamDirectoryShowMap(block),
+                  'has-inline-detail': teamDirectoryShowsInlineDetail(block, group),
+                },
+              ]"
+            >
+              <aside
+                class="igf-team-directory__map"
+                :aria-labelledby="teamDirectoryMapHeadingId(block, group)"
+                :aria-describedby="teamDirectoryMapHelpId(block, group)"
+              >
+                <div class="igf-team-directory__map-heading">
+                  <p class="igf-page-block__eyebrow">{{ teamDirectoryText(block, 'map_eyebrow') }}</p>
+                  <h3 :id="teamDirectoryMapHeadingId(block, group)">{{ teamDirectoryText(block, 'map_heading') }}</h3>
+                  <p :id="teamDirectoryMapHelpId(block, group)">{{ teamDirectoryText(block, 'map_help') }}</p>
+                </div>
+                <figure
+                  v-if="teamDirectoryShowMap(block)"
+                  class="igf-team-directory__map-figure"
+                >
+                  <svg
+                    class="igf-team-directory__map-svg"
+                    :viewBox="bangladeshDivisionViewBox"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <g
+                      v-for="division in bangladeshDivisions"
+                      :key="division.key"
+                      class="igf-team-directory__map-division"
+                      :class="{
+                        'is-active': activeTeamDirectoryDivision(block, group) === division.key,
+                        'is-preview': isPreviewTeamDirectoryDivision(block, group, division.key),
+                      }"
+                      @click="selectTeamDirectoryDivision(block, group, division.key)"
+                      @mouseenter="previewTeamDirectoryDivision(block, group, division.key)"
+                      @mouseleave="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                    >
+                      <title>{{ teamDivisionControlLabel(block, group, division) }}</title>
+                      <path :d="division.path" fill-rule="evenodd" />
+                    </g>
+                    <g
+                      v-if="activeTeamDirectoryMapDivision(block, group)"
+                      class="igf-team-directory__map-marker"
+                      :transform="`translate(${activeTeamDirectoryMapDivision(block, group).labelX} ${activeTeamDirectoryMapDivision(block, group).labelY})`"
+                    >
+                      <circle r="14" />
+                      <path d="M-6 0 -2 5 7-6" />
+                    </g>
+                  </svg>
+                  <figcaption class="igf-team-directory__map-feedback">
+                    <span aria-hidden="true"><i class="fa-solid fa-location-dot" /></span>
+                    <span>
+                      <strong>{{ teamDirectoryMapFeedbackName(block, group) }}</strong>
+                      <small>{{ teamDirectoryMapFeedbackCount(block, group) }}</small>
+                    </span>
+                  </figcaption>
+                </figure>
+                <div class="igf-team-directory__division-controls" role="group" :aria-label="teamDirectoryText(block, 'division_filters_label')">
+                  <button
+                    type="button"
+                    :class="{'is-active': activeTeamDirectoryDivision(block, group) === 'all'}"
+                    :aria-pressed="activeTeamDirectoryDivision(block, group) === 'all' ? 'true' : 'false'"
+                    :aria-controls="teamDirectoryPeopleRegionId(block, group)"
+                    @click="selectTeamDirectoryDivision(block, group, 'all')"
+                    @mouseenter="previewTeamDirectoryDivision(block, group, 'all')"
+                    @mouseleave="clearPreviewTeamDirectoryDivision(block, group, 'all')"
+                    @focus="previewTeamDirectoryDivision(block, group, 'all')"
+                    @blur="clearPreviewTeamDirectoryDivision(block, group, 'all')"
+                  >
+                    <span>{{ teamDirectoryText(block, 'all_divisions') }} <i v-if="activeTeamDirectoryDivision(block, group) === 'all'" class="fa-solid fa-check" aria-hidden="true" /></span>
+                    <small>{{ teamDirectoryEntries(group).length }}</small>
+                  </button>
+                  <button
+                    v-for="division in bangladeshDivisions"
+                    :key="`division-filter-${division.key}`"
+                    type="button"
+                    :class="{'is-active': activeTeamDirectoryDivision(block, group) === division.key}"
+                    :aria-pressed="activeTeamDirectoryDivision(block, group) === division.key ? 'true' : 'false'"
+                    :aria-controls="teamDirectoryPeopleRegionId(block, group)"
+                    @click="selectTeamDirectoryDivision(block, group, division.key)"
+                    @mouseenter="previewTeamDirectoryDivision(block, group, division.key)"
+                    @mouseleave="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                    @focus="previewTeamDirectoryDivision(block, group, division.key)"
+                    @blur="clearPreviewTeamDirectoryDivision(block, group, division.key)"
+                  >
+                    <span>{{ teamDivisionName(division) }} <i v-if="activeTeamDirectoryDivision(block, group) === division.key" class="fa-solid fa-check" aria-hidden="true" /></span>
+                    <small>{{ teamDivisionCount(group, division.key) }}</small>
+                  </button>
+                </div>
+              </aside>
+
+              <div
+                :id="teamDirectoryPeopleRegionId(block, group)"
+                class="igf-team-directory__people"
+                :aria-labelledby="teamDirectoryPeopleHeadingId(block, group)"
+              >
+                <div class="igf-team-directory__people-heading">
+                  <h3 :id="teamDirectoryPeopleHeadingId(block, group)">{{ teamDirectoryText(block, 'people_heading') }}</h3>
+                  <span aria-hidden="true">{{ teamDirectoryFilteredEntries(block, group).length }}</span>
+                </div>
+                <ul v-if="teamDirectoryFilteredEntries(block, group).length" class="igf-team-directory__people-list">
+                  <li v-for="entry in teamDirectoryFilteredEntries(block, group)" :key="entry.key">
+                    <component
+                      :id="teamDirectoryPersonButtonId(block, group, entry)"
+                      :is="teamDirectoryPersonElement(block, entry.item)"
+                      :type="teamDirectoryMemberBehavior(block, entry.item) === 'link' ? null : 'button'"
+                      :href="teamDirectoryMemberBehavior(block, entry.item) === 'link' ? teamDirectoryMemberHref(entry.item) : null"
+                      class="igf-team-directory__person"
+                      :class="{'is-active': teamDirectoryMemberBehavior(block, entry.item) !== 'link' && isActiveTeamDirectoryMember(block, group, entry)}"
+                      :aria-pressed="teamDirectoryMemberBehavior(block, entry.item) === 'link' ? null : (isActiveTeamDirectoryMember(block, group, entry) ? 'true' : 'false')"
+                      :aria-controls="teamDirectoryPersonControlsId(block, group, entry)"
+                      :aria-haspopup="teamDirectoryMemberBehavior(block, entry.item) === 'modal' ? 'dialog' : null"
+                      :aria-expanded="teamDirectoryMemberBehavior(block, entry.item) === 'modal' ? (isTeamDirectoryDialogOpen(block, group, entry) ? 'true' : 'false') : null"
+                      @click="activateTeamDirectoryMember(block, group, entry, $event)"
+                      @keydown="handleTeamDirectoryPersonKeydown(block, group, entry, $event)"
+                    >
+                      <span class="igf-team-directory__person-media">
+                        <img
+                          v-if="teamImageAvailable(block, entry.item, entry.index)"
+                          :src="entry.item.image"
+                          :alt="entry.item.image_alt || ''"
+                          width="72"
+                          height="72"
+                          loading="lazy"
+                          decoding="async"
+                          @error="markTeamImageFailed(block, entry.item, entry.index)"
+                        >
+                        <span v-else aria-hidden="true">{{ initials(entry.item.heading) }}</span>
+                      </span>
+                      <span class="igf-team-directory__person-copy">
+                        <strong>{{ entry.item.heading }}</strong>
+                        <small v-if="teamDesignation(entry.item)">{{ teamDesignation(entry.item) }}</small>
+                        <em v-if="teamMemberDivisionName(entry.item)">
+                          <i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ teamMemberDivisionName(entry.item) }}
+                        </em>
+                      </span>
+                      <i :class="teamDirectoryMemberBehavior(block, entry.item) === 'link' ? 'fa-solid fa-arrow-up-right-from-square' : 'fa-solid fa-arrow-right'" aria-hidden="true" />
+                    </component>
+                  </li>
+                </ul>
+                <p v-else class="igf-team-directory__empty" role="status">
+                  {{ teamDirectoryText(block, 'empty_division') }}
+                </p>
+              </div>
+
+              <article
+                v-if="activeTeamDirectoryEntry(block, group) && teamDirectoryShowsInlineDetail(block, group)"
+                :id="teamDirectoryDetailsId(block, group)"
+                :key="activeTeamDirectoryEntry(block, group).key"
+                class="igf-team-directory__detail"
+                role="region"
+                :aria-labelledby="teamDirectoryPersonButtonId(block, group, activeTeamDirectoryEntry(block, group))"
+              >
+                <div class="igf-team-directory__detail-profile">
+                  <div class="igf-team-directory__detail-media">
+                    <img
+                      v-if="teamImageAvailable(block, activeTeamDirectoryEntry(block, group).item, activeTeamDirectoryEntry(block, group).index)"
+                      :src="activeTeamDirectoryEntry(block, group).item.image"
+                      :alt="activeTeamDirectoryEntry(block, group).item.image_alt || activeTeamDirectoryEntry(block, group).item.heading || ''"
+                      width="160"
+                      height="160"
+                      loading="lazy"
+                      decoding="async"
+                      @error="markTeamImageFailed(block, activeTeamDirectoryEntry(block, group).item, activeTeamDirectoryEntry(block, group).index)"
+                    >
+                    <span v-else aria-hidden="true">{{ initials(activeTeamDirectoryEntry(block, group).item.heading) }}</span>
+                  </div>
+                  <div>
+                    <p class="igf-page-block__eyebrow">{{ teamDirectoryText(block, 'profile_eyebrow') }}</p>
+                    <h3>{{ activeTeamDirectoryEntry(block, group).item.heading }}</h3>
+                    <p v-if="teamDesignation(activeTeamDirectoryEntry(block, group).item)" class="igf-team-directory__detail-role">
+                      {{ teamDesignation(activeTeamDirectoryEntry(block, group).item) }}
+                    </p>
+                    <p v-if="teamMemberDivisionName(activeTeamDirectoryEntry(block, group).item)" class="igf-team-directory__detail-division">
+                      <i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ teamMemberDivisionName(activeTeamDirectoryEntry(block, group).item) }}
+                    </p>
+                  </div>
+                </div>
+                <p v-if="activeTeamDirectoryEntry(block, group).item.biography" class="igf-team-directory__biography">
+                  <span class="sr-only">{{ teamText('biography') }}: </span>{{ activeTeamDirectoryEntry(block, group).item.biography }}
+                </p>
+                <p v-if="activeTeamDirectoryEntry(block, group).item.qualification" class="igf-team-directory__qualification">
+                  <strong>{{ teamText('qualification') }}:</strong> {{ activeTeamDirectoryEntry(block, group).item.qualification }}
+                </p>
+                <ul
+                  v-if="teamSocialLinks(activeTeamDirectoryEntry(block, group).item).length"
+                  class="igf-team-directory__socials"
+                  :aria-label="teamText('social_links')"
+                >
+                  <li
+                    v-for="(link, linkIndex) in teamSocialLinks(activeTeamDirectoryEntry(block, group).item)"
+                    :key="`${link.platform}-${link.url}-${linkIndex}`"
+                  >
+                    <a
+                      :href="link.url"
+                      :target="link.external ? '_blank' : null"
+                      :rel="link.external ? 'noopener noreferrer' : null"
+                      :aria-label="teamSocialAriaLabel(link, activeTeamDirectoryEntry(block, group).item)"
+                    >
+                      <i :class="teamSocialIcon(link.platform)" aria-hidden="true" />
+                      <span>{{ teamSocialCtaLabel(link) }}</span>
+                    </a>
+                  </li>
+                </ul>
+              </article>
+
+              <Teleport to="body">
+                <div
+                  v-if="activeTeamDirectoryEntry(block, group) && isTeamDirectoryDialogOpen(block, group, activeTeamDirectoryEntry(block, group))"
+                  class="igf-team-directory-dialog"
+                  @click.self="closeTeamDirectoryDialog"
+                >
+                  <article
+                    :id="teamDirectoryDialogId(block, group)"
+                    class="igf-team-directory__detail igf-team-directory-dialog__panel"
+                    role="dialog"
+                    aria-modal="true"
+                    :aria-labelledby="teamDirectoryDialogHeadingId(block, group)"
+                    @keydown="handleTeamDirectoryDialogKeydown"
+                  >
+                    <button
+                      type="button"
+                      class="igf-team-directory-dialog__close"
+                      :aria-label="teamDirectoryText(block, 'close_profile')"
+                      @click="closeTeamDirectoryDialog"
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true" />
+                    </button>
+                    <div class="igf-team-directory__detail-profile">
+                      <div class="igf-team-directory__detail-media">
+                        <img
+                          v-if="teamImageAvailable(block, activeTeamDirectoryEntry(block, group).item, activeTeamDirectoryEntry(block, group).index)"
+                          :src="activeTeamDirectoryEntry(block, group).item.image"
+                          :alt="activeTeamDirectoryEntry(block, group).item.image_alt || activeTeamDirectoryEntry(block, group).item.heading || ''"
+                          width="160"
+                          height="160"
+                          loading="lazy"
+                          decoding="async"
+                          @error="markTeamImageFailed(block, activeTeamDirectoryEntry(block, group).item, activeTeamDirectoryEntry(block, group).index)"
+                        >
+                        <span v-else aria-hidden="true">{{ initials(activeTeamDirectoryEntry(block, group).item.heading) }}</span>
+                      </div>
+                      <div>
+                        <p class="igf-page-block__eyebrow">{{ teamDirectoryText(block, 'profile_eyebrow') }}</p>
+                        <h3 :id="teamDirectoryDialogHeadingId(block, group)">{{ activeTeamDirectoryEntry(block, group).item.heading }}</h3>
+                        <p v-if="teamDesignation(activeTeamDirectoryEntry(block, group).item)" class="igf-team-directory__detail-role">
+                          {{ teamDesignation(activeTeamDirectoryEntry(block, group).item) }}
+                        </p>
+                        <p v-if="teamMemberDivisionName(activeTeamDirectoryEntry(block, group).item)" class="igf-team-directory__detail-division">
+                          <i class="fa-solid fa-location-dot" aria-hidden="true" /> {{ teamMemberDivisionName(activeTeamDirectoryEntry(block, group).item) }}
+                        </p>
+                      </div>
+                    </div>
+                    <p v-if="activeTeamDirectoryEntry(block, group).item.biography" class="igf-team-directory__biography">
+                      <span class="sr-only">{{ teamText('biography') }}: </span>{{ activeTeamDirectoryEntry(block, group).item.biography }}
+                    </p>
+                    <p v-if="activeTeamDirectoryEntry(block, group).item.qualification" class="igf-team-directory__qualification">
+                      <strong>{{ teamText('qualification') }}:</strong> {{ activeTeamDirectoryEntry(block, group).item.qualification }}
+                    </p>
+                    <ul
+                      v-if="teamSocialLinks(activeTeamDirectoryEntry(block, group).item).length"
+                      class="igf-team-directory__socials"
+                      :aria-label="teamText('social_links')"
+                    >
+                      <li
+                        v-for="(link, linkIndex) in teamSocialLinks(activeTeamDirectoryEntry(block, group).item)"
+                        :key="`dialog-${link.platform}-${link.url}-${linkIndex}`"
+                      >
+                        <a
+                          :href="link.url"
+                          :target="link.external ? '_blank' : null"
+                          :rel="link.external ? 'noopener noreferrer' : null"
+                          :aria-label="teamSocialAriaLabel(link, activeTeamDirectoryEntry(block, group).item)"
+                        >
+                          <i :class="teamSocialIcon(link.platform)" aria-hidden="true" />
+                          <span>{{ teamSocialCtaLabel(link) }}</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </article>
+                </div>
+              </Teleport>
+
+              <p
+                :id="teamDirectoryStatusId(block, group)"
+                class="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >{{ teamDirectoryStatus(block, group) }}</p>
+            </div>
+            <div v-else class="igf-team-grid">
           <article
             v-for="(item, index) in group.items"
             :key="item.id ?? index"
@@ -1319,6 +1862,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import bangladeshDivisionMapData from '../../data/bangladesh-divisions.json';
 import { formatDate, formatMoney, formatNumber, interpolateSetting } from './composables/siteSettings';
 import { responsiveBackgroundPresentation, responsiveImagePresentation } from './composables/responsiveImage';
 
@@ -1429,14 +1973,29 @@ const hoverTeamCardKey = ref('');
 const viewportTeamCardKey = ref('');
 const failedTeamImageKeys = ref(new Set());
 const activeTeamGroupKeys = ref({});
+const activeTeamDirectoryDivisions = ref({});
+const previewTeamDirectoryDivisions = ref({});
+const activeTeamDirectoryMembers = ref({});
+const teamShowcaseUserPaused = ref({});
+const teamShowcaseInteractionPaused = ref({});
+const teamShowcaseAnnounceChanges = ref({});
+const prefersReducedMotion = ref(typeof window !== 'undefined' && Boolean(
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+));
+const openTeamDirectoryDialogKey = ref('');
 const heroTouchStarts = new Map();
 const galleryTouchStarts = new Map();
 const heroLastAdvanced = new Map();
+const teamShowcaseLastAdvanced = new Map();
+const teamShowcaseDragStates = new Map();
+const teamShowcaseSuppressedClicks = new Set();
 let heroClock = null;
 let statObserver = null;
 let teamObserver = null;
 let focusAreaObserver = null;
 let testimonialMobileQuery = null;
+let reducedMotionQuery = null;
+let teamDirectoryDialogReturnTarget = null;
 const statAnimationFrames = new Set();
 
 const iconMap = {
@@ -1461,6 +2020,100 @@ const teamSettingKeys = Object.freeze({
   linkedin: 'team_linkedin_label',
   website: 'team_website_label',
 });
+const teamDirectoryPresentations = new Set(['directory_map', 'map_directory']);
+const teamHeroesShowcasePresentations = new Set(['heroes_showcase']);
+const teamDirectoryCopy = Object.freeze({
+  en: Object.freeze({
+    map_eyebrow: 'Explore by place',
+    map_heading: 'Bangladesh divisions',
+    map_help: 'Choose a division on the map or from the list.',
+    map_all_count_one: '1 person across Bangladesh',
+    map_all_count: '{count} people across Bangladesh',
+    map_division_count_one: '1 person in this division',
+    map_division_count: '{count} people in this division',
+    division_filters_label: 'Filter people by division',
+    all_divisions: 'All divisions',
+    people_heading: 'People',
+    profile_eyebrow: 'Profile',
+    close_profile: 'Close profile',
+    empty_division: 'No published people are assigned to this division yet.',
+    showing_all_one: 'Showing 1 person across all divisions.',
+    showing_all: 'Showing {count} people across all divisions.',
+    showing_division_one: 'Showing 1 person in {division}.',
+    showing_division: 'Showing {count} people in {division}.',
+    selected_profile: 'Selected profile: {name}.',
+    division_count_one: '{division}, 1 person',
+    division_count: '{division}, {count} people',
+    people_label: 'Choose a person',
+    navigation_label: 'Team profile controls',
+    person_picker_label: 'Choose a team profile',
+    previous_person: 'Show the previous person',
+    next_person: 'Show the next person',
+    show_person: 'Show {name}, profile {current} of {total}',
+    pause: 'Pause automatic profile changes',
+    play: 'Play automatic profile changes',
+  }),
+  bn: Object.freeze({
+    map_eyebrow: 'স্থান অনুযায়ী খুঁজুন',
+    map_heading: 'বাংলাদেশের বিভাগসমূহ',
+    map_help: 'মানচিত্র অথবা তালিকা থেকে একটি বিভাগ বেছে নিন।',
+    map_all_count_one: 'বাংলাদেশজুড়ে {count} জন সদস্য',
+    map_all_count: 'বাংলাদেশজুড়ে {count} জন সদস্য',
+    map_division_count_one: 'এই বিভাগে {count} জন সদস্য',
+    map_division_count: 'এই বিভাগে {count} জন সদস্য',
+    division_filters_label: 'বিভাগ অনুযায়ী সদস্য ফিল্টার করুন',
+    all_divisions: 'সব বিভাগ',
+    people_heading: 'সদস্যবৃন্দ',
+    profile_eyebrow: 'পরিচিতি',
+    close_profile: 'পরিচিতি বন্ধ করুন',
+    empty_division: 'এই বিভাগে এখনো কোনো প্রকাশিত সদস্য যুক্ত করা হয়নি।',
+    showing_all_one: 'সব বিভাগে {count} জন সদস্য দেখানো হচ্ছে।',
+    showing_all: 'সব বিভাগে {count} জন সদস্য দেখানো হচ্ছে।',
+    showing_division_one: '{division} বিভাগে {count} জন সদস্য দেখানো হচ্ছে।',
+    showing_division: '{division} বিভাগে {count} জন সদস্য দেখানো হচ্ছে।',
+    selected_profile: 'নির্বাচিত পরিচিতি: {name}।',
+    division_count_one: '{division}, {count} জন সদস্য',
+    division_count: '{division}, {count} জন সদস্য',
+    people_label: 'একজন সদস্য বেছে নিন',
+    navigation_label: 'দলের পরিচিতি নিয়ন্ত্রণ',
+    person_picker_label: 'দলের পরিচিতি বেছে নিন',
+    previous_person: 'আগের সদস্যকে দেখুন',
+    next_person: 'পরের সদস্যকে দেখুন',
+    show_person: '{name}-এর পরিচিতি দেখুন, {total}টির মধ্যে {current}',
+    pause: 'স্বয়ংক্রিয় পরিচিতি পরিবর্তন থামান',
+    play: 'স্বয়ংক্রিয় পরিচিতি পরিবর্তন চালু করুন',
+  }),
+});
+const bangladeshDivisionViewBox = String(bangladeshDivisionMapData.viewBox || '0 0 420 560');
+const bangladeshDivisionViewBoxParts = bangladeshDivisionViewBox.split(/\s+/).map(Number);
+const bangladeshDivisionMapBounds = Object.freeze({
+  x: Number.isFinite(bangladeshDivisionViewBoxParts[0]) ? bangladeshDivisionViewBoxParts[0] : 0,
+  y: Number.isFinite(bangladeshDivisionViewBoxParts[1]) ? bangladeshDivisionViewBoxParts[1] : 0,
+  width: Number.isFinite(bangladeshDivisionViewBoxParts[2]) && bangladeshDivisionViewBoxParts[2] > 0 ? bangladeshDivisionViewBoxParts[2] : 420,
+  height: Number.isFinite(bangladeshDivisionViewBoxParts[3]) && bangladeshDivisionViewBoxParts[3] > 0 ? bangladeshDivisionViewBoxParts[3] : 560,
+});
+const bangladeshDivisions = Object.freeze((bangladeshDivisionMapData.divisions || []).map(division => Object.freeze({
+  key: String(division.key || ''),
+  names: Object.freeze({
+    en: String(division.names?.en || ''),
+    bn: String(division.names?.bn || division.names?.en || ''),
+  }),
+  path: String(division.path || ''),
+  labelX: Number(division.labelX || 0),
+  labelY: Number(division.labelY || 0),
+})));
+const teamDivisionAliases = Object.freeze({
+  barisal: 'barishal',
+  barishal: 'barishal',
+  chittagong: 'chattogram',
+  chattogram: 'chattogram',
+  dhaka: 'dhaka',
+  khulna: 'khulna',
+  mymensingh: 'mymensingh',
+  rajshahi: 'rajshahi',
+  rangpur: 'rangpur',
+  sylhet: 'sylhet',
+});
 
 function iconClass(icon) { return iconMap[icon] || 'fa-solid fa-circle-dot'; }
 function initials(name = '') { return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
@@ -1482,6 +2135,49 @@ function partnerLinkLabel(item) {
 }
 function teamText(key) {
   return shared.value[teamSettingKeys[key]] || '';
+}
+function pageLocale() {
+  return String(page.props.locale || 'en').toLowerCase().startsWith('bn') ? 'bn' : 'en';
+}
+function teamDirectoryText(block, key) {
+  return block?.content?.[`directory_${key}`]
+    || shared.value[`team_directory_${key}`]
+    || teamDirectoryCopy[pageLocale()][key]
+    || teamDirectoryCopy.en[key]
+    || '';
+}
+function teamPresentation(block) {
+  return String(block?.content?.team_presentation || block?.content?.presentation || 'cards')
+    .trim()
+    .toLowerCase();
+}
+function isTeamDirectoryPresentation(block) {
+  return teamDirectoryPresentations.has(teamPresentation(block));
+}
+function isTeamHeroesShowcase(block) {
+  return teamHeroesShowcasePresentations.has(teamPresentation(block));
+}
+function teamDirectoryShowMap(block) {
+  const value = block?.content?.show_map;
+  return ![false, 0, '0', 'false'].includes(value);
+}
+function teamDirectoryMapPosition(block) {
+  return String(block?.content?.map_position || '').trim().toLowerCase() === 'right' ? 'right' : 'left';
+}
+function teamDirectoryProfileBehavior(block) {
+  const requested = teamDomToken(block?.content?.profile_behavior, 'inline');
+  if (['inline', 'compact', 'expanded'].includes(requested)) return 'panel';
+  return ['panel', 'modal', 'link'].includes(requested) ? requested : 'panel';
+}
+function teamDirectoryMotionEnabled(block) {
+  const value = block?.content?.animation_enabled;
+  return ![false, 0, '0', 'false'].includes(value);
+}
+function teamShowcaseText(block, key, replacements = {}) {
+  return interpolateSetting(teamDirectoryText(block, key), replacements);
+}
+function teamDivisionName(division) {
+  return division?.names?.[pageLocale()] || division?.names?.en || '';
 }
 function heroDotLabel(index, total) {
   return interpolateSetting(shared.value.hero_show_slide_label, { current: index + 1, total });
@@ -1649,6 +2345,9 @@ function teamHasItems(block) {
 function hasTeamTabs(block) {
   return teamGroups(block).some(group => group.managed);
 }
+function teamRendersTabs(block) {
+  return hasTeamTabs(block) && (!isTeamHeroesShowcase(block) || teamGroups(block).length > 1);
+}
 function isActiveTeamGroup(block, group) {
   return activeTeamGroup(block)?.key === group?.key;
 }
@@ -1663,6 +2362,510 @@ function teamPanelId(block, group) {
 }
 function teamPanelDescriptionId(block, group) {
   return `${teamPanelId(block, group)}-description`;
+}
+function teamDirectoryStateKey(block, group) {
+  return `${teamBlockStateKey(block)}:${String(group?.key || 'all')}`;
+}
+function teamDirectoryEntries(group) {
+  return (Array.isArray(group?.items) ? group.items : []).map((item, index) => ({
+    item,
+    index,
+    key: `${teamDomToken(item?.id ?? item?.uuid ?? item?.heading, 'person')}-${index + 1}`,
+  }));
+}
+function normalizedTeamDivisionKey(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+
+  const localizedMatch = bangladeshDivisions.find(division => Object.values(division.names)
+    .some(name => raw === String(name).toLowerCase() || raw === `${String(name).toLowerCase()} বিভাগ`));
+  if (localizedMatch) return localizedMatch.key;
+
+  const token = raw
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\bdivision\b/g, '')
+    .replace(/[^a-z]+/g, '');
+  return teamDivisionAliases[token] || '';
+}
+function teamMemberDivisionKey(item) {
+  return normalizedTeamDivisionKey(item?.division_slug)
+    || normalizedTeamDivisionKey(item?.division_name)
+    || normalizedTeamDivisionKey(item?.division_label)
+    || normalizedTeamDivisionKey(item?.division?.slug)
+    || normalizedTeamDivisionKey(item?.division?.name);
+}
+function teamMemberDivisionName(item) {
+  const key = teamMemberDivisionKey(item);
+  const division = bangladeshDivisions.find(candidate => candidate.key === key);
+  if (division) return teamDivisionName(division);
+  return String(item?.division_name || item?.division_label || item?.division?.name || '').trim();
+}
+function activeTeamDirectoryDivision(block, group) {
+  const requested = activeTeamDirectoryDivisions.value[teamDirectoryStateKey(block, group)] || 'all';
+  return requested === 'all' || bangladeshDivisions.some(division => division.key === requested)
+    ? requested
+    : 'all';
+}
+function previewTeamDirectoryDivision(block, group, divisionKey) {
+  previewTeamDirectoryDivisions.value = {
+    ...previewTeamDirectoryDivisions.value,
+    [teamDirectoryStateKey(block, group)]: divisionKey,
+  };
+}
+function clearPreviewTeamDirectoryDivision(block, group, divisionKey) {
+  const stateKey = teamDirectoryStateKey(block, group);
+  if (previewTeamDirectoryDivisions.value[stateKey] !== divisionKey) return;
+  previewTeamDirectoryDivisions.value = {
+    ...previewTeamDirectoryDivisions.value,
+    [stateKey]: '',
+  };
+}
+function previewOrActiveTeamDirectoryDivision(block, group) {
+  return previewTeamDirectoryDivisions.value[teamDirectoryStateKey(block, group)]
+    || activeTeamDirectoryDivision(block, group);
+}
+function isPreviewTeamDirectoryDivision(block, group, divisionKey) {
+  return previewTeamDirectoryDivisions.value[teamDirectoryStateKey(block, group)] === divisionKey;
+}
+function activeTeamDirectoryMapDivision(block, group) {
+  const divisionKey = activeTeamDirectoryDivision(block, group);
+  return bangladeshDivisions.find(division => division.key === divisionKey) || null;
+}
+function teamDirectoryMapFeedbackName(block, group) {
+  const divisionKey = previewOrActiveTeamDirectoryDivision(block, group);
+  const division = bangladeshDivisions.find(candidate => candidate.key === divisionKey);
+  return division ? teamDivisionName(division) : teamDirectoryText(block, 'all_divisions');
+}
+function teamDirectoryCountText(block, key, count, replacements = {}) {
+  const copyKey = count === 1 ? `${key}_one` : key;
+  return interpolateSetting(teamDirectoryText(block, copyKey), { ...replacements, count });
+}
+function teamDirectoryMapFeedbackCount(block, group) {
+  const divisionKey = previewOrActiveTeamDirectoryDivision(block, group);
+  const count = divisionKey === 'all'
+    ? teamDirectoryEntries(group).length
+    : teamDivisionCount(group, divisionKey);
+  return teamDirectoryCountText(block, divisionKey === 'all' ? 'map_all_count' : 'map_division_count', count);
+}
+function teamDirectoryFilteredEntries(block, group) {
+  const entries = teamDirectoryEntries(group);
+  const division = activeTeamDirectoryDivision(block, group);
+  return division === 'all'
+    ? entries
+    : entries.filter(entry => teamMemberDivisionKey(entry.item) === division);
+}
+function activeTeamDirectoryEntry(block, group) {
+  const entries = teamDirectoryFilteredEntries(block, group);
+  const selectedKey = activeTeamDirectoryMembers.value[teamDirectoryStateKey(block, group)];
+  return entries.find(entry => entry.key === selectedKey) || entries[0] || null;
+}
+function isActiveTeamDirectoryMember(block, group, entry) {
+  return activeTeamDirectoryEntry(block, group)?.key === entry?.key;
+}
+function teamDirectoryMemberHref(item) {
+  return safeHref(item?.url);
+}
+function teamDirectoryMemberBehavior(block, item) {
+  const behavior = teamDirectoryProfileBehavior(block);
+  return behavior === 'link' && !teamDirectoryMemberHref(item) ? 'panel' : behavior;
+}
+function teamDirectoryPersonElement(block, item) {
+  return teamDirectoryMemberBehavior(block, item) === 'link' ? 'a' : 'button';
+}
+function teamDirectoryShowsInlineDetail(block, group) {
+  const selected = activeTeamDirectoryEntry(block, group);
+  return selected ? teamDirectoryMemberBehavior(block, selected.item) === 'panel' : false;
+}
+function selectTeamDirectoryMember(block, group, entry) {
+  if (!teamDirectoryFilteredEntries(block, group).some(candidate => candidate.key === entry?.key)) return;
+  activeTeamDirectoryMembers.value = {
+    ...activeTeamDirectoryMembers.value,
+    [teamDirectoryStateKey(block, group)]: entry.key,
+  };
+}
+function activateTeamDirectoryMember(block, group, entry, event) {
+  const behavior = teamDirectoryMemberBehavior(block, entry?.item);
+  if (behavior === 'link') return;
+
+  selectTeamDirectoryMember(block, group, entry);
+  if (behavior !== 'modal') return;
+
+  teamDirectoryDialogReturnTarget = event?.currentTarget || null;
+  openTeamDirectoryDialogKey.value = teamDirectoryDialogKey(block, group, entry);
+  nextTick(() => document.getElementById(teamDirectoryDialogId(block, group))
+    ?.querySelector('.igf-team-directory-dialog__close')?.focus());
+}
+function selectTeamDirectoryDivision(block, group, divisionKey) {
+  const selectedDivision = divisionKey === 'all' || bangladeshDivisions.some(division => division.key === divisionKey)
+    ? divisionKey
+    : 'all';
+  const stateKey = teamDirectoryStateKey(block, group);
+  activeTeamDirectoryDivisions.value = {
+    ...activeTeamDirectoryDivisions.value,
+    [stateKey]: selectedDivision,
+  };
+
+  const nextEntry = teamDirectoryFilteredEntries(block, group)[0];
+  activeTeamDirectoryMembers.value = {
+    ...activeTeamDirectoryMembers.value,
+    [stateKey]: nextEntry?.key || '',
+  };
+}
+function handleTeamDirectoryPersonKeydown(block, group, entry, event) {
+  if (teamDirectoryMemberBehavior(block, entry?.item) === 'link') return;
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const entries = teamDirectoryFilteredEntries(block, group);
+  if (entries.length < 2) return;
+
+  const currentIndex = Math.max(0, entries.findIndex(candidate => candidate.key === entry?.key));
+  let nextIndex = currentIndex;
+  if (event.key === 'Home') nextIndex = 0;
+  else if (event.key === 'End') nextIndex = entries.length - 1;
+  else if (['ArrowDown', 'ArrowRight'].includes(event.key)) nextIndex = (currentIndex + 1) % entries.length;
+  else nextIndex = (currentIndex - 1 + entries.length) % entries.length;
+
+  event.preventDefault();
+  const nextEntry = entries[nextIndex];
+  selectTeamDirectoryMember(block, group, nextEntry);
+  nextTick(() => document.getElementById(teamDirectoryPersonButtonId(block, group, nextEntry))?.focus());
+}
+function teamDirectoryMapHeadingId(block, group) {
+  return `${teamPanelId(block, group)}-map-heading`;
+}
+function teamDirectoryMapHelpId(block, group) {
+  return `${teamPanelId(block, group)}-map-help`;
+}
+function teamDirectoryPeopleHeadingId(block, group) {
+  return `${teamPanelId(block, group)}-people-heading`;
+}
+function teamDirectoryPeopleRegionId(block, group) {
+  return `${teamPanelId(block, group)}-people`;
+}
+function teamDirectoryDetailsId(block, group) {
+  return `${teamPanelId(block, group)}-selected-profile`;
+}
+function teamDirectoryDialogId(block, group) {
+  return `${teamPanelId(block, group)}-profile-dialog`;
+}
+function teamDirectoryDialogHeadingId(block, group) {
+  return `${teamDirectoryDialogId(block, group)}-heading`;
+}
+function teamDirectoryDialogKey(block, group, entry) {
+  return `${teamDirectoryStateKey(block, group)}:${String(entry?.key || '')}`;
+}
+function isTeamDirectoryDialogOpen(block, group, entry) {
+  return openTeamDirectoryDialogKey.value === teamDirectoryDialogKey(block, group, entry);
+}
+function teamDirectoryPersonControlsId(block, group, entry) {
+  const behavior = teamDirectoryMemberBehavior(block, entry?.item);
+  if (behavior === 'modal') return teamDirectoryDialogId(block, group);
+  if (behavior === 'panel') return teamDirectoryDetailsId(block, group);
+  return null;
+}
+function closeTeamDirectoryDialog() {
+  const returnTarget = teamDirectoryDialogReturnTarget;
+  openTeamDirectoryDialogKey.value = '';
+  teamDirectoryDialogReturnTarget = null;
+  nextTick(() => returnTarget?.isConnected && returnTarget.focus?.());
+}
+function handleTeamDirectoryDialogKeydown(event) {
+  if (['Escape', 'Esc'].includes(event.key)) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeTeamDirectoryDialog();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+
+  const dialog = event.currentTarget?.matches?.('[role="dialog"]')
+    ? event.currentTarget
+    : document.querySelector('.igf-team-directory-dialog__panel[role="dialog"]');
+  const controls = [...(dialog?.querySelectorAll(
+    'a[href], button:not(:disabled), [tabindex]:not([tabindex="-1"])',
+  ) || [])].filter(control => !control.hidden);
+  if (!controls.length) return;
+  const first = controls[0];
+  const last = controls[controls.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+function teamDirectoryStatusId(block, group) {
+  return `${teamPanelId(block, group)}-directory-status`;
+}
+function teamDirectoryPersonButtonId(block, group, entry) {
+  return `${teamPanelId(block, group)}-person-${teamDomToken(entry?.key, 'member')}`;
+}
+function teamDivisionCount(group, divisionKey) {
+  return teamDirectoryEntries(group).filter(entry => teamMemberDivisionKey(entry.item) === divisionKey).length;
+}
+function teamDivisionControlLabel(block, group, division) {
+  const count = teamDivisionCount(group, division.key);
+  return teamDirectoryCountText(block, 'division_count', count, { division: teamDivisionName(division) });
+}
+function teamDirectoryStatus(block, group) {
+  const entries = teamDirectoryFilteredEntries(block, group);
+  const divisionKey = activeTeamDirectoryDivision(block, group);
+  const division = bangladeshDivisions.find(candidate => candidate.key === divisionKey);
+  const result = division
+    ? teamDirectoryCountText(block, 'showing_division', entries.length, { division: teamDivisionName(division) })
+    : teamDirectoryCountText(block, 'showing_all', entries.length);
+  const selected = activeTeamDirectoryEntry(block, group);
+  return selected
+    ? `${result} ${interpolateSetting(teamDirectoryText(block, 'selected_profile'), { name: selected.item.heading || teamText('team_member') })}`
+    : result;
+}
+function teamShowcaseHeadingId(block, group) {
+  return `${teamPanelId(block, group)}-showcase-heading`;
+}
+function teamShowcaseHeadingParts(value) {
+  const words = String(value || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return { prefix: '', emphasis: '' };
+  return {
+    prefix: words.slice(0, -1).join(' '),
+    emphasis: words.at(-1),
+  };
+}
+function teamShowcaseRailId(block, group) {
+  return `${teamPanelId(block, group)}-showcase-rail`;
+}
+function teamShowcaseProfileId(block, group) {
+  return `${teamPanelId(block, group)}-showcase-profile`;
+}
+function teamShowcaseProfileHeadingId(block, group) {
+  return `${teamShowcaseProfileId(block, group)}-heading`;
+}
+function teamShowcaseMapHeadingId(block, group) {
+  return `${teamPanelId(block, group)}-showcase-map-heading`;
+}
+function teamShowcaseStatusId(block, group) {
+  return `${teamPanelId(block, group)}-showcase-status`;
+}
+function teamShowcaseMemberId(block, group, entry) {
+  return `${teamPanelId(block, group)}-showcase-person-${teamDomToken(entry?.key, 'member')}`;
+}
+function teamShowcaseDivisionHref(block, division) {
+  const divisionKey = division?.key;
+  if (!divisionKey) return '';
+
+  const content = block?.content || {};
+  const linkCollections = [
+    content.division_links,
+    content.team_division_links,
+    content.map?.division_links,
+  ];
+  let candidate = '';
+  for (const collection of linkCollections) {
+    if (Array.isArray(collection)) {
+      const match = collection.find(link => normalizedTeamDivisionKey(link?.slug || link?.key || link?.name) === divisionKey);
+      candidate = match?.url || match?.href || '';
+    } else if (collection && typeof collection === 'object') {
+      const match = collection[divisionKey];
+      candidate = typeof match === 'object' ? (match?.url || match?.href || '') : match;
+    }
+    if (candidate) break;
+  }
+
+  if (!candidate) {
+    const configuredDivisions = [content.divisions, content.map?.divisions].find(Array.isArray) || [];
+    const match = configuredDivisions.find(item => normalizedTeamDivisionKey(item?.slug || item?.key || item?.name) === divisionKey);
+    candidate = match?.url || match?.href || '';
+  }
+
+  if (!candidate) {
+    const member = teamGroups(block).flatMap(group => Array.isArray(group?.items) ? group.items : [])
+      .find(item => teamMemberDivisionKey(item) === divisionKey && (item?.division_url || item?.division?.url));
+    candidate = member?.division_url || member?.division?.url || '';
+  }
+
+  const canonical = `/meet-the-heroes/division/${encodeURIComponent(divisionKey)}`;
+  if ([true, 1, '1', 'true'].includes(candidate) || [true, 1, '1', 'true'].includes(content.division_links_enabled)) return canonical;
+  const href = safeHref(candidate);
+  if (!href) return '';
+  try {
+    const parsed = new URL(href, 'https://igf.invalid');
+    return parsed.pathname === canonical ? `${canonical}${parsed.search}${parsed.hash}` : '';
+  } catch {
+    return '';
+  }
+}
+function selectTeamShowcaseMapDivision(block, group, division) {
+  if (teamShowcaseDivisionHref(block, division)) return;
+  selectTeamShowcaseDivision(block, group, division.key);
+}
+function teamShowcaseMapControlStyle(division) {
+  const left = ((Number(division?.labelX || 0) - bangladeshDivisionMapBounds.x) / bangladeshDivisionMapBounds.width) * 100;
+  const top = ((Number(division?.labelY || 0) - bangladeshDivisionMapBounds.y) / bangladeshDivisionMapBounds.height) * 100;
+  return {
+    left: `${Math.min(96, Math.max(4, left))}%`,
+    top: `${Math.min(96, Math.max(4, top))}%`,
+  };
+}
+function teamShowcaseTooltipDivision(block, group) {
+  const divisionKey = previewOrActiveTeamDirectoryDivision(block, group);
+  return bangladeshDivisions.find(division => division.key === divisionKey) || null;
+}
+function activeTeamShowcaseIndex(block, group) {
+  const entries = teamDirectoryFilteredEntries(block, group);
+  const activeKey = activeTeamDirectoryEntry(block, group)?.key;
+  return Math.max(0, entries.findIndex(entry => entry.key === activeKey));
+}
+function teamShowcaseDotLabel(block, group, entry, index) {
+  return teamShowcaseText(block, 'show_person', {
+    name: entry?.item?.heading || teamText('team_member') || 'Team member',
+    current: index + 1,
+    total: teamDirectoryFilteredEntries(block, group).length,
+  });
+}
+function teamShowcaseDragKey(block, group) {
+  return teamShowcaseRailId(block, group);
+}
+function startTeamShowcaseDrag(block, group, event) {
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  const rail = event.currentTarget;
+  const key = teamShowcaseDragKey(block, group);
+  teamShowcaseDragStates.set(key, {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startScrollLeft: rail.scrollLeft,
+    moved: false,
+  });
+  rail.setPointerCapture?.(event.pointerId);
+  rail.classList.add('is-dragging');
+  pauseTeamShowcaseInteraction(block, true);
+}
+function moveTeamShowcaseDrag(block, group, event) {
+  const key = teamShowcaseDragKey(block, group);
+  const state = teamShowcaseDragStates.get(key);
+  if (!state || state.pointerId !== event.pointerId) return;
+  const distance = event.clientX - state.startX;
+  if (Math.abs(distance) > 6) state.moved = true;
+  if (!state.moved) return;
+  event.preventDefault();
+  event.currentTarget.scrollLeft = state.startScrollLeft - distance;
+}
+function endTeamShowcaseDrag(block, group, event) {
+  const key = teamShowcaseDragKey(block, group);
+  const state = teamShowcaseDragStates.get(key);
+  if (!state || state.pointerId !== event.pointerId) return;
+  if (state.moved) {
+    teamShowcaseSuppressedClicks.add(key);
+    window.setTimeout(() => teamShowcaseSuppressedClicks.delete(key), 0);
+  }
+  event.currentTarget.classList.remove('is-dragging');
+  if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+  teamShowcaseDragStates.delete(key);
+  pauseTeamShowcaseInteraction(block, false);
+}
+function activateTeamShowcaseMember(block, group, entry, event) {
+  const key = teamShowcaseDragKey(block, group);
+  if (teamShowcaseSuppressedClicks.has(key)) {
+    event.preventDefault();
+    return;
+  }
+  selectTeamShowcaseMember(block, group, entry, true);
+}
+function scrollTeamShowcaseToEntry(block, group, entry, focus = false) {
+  nextTick(() => {
+    const rail = document.getElementById(teamShowcaseRailId(block, group));
+    const control = document.getElementById(teamShowcaseMemberId(block, group, entry));
+    if (rail && control && typeof rail.scrollTo === 'function') {
+      rail.scrollTo({
+        left: Math.max(0, control.offsetLeft - ((rail.clientWidth - control.offsetWidth) / 2)),
+        behavior: teamDirectoryMotionEnabled(block) && !prefersReducedMotion.value ? 'smooth' : 'auto',
+      });
+    }
+    if (focus) control?.focus?.();
+  });
+}
+function selectTeamShowcaseMember(block, group, entry, focus = false, announce = true) {
+  selectTeamDirectoryMember(block, group, entry);
+  teamShowcaseAnnounceChanges.value = {
+    ...teamShowcaseAnnounceChanges.value,
+    [teamBlockStateKey(block)]: announce,
+  };
+  teamShowcaseLastAdvanced.set(teamBlockStateKey(block), Date.now());
+  scrollTeamShowcaseToEntry(block, group, entry, focus);
+}
+function moveTeamShowcase(block, group, direction, focus = false, announce = true) {
+  const entries = teamDirectoryFilteredEntries(block, group);
+  if (entries.length < 2) return;
+  const nextIndex = (activeTeamShowcaseIndex(block, group) + direction + entries.length) % entries.length;
+  selectTeamShowcaseMember(block, group, entries[nextIndex], focus, announce);
+}
+function handleTeamShowcasePersonKeydown(block, group, entry, event) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const entries = teamDirectoryFilteredEntries(block, group);
+  if (entries.length < 2) return;
+
+  const currentIndex = Math.max(0, entries.findIndex(candidate => candidate.key === entry?.key));
+  let nextIndex = currentIndex;
+  if (event.key === 'Home') nextIndex = 0;
+  else if (event.key === 'End') nextIndex = entries.length - 1;
+  else if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % entries.length;
+  else nextIndex = (currentIndex - 1 + entries.length) % entries.length;
+
+  event.preventDefault();
+  selectTeamShowcaseMember(block, group, entries[nextIndex], true);
+}
+function selectTeamShowcaseDivision(block, group, divisionKey) {
+  selectTeamDirectoryDivision(block, group, divisionKey);
+  teamShowcaseAnnounceChanges.value = {
+    ...teamShowcaseAnnounceChanges.value,
+    [teamBlockStateKey(block)]: true,
+  };
+  teamShowcaseLastAdvanced.set(teamBlockStateKey(block), Date.now());
+  const nextEntry = teamDirectoryFilteredEntries(block, group)[0];
+  if (nextEntry) scrollTeamShowcaseToEntry(block, group, nextEntry);
+}
+function teamShowcaseAutoplayRequested(block) {
+  const value = block?.content?.autoplay
+    ?? block?.content?.team_showcase_autoplay
+    ?? block?.content?.autoplay_enabled;
+  return [true, 1, '1', 'true'].includes(value);
+}
+function teamShowcaseCanAutoplay(block) {
+  return teamDirectoryMotionEnabled(block) && !prefersReducedMotion.value;
+}
+function teamShowcasePaused(block) {
+  const key = teamBlockStateKey(block);
+  if (Object.prototype.hasOwnProperty.call(teamShowcaseUserPaused.value, key)) {
+    return Boolean(teamShowcaseUserPaused.value[key]);
+  }
+  return !teamShowcaseAutoplayRequested(block);
+}
+function teamShowcaseStatusLive(block) {
+  return teamShowcaseAnnounceChanges.value[teamBlockStateKey(block)] ? 'polite' : 'off';
+}
+function toggleTeamShowcaseAutoplay(block) {
+  if (!teamShowcaseCanAutoplay(block)) return;
+  const key = teamBlockStateKey(block);
+  teamShowcaseUserPaused.value = {
+    ...teamShowcaseUserPaused.value,
+    [key]: !teamShowcasePaused(block),
+  };
+  teamShowcaseLastAdvanced.set(key, Date.now());
+}
+function pauseTeamShowcaseInteraction(block, paused) {
+  const key = teamBlockStateKey(block);
+  teamShowcaseInteractionPaused.value = {
+    ...teamShowcaseInteractionPaused.value,
+    [key]: paused,
+  };
+}
+function releaseTeamShowcaseFocus(block, event) {
+  if (event.currentTarget?.contains(event.relatedTarget)) return;
+  pauseTeamShowcaseInteraction(block, false);
+}
+function syncReducedMotion(mediaQuery) {
+  prefersReducedMotion.value = Boolean(mediaQuery?.matches);
 }
 function selectTeamGroup(block, group, tabElement = null) {
   const selected = teamGroups(block).find(candidate => candidate.key === group?.key);
@@ -1795,6 +2998,12 @@ function teamToggleLabel(block, item, index) {
 }
 function teamDesignation(item) {
   return item.designation || item.body || '';
+}
+function teamBiographyParagraphs(value) {
+  const normalized = String(value || '').replace(/\r\n?/g, '\n').trim();
+  if (!normalized) return [];
+  const paragraphs = normalized.split(/\n\s*\n+/).map(paragraph => paragraph.trim()).filter(Boolean);
+  return paragraphs.length ? paragraphs : [normalized];
 }
 function teamHasDetails(item) {
   const hasProfileHeading = Boolean(String(item.heading || '').trim() && String(teamDesignation(item)).trim());
@@ -2478,9 +3687,12 @@ onMounted(() => {
   syncTestimonialViewport(testimonialMobileQuery);
   if (testimonialMobileQuery?.addEventListener) testimonialMobileQuery.addEventListener('change', syncTestimonialViewport);
   else testimonialMobileQuery?.addListener?.(syncTestimonialViewport);
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  reducedMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)') || null;
+  syncReducedMotion(reducedMotionQuery);
+  if (reducedMotionQuery?.addEventListener) reducedMotionQuery.addEventListener('change', syncReducedMotion);
+  else reducedMotionQuery?.addListener?.(syncReducedMotion);
   heroClock = window.setInterval(() => {
-    if (reducedMotion || document.visibilityState === 'hidden') return;
+    if (prefersReducedMotion.value || document.visibilityState === 'hidden') return;
     const now = Date.now();
     for (const block of props.blocks.filter(item => item.type === 'hero' && heroAutoplayEnabled(item))) {
       const last = heroLastAdvanced.get(block.uuid) || now;
@@ -2488,17 +3700,32 @@ onMounted(() => {
       if (heroUserPaused.value[block.uuid] || heroInteractionPaused.value[block.uuid] || now - last < heroInterval(block)) continue;
       nextHero(block);
     }
+    for (const block of props.blocks.filter(item => item.type === 'team' && isTeamHeroesShowcase(item))) {
+      const group = activeTeamGroup(block);
+      if (!group || teamDirectoryFilteredEntries(block, group).length < 2) continue;
+      const key = teamBlockStateKey(block);
+      const last = teamShowcaseLastAdvanced.get(key) || now;
+      if (!teamShowcaseLastAdvanced.has(key)) teamShowcaseLastAdvanced.set(key, now);
+      if (teamShowcasePaused(block) || teamShowcaseInteractionPaused.value[key] || now - last < 5000) continue;
+      moveTeamShowcase(block, group, 1, false, false);
+    }
   }, 500);
 });
 onBeforeUnmount(() => {
   if (heroClock !== null) window.clearInterval(heroClock);
+  openTeamDirectoryDialogKey.value = '';
+  teamDirectoryDialogReturnTarget = null;
   statObserver?.disconnect();
   teamObserver?.disconnect();
   focusAreaObserver?.disconnect();
   if (testimonialMobileQuery?.removeEventListener) testimonialMobileQuery.removeEventListener('change', syncTestimonialViewport);
   else testimonialMobileQuery?.removeListener?.(syncTestimonialViewport);
+  if (reducedMotionQuery?.removeEventListener) reducedMotionQuery.removeEventListener('change', syncReducedMotion);
+  else reducedMotionQuery?.removeListener?.(syncReducedMotion);
   statAnimationFrames.forEach(frame => window.cancelAnimationFrame(frame));
   statAnimationFrames.clear();
+  teamShowcaseDragStates.clear();
+  teamShowcaseSuppressedClicks.clear();
 });
 function eventItems(block) { return (block.content?.items || []).filter(item => String(item.eyebrow || '').toLowerCase().includes('event')); }
 function newsItems(block) { return (block.content?.items || []).filter(item => !String(item.eyebrow || '').toLowerCase().includes('event')); }
@@ -2943,6 +4170,176 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
 .igf-team-card.is-open .igf-team-card__toggle { pointer-events:none; }
 .igf-team-card__toggle:focus-visible { outline:3px solid #1b6fdc; outline-offset:4px; }
 .igf-team-card__social-link:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-page-block--team-heroes-showcase { padding:40px 16px; background:#f5efe8; }
+.igf-page-block--team-heroes-showcase>.igf-page-block__inner { width:min(100%,1240px); }
+.igf-team-showcase { display:grid; grid-template-areas:'content'; grid-template-columns:minmax(0,1fr); gap:16px; overflow:visible; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; color:var(--ink); font-family:'Poppins','Hanken Grotesk',Arial,sans-serif; }
+.igf-team-showcase.has-visual-map { grid-template-areas:'content' 'map'; }
+.igf-team-showcase.has-visual-map:not(.is-map-right) { grid-template-areas:'map' 'content'; }
+.igf-team-showcase__content { grid-area:content; min-width:0; }
+.igf-team-showcase__heading { max-width:720px; margin-bottom:34px; }
+.igf-team-showcase__heading .igf-page-block__eyebrow { display:flex; align-items:center; gap:8px; margin-bottom:8px; color:#9b4308; }
+.igf-page-block--team-heroes-showcase .igf-team-showcase__heading .igf-page-block__eyebrow::before { display:none!important; content:none!important; }
+.igf-team-showcase__eyebrow-marks { display:inline-flex; align-items:center; gap:4px; }
+.igf-team-showcase__eyebrow-marks span { width:8px; height:8px; border:1.5px solid var(--orange); border-radius:50%; }
+.igf-team-showcase .igf-team-showcase__heading h2 { margin:0; color:var(--ink); font:500 clamp(36px,4vw,48px)/1 'Poppins','Hanken Grotesk',Arial,sans-serif; letter-spacing:-.035em; }
+.igf-team-showcase .igf-team-showcase__heading h2 strong { font-weight:850; }
+.igf-team-showcase__heading .igf-section-lead { max-width:650px; margin-top:18px; color:#574c45; font-size:16px; line-height:1.65; }
+.igf-team-showcase__rail { display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 10px)/2); gap:10px; overflow-x:auto; overscroll-behavior-inline:contain; padding:0; scroll-behavior:smooth; scroll-snap-type:x mandatory; scrollbar-width:none; cursor:grab; touch-action:pan-y; user-select:none; }
+.igf-team-showcase__rail.is-dragging { cursor:grabbing; scroll-behavior:auto; scroll-snap-type:none; }
+.igf-team-showcase__rail::-webkit-scrollbar { display:none; }
+.igf-team-showcase__person { display:flex; min-width:0; min-height:266px; scroll-snap-align:center; align-items:center; flex-direction:column; gap:8px; padding:24px 8px; border:0; border-radius:8px; background:transparent; color:var(--ink); text-align:center; cursor:pointer; }
+.igf-team-showcase__person:hover,.igf-team-showcase__person.is-active { background:#fff0df; box-shadow:0 5px 15px rgba(95,46,14,.13); }
+.igf-team-showcase__person.is-active { box-shadow:0 5px 15px rgba(95,46,14,.16); }
+.igf-team-showcase__person:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__person { transition:transform .5s ease,opacity .3s ease,background-color .5s ease,box-shadow .5s ease; }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__person:hover { transform:translateY(-2px); }
+.igf-team-showcase__portrait { display:grid; width:150px; height:150px; place-items:center; overflow:hidden; flex:0 0 auto; border:0; border-radius:50%; background:#f3d7c0; box-shadow:none; color:#7d3507; font:850 34px/1 'Poppins','Hanken Grotesk',Arial,sans-serif; }
+.igf-team-showcase__portrait img { width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+.igf-team-showcase__person strong { margin-top:4px; color:var(--ink); font-size:16px; line-height:1.35; }
+.igf-team-showcase__person small { color:#6a5a50; font-size:13px; line-height:1.45; }
+.igf-team-showcase__empty { display:grid; min-height:190px; place-items:center; margin:0; padding:28px; border:1px dashed #d7b99f; border-radius:22px; background:#fff8f2; color:#65584f; text-align:center; }
+.igf-team-showcase__navigation { display:flex; min-height:40px; align-items:center; justify-content:flex-end; gap:7px; margin-top:4px; }
+.igf-team-showcase .igf-team-showcase__arrow,.igf-team-showcase .igf-team-showcase__dots { display:none; }
+.igf-team-showcase__arrow,.igf-team-showcase__autoplay { display:grid; width:38px; height:38px; place-items:center; flex:0 0 auto; border:1px solid #ca9d7d; border-radius:50%; background:transparent; color:#733100; cursor:pointer; }
+.igf-team-showcase__arrow:hover,.igf-team-showcase__autoplay:hover { border-color:var(--orange); background:#fff0e4; }
+.igf-team-showcase__arrow:focus-visible,.igf-team-showcase__autoplay:focus-visible,.igf-team-showcase__dots button:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-showcase__arrow:disabled { opacity:.42; cursor:not-allowed; }
+.igf-team-showcase__dots { display:flex; max-width:min(100%,310px); align-items:center; justify-content:center; gap:1px; overflow-x:auto; padding:3px; }
+.igf-team-showcase__dots button { display:grid; width:30px; height:30px; place-items:center; flex:0 0 auto; border:0; border-radius:999px; background:transparent; cursor:pointer; }
+.igf-team-showcase__dots button span { width:8px; height:8px; border-radius:999px; background:#b9ada4; }
+.igf-team-showcase__dots button.is-active span { width:24px; background:var(--orange); }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__dots button span { transition:width .3s ease,background-color .3s ease; }
+@media (hover:none),(pointer:coarse) { .igf-team-showcase__navigation { justify-content:center; } .igf-team-showcase .igf-team-showcase__arrow,.igf-team-showcase .igf-team-showcase__dots { display:flex; } .igf-team-showcase__arrow,.igf-team-showcase__autoplay { width:44px; height:44px; } }
+.igf-team-showcase { font-family:'Jost',Arial,sans-serif; }
+.igf-team-showcase .igf-team-showcase__heading h2 { font-family:'Jost',Arial,sans-serif; font-weight:400; letter-spacing:normal; }
+.igf-team-showcase .igf-team-showcase__heading h2 strong { font-weight:700; }
+.igf-team-showcase__portrait,.igf-team-showcase .igf-team-showcase__profile h3 { font-family:'Jost',Arial,sans-serif; }
+.igf-team-showcase p,.igf-team-showcase button,.igf-team-showcase a { font-family:'Jost',Arial,sans-serif; }
+.igf-team-showcase__person { padding:24px 0; }
+.igf-team-showcase__person strong { margin-top:4px; font:400 16px/24px 'Jost',Arial,sans-serif; }
+.igf-team-showcase__person small { font:400 14px/20px 'Jost',Arial,sans-serif; }
+.igf-team-showcase__role { font:400 16px/24px 'Jost',Arial,sans-serif; }
+.igf-team-showcase .igf-team-showcase__profile h3 { font:700 24px/32px 'Jost',Arial,sans-serif; }
+.igf-team-showcase__socials { min-height:48px; align-items:center; }
+.igf-team-showcase__biography { font:400 16px/24px 'Jost',Arial,sans-serif; }
+.igf-team-showcase__map-svg { overflow:hidden; filter:none; }
+@media (min-width:1024px) { .igf-team-showcase__person { height:266px; min-height:266px; border:0; } }
+.igf-team-showcase__person strong { margin-top:0; padding-top:24px; }
+.igf-team-showcase__person small { overflow:hidden; margin-top:0; text-overflow:ellipsis; white-space:nowrap; }
+.igf-team-showcase__portrait img { width:150px; height:150px; object-position:50% 50%; }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__person:hover { transform:none; }
+.igf-team-showcase .igf-team-showcase__heading h2::before,.igf-team-showcase .igf-team-showcase__heading h2::after { display:none!important; content:none!important; }
+.igf-team-showcase__profile { min-height:260px; margin-top:32px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+.igf-team-showcase__profile-heading { display:flex; align-items:flex-start; flex-direction:column; gap:0; }
+.igf-team-showcase .igf-team-showcase__profile h3 { margin:4px 0 0; color:var(--ink); font:700 24px/1.32 'Poppins','Hanken Grotesk',Arial,sans-serif; letter-spacing:-.02em; }
+.igf-team-showcase__role { order:-1; margin:0; color:#6b625d; font-size:16px; font-weight:400; line-height:1.5; }
+.igf-team-showcase__socials { display:flex; flex-wrap:wrap; justify-content:flex-start; gap:8px; margin:8px 0 0; padding:0; list-style:none; }
+.igf-team-showcase__socials a { display:grid; width:32px; height:32px; place-items:center; border:0; border-radius:50%; background:#27211d; color:#fff; text-decoration:none; }
+.igf-team-showcase__socials a:hover { border-color:var(--orange); background:var(--orange); color:#231d19; }
+.igf-team-showcase__socials a:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-showcase__biography { margin:24px 0 0; color:#3f3732; font-size:16px; line-height:1.55; }
+.igf-team-showcase__biography p { margin:0; }
+.igf-team-showcase__biography p+p { margin-top:16px; }
+.igf-team-showcase__qualification { margin:16px 0 0; padding:0; border:0; border-radius:0; background:transparent; color:#5c5048; font-size:15px; line-height:1.55; }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__profile { animation:igf-team-showcase-profile-in .3s ease both; }
+@keyframes igf-team-showcase-profile-in { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+.igf-team-showcase__map { position:relative; grid-area:map; min-width:0; align-self:start; overflow:visible; padding:0; border-radius:0; background:transparent; box-shadow:none; color:var(--ink); }
+.igf-team-showcase__map-heading { position:absolute; z-index:5; top:4px; right:4px; }
+.igf-team-showcase__map-heading>button { min-height:40px; padding:8px 14px; border:1px solid #ca9d7d; border-radius:999px; background:#fff8f1; color:#733100; font-size:12px; font-weight:800; cursor:pointer; }
+.igf-team-showcase__map-heading>button:hover { border-color:var(--orange); background:var(--orange); color:#231d19; }
+.igf-team-showcase__map-heading>button:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-showcase__map-stage { position:relative; width:min(100%,560px); margin:0 auto; }
+.igf-team-showcase__map-svg { display:block; width:100%; height:auto; overflow:visible; filter:none; }
+.igf-team-showcase__map-division { cursor:pointer; }
+.igf-team-showcase__map-division path { fill:#5e2a0a; stroke:var(--orange); stroke-width:2; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.igf-team-showcase__map-division:hover path,.igf-team-showcase__map-division.is-preview path { fill:var(--orange); stroke:#5e2a0a; stroke-width:3; }
+.igf-team-showcase__map-division.is-active path { fill:var(--orange); stroke:#5e2a0a; stroke-width:4; filter:none; }
+.igf-team-showcase.is-motion-enabled .igf-team-showcase__map-division path { transition:fill .2s ease,stroke .2s ease,filter .2s ease; }
+.igf-team-showcase__map-control { position:absolute; z-index:2; display:grid; width:44px; height:44px; place-items:center; transform:translate(-50%,-50%); border:0; border-radius:50%; background:transparent; box-shadow:none; color:transparent; text-decoration:none; cursor:pointer; }
+.igf-team-showcase__map-control i { display:none; }
+.igf-team-showcase__map-control:hover,.igf-team-showcase__map-control.is-active { background:transparent; box-shadow:none; color:transparent; }
+.igf-team-showcase__map-control:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-showcase__map-tooltip { position:absolute; z-index:4; display:grid; width:min(256px,70%); min-height:46px; place-items:center; padding:9px 16px; transform:translate(-50%,calc(-100% - 26px)); border:1px solid #e4d4c8; border-radius:4px; background:#fff; box-shadow:0 8px 18px rgba(0,0,0,.18); color:#5e2a0a; font-size:18px; font-weight:700; line-height:1.3; text-align:center; pointer-events:none; }
+.igf-team-showcase-tooltip-enter-active,.igf-team-showcase-tooltip-leave-active { transition:opacity .2s ease,transform .2s ease; }
+.igf-team-showcase-tooltip-enter-from,.igf-team-showcase-tooltip-leave-to { opacity:0; transform:translate(-50%,calc(-100% - 22px)); }
+.igf-team-directory { display:grid; grid-template-areas:'map people detail'; grid-template-columns:minmax(250px,.82fr) minmax(270px,.92fr) minmax(360px,1.3fr); align-items:start; gap:20px; font-family:'Poppins','Hanken Grotesk',Arial,sans-serif; }
+.igf-team-directory.is-map-right { grid-template-areas:'people detail map'; grid-template-columns:minmax(270px,.92fr) minmax(360px,1.3fr) minmax(250px,.82fr); }
+.igf-team-directory.is-profile-modal,.igf-team-directory.is-profile-link:not(.has-inline-detail) { grid-template-areas:'map people'; grid-template-columns:minmax(280px,.8fr) minmax(360px,1.2fr); }
+.igf-team-directory.is-profile-modal.is-map-right,.igf-team-directory.is-profile-link.is-map-right:not(.has-inline-detail) { grid-template-areas:'people map'; grid-template-columns:minmax(360px,1.2fr) minmax(280px,.8fr); }
+.igf-team-directory__map { grid-area:map; min-width:0; overflow:hidden; padding:26px; border-radius:22px; background:#29231f; box-shadow:0 18px 42px rgba(48,31,21,.16); color:#fff; }
+.igf-team-directory__map-heading .igf-page-block__eyebrow { margin-bottom:8px; color:#ffb77a; }
+.igf-team-directory .igf-team-directory__map-heading h3 { margin:0; color:#fff; font:700 clamp(24px,2.2vw,31px)/1.15 'Literata',Georgia,serif; }
+.igf-team-directory .igf-team-directory__map-heading>p:last-child { margin:11px 0 0; color:#e8dfd9; font-size:14px; line-height:1.55; }
+.igf-team-directory__map-figure { margin:18px 0 20px; }
+.igf-team-directory__map-svg { display:block; width:min(100%,320px); height:auto; max-height:410px; margin:0 auto 14px; overflow:visible; filter:drop-shadow(0 12px 18px rgba(0,0,0,.2)); }
+.igf-team-directory__map-division { cursor:pointer; }
+.igf-team-directory__map-division path { fill:#fff1e5; stroke:#7b3510; stroke-width:2.5; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.igf-team-directory__map-division:hover path,.igf-team-directory__map-division.is-preview path { fill:#ffc38f; stroke:#fff; stroke-width:4.5; }
+.igf-team-directory__map-division.is-active path { fill:var(--orange); stroke:#fff; stroke-width:6; filter:drop-shadow(0 0 5px rgba(255,255,255,.62)); }
+.igf-team-directory__map-marker { pointer-events:none; }
+.igf-team-directory__map-marker circle { fill:#231d19; stroke:#fff; stroke-width:3; vector-effect:non-scaling-stroke; }
+.igf-team-directory__map-marker path { fill:none; stroke:#fff; stroke-width:3.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.igf-team-directory__map-feedback { display:flex; min-height:58px; align-items:center; gap:12px; margin:0; padding:10px 13px; border:1px solid rgba(255,255,255,.24); border-radius:14px; background:rgba(255,255,255,.09); color:#fff; }
+.igf-team-directory__map-feedback>span:first-child { display:grid; width:36px; height:36px; place-items:center; flex:0 0 auto; border-radius:11px; background:var(--orange); color:#231d19; }
+.igf-team-directory__map-feedback>span:last-child { display:flex; min-width:0; flex-direction:column; }
+.igf-team-directory__map-feedback strong { color:#fff; font-size:14px; line-height:1.3; }
+.igf-team-directory__map-feedback small { margin-top:3px; color:#e8dfd9; font-size:11px; line-height:1.35; }
+.igf-team-directory.is-motion-enabled .igf-team-directory__map-division path { transition:fill .2s ease,stroke .2s ease,filter .2s ease; }
+.igf-team-directory__division-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.igf-team-directory__division-controls button { display:flex; min-width:0; min-height:44px; align-items:center; justify-content:space-between; gap:8px; padding:9px 11px; border:1px solid rgba(255,255,255,.26); border-radius:12px; background:rgba(255,255,255,.08); color:#fff; font:700 12px/1.25 'Poppins','Hanken Grotesk',Arial,sans-serif; text-align:left; cursor:pointer; }
+.igf-team-directory__division-controls button:first-child { grid-column:1/-1; }
+.igf-team-directory__division-controls button>span { display:flex; min-width:0; align-items:center; gap:6px; }
+.igf-team-directory__division-controls button>span i { font-size:10px; }
+.igf-team-directory__division-controls button small { display:grid; min-width:25px; height:25px; place-items:center; flex:0 0 auto; border-radius:999px; background:rgba(255,255,255,.14); color:inherit; font-size:11px; }
+.igf-team-directory__division-controls button:hover,.igf-team-directory__division-controls button.is-active { border-color:var(--orange); background:var(--orange); color:#231d19; }
+.igf-team-directory__division-controls button.is-active { box-shadow:inset 0 0 0 2px #fff; }
+.igf-team-directory__division-controls button.is-active small { background:rgba(35,29,25,.12); }
+.igf-team-directory__division-controls button:focus-visible { outline:3px solid #fff; outline-offset:3px; }
+.igf-team-directory.is-motion-enabled .igf-team-directory__division-controls button { transition:background-color .2s ease,border-color .2s ease; }
+.igf-team-directory:not(.has-visual-map) .igf-team-directory__map-heading>p:last-child { margin-bottom:22px; }
+.igf-team-directory__people { grid-area:people; min-width:0; overflow:hidden; padding:20px; border:1px solid #ead8ca; border-radius:22px; background:#fff9f4; }
+.igf-team-directory__people-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.igf-team-directory .igf-team-directory__people-heading h3 { margin:0; color:var(--ink); font:700 23px/1.2 'Literata',Georgia,serif; }
+.igf-team-directory__people-heading>span { display:grid; min-width:34px; height:34px; place-items:center; border-radius:999px; background:#ffe3cc; color:#6d2d00; font-size:12px; font-weight:850; }
+.igf-team-directory__people-list { display:grid; max-height:630px; gap:10px; overflow-y:auto; overscroll-behavior:contain; margin:0; padding:3px 5px 3px 3px; list-style:none; scrollbar-gutter:stable; }
+.igf-team-directory__person { display:grid; width:100%; min-width:0; min-height:94px; grid-template-columns:72px minmax(0,1fr) 24px; align-items:center; gap:13px; padding:10px 12px; border:1px solid #e4d8ce; border-radius:16px; background:#fff; box-shadow:0 4px 12px rgba(51,35,24,.04); color:var(--ink); text-align:left; cursor:pointer; }
+.igf-team-directory__person:hover,.igf-team-directory__person.is-active { border-color:var(--orange); background:#fff2e7; box-shadow:inset 5px 0 0 var(--orange),0 8px 18px rgba(112,51,10,.09); }
+.igf-team-directory__person:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-directory.is-motion-enabled .igf-team-directory__person { transition:background-color .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s ease; }
+.igf-team-directory.is-motion-enabled .igf-team-directory__person:hover { transform:translateY(-2px); }
+.igf-team-directory__person-media { display:grid; width:72px; height:72px; place-items:center; overflow:hidden; border-radius:15px; background:#f4d8c1; color:#743300; font:800 20px/1 'Poppins','Hanken Grotesk',Arial,sans-serif; }
+.igf-team-directory__person-media img { width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+.igf-team-directory__person-copy { display:flex; min-width:0; flex-direction:column; }
+.igf-team-directory__person-copy strong { color:var(--ink); font-size:14px; line-height:1.35; }
+.igf-team-directory__person-copy small { margin-top:4px; color:#675b53; font-size:12px; line-height:1.35; }
+.igf-team-directory__person-copy em { margin-top:7px; color:#8b3e0a; font-size:11px; font-style:normal; font-weight:750; line-height:1.3; }
+.igf-team-directory__person>i { color:#9b4b14; font-size:13px; }
+.igf-team-directory__empty { min-height:180px; display:grid; place-items:center; margin:0!important; padding:28px 18px; border:1px dashed #d8b99f; border-radius:16px; color:#6b5c52!important; font-size:14px!important; line-height:1.6; text-align:center; }
+.igf-team-directory__detail { grid-area:detail; min-width:0; overflow:hidden; padding:clamp(25px,3vw,38px); border:1px solid #e2d5cb; border-top:6px solid var(--orange); border-radius:22px; background:#fff; box-shadow:0 16px 38px rgba(62,39,24,.09); color:var(--ink); }
+.igf-team-directory__detail-profile { display:grid; grid-template-columns:132px minmax(0,1fr); align-items:center; gap:24px; padding-bottom:26px; border-bottom:1px solid #eadfd6; }
+.igf-team-directory__detail-media { display:grid; width:132px; height:132px; place-items:center; overflow:hidden; border:6px solid #fff0e4; border-radius:28px; background:#f4d8c1; color:#743300; font:800 34px/1 'Poppins','Hanken Grotesk',Arial,sans-serif; box-shadow:0 9px 24px rgba(85,44,18,.12); }
+.igf-team-directory__detail-media img { width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+.igf-team-directory__detail-profile .igf-page-block__eyebrow { margin-bottom:8px; color:var(--brown); }
+.igf-team-directory .igf-team-directory__detail h3 { margin:0; color:var(--ink); font:700 clamp(26px,2.7vw,38px)/1.08 'Literata',Georgia,serif; letter-spacing:-.025em; }
+.igf-team-directory .igf-team-directory__detail-role { margin:10px 0 0; color:#584f49; font-size:15px; font-weight:700; line-height:1.45; }
+.igf-team-directory .igf-team-directory__detail-division { margin:10px 0 0; color:#8c3b05; font-size:13px; font-weight:750; }
+.igf-team-directory .igf-team-directory__biography { margin:26px 0 0; color:#3e3732; font-size:16px; line-height:1.75; white-space:pre-line; }
+.igf-team-directory .igf-team-directory__qualification { margin:20px 0 0; padding:16px 18px; border-left:4px solid var(--orange); border-radius:0 12px 12px 0; background:#fff3e9; color:#5d5149; font-size:14px; line-height:1.55; }
+.igf-team-directory__socials { display:flex; flex-wrap:wrap; gap:10px; margin:24px 0 0; padding:0; list-style:none; }
+.igf-team-directory__socials a { display:inline-flex; min-height:44px; align-items:center; justify-content:center; gap:8px; padding:10px 16px; border:1px solid #c8a98f; border-radius:12px; background:#fff; color:#743300; font-size:13px; font-weight:800; text-decoration:none; }
+.igf-team-directory__socials a:hover { border-color:var(--orange); background:#fff2e7; }
+.igf-team-directory__socials a:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-directory__person:is(a) { text-decoration:none; }
+.igf-team-directory-dialog { position:fixed; z-index:1100; inset:0; display:grid; place-items:center; overflow-y:auto; padding:24px; background:rgba(26,22,19,.76); backdrop-filter:blur(4px); }
+.igf-team-directory-dialog__panel { position:relative; width:min(720px,100%); max-height:min(760px,calc(100vh - 48px)); overflow-y:auto; margin:auto; }
+.igf-team-directory-dialog__close { position:sticky; z-index:2; top:0; display:grid; width:46px; height:46px; place-items:center; float:right; margin:-10px -10px 4px 16px; border:1px solid #d7b89f; border-radius:999px; background:#fff7f0; color:#743300; cursor:pointer; }
+.igf-team-directory-dialog__close:hover { border-color:var(--orange); background:#ffe9d6; }
+.igf-team-directory-dialog__close:focus-visible { outline:3px solid #1b6fdc; outline-offset:3px; }
+.igf-team-directory-dialog .igf-team-directory__detail h3 { margin:0; color:var(--ink); font:700 clamp(26px,3vw,40px)/1.08 'Literata',Georgia,serif; letter-spacing:-.025em; }
+.igf-team-directory-dialog .igf-team-directory__detail-role { margin:10px 0 0; color:#584f49; font-size:15px; font-weight:700; line-height:1.45; }
+.igf-team-directory-dialog .igf-team-directory__detail-division { margin:10px 0 0; color:#8c3b05; font-size:13px; font-weight:750; }
+.igf-team-directory-dialog .igf-team-directory__biography { margin:26px 0 0; color:#3e3732; font-size:16px; line-height:1.75; white-space:pre-line; }
+.igf-team-directory-dialog .igf-team-directory__qualification { margin:20px 0 0; padding:16px 18px; border-left:4px solid var(--orange); border-radius:0 12px 12px 0; background:#fff3e9; color:#5d5149; font-size:14px; line-height:1.55; }
 @media (hover:hover) and (pointer:fine) {
   a.igf-partner-card:hover { border-color:rgba(255,117,0,.58); box-shadow:0 8px 20px rgba(42,52,65,.18); transform:translateY(-2px); }
 }
@@ -3332,6 +4729,21 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
 .igf-page-block:not(.igf-page-block--columns-auto) :is(.igf-stats,.igf-card-grid,.igf-focus-areas,.igf-giving__options,.igf-event-cards,.igf-team-grid,.igf-gallery__grid,.igf-partner-list,.igf-campus-initiative-grid,.igf-campus-contribution-grid) { grid-template-columns:repeat(var(--igf-block-responsive-columns,var(--igf-block-columns)),minmax(0,1fr)); }
 .sr-only { position:absolute!important; width:1px!important; height:1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; }
 .igf-page-block--desktop-hidden { display:none; }
+@media (min-width:1024px) {
+  .igf-team-showcase.has-visual-map { grid-template-areas:'map content'; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  .igf-team-showcase.has-visual-map.is-map-right { grid-template-areas:'content map'; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (min-width:1280px) {
+  .igf-team-showcase__rail { grid-auto-columns:calc((100% - 20px)/3); }
+}
+@media (max-width:1180px) {
+  .igf-team-directory,.igf-team-directory.is-map-right { grid-template-areas:'map people' 'detail detail'; grid-template-columns:minmax(260px,.8fr) minmax(320px,1.2fr); }
+  .igf-team-directory.is-map-right { grid-template-areas:'people map' 'detail detail'; grid-template-columns:minmax(320px,1.2fr) minmax(260px,.8fr); }
+  .igf-team-directory.is-profile-modal,.igf-team-directory.is-profile-link:not(.has-inline-detail) { grid-template-areas:'map people'; grid-template-columns:minmax(260px,.8fr) minmax(320px,1.2fr); }
+  .igf-team-directory.is-profile-modal.is-map-right,.igf-team-directory.is-profile-link.is-map-right:not(.has-inline-detail) { grid-template-areas:'people map'; grid-template-columns:minmax(320px,1.2fr) minmax(260px,.8fr); }
+  .igf-team-directory__map-svg { max-height:380px; }
+  .igf-team-directory__people-list { max-height:560px; }
+}
 @media (max-width:991px) {
   .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:2; }
   .igf-page-block--campus-stats .igf-stats { grid-template-columns:1fr; gap:48px; }
@@ -3372,6 +4784,7 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-layout-gallery-lightbox__close,.igf-layout-gallery-lightbox__nav { width:40px; height:40px; }
   .igf-page-block:not(.igf-page-block--columns-auto) { --igf-block-responsive-columns:1; }
   .igf-page-block { padding:var(--igf-section-mobile,68px) 20px; }
+  .igf-page-block.igf-page-block--team-heroes-showcase { padding:40px 16px; }
   .igf-page-block--partners { padding-top:28px; padding-bottom:68px; }
   .igf-page-block--partners .igf-partners h2 { font-size:clamp(38px,6vw,44px); }
   .igf-page-block--hero { min-height:var(--igf-hero-height-mobile,680px); padding:var(--igf-hero-padding-top-mobile,54px) 20px var(--igf-hero-padding-bottom-mobile,105px); align-items:end; }
@@ -3404,6 +4817,18 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-testimonial-split__navigation { margin-top:26px; }
   .igf-testimonial-split__arrows button { width:46px; height:46px; }
   .igf-team-grid,.igf-gallery__grid { grid-template-columns:1fr; }
+  .igf-team-directory,.igf-team-directory.is-map-right { grid-template-areas:'map' 'people' 'detail'; grid-template-columns:minmax(0,1fr); gap:16px; }
+  .igf-team-directory.is-profile-modal,.igf-team-directory.is-profile-modal.is-map-right,.igf-team-directory.is-profile-link:not(.has-inline-detail),.igf-team-directory.is-profile-link.is-map-right:not(.has-inline-detail) { grid-template-areas:'map' 'people'; grid-template-columns:minmax(0,1fr); }
+  .igf-team-directory__map,.igf-team-directory__people,.igf-team-directory__detail { border-radius:18px; }
+  .igf-team-directory__map { padding:22px; }
+  .igf-team-directory__map-svg { width:min(100%,300px); max-height:300px; }
+  .igf-team-directory__people { padding:16px; }
+  .igf-team-directory__people-list { max-height:none; overflow:visible; padding-right:3px; scrollbar-gutter:auto; }
+  .igf-team-directory__detail { padding:24px 20px 26px; }
+  .igf-team-directory__detail-profile { grid-template-columns:100px minmax(0,1fr); gap:18px; }
+  .igf-team-directory__detail-media { width:100px; height:100px; border-width:5px; border-radius:22px; }
+  .igf-team-directory-dialog { align-items:end; padding:14px; }
+  .igf-team-directory-dialog__panel { width:100%; max-height:calc(100vh - 28px); padding:24px 20px 28px; border-radius:20px; }
   .igf-page-block--contributions .igf-card-grid,.igf-page-block--campus-gallery .igf-gallery__grid { grid-template-columns:1fr; }
   .igf-team-card { justify-self:center; }
   .igf-stat { padding:24px; }
@@ -3469,6 +4894,21 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-campus-lightbox__close,.igf-campus-lightbox__nav { width:42px; height:42px; }
 }
 @media (max-width:600px) {
+  .igf-page-block--team-heroes-showcase { padding:40px 16px; }
+  .igf-team-showcase { padding:0; border-radius:0; }
+  .igf-team-showcase__heading { margin-bottom:22px; }
+  .igf-team-showcase__rail { grid-auto-columns:calc((100% - 10px)/2); gap:10px; }
+  .igf-team-showcase__person { min-height:248px; padding:20px 4px; }
+  .igf-team-showcase__portrait { width:min(150px,calc(100% - 8px)); height:auto; aspect-ratio:1; }
+  .igf-team-showcase__navigation { gap:4px; }
+  .igf-team-showcase__dots { max-width:170px; }
+  .igf-team-showcase__profile { min-height:0; margin-top:24px; padding:0; }
+  .igf-team-showcase__profile-heading { flex-direction:column; }
+  .igf-team-showcase__socials { justify-content:flex-start; }
+  .igf-team-showcase__map { padding:0; border-radius:0; }
+  .igf-team-showcase__map-stage { width:min(100%,360px); }
+  .igf-team-showcase__map-control { width:40px; height:40px; }
+  .igf-team-showcase__map-tooltip { max-width:180px; font-size:15px; }
   .igf-events-news__heading { min-height:0; margin-bottom:24px; }
   .igf-events-news__heading h2 { font-size:34px; }
   .igf-events-news__event { grid-template-columns:112px minmax(0,1fr); gap:16px; padding:16px 0; }
@@ -3503,6 +4943,13 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-team-card { width:260px; }
 }
 @media (max-width:420px) {
+  .igf-team-directory__division-controls { gap:7px; }
+  .igf-team-directory__division-controls button { padding:8px; font-size:11px; }
+  .igf-team-directory__person { min-height:84px; grid-template-columns:62px minmax(0,1fr) 18px; gap:10px; padding:10px; }
+  .igf-team-directory__person-media { width:62px; height:62px; border-radius:13px; }
+  .igf-team-directory__detail-profile { grid-template-columns:minmax(0,1fr); align-items:start; }
+  .igf-team-directory__detail-media { width:112px; height:112px; }
+  .igf-team-directory-dialog .igf-team-directory__detail-profile { grid-template-columns:minmax(0,1fr); }
   .igf-stats { grid-template-columns:1fr; }
   .igf-layout-gallery { grid-template-columns:1fr; }
   .igf-layout-gallery-lightbox__dialog { grid-template-columns:1fr; padding:62px 12px 70px; }
@@ -3536,8 +4983,23 @@ a.igf-layout-card:focus-visible { outline:3px solid var(--orange); outline-offse
   .igf-campus-lightbox__nav--previous { left:8px; }
   .igf-campus-lightbox__nav--next { right:8px; }
 }
+@media (forced-colors:active) {
+  .igf-team-showcase__map-division path { fill:Canvas; stroke:ButtonText; }
+  .igf-team-showcase__map-division:hover path,.igf-team-showcase__map-division.is-preview path { fill:Canvas; stroke:Highlight; }
+  .igf-team-showcase__map-division.is-active path { fill:Highlight; stroke:HighlightText; }
+  .igf-team-showcase__map-control.is-active,.igf-team-showcase__person.is-active { border-color:Highlight; box-shadow:inset 0 0 0 3px Highlight; }
+  .igf-team-directory__map-division path { fill:Canvas; stroke:ButtonText; }
+  .igf-team-directory__map-division:hover path,.igf-team-directory__map-division.is-preview path { fill:Canvas; stroke:Highlight; }
+  .igf-team-directory__map-division.is-active path { fill:Highlight; stroke:HighlightText; }
+  .igf-team-directory__map-marker circle { fill:HighlightText; stroke:Highlight; }
+  .igf-team-directory__map-marker path { stroke:Highlight; }
+  .igf-team-directory__division-controls button.is-active { border-color:Highlight; box-shadow:inset 0 0 0 2px Highlight; }
+}
 @media (prefers-reduced-motion:reduce) {
   .igf-page-blocks * { scroll-behavior:auto!important; transition:none!important; animation:none!important; }
+  .igf-team-showcase.is-motion-enabled .igf-team-showcase__person:hover { transform:none; }
+  .igf-team-directory.is-motion-enabled .igf-team-directory__person:hover { transform:none; }
+  .igf-team-directory-dialog { backdrop-filter:none; }
   .igf-stat--animated { opacity:1!important; transform:none!important; }
   .igf-focus-area__reveal { opacity:1!important; transform:none!important; }
   .igf-team-card { height:auto; min-height:var(--igf-team-card-height); perspective:none; }

@@ -19,6 +19,13 @@ return [
         ],
         'frontend.events' => ['label' => 'Events', 'path' => '/events'],
         'frontend.news' => ['label' => 'News & stories', 'path' => '/news'],
+        'frontend.heroes.index' => [
+            'label' => 'Meet the Heroes',
+            'path' => '/meet-the-heroes',
+            // The page is powered by localized Website Customizer settings
+            // and managed geography rather than a backing Page record.
+            'settings_backed' => true,
+        ],
         'frontend.project' => ['label' => 'Projects', 'path' => '/projects'],
         'frontend.jobs.index' => ['label' => 'Careers', 'path' => '/careers'],
         'frontend.workshops.index' => ['label' => 'Workshops', 'path' => '/workshops'],

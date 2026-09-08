@@ -240,6 +240,25 @@ return [
         'focus_areas' => 'Animated focus areas',
     ],
 
+    'team_presentations' => [
+        'cards' => 'Profile cards',
+        'list' => 'Simple list',
+        'compact' => 'Compact profiles',
+        'directory_map' => 'Interactive directory + Bangladesh map',
+        'heroes_showcase' => 'Meet the Heroes showcase',
+    ],
+
+    'team_map_position_options' => [
+        'left' => 'Map on the left',
+        'right' => 'Map on the right',
+    ],
+
+    'team_profile_behavior_options' => [
+        'panel' => 'Show the profile in the directory',
+        'modal' => 'Open the profile in a dialog',
+        'link' => 'Open the profile link',
+    ],
+
     'testimonial_presentations' => [
         'spotlight' => 'Spotlight story (classic)',
         'split' => 'Two stories side by side',
@@ -373,6 +392,12 @@ return [
             'body' => 'Meet the people responsible for our mission and governance.',
             'content_source' => 'team', 'selection_mode' => 'automatic',
             'selected_items' => [], 'sort' => 'featured', 'limit' => 12,
+            'team_presentation' => 'cards',
+            'show_map' => true,
+            'map_position' => 'left',
+            'profile_behavior' => 'panel',
+            'animation_enabled' => true,
+            'autoplay' => true,
             'item_link_label' => 'View profile',
             'empty_state' => 'Published board and team members will appear here automatically.',
             'items' => [],

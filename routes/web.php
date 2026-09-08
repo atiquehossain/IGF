@@ -592,6 +592,17 @@ Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group
     Route::get('news', 'Vue\NoticeBoardController@news')->name('frontend.news');
     Route::get('event/{slug?}', 'Vue\NoticeBoardController@event')->name('frontend.event');
 
+    // Public Meet the Heroes journey. Slugs are stable geographic keys; the
+    // locale remains the site's existing ?lang query parameter.
+    Route::get('meet-the-heroes', 'Vue\MeetTheHeroesController@index')
+        ->name('frontend.heroes.index');
+    Route::get('meet-the-heroes/division/{division}', 'Vue\MeetTheHeroesController@division')
+        ->where('division', '[A-Za-z0-9-]+')
+        ->name('frontend.heroes.division');
+    Route::get('meet-the-heroes/district/{district}', 'Vue\MeetTheHeroesController@district')
+        ->where('district', '[A-Za-z0-9-]+')
+        ->name('frontend.heroes.district');
+
     // Public job and free-workshop opportunities. Applicants remain anonymous
     // visitors; only the POST boundary is independently abuse-limited.
     Route::get('careers', 'Vue\OpportunityController@jobs')->name('frontend.jobs.index');

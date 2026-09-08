@@ -62,7 +62,7 @@ Production content must be created through the Content Hub/page builder or impor
 
 ### Git-safe CMS content snapshot
 
-Use `php artisan cms:snapshot --force` to refresh the reviewable snapshot at `database/seeders/seed-data/cms-content.snapshot.json`. It contains public editorial content only and replaces numeric relationships with stable UUID references. Administrators, members, credentials, donations, payment transactions, enquiries, applications, volunteers, audit trails, IP addresses, click analytics, private files and non-public settings are deliberately excluded.
+Use `php artisan cms:snapshot --force` to refresh the reviewable snapshot at `database/seeders/seed-data/cms-content.snapshot.json`. It contains public editorial content only and replaces numeric relationships with stable UUID references or canonical geography slugs. Administrators, members, credentials, donations, payment transactions, enquiries, applications, volunteers, audit trails, IP addresses, click analytics, private files and non-public settings are deliberately excluded.
 
 After migrations, restore or reconcile the snapshot with:
 

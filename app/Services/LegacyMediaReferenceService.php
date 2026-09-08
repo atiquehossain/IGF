@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AnnualReport;
 use App\Models\Banner;
 use App\Models\Category;
+use App\Models\District;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\NoticeBoard;
@@ -28,6 +29,7 @@ final class LegacyMediaReferenceService
     private const FLAT_REFERENCES = [
         'banner' => [Banner::class, ['image', 'path']],
         'category' => [Category::class, ['image', 'path']],
+        'districts' => [District::class, ['hero_image']],
         'notice_board' => [NoticeBoard::class, ['image_path']],
         'our_members' => [LatestNews::class, ['image', 'path']],
         'page' => [Page::class, ['thumbnail']],
@@ -99,7 +101,7 @@ final class LegacyMediaReferenceService
             }
 
             if ($disk === 'public'
-                && preg_match('#\Aphotos/1/(banner|category|notice_board|our_members|page|testimonial)/([^/]+)\z#', $path, $match)) {
+                && preg_match('#\Aphotos/1/(banner|category|districts|notice_board|our_members|page|testimonial)/([^/]+)\z#', $path, $match)) {
                 return $this->flatImageInUse($match[1], rawurldecode($match[2]), $excluding);
             }
 

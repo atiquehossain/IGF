@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Models\District;
+use App\Models\Division;
 use App\Models\NoticeBoard;
 
 use App\Helper\IgfFile;
@@ -34,6 +36,7 @@ class NoticeBoardController extends Controller
         $search = $request->search;
 
         $notice_boards = NoticeBoard::select('notice_boards.*')
+            ->with(['division', 'district'])
             ->withCount('translations')
             ->where('title', 'like', '%' . $search . '%')
             ->orderBy('id', 'desc')
@@ -46,13 +49,16 @@ class NoticeBoardController extends Controller
     {
         $title = $request->Lang->PublicationTitle . " " . $request->Lang->Common->Create;
         [$locales, $translationSources, $defaultLocale, $translationSourceId] = $this->translationOptions();
+        [$divisions, $districts] = $this->geographyOptions();
 
         return view('admin.notice-board.add')->with(compact(
             'title',
             'locales',
             'translationSources',
             'defaultLocale',
-            'translationSourceId'
+            'translationSourceId',
+            'divisions',
+            'districts'
         ));
     }
 
@@ -64,7 +70,7 @@ class NoticeBoardController extends Controller
             'image_alt' => ['nullable', 'string', 'max:420'],
             'language' => ['required', Rule::in($this->localeIds())],
             'translation_source_id' => ['nullable', 'integer', 'exists:notice_boards,id'],
-        ], $this->eventRules()));
+        ], $this->eventRules(), $this->geographyRules($request)));
         $translationKey = $this->translationKeyFor($request);
         $asset = null;
         $committed = false;
@@ -100,7 +106,7 @@ class NoticeBoardController extends Controller
                     'ip' => @$request->ip(),
                     'order_by' => @$request->order_by,
                     'status' => 0,
-                ], $this->eventPayload($request), $asset ? [
+                ], $this->eventPayload($request), $this->geographyPayload($request), $asset ? [
                     'image_path' => $asset->databaseValue,
                 ] : [])));
             $committed = true;
@@ -143,6 +149,7 @@ class NoticeBoardController extends Controller
             $notice_board = NoticeBoard::find($id);
             abort_unless($notice_board, 404);
             [$locales, $translationSources, $defaultLocale, $translationSourceId] = $this->translationOptions($notice_board);
+            [$divisions, $districts] = $this->geographyOptions();
 
             return view('admin.notice-board.edit')->with(compact(
                 'title',
@@ -150,7 +157,9 @@ class NoticeBoardController extends Controller
                 'locales',
                 'translationSources',
                 'defaultLocale',
-                'translationSourceId'
+                'translationSourceId',
+                'divisions',
+                'districts'
             ));
         } catch (Exception $e) {
             return response(['message' => $request->Lang->Common->Form->DataNotFound], 403);
@@ -165,7 +174,7 @@ class NoticeBoardController extends Controller
             'image_alt' => ['nullable', 'string', 'max:420'],
             'language' => ['required', Rule::in($this->localeIds())],
             'translation_source_id' => ['nullable', 'integer', 'exists:notice_boards,id'],
-        ], $this->eventRules()));
+        ], $this->eventRules(), $this->geographyRules($request)));
 
         $notice_board = NoticeBoard::find($request->id);
         if (empty($notice_board)) {
@@ -224,7 +233,7 @@ class NoticeBoardController extends Controller
                         : $lockedNotice->image_alt,
                     'language' => $request->language,
                     'ip' => $request->ip(),
-                ], $this->eventPayload($request, $lockedNotice), $asset ? [
+                ], $this->eventPayload($request, $lockedNotice), $this->geographyPayload($request, $lockedNotice), $asset ? [
                     'image_path' => $asset->databaseValue,
                 ] : []));
             });
@@ -259,14 +268,37 @@ class NoticeBoardController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $data = NoticeBoard::find($request->id);
+                $data = NoticeBoard::findOrFail($request->route('id'));
+                if (!(bool) $data->status && ($message = $this->inactiveGeographyMessage($data))) {
+                    return response(['message' => $message], 409);
+                }
                 $data->status = $data->status ^ 1;
                 $data->update();
                 return response(['message' => ($data->status ? $request->Lang->Common->Form->PublishSuccessfully : $request->Lang->Common->Form->UnpublishSuccessfully)], 200);
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return response(['message' => $request->Lang->Common->Form->NotUpdate], 403);
         }
+    }
+
+    private function inactiveGeographyMessage(NoticeBoard $notice): ?string
+    {
+        if ($notice->division_id !== null
+            && ! Division::query()->whereKey($notice->division_id)->where('status', 1)->exists()) {
+            return 'Publish the selected activity division before publishing this item.';
+        }
+
+        if ($notice->district_id !== null
+            && ! District::query()
+                ->whereKey($notice->district_id)
+                ->where('division_id', $notice->division_id)
+                ->where('status', 1)
+                ->whereHas('division', fn ($query) => $query->where('status', 1))
+                ->exists()) {
+            return 'Choose an active district inside an active activity division before publishing this item.';
+        }
+
+        return null;
     }
 
     public function destroy($id = null, Request $request)
@@ -477,6 +509,66 @@ class NoticeBoardController extends Controller
             'event_status' => $kind === 'event' ? $request->input('event_status') : null,
             'event_attendance_mode' => $kind === 'event' ? $request->input('event_attendance_mode') : null,
         ];
+    }
+
+    /** @return array<string, mixed> */
+    private function geographyRules(Request $request): array
+    {
+        return [
+            'division_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('divisions', 'id')->where(fn ($query) => $query->where('status', 1)),
+            ],
+            'district_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    if ($value !== null && $value !== '' && ! $request->filled('division_id')) {
+                        $fail('Choose an activity division before choosing a district.');
+                    }
+                },
+                Rule::exists('districts', 'id')->where(fn ($query) => $query
+                    ->where('status', 1)
+                    ->where('division_id', $request->input('division_id'))),
+            ],
+        ];
+    }
+
+    /** @return array<string, ?int> */
+    private function geographyPayload(Request $request, ?NoticeBoard $notice = null): array
+    {
+        if (! $request->exists('division_id') && ! $request->exists('district_id') && $notice) {
+            return [
+                'division_id' => $notice->division_id === null ? null : (int) $notice->division_id,
+                'district_id' => $notice->district_id === null ? null : (int) $notice->district_id,
+            ];
+        }
+
+        $divisionId = $request->filled('division_id') ? $request->integer('division_id') : null;
+
+        return [
+            'division_id' => $divisionId,
+            'district_id' => $divisionId && $request->filled('district_id')
+                ? $request->integer('district_id')
+                : null,
+        ];
+    }
+
+    /** @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection} */
+    private function geographyOptions(): array
+    {
+        $divisions = Division::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        $districts = District::query()
+            ->where('status', 1)
+            ->whereIn('division_id', $divisions->pluck('id'))
+            ->orderBy('name')
+            ->get(['id', 'division_id', 'name']);
+
+        return [$divisions, $districts];
     }
 
     private function plainText(mixed $value): string

@@ -75,6 +75,7 @@ class PageBlockContentResolver
         } elseif ($block->type === 'testimonials' && $source === 'testimonials') {
             $content['items'] = $this->testimonialItems($content, $limit);
         } elseif ($block->type === 'team' && $source === 'team') {
+            $content = $this->teamPresentationContent($content);
             $directory = $this->teamDirectory($content, $limit);
             $content['items'] = $directory['items'];
             $content['groups'] = $directory['groups'];
@@ -598,7 +599,7 @@ class PageBlockContentResolver
         $sourceLocale = $this->teamSourceLocale($locale);
         $itemLinkLabel = trim((string) ($content['item_link_label'] ?? ''));
         $members = $this->records(
-            $this->teamMemberQuery($sourceLocale)->with('teamGroup'),
+            $this->teamMemberQuery($sourceLocale)->with(['teamGroup', 'division']),
             $content,
             $limit,
             'id',
@@ -729,6 +730,23 @@ class PageBlockContentResolver
         $biography = $localized['biography'] ?? (string) $member->biography;
         $qualification = $localized['qualification'] ?? (string) $member->qualification;
         $legacyUrl = $this->sanitizer->sanitizeUrl($member->url ?: '');
+        $divisionName = trim((string) $member->division?->name);
+        $divisionSlug = trim((string) ($member->division?->slug ?: ''));
+        if ($divisionSlug === '' && $divisionName !== '') {
+            $divisionSlug = Str::slug($divisionName);
+        }
+        $divisionUrl = $member->division
+            && (bool) $member->division->status
+            && $divisionSlug !== ''
+                ? $this->localizedHeroesDivisionUrl($divisionSlug)
+                : '';
+        $division = $member->division ? [
+            'id' => (int) $member->division->id,
+            'slug' => $divisionSlug,
+            'name' => $divisionName,
+            'label' => $divisionName,
+            'url' => $divisionUrl,
+        ] : null;
 
         return [
             'id' => $member->id,
@@ -742,7 +760,42 @@ class PageBlockContentResolver
             'url' => $legacyUrl,
             'social_links' => $this->normalizedSocialLinks($member->social_links, $legacyUrl),
             'link_label' => $itemLinkLabel,
+            'division_id' => $division['id'] ?? null,
+            'division_slug' => $divisionSlug,
+            'division_name' => $divisionName,
+            'division_label' => $divisionName,
+            'division_url' => $divisionUrl,
+            'division' => $division,
         ];
+    }
+
+    private function localizedHeroesDivisionUrl(string $divisionSlug): string
+    {
+        $locale = app()->getLocale();
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $parameters = ['division' => $divisionSlug];
+
+        if ($locale !== $defaultLocale) {
+            $parameters[(string) config('seo.locale_query_parameter', 'lang')] = $locale;
+        }
+
+        return route('frontend.heroes.division', $parameters);
+    }
+
+    private function teamPresentationContent(array $content): array
+    {
+        $defaults = (array) config('page-builder.default_content.team', []);
+        foreach (['team_presentation', 'show_map', 'map_position', 'profile_behavior', 'animation_enabled', 'autoplay'] as $key) {
+            if (!array_key_exists($key, $content) && array_key_exists($key, $defaults)) {
+                $content[$key] = $defaults[$key];
+            }
+        }
+
+        if (($content['team_presentation'] ?? null) === 'map_directory') {
+            $content['team_presentation'] = 'directory_map';
+        }
+
+        return $content;
     }
 
     private function galleryItems(array $content, int $limit): array

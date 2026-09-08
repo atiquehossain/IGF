@@ -19,6 +19,7 @@
                     <div class="card-body">
                         <div id="pay-invoice">
                             <div class="card-body">
+                                <p class="alert alert-info mb-3"><strong>Meet the Heroes:</strong> Add optional English and Bangla introductions for this division. These appear on its public regional directory page.</p>
                                 <form action="{{route('division.store')}}" method="post" enctype="multipart/form-data">
                                     {{ csrf_field() }}
 
@@ -28,6 +29,20 @@
                                         @if($errors->has('name'))
                                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                                         @endif
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="description" class="control-label mb-1">Division introduction (English)</label>
+                                        <textarea id="description" name="description" class="form-control" rows="5" maxlength="5000" aria-describedby="division-description-help">{{ old('description') }}</textarea>
+                                        <small id="division-description-help" class="form-text text-muted">Optional plain-language overview shown on the English division page.</small>
+                                        @error('description')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="description_bn" class="control-label mb-1">Division introduction (Bangla)</label>
+                                        <textarea id="description_bn" name="description_bn" class="form-control" rows="5" maxlength="5000" lang="bn" aria-describedby="division-description-bn-help">{{ old('description_bn') }}</textarea>
+                                        <small id="division-description-bn-help" class="form-text text-muted">Optional Bangla version. English is used as a fallback when this is blank.</small>
+                                        @error('description_bn')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                                     </div>
 
                                     <div class="form-actions form-group text-right">
@@ -69,7 +84,8 @@
                         <thead>
                             <tr>
                                 <th width="10%" class="serial"><strong>#{{ $Lang->Common->Form->ID }} </strong></th>
-                                <th width="35%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
+                                <th width="25%"><strong>{{ $Lang->Common->Form->Name }}</strong></th>
+                                <th width="25%"><strong>Public-page copy</strong></th>
                                 <th width="25%"><strong>{{ $Lang->Common->Form->Action }}</strong></th>
                             </tr>
                         </thead>
@@ -78,6 +94,11 @@
                             <tr id="{{ @$division->id }}">
                                 <td> #{{@$division->id}} </td>
                                 <td> <span class="name">{{@$division->name}}</span> </td>
+                                <td>
+                                    <small class="text-muted d-block">/{{ $division->slug }}</small>
+                                    <span class="badge badge-{{ filled($division->description) ? 'success' : 'secondary' }}">EN {{ filled($division->description) ? 'ready' : 'empty' }}</span>
+                                    <span class="badge badge-{{ filled($division->description_bn) ? 'success' : 'secondary' }}">BN {{ filled($division->description_bn) ? 'ready' : 'empty' }}</span>
+                                </td>
                                 <td>
                                     <?=App\Link::action(@$division->id, @$division->status, 'division ' . ($division->name ?? '')) ?>
                                 </td>
@@ -118,6 +139,25 @@
                         @if($errors->has('name'))
                         <small class="help-block form-text text-danger">{{ $errors->first('name') }}</small>
                         @endif
+                    </div>
+
+                    <div class="form-group">
+                        <label for="e_slug" class="control-label mb-1">Website address</label>
+                        <input id="e_slug" type="text" class="form-control" readonly aria-describedby="e-division-slug-help">
+                        <small id="e-division-slug-help" class="form-text text-muted">Kept stable automatically so existing links do not break.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="e_description" class="control-label mb-1">Division introduction (English)</label>
+                        <textarea id="e_description" name="description" class="form-control" rows="5" maxlength="5000">{{ old('description') }}</textarea>
+                        @error('description')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="e_description_bn" class="control-label mb-1">Division introduction (Bangla)</label>
+                        <textarea id="e_description_bn" name="description_bn" class="form-control" rows="5" maxlength="5000" lang="bn">{{ old('description_bn') }}</textarea>
+                        <small class="form-text text-muted">English is used as a fallback when this is blank.</small>
+                        @error('description_bn')<small class="help-block form-text text-danger">{{ $message }}</small>@enderror
                     </div>
 
                 </div>
@@ -174,6 +214,9 @@
                 if (res.data) {
                     $('.modal #e_id').val(res.data.id);
                     $('.modal #e_name').val(res.data.name);
+                    $('.modal #e_slug').val('/meet-the-heroes/division/' + (res.data.slug || ''));
+                    $('.modal #e_description').val(res.data.description || '');
+                    $('.modal #e_description_bn').val(res.data.description_bn || '');
                 }
                 spinner.hide();
             },

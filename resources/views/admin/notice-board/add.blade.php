@@ -89,6 +89,8 @@
 
                 @include('admin.notice-board._event_fields')
 
+                @include('admin.notice-board._geography_fields')
+
                 <div class="col-md-3">
                   <div class="form-group">
                     <label for="order_by" class="control-label mb-1">Display priority</label>
@@ -200,4 +202,5 @@
 
 @section('custom-js')
   @include('admin.layouts.tinymce')
+  @include('admin.notice-board._geography_script')
 @endsection

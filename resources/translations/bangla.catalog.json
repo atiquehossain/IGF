@@ -3047,14 +3047,14 @@
     },
     {
       "key": "36afc06a2650283e340456366b09d8913c329c86f15b496706157abe0c831707",
-      "source_hash": "ed86cea457f72cf51741f97d50a7802a846ae196d9d5d2ea8552aa2e4c8c8872",
+      "source_hash": "6d09cf5748829bd23a36d4de1e81b3a5cf103b3902ef494f0fe66541b5d89bab",
       "group": "navigation",
       "context": "Header & mobile navigation",
-      "field": "Menu label · News & Stories",
+      "field": "Menu label · Stories",
       "format": "text",
       "required": true,
-      "source": "News & Stories",
-      "translation": "সংবাদ ও গল্প",
+      "source": "Stories",
+      "translation": "গল্প",
       "suggested_translation": "",
       "preserve_source": false
     },

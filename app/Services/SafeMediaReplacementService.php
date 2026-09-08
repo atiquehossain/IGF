@@ -19,6 +19,7 @@ class SafeMediaReplacementService
     private const FLAT_COLLECTIONS = [
         'banner',
         'category',
+        'districts',
         'notice_board',
         'our_members',
         'page',

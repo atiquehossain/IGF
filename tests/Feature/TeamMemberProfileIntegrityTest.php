@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Admin;
 use App\Models\AuthMenu;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\LatestNews;
 use App\Models\MenuAction;
 use App\Models\PageBlock;
@@ -83,11 +85,20 @@ class TeamMemberProfileIntegrityTest extends TestCase
     {
         app()->setLocale('en');
         $admin = $this->makeAdmin();
+        $division = Division::query()->where('name', 'Dhaka')->firstOrFail();
+        $district = District::query()
+            ->where('division_id', $division->id)
+            ->where('name', 'Dhaka')
+            ->firstOrFail();
+        $otherDistrict = District::query()->where('name', 'Chattogram')->firstOrFail();
+        $inactiveDivision = Division::create(['name' => 'Inactive test division', 'status' => 0]);
 
         $this->actingAs($admin, 'admin')->get(route('latest.news.index'))
             ->assertOk()
             ->assertSee('Social links')
             ->assertSee('Biography')
+            ->assertSee('Primary work division (optional)')
+            ->assertSee('Primary work district (optional)')
             ->assertSee('Display order');
 
         $this->actingAs($admin, 'admin')->post(route('latest.news.store'), [
@@ -95,6 +106,8 @@ class TeamMemberProfileIntegrityTest extends TestCase
             'designation' => 'Executive Member',
             'biography' => 'Nadia works with youth-led community programs.',
             'qualification' => 'MSS in Development Studies',
+            'division_id' => $division->id,
+            'district_id' => $district->id,
             'order_by' => 75,
             'url' => 'https://example.test/nadia',
             'social_links' => [
@@ -108,6 +121,8 @@ class TeamMemberProfileIntegrityTest extends TestCase
         $this->assertSame('Executive Member', $member->description);
         $this->assertSame('Nadia works with youth-led community programs.', $member->biography);
         $this->assertSame('MSS in Development Studies', $member->qualification);
+        $this->assertSame($division->id, $member->division_id);
+        $this->assertSame($district->id, $member->district_id);
         $this->assertSame(75, $member->order_by);
         $this->assertSame([
             ['platform' => 'linkedin', 'label' => 'LinkedIn', 'url' => 'https://www.linkedin.com/in/nadia'],
@@ -130,19 +145,34 @@ class TeamMemberProfileIntegrityTest extends TestCase
         $this->assertSame('Board Secretary', $member->description);
         $this->assertSame('Updated public biography.', $member->biography);
         $this->assertSame(80, $member->order_by);
+        $this->assertSame($division->id, $member->division_id);
+        $this->assertSame($district->id, $member->district_id);
         $this->assertNull($member->url);
         $this->assertSame([
             ['platform' => 'facebook', 'label' => 'Follow Nadia', 'url' => 'https://www.facebook.com/nadia'],
         ], $member->social_links);
 
+        $this->actingAs($admin, 'admin')->put(route('latest.news.update'), [
+            'id' => $member->id,
+            'name' => 'Nadia Karim',
+            'designation' => 'Board Secretary',
+            'division_id' => '',
+            'order_by' => 80,
+        ])->assertSessionHasNoErrors();
+        $member->refresh();
+        $this->assertNull($member->division_id);
+        $this->assertNull($member->district_id);
+
         $this->actingAs($admin, 'admin')->post(route('latest.news.store'), [
             'name' => 'Unsafe Profile',
             'designation' => 'Member',
+            'division_id' => $inactiveDivision->id,
+            'district_id' => $otherDistrict->id,
             'url' => 'javascript:alert(1)',
             'social_links' => [
                 ['platform' => 'website', 'label' => 'Unsafe', 'url' => 'javascript:alert(1)'],
             ],
-        ])->assertSessionHasErrors(['url', 'social_links.0.url']);
+        ])->assertSessionHasErrors(['division_id', 'district_id', 'url', 'social_links.0.url']);
 
         $this->assertFalse(LatestNews::where('name', 'Unsafe Profile')->exists());
     }

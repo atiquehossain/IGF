@@ -11,8 +11,10 @@ from the project migrations, `DatabaseSeeder`, and
 
 Canonical Bangladesh location reference data is included for the volunteer
 form (8 divisions, 64 districts, and 495 upazilas). The database also retains
-the single required `seo_redirect_locks` mutex row. Automated checks enforce
-those exact structural records and reject unexpected rows.
+the single required `seo_redirect_locks` mutex row and non-sensitive schema
+ownership markers used to make optional geography migrations safe to roll
+back on older installations. Automated checks enforce those exact structural
+records and reject unexpected rows.
 
 The artifact deliberately contains no administrator or member accounts,
 password reset or OAuth records, donations, payment transactions,
@@ -54,7 +56,7 @@ php artisan test tests/Feature/PublicContentDatabaseArtifactTest.php
 The guard checks SQLite integrity, foreign keys, free pages, the requested
 sensitive-table denylist, every otherwise-unclassified nonempty table,
 public-field constraints, the published checksum, and byte-exact normalized
-parity with the 26-table `cms-content.snapshot.json` manifest. Future snapshot
+parity with the 28-table `cms-content.snapshot.json` manifest. Future snapshot
 exports must receive editorial approval because unpublished CMS copy is also
 eligible for this sanitized artifact. Never replace it with a live database
 that has merely had rows deleted: deleted SQLite pages may retain recoverable

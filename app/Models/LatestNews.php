@@ -17,6 +17,8 @@ class LatestNews extends Model
         'name',
         'category_id',
         'team_group_id',
+        'division_id',
+        'district_id',
         'type',
         'description',
         'biography',
@@ -44,6 +46,16 @@ class LatestNews extends Model
     public function teamGroup(): BelongsTo
     {
         return $this->belongsTo(TeamGroup::class, 'team_group_id');
+    }
+
+    public function division(): BelongsTo
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
     }
 
 }

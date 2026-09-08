@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AnnualReport;
 use App\Models\Category;
+use App\Models\District;
 use App\Models\DonationType;
+use App\Models\Division;
 use App\Models\JobPosting;
 use App\Models\JobPostingTranslation;
 use App\Models\NoticeBoard;
@@ -169,10 +171,16 @@ class SeoPublicController extends Controller
             $fallback = url($definition['path']);
             $candidate = $pageMetadata?->canonical_url ?: $routeMetadata?->canonical_url;
 
-            return [
+            $entry = [
                 'loc' => $this->sitemapLocation($candidate, $fallback, $locale),
                 'lastmod' => $this->lastModified($page, $effectiveMetadata),
             ];
+
+            if ($routeName === 'frontend.heroes.index') {
+                $entry['alternates'] = $this->heroesSitemapAlternates($routeName);
+            }
+
+            return $entry;
         })->filter()->values();
 
         $publicationArchiveEntries = collect([
@@ -355,6 +363,44 @@ class SeoPublicController extends Controller
                 ];
             });
 
+        $heroDivisions = Division::query()
+            ->where('status', 1)
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
+            ->get()
+            ->map(fn (Division $division): array => [
+                'loc' => $this->sitemapLocation(
+                    null,
+                    route('frontend.heroes.division', ['division' => $division->slug]),
+                    $locale
+                ),
+                'lastmod' => $this->lastModified($division),
+                'alternates' => $this->heroesSitemapAlternates(
+                    'frontend.heroes.division',
+                    ['division' => $division->slug]
+                ),
+            ]);
+
+        $heroDistricts = District::query()
+            ->with('division')
+            ->where('status', 1)
+            ->whereNotNull('slug')
+            ->where('slug', '!=', '')
+            ->whereHas('division', fn ($query) => $query->where('status', 1))
+            ->get()
+            ->map(fn (District $district): array => [
+                'loc' => $this->sitemapLocation(
+                    null,
+                    route('frontend.heroes.district', ['district' => $district->slug]),
+                    $locale
+                ),
+                'lastmod' => $this->lastModified($district, $district->division),
+                'alternates' => $this->heroesSitemapAlternates(
+                    'frontend.heroes.district',
+                    ['district' => $district->slug]
+                ),
+            ]);
+
         return $staticEntries
             ->concat($publicationArchiveEntries)
             ->concat($categories)
@@ -364,11 +410,56 @@ class SeoPublicController extends Controller
             ->concat($donationCauses)
             ->concat($jobs)
             ->concat($workshops)
+            ->concat($heroDivisions)
+            ->concat($heroDistricts)
             ->concat($pages)
             ->filter(fn (array $entry) => $this->seo->isSameOrigin($entry['loc']))
             ->sortBy('loc')
             ->unique('loc')
             ->values();
+    }
+
+    /**
+     * Geography is shared across languages, so every enabled public locale is
+     * a valid alternate. The national page additionally honours per-locale
+     * route-level noindex and sitemap exclusions from the SEO editor.
+     *
+     * @param array<string, string> $parameters
+     * @return array<int, array{locale: string, url: string}>
+     */
+    private function heroesSitemapAlternates(string $routeName, array $parameters = []): array
+    {
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $locales = collect($this->localization->publicLocales());
+        if ($routeName === 'frontend.heroes.index') {
+            $locales = collect($this->seo->indexableRouteLocales($routeName, $locales->all()));
+        }
+
+        $routeMetadata = $routeName === 'frontend.heroes.index'
+            ? SeoMetadata::query()
+                ->where('route_name', $routeName)
+                ->whereIn('locale', $locales->all())
+                ->get()
+                ->keyBy('locale')
+            : collect();
+        $fallback = route($routeName, $parameters);
+        $links = $locales
+            ->map(fn (string $alternateLocale): array => [
+                'locale' => $alternateLocale,
+                'url' => $this->sitemapLocation(
+                    $routeMetadata->get($alternateLocale)?->canonical_url,
+                    $fallback,
+                    $alternateLocale
+                ),
+            ])
+            ->values();
+
+        $default = $links->firstWhere('locale', $defaultLocale);
+        if ($default) {
+            $links->push(['locale' => 'x-default', 'url' => $default['url']]);
+        }
+
+        return $links->all();
     }
 
     /** @return array<int, array{locale: string, url: string}> */
@@ -608,6 +699,8 @@ class SeoPublicController extends Controller
             JobPostingTranslation::where('locale', $locale)->max('updated_at'),
             Workshop::max('updated_at'),
             WorkshopTranslation::where('locale', $locale)->max('updated_at'),
+            Division::max('updated_at'),
+            District::max('updated_at'),
             SeoMetadata::where('locale', $locale)->max('updated_at'),
         ])->filter()->map(fn ($date) => \Illuminate\Support\Carbon::parse($date));
 

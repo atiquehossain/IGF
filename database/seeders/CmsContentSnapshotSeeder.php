@@ -14,7 +14,8 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private const TABLE_ORDER = [
         'translation_locales',
-        'translation_strings',
+        'divisions',
+        'districts',
         'albums',
         'banners',
         'categories',
@@ -22,6 +23,8 @@ class CmsContentSnapshotSeeder extends Seeder
         'tags',
         'reusable_blocks',
         'pages',
+        'latest_news',
+        'translation_strings',
         'page_blocks',
         'page_menus',
         'page_tag_modules',
@@ -29,7 +32,6 @@ class CmsContentSnapshotSeeder extends Seeder
         'donation_cause_groups',
         'donation_types',
         'galleries',
-        'latest_news',
         'testimonials',
         'annual_reports',
         'notice_boards',
@@ -204,16 +206,35 @@ class CmsContentSnapshotSeeder extends Seeder
 
     private function restoreRelations(string $table, array $record): array
     {
-        foreach ($this->relationMap($table) as $snapshotColumn => [$targetTable, $databaseColumn, $languageColumn]) {
-            $uuid = $record[$snapshotColumn] ?? null;
+        // Version-one snapshots exported before geography gained stable slugs
+        // used a division name. Continue accepting that shape while all new
+        // exports use immutable public route slugs.
+        if ($table === 'latest_news'
+            && array_key_exists('division_name', $record)
+            && ! array_key_exists('division_slug', $record)) {
+            $divisionId = $record['division_name'] === null
+                ? null
+                : $this->idForColumn('divisions', 'name', (string) $record['division_name']);
+            $record['division_slug'] = $divisionId === null
+                ? null
+                : DB::table('divisions')->where('id', $divisionId)->value('slug');
+            unset($record['division_name']);
+        }
+
+        foreach ($this->relationMap($table) as $snapshotColumn => $relation) {
+            [$targetTable, $databaseColumn, $languageColumn] = $relation;
+            $identityColumn = $relation[3] ?? 'uuid';
+            $reference = $record[$snapshotColumn] ?? null;
             $language = $languageColumn === null ? null : ($record[$languageColumn] ?? null);
             unset($record[$snapshotColumn]);
             if ($languageColumn !== null) {
                 unset($record[$languageColumn]);
             }
-            $record[$databaseColumn] = $uuid === null
+            $record[$databaseColumn] = $reference === null
                 ? null
-                : $this->idForUuid($targetTable, (string) $uuid, $language);
+                : ($identityColumn === 'uuid'
+                    ? $this->idForUuid($targetTable, (string) $reference, $language)
+                    : $this->idForColumn($targetTable, $identityColumn, (string) $reference));
         }
 
         if ($table === 'seo_metadata') {
@@ -234,7 +255,107 @@ class CmsContentSnapshotSeeder extends Seeder
             }
         }
 
+        if ($table === 'page_blocks') {
+            $record = $this->restorePageBlockContentRelations($record);
+        }
+
+        if ($table === 'translation_strings') {
+            $record = $this->restoreTranslationStringRelations($record);
+        }
+
         return $record;
+    }
+
+    private function restorePageBlockContentRelations(array $record): array
+    {
+        if (($record['type'] ?? null) !== 'team' || ! is_string($record['content'] ?? null)) {
+            return $record;
+        }
+
+        $content = json_decode($record['content'], true, 512, JSON_THROW_ON_ERROR);
+        if (
+            ! is_array($content)
+            || ($content['selection_mode'] ?? 'automatic') !== 'manual'
+            || ! is_array($content['selected_items'] ?? null)
+        ) {
+            return $record;
+        }
+
+        $content['selected_items'] = array_map(
+            fn (mixed $selected): string => is_array($selected)
+                ? (string) $this->idForTeamMember($selected)
+                : (string) $selected,
+            $content['selected_items']
+        );
+        $record['content'] = json_encode(
+            $content,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+        );
+
+        return $record;
+    }
+
+    private function restoreTranslationStringRelations(array $record): array
+    {
+        if (! array_key_exists('team_member_name', $record)) {
+            return $record;
+        }
+
+        $field = (string) ($record['team_member_field'] ?? '');
+        if (! in_array($field, ['name', 'description', 'biography', 'qualification'], true)) {
+            throw new RuntimeException('The CMS snapshot contains an invalid team-member translation field.');
+        }
+
+        $memberId = $this->idForTeamMember([
+            'name' => $record['team_member_name'] ?? null,
+            'language' => $record['team_member_language'] ?? null,
+            'team_group_uuid' => $record['team_member_group_uuid'] ?? null,
+        ]);
+        $record['key'] = "content.team_member.{$memberId}.{$field}";
+        unset(
+            $record['team_member_name'],
+            $record['team_member_language'],
+            $record['team_member_group_uuid'],
+            $record['team_member_field']
+        );
+
+        return $record;
+    }
+
+    private function idForTeamMember(array $reference): int
+    {
+        $name = trim((string) ($reference['name'] ?? ''));
+        $language = trim((string) ($reference['language'] ?? ''));
+        if ($name === '' || $language === '') {
+            throw new RuntimeException('The CMS snapshot contains an incomplete team-member reference.');
+        }
+
+        $query = DB::table('latest_news')
+            ->where('type', 'our-members')
+            ->where('name', $name)
+            ->where('language', $language);
+
+        if (array_key_exists('team_group_uuid', $reference)) {
+            $groupUuid = $reference['team_group_uuid'];
+            if ($groupUuid === null || trim((string) $groupUuid) === '') {
+                $query->whereNull('team_group_id');
+            } else {
+                $query->where(
+                    'team_group_id',
+                    $this->idForUuid('team_groups', (string) $groupUuid, $language)
+                );
+            }
+        }
+
+        $ids = $query->limit(2)->pluck('id');
+        if ($ids->isEmpty()) {
+            throw new RuntimeException("Cannot restore CMS snapshot: team member [{$name}] is missing.");
+        }
+        if ($ids->count() > 1) {
+            throw new RuntimeException("Cannot restore CMS snapshot: team member [{$name}] is ambiguous.");
+        }
+
+        return (int) $ids->first();
     }
 
     private function relationMap(string $table): array
@@ -249,9 +370,18 @@ class CmsContentSnapshotSeeder extends Seeder
             'donation_types' => [
                 'donation_cause_group_uuid' => ['donation_cause_groups', 'donation_cause_group_id', null],
             ],
+            'districts' => [
+                'division_slug' => ['divisions', 'division_id', null, 'slug'],
+            ],
             'latest_news' => [
                 'category_uuid' => ['categories', 'category_id', 'category_language'],
                 'team_group_uuid' => ['team_groups', 'team_group_id', 'team_group_language'],
+                'division_slug' => ['divisions', 'division_id', null, 'slug'],
+                'district_slug' => ['districts', 'district_id', null, 'slug'],
+            ],
+            'notice_boards' => [
+                'division_slug' => ['divisions', 'division_id', null, 'slug'],
+                'district_slug' => ['districts', 'district_id', null, 'slug'],
             ],
             'page_blocks' => [
                 'page_uuid' => ['pages', 'page_id', 'page_language'],
@@ -294,6 +424,7 @@ class CmsContentSnapshotSeeder extends Seeder
         }
 
         return match ($table) {
+            'divisions', 'districts' => $this->onlyIdentity($table, $record, ['slug']),
             'annual_reports', 'notice_boards' => trim((string) ($record['translation_key'] ?? '')) !== ''
                 ? $this->onlyIdentity($table, $record, ['translation_key', 'language'])
                 : $this->onlyIdentity($table, $record, ['slug', 'language']),
@@ -364,6 +495,28 @@ class CmsContentSnapshotSeeder extends Seeder
             throw new RuntimeException(
                 "Cannot restore CMS snapshot: [{$table}] UUID [{$uuid}] is ambiguous without a language."
             );
+        }
+
+        return (int) $ids->first();
+    }
+
+    private function idForColumn(string $table, string $column, string $value): int
+    {
+        if (! in_array($column, ['name', 'slug'], true)) {
+            throw new RuntimeException("Cannot restore CMS snapshot: unsupported [{$table}.{$column}] identity.");
+        }
+
+        $normalized = mb_strtolower(trim($value));
+        $ids = DB::table($table)
+            ->whereRaw("LOWER({$column}) = ?", [$normalized])
+            ->limit(2)
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            throw new RuntimeException("Cannot restore CMS snapshot: [{$table}] {$column} [{$value}] is missing.");
+        }
+        if ($ids->count() > 1) {
+            throw new RuntimeException("Cannot restore CMS snapshot: [{$table}] {$column} [{$value}] is ambiguous.");
         }
 
         return (int) $ids->first();

@@ -94,6 +94,8 @@ $custom_inline_css = '';
 
                 @include('admin.notice-board._event_fields', ['notice_board' => $notice_board])
 
+                @include('admin.notice-board._geography_fields', ['notice_board' => $notice_board])
+
                 <div class="col-md-3">
                   <div class="form-group">
                     <label for="order_by" class="control-label mb-1">Display priority</label>
@@ -205,4 +207,5 @@ $custom_inline_css = '';
 
 @section('custom-js')
   @include('admin.layouts.tinymce', ['contentStyle' => @$custom_inline_css])
+  @include('admin.notice-board._geography_script')
 @endsection

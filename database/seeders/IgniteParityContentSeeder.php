@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Album;
 use App\Models\AnnualReport;
 use App\Models\Category;
+use App\Models\District;
+use App\Models\Division;
 use App\Models\Gallery;
 use App\Models\LatestNews;
 use App\Models\MediaAsset;
@@ -45,7 +47,9 @@ class IgniteParityContentSeeder extends Seeder
         $this->seedReports();
         $this->seedGallery();
         $this->seedTeam();
+        $this->seedMeetTheHeroesDemo();
         $this->seedNavigation();
+        $this->seedMeetTheHeroesNavigation();
         $this->seedHomepage();
     }
 
@@ -659,7 +663,10 @@ class IgniteParityContentSeeder extends Seeder
         ];
 
         foreach ($testimonials as $item) {
-            $model = Testimonial::withTrashed()->firstOrNew(['uuid' => $item['uuid']]);
+            $model = Testimonial::withTrashed()->firstOrNew([
+                'uuid' => $item['uuid'],
+                'language' => 'en',
+            ]);
             $model->fill(array_merge($item, ['status' => 1, 'language' => 'en']));
             $model->save();
             $this->restore($model);
@@ -700,7 +707,10 @@ class IgniteParityContentSeeder extends Seeder
 
     private function seedGallery(): void
     {
-        $album = Album::withTrashed()->firstOrNew(['uuid' => '65000000-0000-4000-8000-000000000001']);
+        $album = Album::withTrashed()->firstOrNew([
+            'uuid' => '65000000-0000-4000-8000-000000000001',
+            'language' => 'en',
+        ]);
         $album->fill(['name' => 'Community Programs', 'language' => 'en', 'status' => 1]);
         $album->save();
         $this->restore($album);
@@ -777,7 +787,7 @@ class IgniteParityContentSeeder extends Seeder
                 ['uuid' => '68000000-0004-4000-8000-000000000002', 'name' => 'Careers', 'link' => 'frontend.category', 'slug' => 'career', 'order' => 1],
                 ['uuid' => '68000000-0004-4000-8000-000000000003', 'name' => 'Sponsor a Child', 'link' => 'frontend.sponsor_child', 'slug' => null, 'order' => 2],
             ]],
-            ['uuid' => '67000000-0000-4000-8000-000000000005', 'name' => 'News & Stories', 'link' => 'custom', 'slug' => '#', 'order' => 4, 'children' => [
+            ['uuid' => '67000000-0000-4000-8000-000000000005', 'name' => 'Stories', 'link' => 'custom', 'slug' => '#', 'order' => 4, 'children' => [
                 ['uuid' => '68000000-0005-4000-8000-000000000001', 'name' => 'Stories', 'link' => 'frontend.category', 'slug' => 'stories', 'order' => 0],
                 ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
                 ['uuid' => '68000000-0005-4000-8000-000000000003', 'name' => 'News', 'link' => 'frontend.news', 'slug' => null, 'order' => 2],
@@ -828,7 +838,7 @@ class IgniteParityContentSeeder extends Seeder
     {
         $menu = ($node['workshop'] ?? false)
             ? $this->seedWorkshopMenu($node, $parentId, $locale, $workshopState)
-            : $this->menu($node['uuid'], $node['name'], $node['link'], $node['slug'], $parentId, $node['order']);
+            : $this->menu($node['uuid'], $node['name'], $node['link'], $node['slug'], $parentId, $node['order'], $locale);
 
         if (! $menu || $menu->trashed()) {
             return;
@@ -1049,6 +1059,7 @@ class IgniteParityContentSeeder extends Seeder
             ['Josinta Zinia', 'Executive Member', '', 10],
         ];
 
+        $selected = [];
         foreach ($members as [$name, $designation, $image, $order]) {
             $member = LatestNews::withTrashed()->firstOrNew([
                 'name' => $name,
@@ -1066,6 +1077,452 @@ class IgniteParityContentSeeder extends Seeder
             ]);
             $member->save();
             $this->restore($member);
+            $selected[] = (string) $member->id;
+        }
+
+        // Keep the existing governance section focused on the real board when
+        // the separate, clearly labelled demo directory is installed.
+        $boardBlock = PageBlock::query()
+            ->where('uuid', '69000000-0000-4000-8000-000000000004')
+            ->first();
+        if ($boardBlock) {
+            $content = $boardBlock->content;
+            $content['content_source'] = 'team';
+            $content['selection_mode'] = 'manual';
+            $content['selected_items'] = $selected;
+            $boardBlock->content = $content;
+            $boardBlock->save();
+        }
+    }
+
+    private function seedMeetTheHeroesNavigation(): void
+    {
+        foreach ([
+            'en' => 'Meet the Heroes',
+            'bn' => 'পরিবর্তনের নায়কেরা',
+        ] as $locale => $label) {
+            $parent = PageMenu::query()
+                ->where('uuid', '67000000-0000-4000-8000-000000000002')
+                ->where('language', $locale)
+                ->where('type', 'main')
+                ->first();
+
+            // A fresh local fixture starts with English only. The Bangla item
+            // is added as soon as its admin-managed root navigation exists.
+            if (! $parent) {
+                continue;
+            }
+
+            $menu = PageMenu::withTrashed()->where([
+                'uuid' => '68000000-0002-4000-8000-000000000007',
+                'language' => $locale,
+            ])->first();
+            if ($menu) {
+                // The item is administrator-managed after its first creation.
+                // Preserve custom labels, destinations, ordering and deletion.
+                continue;
+            }
+
+            PageMenu::create([
+                'uuid' => '68000000-0002-4000-8000-000000000007',
+                'name' => $label,
+                'type' => 'main',
+                'link' => 'frontend.heroes.index',
+                'slug' => null,
+                'parent_id' => $parent->id,
+                'language' => $locale,
+                'order_by' => 5,
+                'status' => 1,
+            ]);
+        }
+    }
+
+    private function seedMeetTheHeroesDemo(): void
+    {
+        $group = TeamGroup::query()->firstOrCreate(
+            [
+                'language' => 'en',
+                'slug' => 'regional-heroes-demo',
+            ],
+            [
+                'uuid' => '8d000000-0000-4000-8000-000000000001',
+                'name' => 'Regional Heroes — Demo',
+                'description' => 'Demonstration profiles for previewing the national, division, and district directory layouts.',
+                'order_by' => 90,
+                'status' => 1,
+            ]
+        );
+        $group->forceFill([
+            'name' => 'Regional Heroes — Demo',
+            'description' => 'Demonstration profiles for previewing the national, division, and district directory layouts.',
+            'order_by' => 90,
+            'status' => 1,
+        ])->save();
+
+        $profiles = [
+            [
+                'name' => 'Amina Rahman (Demo)',
+                'designation' => 'Regional Education Coordinator',
+                'division' => 'Dhaka',
+                'district' => 'Dhaka',
+                'order' => 800,
+                'biography' => "A sample profile coordinating inclusive education activities and school partnerships across Dhaka.\n\nHer work brings educators, volunteers, and families together so local priorities guide every learning activity.",
+            ],
+            [
+                'name' => 'Rafiul Karim (Demo)',
+                'designation' => 'Coastal Programs Coordinator',
+                'division' => 'Chattogram',
+                'district' => 'Chattogram',
+                'order' => 799,
+                'biography' => "A sample profile supporting coastal communities through preparedness, youth action, and local partnerships.\n\nHe works with residents to strengthen local readiness and make youth-led support practical before and after emergencies.",
+            ],
+            [
+                'name' => 'Nusrat Jahan (Demo)',
+                'designation' => 'Youth Engagement Coordinator',
+                'division' => 'Rajshahi',
+                'district' => 'Rajshahi',
+                'order' => 798,
+                'biography' => "A sample profile helping young people lead community initiatives, volunteer programs, and skills workshops.\n\nShe creates welcoming spaces where volunteers can learn, collaborate, and turn local ideas into sustained action.",
+            ],
+            [
+                'name' => 'Imran Hossain (Demo)',
+                'designation' => 'Livelihoods Coordinator',
+                'division' => 'Khulna',
+                'district' => 'Khulna',
+                'order' => 797,
+                'biography' => "A sample profile connecting families with practical livelihood training and community-led economic opportunities.\n\nHe works with community partners to make training relevant, accessible, and connected to the goals families set for themselves.",
+            ],
+            [
+                'name' => 'Tania Akter (Demo)',
+                'designation' => 'Community Partnerships Coordinator',
+                'division' => 'Barishal',
+                'district' => 'Barishal',
+                'order' => 796,
+                'biography' => "A sample profile building trusted partnerships with local organizations, volunteers, and community leaders.\n\nShe listens to local priorities and helps organizations coordinate support with clarity, dignity, and shared accountability.",
+            ],
+            [
+                'name' => 'Farhan Ahmed (Demo)',
+                'designation' => 'Volunteer Network Coordinator',
+                'division' => 'Sylhet',
+                'district' => 'Sylhet',
+                'order' => 795,
+                'biography' => "A sample profile growing and supporting volunteer networks for locally led programs across Sylhet.\n\nHe connects volunteers with community-led opportunities and helps teams sustain participation beyond individual activities.",
+            ],
+            [
+                'name' => 'Sadia Islam (Demo)',
+                'designation' => 'Health Outreach Coordinator',
+                'division' => 'Rangpur',
+                'district' => 'Rangpur',
+                'order' => 794,
+                'biography' => "A sample profile organizing community health awareness and outreach activities for families in Rangpur.\n\nShe works with local partners to make practical health information accessible and responsive to community needs.",
+            ],
+            [
+                'name' => 'Mehedi Hasan (Demo)',
+                'designation' => 'Child Development Coordinator',
+                'division' => 'Mymensingh',
+                'district' => 'Mymensingh',
+                'order' => 793,
+                'biography' => "A sample profile supporting child development, safeguarding awareness, and family engagement in Mymensingh.\n\nHe brings caregivers, volunteers, and community partners together around safe, inclusive opportunities for children.",
+            ],
+            [
+                'name' => 'Rumana Sultana (Demo)',
+                'designation' => 'Community Learning Facilitator',
+                'division' => 'Rangpur',
+                'district' => 'Dinajpur',
+                'order' => 792,
+                'image' => self::MEDIA . 'p0fz2nhfbm0ki2u81kjb9lbaifkokgfn0cx8jua4-3df14b756c14.jpg',
+                'biography' => "A sample profile helping community learning groups connect children and families with inclusive local opportunities in Dinajpur.\n\nShe works with volunteers and educators to turn community priorities into welcoming, practical activities for learners.",
+            ],
+            [
+                'name' => 'Jahidul Islam (Demo)',
+                'designation' => 'Youth Action Facilitator',
+                'division' => 'Rangpur',
+                'district' => 'Gaibandha',
+                'order' => 791,
+                'image' => self::MEDIA . 'rsz-volunteer-orientation-5ed54757bfa9.jpg',
+                'biography' => "A sample profile supporting youth volunteers as they plan and deliver community-led activities across Gaibandha.\n\nHe helps young people build practical skills, work safely with local partners, and learn from each completed activity.",
+            ],
+        ];
+
+        // These are first-party images already bundled with the IGF demo seed.
+        // Cycling the small portrait set keeps every clearly-labelled demo card
+        // visually testable without inventing external people or remote assets.
+        $demoPortraits = [
+            self::MEDIA . 'founder-ea5ae7f8a69f.png',
+            self::MEDIA . 'testimonials/ekfevqgifptlzx53hhrk8yldizzqaaoklsffr17c.jpg',
+            self::MEDIA . 'testimonials/ytdvjwog8z0jlnyrzb4daho1dlmxny17y9qpwny8.jpg',
+            self::MEDIA . 'testimonials/s3zfo4yjprhfudkq3fbmgidk9lmmcjowcxam7gwh.jpg',
+        ];
+        $demoSocialLinks = [
+            [
+                'platform' => 'facebook',
+                'label' => 'Ignite Global Foundation on Facebook',
+                'url' => 'https://www.facebook.com/Igniteglobalfoundation',
+            ],
+            [
+                'platform' => 'linkedin',
+                'label' => 'Ignite Global Foundation on LinkedIn',
+                'url' => 'https://www.linkedin.com/company/ignite-global-foundation-2016/',
+            ],
+        ];
+
+        $selected = [];
+
+        foreach ($profiles as $profileIndex => $profile) {
+            $division = Division::query()->where('name', $profile['division'])->firstOrFail();
+            $district = District::query()
+                ->where('division_id', $division->id)
+                ->where('name', $profile['district'])
+                ->firstOrFail();
+
+            $member = LatestNews::withTrashed()->firstOrNew([
+                'name' => $profile['name'],
+                'type' => 'our-members',
+                'language' => 'en',
+            ]);
+            $member->fill([
+                'team_group_id' => $group->id,
+                'division_id' => $division->id,
+                'district_id' => $district->id,
+                'description' => $profile['designation'],
+                // The reference division selector stays within the map height;
+                // regional demo cards therefore show concise identity/social
+                // content while real editor-managed biographies remain intact.
+                'biography' => null,
+                'qualification' => null,
+                'image' => $demoPortraits[$profileIndex % count($demoPortraits)],
+                'path' => $demoPortraits[$profileIndex % count($demoPortraits)],
+                'url' => null,
+                'social_links' => $demoSocialLinks,
+                'order_by' => $profile['order'],
+                'status' => 1,
+            ]);
+            $member->save();
+            $this->restore($member);
+            $selected[] = (string) $member->id;
+
+            $this->seedDemoGeographyCopy($division, $district);
+        }
+
+        $national = LatestNews::withTrashed()->firstOrNew([
+            'name' => 'Samira Chowdhury (Demo)',
+            'type' => 'our-members',
+            'language' => 'en',
+        ]);
+        $national->fill([
+            'team_group_id' => $group->id,
+            'division_id' => null,
+            'district_id' => null,
+            'description' => 'National Volunteer Network Coordinator',
+            'biography' => "A sample national profile supporting volunteer coordination and shared learning across Bangladesh.\n\nShe helps regional teams exchange practical ideas while keeping local leadership and community priorities at the centre of each activity.",
+            'qualification' => null,
+            'image' => $demoPortraits[2],
+            'path' => $demoPortraits[2],
+            'url' => null,
+            'social_links' => $demoSocialLinks,
+            'order_by' => 792,
+            'status' => 1,
+        ]);
+        $national->save();
+        $this->restore($national);
+
+        $page = Page::query()
+            ->where('uuid', '22222222-2222-4222-8222-000000000010')
+            ->where('language', 'en')
+            ->firstOrFail();
+        $block = PageBlock::withTrashed()->firstOrNew([
+            'uuid' => '69000000-0000-4000-8000-00000000d001',
+        ]);
+        $block->fill([
+            'translation_key' => '69000000-0000-4000-8000-00000000d001',
+            'page_id' => $page->id,
+            'type' => 'team',
+            'label' => 'Regional Heroes Directory — Demo',
+            'content' => [
+                'eyebrow' => 'Heroes',
+                'heading' => 'Meet the Heroes',
+                'body' => '',
+                'content_source' => 'team',
+                'selection_mode' => 'manual',
+                'selected_items' => $selected,
+                'sort' => 'featured',
+                'limit' => count($selected),
+                'team_presentation' => 'heroes_showcase',
+                'show_map' => true,
+                'map_position' => 'right',
+                'profile_behavior' => 'panel',
+                'item_link_label' => 'View profile',
+                'empty_state' => 'Add published demo profiles to preview this directory.',
+                'animation_enabled' => true,
+                'autoplay' => true,
+            ],
+            'settings' => [],
+            'sort_order' => 8,
+            'is_enabled' => true,
+            'show_on_desktop' => true,
+            'show_on_mobile' => true,
+        ]);
+        $block->save();
+        $this->restore($block);
+
+        $this->seedMeetTheHeroesActivities();
+    }
+
+    private function seedDemoGeographyCopy(Division $division, District $district): void
+    {
+        $divisionChanges = [];
+        if (blank($division->description)) {
+            $divisionChanges['description'] = "Demo content for the Meet the Heroes layout. Replace this overview with approved information about Ignite's work across {$division->name} Division before publishing.";
+        }
+        if (blank($division->description_bn)) {
+            $divisionChanges['description_bn'] = "Meet the Heroes লেআউটের নমুনা লেখা। প্রকাশের আগে {$division->name} বিভাগে ইগনাইটের কাজ সম্পর্কে অনুমোদিত তথ্য দিয়ে এটি প্রতিস্থাপন করুন।";
+        }
+        if ($divisionChanges !== []) {
+            $division->forceFill($divisionChanges)->save();
+        }
+
+        $districtChanges = [];
+        if (blank($district->description)) {
+            $districtChanges['description'] = "Demo content for {$district->name} District. Replace this text with approved local context, people, and program information before publishing.";
+        }
+        if (blank($district->description_bn)) {
+            $districtChanges['description_bn'] = "{$district->name} জেলার নমুনা লেখা। প্রকাশের আগে অনুমোদিত স্থানীয় প্রেক্ষাপট, মানুষ ও কর্মসূচির তথ্য দিয়ে এটি প্রতিস্থাপন করুন।";
+        }
+        if (
+            blank($district->hero_image)
+            || $district->hero_image === self::MEDIA . 'y3oylo6tegbtxwlpcbsromnlhmn1gdlwtehqu9sl-30d4e0add7c6.jpg'
+        ) {
+            $districtChanges['hero_image'] = self::MEDIA . 'dms2sp0pfxgane9lzjpco3enlkyd4xjeygndfbym-24b5036254cd.jpg';
+        }
+        if (blank($district->hero_image_alt)) {
+            $districtChanges['hero_image_alt'] = "Demo layout image from Ignite Global Foundation's media library; replace with approved {$district->name} District photography.";
+        }
+        if (blank($district->hero_image_alt_bn)) {
+            $districtChanges['hero_image_alt_bn'] = "ইগনাইট গ্লোবাল ফাউন্ডেশনের মিডিয়া লাইব্রেরির নমুনা ছবি; প্রকাশের আগে {$district->name} জেলার অনুমোদিত ছবি দিয়ে এটি প্রতিস্থাপন করুন।";
+        }
+        if ($districtChanges !== []) {
+            $district->forceFill($districtChanges)->save();
+        }
+    }
+
+    private function seedMeetTheHeroesActivities(): void
+    {
+        $scopes = [
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000001',
+                'title' => 'National Volunteer Learning Exchange (Demo)',
+                'slug' => 'national-volunteer-learning-exchange-demo',
+                'division' => null,
+                'district' => null,
+                'image' => self::MEDIA . 'rsz-volunteer-orientation-5ed54757bfa9.jpg',
+                'order' => 780,
+                'published_at' => '2026-09-01 09:00:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000002',
+                'title' => 'Dhaka Division Education Network (Demo)',
+                'slug' => 'dhaka-division-education-network-demo',
+                'division' => 'Dhaka',
+                'district' => null,
+                'image' => self::MEDIA . 'fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg',
+                'order' => 779,
+                'published_at' => '2026-08-28 10:00:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000003',
+                'title' => 'Dhaka Community Learning Day (Demo)',
+                'slug' => 'dhaka-community-learning-day-demo',
+                'division' => 'Dhaka',
+                'district' => 'Dhaka',
+                'image' => self::MEDIA . '53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg',
+                'order' => 778,
+                'published_at' => '2026-08-24 11:00:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000004',
+                'title' => 'Chattogram Coastal Preparedness Session (Demo)',
+                'slug' => 'chattogram-coastal-preparedness-session-demo',
+                'division' => 'Chattogram',
+                'district' => 'Chattogram',
+                'image' => self::MEDIA . 'thfdurayx9wml9cgtcxn0fsrfotkts3wjr5z7rha-ed3e83810510.jpg',
+                'order' => 777,
+                'published_at' => '2026-08-20 12:00:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000005',
+                'title' => 'Rangpur Division Volunteer Forum (Demo)',
+                'slug' => 'rangpur-division-volunteer-forum-demo',
+                'division' => 'Rangpur',
+                'district' => null,
+                'image' => self::MEDIA . 'rsz-volunteer-orientation-5ed54757bfa9.jpg',
+                'order' => 776,
+                'published_at' => '2026-08-16 09:30:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000006',
+                'title' => 'Rangpur District Health Outreach (Demo)',
+                'slug' => 'rangpur-district-health-outreach-demo',
+                'division' => 'Rangpur',
+                'district' => 'Rangpur',
+                'image' => self::MEDIA . '53ie3y0pybysjxrhi7z46geyzazsjdu2euwiqijd-cf3e267a7b09.jpg',
+                'order' => 775,
+                'published_at' => '2026-08-12 10:30:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000007',
+                'title' => 'Dinajpur Inclusive Learning Circle (Demo)',
+                'slug' => 'dinajpur-inclusive-learning-circle-demo',
+                'division' => 'Rangpur',
+                'district' => 'Dinajpur',
+                'image' => self::MEDIA . 'fzybmfnokijodrkucte3yo1bt4741x7ygzllbyzm-05ae3890f6ad.jpg',
+                'order' => 774,
+                'published_at' => '2026-08-08 11:30:00',
+            ],
+            [
+                'translation_key' => '8e000000-0000-4000-8000-000000000008',
+                'title' => 'Gaibandha Youth Preparedness Day (Demo)',
+                'slug' => 'gaibandha-youth-preparedness-day-demo',
+                'division' => 'Rangpur',
+                'district' => 'Gaibandha',
+                'image' => self::MEDIA . 'thfdurayx9wml9cgtcxn0fsrfotkts3wjr5z7rha-ed3e83810510.jpg',
+                'order' => 773,
+                'published_at' => '2026-08-04 12:30:00',
+            ],
+        ];
+
+        foreach ($scopes as $scope) {
+            $division = $scope['division'] === null
+                ? null
+                : Division::query()->where('name', $scope['division'])->firstOrFail();
+            $district = $scope['district'] === null
+                ? null
+                : District::query()
+                    ->where('division_id', $division?->id)
+                    ->where('name', $scope['district'])
+                    ->firstOrFail();
+
+            $activity = NoticeBoard::withTrashed()->firstOrNew([
+                'translation_key' => $scope['translation_key'],
+                'language' => 'en',
+            ]);
+            $activity->fill([
+                'title' => $scope['title'],
+                'slug' => $scope['slug'],
+                'sub_title' => 'Clearly labeled demonstration content for previewing geography-scoped activities in the Meet the Heroes directory.',
+                'description' => '<h2>Demonstration activity</h2><p>This sample record shows how approved local news and activities will appear for visitors. Replace it with verified program content before a production launch.</p>',
+                'notice_type' => 'notice-board',
+                'content_kind' => 'article',
+                'division_id' => $division?->id,
+                'district_id' => $district?->id,
+                'image_path' => $scope['image'],
+                'image_alt' => 'Demo activity image from Ignite Global Foundation’s controlled media library',
+                'location' => $district?->name ?: ($division ? $division->name . ' Division' : 'Bangladesh'),
+                'published_at' => $scope['published_at'],
+                'order_by' => $scope['order'],
+                'status' => 1,
+            ]);
+            $activity->save();
+            $this->restore($activity);
         }
     }
 
@@ -1091,6 +1548,10 @@ class IgniteParityContentSeeder extends Seeder
 
     private function seedHomepage(): void
     {
+        $featuredNewsReference = (string) NoticeBoard::query()
+            ->where('slug', 'together-for-their-tomorrow')
+            ->where('language', 'en')
+            ->value('translation_key');
         $homeCategory = $this->category('home', 'Homepage', 'Editable public homepage sections.', '61000000-0000-4000-8000-000000000010');
         $home = $this->page($homeCategory, [
             'uuid' => '62000000-0000-4000-8000-000000000100',
@@ -1202,7 +1663,7 @@ class IgniteParityContentSeeder extends Seeder
                 'events_selection_mode' => 'automatic',
                 'selected_event_ids' => [],
                 'event_limit' => 3,
-                'featured_news_id' => '',
+                'featured_news_id' => $featuredNewsReference,
                 'item_link_label' => 'Learn more',
                 'events_view_all_label' => 'View all events',
                 'events_view_all_url' => '/events',
@@ -1375,12 +1836,23 @@ class IgniteParityContentSeeder extends Seeder
         return $tag;
     }
 
-    private function menu(string $uuid, string $name, string $link, ?string $slug, ?int $parentId, int $order): PageMenu
+    private function menu(
+        string $uuid,
+        string $name,
+        string $link,
+        ?string $slug,
+        ?int $parentId,
+        int $order,
+        string $locale = 'en',
+    ): PageMenu
     {
-        $menu = PageMenu::withTrashed()->firstOrNew(['uuid' => $uuid]);
+        $menu = PageMenu::withTrashed()->firstOrNew([
+            'uuid' => $uuid,
+            'language' => $locale,
+        ]);
         $menu->fill([
             'name' => $name, 'type' => 'main', 'link' => $link, 'slug' => $slug, 'parent_id' => $parentId,
-            'language' => 'en', 'order_by' => $order, 'status' => 1,
+            'language' => $locale, 'order_by' => $order, 'status' => 1,
         ]);
         $menu->save();
         $this->restore($menu);

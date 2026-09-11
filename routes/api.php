@@ -31,6 +31,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['cors', 'json.response', 'XSS',
     Route::get('menu', 'Api\MenuController@index');
     Route::get('/', 'Api\CmsController@index')->name('api.frontend.home');
     Route::get('category/{slug?}', 'Api\CmsController@category')->name('api.frontend.category');
+    Route::get('blog', 'Api\CmsController@blog')->name('api.frontend.blog');
     Route::get('page/{slug?}', 'Api\CmsController@page')->name('api.frontend.page');
     Route::get('gallery', 'Api\CmsController@gallery')->name('api.frontend.gallery');
     Route::get('story/{slug?}', 'Api\CmsController@story')->name('api.frontend.story');

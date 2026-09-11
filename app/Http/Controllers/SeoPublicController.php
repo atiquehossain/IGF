@@ -31,6 +31,8 @@ use Illuminate\Support\Facades\Cache;
 
 class SeoPublicController extends Controller
 {
+    private const BLOG_CATEGORY_UUID = '61000000-0000-4000-8000-000000000007';
+
     public function __construct(
         private SeoMetadataService $seo,
         private SeoIndexingPolicy $indexing,
@@ -150,6 +152,14 @@ class SeoPublicController extends Controller
                 return null;
             }
 
+            if ($routeName === 'frontend.blog' && !Category::query()
+                ->where('uuid', self::BLOG_CATEGORY_UUID)
+                ->where('language', $locale)
+                ->where('status', 1)
+                ->exists()) {
+                return null;
+            }
+
             /** @var SeoMetadata|null $routeMetadata */
             $routeMetadata = $routeSeo->get($routeName);
             /** @var Page|null $page */
@@ -178,6 +188,10 @@ class SeoPublicController extends Controller
 
             if ($routeName === 'frontend.heroes.index') {
                 $entry['alternates'] = $this->heroesSitemapAlternates($routeName);
+            }
+
+            if ($routeName === 'frontend.blog') {
+                $entry['alternates'] = $this->blogArchiveSitemapAlternates();
             }
 
             return $entry;
@@ -231,12 +245,17 @@ class SeoPublicController extends Controller
             ->where('language', $locale)
             ->whereNotNull('slug')
             ->get()
-            ->reject(fn (Category $category) => hash_equals('career', (string) $category->slug))
+            ->reject(fn (Category $category) =>
+                hash_equals('career', (string) $category->slug)
+                || hash_equals(self::BLOG_CATEGORY_UUID, (string) $category->uuid)
+            )
             ->filter(fn (Category $category) => $this->isIndexable($category->seo))
             ->map(fn (Category $category) => [
                 'loc' => $this->sitemapLocation(
                     $category->seo?->canonical_url,
-                    route('frontend.category', ['slug' => $category->slug]),
+                    hash_equals(self::BLOG_CATEGORY_UUID, (string) $category->uuid)
+                        ? route('frontend.blog')
+                        : route('frontend.category', ['slug' => $category->slug]),
                     $locale
                 ),
                 'lastmod' => $this->lastModified($category, $category->seo),
@@ -477,6 +496,44 @@ class SeoPublicController extends Controller
             ->map(fn (string $locale): array => [
                 'locale' => $locale,
                 'url' => $this->publicationArchiveSitemapLocation($routeMetadata->get($locale), $routeName, $locale),
+            ])
+            ->values();
+
+        $default = $links->firstWhere('locale', $defaultLocale);
+        if ($default) {
+            $links->push(['locale' => 'x-default', 'url' => $default['url']]);
+        }
+
+        return $links->all();
+    }
+
+    /** @return array<int, array{locale: string, url: string}> */
+    private function blogArchiveSitemapAlternates(): array
+    {
+        $routeName = 'frontend.blog';
+        $defaultLocale = (string) config('app.fallback_locale', 'en');
+        $publicLocales = collect($this->localization->publicLocales());
+        $activeLocales = Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('status', 1)
+            ->whereIn('language', $publicLocales->all())
+            ->pluck('language')
+            ->unique()
+            ->values();
+        $eligibleLocales = collect($this->seo->indexableRouteLocales($routeName, $activeLocales->all()));
+        $routeMetadata = SeoMetadata::query()
+            ->where('route_name', $routeName)
+            ->whereIn('locale', $eligibleLocales->all())
+            ->get()
+            ->keyBy('locale');
+        $links = $eligibleLocales
+            ->map(fn (string $locale): array => [
+                'locale' => $locale,
+                'url' => $this->publicationArchiveSitemapLocation(
+                    $routeMetadata->get($locale),
+                    $routeName,
+                    $locale,
+                ),
             ])
             ->values();
 
@@ -737,6 +794,10 @@ class SeoPublicController extends Controller
 
     private function pageUrl(Page $page): string
     {
+        if ($this->isBlogPage($page)) {
+            return route('frontend.blog.show', ['slug' => $page->slug]);
+        }
+
         return match ($page->slug) {
             'home' => route('frontend.home'),
             'about-us' => route('frontend.about'),
@@ -744,5 +805,25 @@ class SeoPublicController extends Controller
             'sponsor-a-child' => route('frontend.sponsor_child'),
             default => route('frontend.page', ['slug' => $page->slug]),
         };
+    }
+
+    private function isBlogPage(Page $page): bool
+    {
+        $categoryKey = trim((string) $page->category_id);
+        if ($categoryKey === '') {
+            return false;
+        }
+
+        return Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('language', (string) $page->language)
+            ->where('status', 1)
+            ->where(function ($query) use ($categoryKey): void {
+                $query->where('uuid', $categoryKey);
+                if (ctype_digit($categoryKey)) {
+                    $query->orWhere('id', (int) $categoryKey);
+                }
+            })
+            ->exists();
     }
 }

@@ -91,6 +91,12 @@ class IgniteParityContentSeeder extends Seeder
             'Free, inclusive education from playgroup through Class Five at Ignite School in Bawnia, Dhaka.',
             '61000000-0000-4000-8000-000000000006'
         );
+        $this->category(
+            'blog',
+            'Blog',
+            'Insights, field reflections, and practical stories from Ignite Global Foundation.',
+            '61000000-0000-4000-8000-000000000007'
+        );
 
         $education = $this->page($programs, [
             'uuid' => '62000000-0000-4000-8000-000000000001',
@@ -791,6 +797,7 @@ class IgniteParityContentSeeder extends Seeder
                 ['uuid' => '68000000-0005-4000-8000-000000000001', 'name' => 'Stories', 'link' => 'frontend.category', 'slug' => 'stories', 'order' => 0],
                 ['uuid' => '68000000-0005-4000-8000-000000000002', 'name' => 'Events', 'link' => 'frontend.events', 'slug' => null, 'order' => 1],
                 ['uuid' => '68000000-0005-4000-8000-000000000003', 'name' => 'News', 'link' => 'frontend.news', 'slug' => null, 'order' => 2],
+                ['uuid' => '68000000-0005-4000-8000-000000000004', 'name' => 'Blog', 'link' => 'frontend.blog', 'slug' => null, 'order' => 3],
             ]],
             ['uuid' => '67000000-0000-4000-8000-000000000006', 'name' => 'Donate', 'link' => 'custom', 'slug' => '#', 'order' => 5, 'children' => [
                 ['uuid' => '68000000-0006-4000-8000-000000000001', 'name' => 'Make a Donation', 'link' => 'frontend.donate.direct', 'slug' => null, 'order' => 0],

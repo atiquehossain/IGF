@@ -31,6 +31,7 @@ describe('Testing App.vue component', () => {
     ['category', 'category'],
     ['event', 'event'],
     ['page', 'page'],
+    ['blog-post', 'page'],
   ])('applies sanitized CSS only for the active %s content source', async (component, source) => {
     expect(resolvePageCss(component, { [source]: { inline_css: `.managed-${source}{color:#123456}` } }))
       .toBe(`.managed-${source}{color:#123456}`);

@@ -41,6 +41,8 @@ use Illuminate\Validation\ValidationException;
 
 class SeoController extends Controller
 {
+    private const BLOG_CATEGORY_UUID = '61000000-0000-4000-8000-000000000007';
+
     public function __construct(
         private SeoMetadataService $seo,
         private SeoRouteRegistry $routeRegistry,
@@ -1038,7 +1040,7 @@ class SeoController extends Controller
             'permalink' => $model && !in_array($kind, ['job', 'workshop'], true) ? [
                 'slug' => (string) $model->getAttribute('slug'),
                 'editable' => $this->permalinkEditable($model, $kind),
-                'prefix' => $this->permalinkPrefix($kind),
+                'prefix' => $this->permalinkPrefix($kind, $model),
                 'restriction' => $this->permalinkEditable($model, $kind) ? null : $this->permalinkRestrictionMessage($model, $kind),
             ] : null,
         ];
@@ -1180,7 +1182,11 @@ class SeoController extends Controller
                 (int) $pageVersions->get($page->uuid, $page->editor_version)
             ));
         }
-        foreach (Category::query()->where('language', $locale)->orderBy('name')->get() as $category) {
+        foreach (Category::query()
+            ->where('language', $locale)
+            ->where('uuid', '!=', self::BLOG_CATEGORY_UUID)
+            ->orderBy('name')
+            ->get() as $category) {
             $targets->push($this->dashboardTarget($category, 'category', $locale, $modelMetadata->get(Category::class . ':' . $category->getKey())));
         }
         foreach (NoticeBoard::query()->where('language', $locale)->orderByDesc('published_at')->get() as $event) {
@@ -1468,7 +1474,9 @@ class SeoController extends Controller
 
         $url = match ($type) {
             'page' => $this->pagePublicUrl($model),
-            'category' => route('frontend.category', ['slug' => $model->getAttribute('slug')]),
+            'category' => $this->isBlogCategory($model)
+                ? route('frontend.blog')
+                : route('frontend.category', ['slug' => $model->getAttribute('slug')]),
             'event' => route('frontend.event', ['slug' => $model->getAttribute('slug')]),
             'annual_report' => route('frontend.annual_report.show', ['slug' => $model->getAttribute('slug')]),
             'project' => route('frontend.project', ['slug' => $model->getAttribute('slug')]),
@@ -1484,6 +1492,10 @@ class SeoController extends Controller
     private function pagePublicUrl(Model $page): string
     {
         $slug = (string) $page->getAttribute('slug');
+        if ($this->isBlogPage($page)) {
+            return route('frontend.blog.show', ['slug' => $slug]);
+        }
+
         $definition = $this->routeRegistry->all()->first(fn (array $definition) => ($definition['page_slug'] ?? null) === $slug);
         if (!$definition && filled($page->getAttribute('uuid'))) {
             $source = Page::query()
@@ -1689,6 +1701,9 @@ class SeoController extends Controller
         if ($type === 'donation_cause') {
             return false;
         }
+        if ($type === 'category' && $this->isBlogCategory($model)) {
+            return false;
+        }
 
         return $type !== 'page'
             || !$this->routeRegistry->all()->contains(fn (array $definition) => ($definition['page_slug'] ?? null) === $model->getAttribute('slug'));
@@ -1703,8 +1718,15 @@ class SeoController extends Controller
         return 'This is a protected primary website address. Change its navigation label instead of its URL.';
     }
 
-    private function permalinkPrefix(string $type): string
+    private function permalinkPrefix(string $type, ?Model $model = null): string
     {
+        if ($type === 'page' && $model && $this->isBlogPage($model)) {
+            return '/blog/';
+        }
+        if ($type === 'category' && $model && $this->isBlogCategory($model)) {
+            return '/';
+        }
+
         return match ($type) {
             'category' => '/category/',
             'event' => '/event/',
@@ -1713,6 +1735,32 @@ class SeoController extends Controller
             'donation_cause' => '/donate/',
             default => '/page/',
         };
+    }
+
+    private function isBlogPage(Model $page): bool
+    {
+        if (! $page instanceof Page) {
+            return false;
+        }
+
+        $categoryId = $page->getAttribute('category_id');
+        if (blank($categoryId)) {
+            return false;
+        }
+
+        return Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('language', (string) $page->getAttribute('language'))
+            ->where(function ($query) use ($categoryId): void {
+                $query->whereKey($categoryId)->orWhere('uuid', (string) $categoryId);
+            })
+            ->exists();
+    }
+
+    private function isBlogCategory(Model $category): bool
+    {
+        return $category instanceof Category
+            && (string) $category->getAttribute('uuid') === self::BLOG_CATEGORY_UUID;
     }
 
     private function slugRules(Model $model, string $type): array

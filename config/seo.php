@@ -19,6 +19,7 @@ return [
         ],
         'frontend.events' => ['label' => 'Events', 'path' => '/events'],
         'frontend.news' => ['label' => 'News & stories', 'path' => '/news'],
+        'frontend.blog' => ['label' => 'Blog', 'path' => '/blog'],
         'frontend.heroes.index' => [
             'label' => 'Meet the Heroes',
             'path' => '/meet-the-heroes',

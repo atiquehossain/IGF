@@ -195,7 +195,7 @@ class DynamicAdminContentIntegrityTest extends TestCase
     public function test_footer_backfill_is_editable_and_does_not_replace_existing_records(): void
     {
         $this->assertSame(4, PageMenu::where('type', 'footer')->whereNull('parent_id')->count());
-        $this->assertSame(17, PageMenu::where('type', 'footer')->whereNotNull('parent_id')->count());
+        $this->assertSame(18, PageMenu::where('type', 'footer')->whereNotNull('parent_id')->count());
 
         $explore = PageMenu::where('type', 'footer')->whereNull('parent_id')->where('name', 'Explore')->firstOrFail();
         $explore->update(['name' => 'Discover']);
@@ -203,8 +203,15 @@ class DynamicAdminContentIntegrityTest extends TestCase
         $migration = require database_path('migrations/2026_08_19_090200_seed_editable_footer_navigation.php');
         $migration->up();
 
-        $this->assertSame(21, PageMenu::where('type', 'footer')->count());
+        $this->assertSame(22, PageMenu::where('type', 'footer')->count());
         $this->assertDatabaseHas('page_menus', ['id' => $explore->id, 'name' => 'Discover']);
+        $this->assertDatabaseHas('page_menus', [
+            'uuid' => '7f010500-0000-4000-8000-000000000105',
+            'language' => 'en',
+            'type' => 'footer',
+            'slug' => '/blog',
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_footer_backfill_pairs_corresponding_locales_with_the_same_uuid(): void

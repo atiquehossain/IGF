@@ -25,6 +25,7 @@ class StaticUtil {
             // (object) ['id' => 'frontend.members', 'name' => $language['Members'], 'type' => ''],
             (object) ['id' => 'frontend.events', 'name' => $language['Events'], 'type' => 'page'],
             (object) ['id' => 'frontend.news', 'name' => 'News', 'type' => 'page'],
+            (object) ['id' => 'frontend.blog', 'name' => 'Blog', 'type' => 'page'],
             (object) ['id' => 'frontend.workshops.index', 'name' => 'Workshop', 'type' => 'page'],
             (object) ['id' => 'frontend.project', 'name' => $language['Project'], 'type' => 'project'],
         ];

@@ -119,6 +119,10 @@ class CanonicalEditorHandoffIntegrityTest extends TestCase
     {
         $admin = $this->makeAdmin(['page.create']);
         $category = $this->makeCategory(['name' => 'Our causes', 'slug' => 'our-causes']);
+        $blogCategory = Category::query()
+            ->where('uuid', '61000000-0000-4000-8000-000000000007')
+            ->where('language', 'en')
+            ->firstOrFail();
         $tag = Tag::create([
             'uuid' => (string) Str::uuid(),
             'name' => 'Current projects',
@@ -141,6 +145,15 @@ class CanonicalEditorHandoffIntegrityTest extends TestCase
         ]))->assertOk()
             ->assertSee('<h1>Create one project draft</h1>', false)
             ->assertSee('name="tags[]" value="'.$tag->id.'" checked', false);
+
+        $this->actingAs($admin, 'admin')->get(route('page.create', [
+            'language' => 'en',
+            'kind' => 'blog',
+            'category_slug' => $blogCategory->slug,
+        ]))->assertOk()
+            ->assertSee('<h1>Create one blog post draft</h1>', false)
+            ->assertSee('<h2 id="draft-basics-heading">Blog post basics</h2>', false)
+            ->assertSee('value="'.$blogCategory->id.'" data-locale-option="en" selected', false);
 
         $this->actingAs($admin, 'admin')->get(route('page.create', [
             'language' => 'en',

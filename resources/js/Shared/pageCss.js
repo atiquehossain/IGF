@@ -5,6 +5,7 @@ const COMPONENT_CONTENT_KEYS = Object.freeze({
   category: 'category',
   event: 'event',
   page: 'page',
+  'blog-post': 'page',
 })
 
 export function resolvePageCss(component, data = {}) {

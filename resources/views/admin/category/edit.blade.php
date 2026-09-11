@@ -253,7 +253,11 @@
                                     <strong>Search &amp; Sharing:</strong>
                                     @if($category && $canEditSeo)
                                         Use the single guided editor for Google previews, social cards, visibility, permalink and schema.
-                                        <a class="btn btn-sm btn-outline-primary ml-2" href="{{ route('seo.content.edit', ['type' => 'category', 'id' => $category->id, 'locale' => $lang]) }}">Open Search &amp; Sharing</a>
+                                        @if((string) $category->uuid === '61000000-0000-4000-8000-000000000007')
+                                            <a class="btn btn-sm btn-outline-primary ml-2" href="{{ route('seo.index', ['route' => 'frontend.blog', 'locale' => $lang]) }}#seo-editor">Open Search &amp; Sharing</a>
+                                        @else
+                                            <a class="btn btn-sm btn-outline-primary ml-2" href="{{ route('seo.content.edit', ['type' => 'category', 'id' => $category->id, 'locale' => $lang]) }}">Open Search &amp; Sharing</a>
+                                        @endif
                                     @elseif($category)
                                         Your SEO editor can manage this category from Search &amp; Sharing.
                                     @else

@@ -132,7 +132,8 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             ->assertSee('Public website preview in BN')
             ->assertSee('Open website in BN')
             ->assertSee('About us')
-            ->assertSee('Events &amp; stories', false)
+            ->assertSee('Events &amp; news', false)
+            ->assertSee('Blog')
             ->assertSee('Careers')
             ->assertSee('Workshops')
             ->assertSee('Member registration');
@@ -141,6 +142,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             route('frontend.home', ['lang' => 'bn']),
             route('frontend.about', ['lang' => 'bn']),
             route('frontend.events', ['lang' => 'bn']),
+            route('frontend.blog', ['lang' => 'bn']),
             route('frontend.jobs.index', ['lang' => 'bn']),
             route('frontend.workshops.index', ['lang' => 'bn']),
             route('frontend.volunteer_registration.index', ['lang' => 'bn']),
@@ -206,6 +208,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'Home page',
             'About & general pages',
             'Category pages',
+            'Blog',
             'Project pages',
             'Header, footer & navigation',
             'Newsletter & confirmation email',
@@ -214,7 +217,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
             'Search engines & social sharing',
             'Careers & application forms',
             'Workshops & registration forms',
-            'Events & stories',
+            'Events & news',
             'Gallery',
             'Annual reports',
             'Contact page',
@@ -234,6 +237,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         foreach ([
             route('frontend.home', ['lang' => 'bn']),
             route('frontend.project', ['lang' => 'bn']),
+            route('frontend.blog', ['lang' => 'bn']),
             route('frontend.jobs.index', ['lang' => 'bn']),
             route('frontend.workshops.index', ['lang' => 'bn']),
             route('frontend.donate.index', ['lang' => 'bn']),
@@ -251,7 +255,7 @@ class WebsiteCustomizerIntegrityTest extends TestCase
         }
 
         $this->assertSame(
-            24,
+            25,
             substr_count($response->getContent(), 'class="editor-directory__item"')
         );
     }

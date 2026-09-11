@@ -129,6 +129,49 @@ class CmsController extends Controller
         }
     }
 
+    public function blog(Request $request)
+    {
+        try {
+            $locale = $this->locale($request);
+            $category = Category::query()
+                ->where('uuid', \App\Http\Controllers\Vue\BlogController::CATEGORY_UUID)
+                ->where('language', $locale)
+                ->where('status', 1)
+                ->first();
+            if (!$category) {
+                return response(['status' => false, 'message' => 'not found'], 404);
+            }
+
+            $category->setRelation('page', Page::query()
+                ->publiclyListed()
+                ->where('language', $locale)
+                ->whereIn('category_id', [
+                    $category->getKey(),
+                    (string) $category->uuid,
+                ])
+                ->where(function ($query): void {
+                    $query->whereNull('published_at')->orWhere('published_at', '<=', now());
+                })
+                ->orderByDesc('published_at')
+                ->orderByDesc('id')
+                ->get());
+            $this->sanitizeCategory($category);
+
+            return response([
+                'status' => true,
+                'title' => $category->name,
+                'meta_tag' => [
+                    'meta_keyword' => $category->meta_keyword,
+                    'meta_title' => $category->meta_title,
+                    'meta_description' => $category->meta_description,
+                ],
+                'data' => $category,
+            ], 200);
+        } catch (Throwable $e) {
+            return $this->serverFailure($e);
+        }
+    }
+
     public function page(Request $request, $slug = NULL)
     {
         $title = '';

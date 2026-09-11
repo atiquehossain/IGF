@@ -68,7 +68,8 @@
         'About us' => $localizedRoute('frontend.about'),
         'Programs' => $localizedRoute('frontend.category', ['slug' => 'our-causes']),
         'Events' => $localizedRoute('frontend.events'),
-        'News & stories' => $localizedRoute('frontend.news'),
+        'News' => $localizedRoute('frontend.news'),
+        'Blog' => $localizedRoute('frontend.blog'),
         'Careers' => $localizedRoute('frontend.jobs.index'),
         'Workshops' => $localizedRoute('frontend.workshops.index'),
         'Contact' => $localizedRoute('frontend.contactUs'),
@@ -131,6 +132,15 @@
             'previews' => [
                 $publicPreview('Preview programs', $localizedRoute('frontend.category', ['slug' => 'our-causes'])),
             ],
+        ],
+        [
+            'title' => 'Blog',
+            'owner' => 'Blog posts use the full Content Hub workflow and Simple Editor. Website Customizer owns the Blog heading, labels, and empty-state wording.',
+            'actions' => [
+                $contentHubAction,
+                $settingsAction('content_archives', 'Blog wording'),
+            ],
+            'previews' => [$publicPreview('Preview Blog', $localizedRoute('frontend.blog'))],
         ],
         [
             'title' => 'Project pages',
@@ -212,8 +222,8 @@
             'previews' => [$publicPreview('Preview workshops', $localizedRoute('frontend.workshops.index'))],
         ],
         [
-            'title' => 'Events & stories',
-            'owner' => 'Events & Updates owns each event or story. Website Customizer owns shared listing, detail-label, and empty-state wording.',
+            'title' => 'Events & news',
+            'owner' => 'Events & News owns each event or news item. Website Customizer owns shared listing, detail-label, and empty-state wording.',
             'actions' => [
                 $adminAction('notice.board.index', 'Open events & updates', route('notice.board.index')),
                 $settingsAction('content_archives', 'listing wording'),

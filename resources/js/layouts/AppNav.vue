@@ -88,6 +88,7 @@ const fallbackNavigation = [
     { name: 'Stories', href: '/category/stories' },
     { name: 'Events', href: '/events' },
     { name: 'News', href: '/news' },
+    { name: 'Blog', href: '/blog' },
   ] },
   { name: 'Donate', href: '#', children: [
     { name: 'Make a Donation', href: '/make-a-donation' },

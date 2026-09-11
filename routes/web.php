@@ -554,6 +554,10 @@ Route::withoutMiddleware([
 Route::middleware(['cors', 'locale', 'XSS', 'seo.redirect', 'seo.route'])->group(function () {
     Route::get('language/{language?}', 'Vue\HomeController@language')->name('frontend.language');
     Route::get('/', 'Vue\HomeController@index')->name('frontend.home');
+    Route::get('blog', 'Vue\BlogController@index')->name('frontend.blog');
+    Route::get('blog/{slug}', 'Vue\BlogController@show')
+        ->where('slug', '[\pL\pN_-]+')
+        ->name('frontend.blog.show');
     Route::get('page/{slug?}', 'Vue\PageController@page')->name('frontend.page');
     Route::get('category/{slug?}', 'Vue\CategoryController@category')->name('frontend.category');
     Route::get('gallery', 'Vue\GalleryController@gallery')->name('frontend.gallery');

@@ -28,6 +28,15 @@ class CategoryController extends Controller
 
     public function category(Request $request, $slug = '')
     {
+        if (hash_equals('blog', (string) $slug)) {
+            $url = (string) $this->seo->localizedUrl(
+                route('frontend.blog'),
+                (string) app()->getLocale()
+            );
+
+            return redirect()->to($url, 301);
+        }
+
         if (hash_equals(self::LEGACY_CAREER_SLUG, (string) $slug)) {
             $url = route('frontend.jobs.index');
             $localeParameter = (string) config('seo.locale_query_parameter', 'lang');

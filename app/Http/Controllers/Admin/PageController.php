@@ -79,7 +79,10 @@ class PageController extends Controller
             ->distinct()
             ->orderBy('language')
             ->pluck('language');
-        $categories = Category::query()->where('status', 1)->orderBy('name')->get(['id', 'name']);
+        $categories = Category::query()
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'uuid', 'name', 'slug', 'language']);
 
         $pages = Page::select('pages.*', 'c.name as c_name')
             ->selectSub(function ($query) {
@@ -159,10 +162,23 @@ class PageController extends Controller
             ->selectRaw('publication_status, COUNT(*) as total')
             ->groupBy('publication_status')
             ->pluck('total', 'publication_status');
+        $blogCategory = $categories->first(fn (Category $candidate): bool =>
+            (string) $candidate->uuid === '61000000-0000-4000-8000-000000000007'
+            && (string) $candidate->language === (string) $language
+        ) ?? $categories->first(fn (Category $candidate): bool =>
+            (string) $candidate->slug === 'blog'
+            && (string) $candidate->language === (string) $language
+        );
+        $blogCount = $blogCategory
+            ? Page::query()->whereIn('category_id', [
+                $blogCategory->getKey(),
+                (string) $blogCategory->uuid,
+            ])->count()
+            : 0;
 
         return view('admin.page.index')->with(compact(
             'title', 'pages', 'search', 'status', 'counts', 'language', 'category',
-            'needsTranslation', 'languages', 'categories'
+            'needsTranslation', 'languages', 'categories', 'blogCategory', 'blogCount'
         ));
     }
 

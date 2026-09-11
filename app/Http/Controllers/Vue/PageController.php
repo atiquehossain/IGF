@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Vue;
 use App\Http\Controllers\Controller;
 use App\Helper\StaticUtil;
 use App\Models\Banner;
+use App\Models\Category;
 use App\Models\Page;
 use App\Services\CategoryLandingPageAliasService;
 use App\Services\SeoMetadataService;
 use App\Services\ContentSanitizer;
 use App\Services\PageBlockContentResolver;
+use App\Services\SiteSettingService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,6 +22,7 @@ class PageController extends Controller
         private PageBlockContentResolver $blockResolver,
         private CategoryLandingPageAliasService $landingPageAliases,
         private SeoMetadataService $seo,
+        private SiteSettingService $siteSettings,
     ) {
     }
 
@@ -54,6 +57,15 @@ class PageController extends Controller
             ->where('pages.slug', $slug)
             ->where('pages.language', app()->getLocale())
             ->firstOrFail();
+
+        if ($this->blogCategoryForPage($page)) {
+            $blogUrl = route('frontend.blog.show', ['slug' => $page->slug]);
+
+            return redirect()->to(
+                (string) $this->seo->localizedUrl($blogUrl, (string) $page->language),
+                301
+            );
+        }
 
         if ($category = $this->landingPageAliases->categoryForPage($page)) {
             abort_if(blank($category->slug), 404);
@@ -135,6 +147,30 @@ class PageController extends Controller
             'contentSeo' => $metaTag,
         ];
 
+        if ($blogCategory = $this->blogCategoryForPage($page, false)) {
+            $thumbnail = $this->publicPageThumbnail($page->getRawOriginal('thumbnail'));
+            $page->setAttribute('thumbnail', $thumbnail);
+            $page->setAttribute('thumbnail_alt', trim(strip_tags((string) $page->name)));
+            $page->setAttribute('public_url', (string) $this->seo->localizedUrl(
+                route('frontend.blog.show', ['slug' => $page->slug]),
+                $locale
+            ));
+            $archiveUrl = (string) $this->seo->localizedUrl(route('frontend.blog'), $locale);
+            $settings = data_get($this->siteSettings->values($locale, true), 'content_archives', []);
+
+            return Inertia::render('blog-post')->with($shared + [
+                'archive_presentation' => BlogController::presentationFromSettings(
+                    is_array($settings) ? $settings : [],
+                    $locale,
+                    (string) $blogCategory->name,
+                ),
+                'data' => [
+                    'page' => $page,
+                    'archive_url' => $archiveUrl,
+                ],
+            ]);
+        }
+
         if ($page->slug === 'home') {
             $sliders = Banner::where('type', 'banner-home')
                 ->where('status', 1)
@@ -194,5 +230,40 @@ class PageController extends Controller
             $block->setAttribute('is_reusable', (bool) $block->reusable_block_id);
             $block->unsetRelation('reusableBlock');
         });
+    }
+
+    private function blogCategoryForPage(Page $page, bool $activeOnly = true): ?Category
+    {
+        $query = $activeOnly ? Category::query() : Category::withTrashed();
+        $category = $query
+            ->where('uuid', BlogController::CATEGORY_UUID)
+            ->where('language', (string) $page->language)
+            ->when($activeOnly, fn ($builder) => $builder->where('status', 1))
+            ->first();
+        if (!$category) {
+            return null;
+        }
+
+        $categoryId = trim((string) $page->category_id);
+
+        return in_array($categoryId, [
+            (string) $category->getKey(),
+            trim((string) $category->uuid),
+        ], true) ? $category : null;
+    }
+
+    private function publicPageThumbnail(?string $value): ?string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        $url = str_starts_with($value, '/') || preg_match('#^https?://#i', $value)
+            ? $value
+            : '/storage/photos/1/page/' . ltrim($value, '/');
+        $url = $this->sanitizer->sanitizeUrl($url);
+
+        return $url !== '' ? $url : null;
     }
 }

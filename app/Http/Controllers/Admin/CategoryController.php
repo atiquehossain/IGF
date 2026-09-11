@@ -28,6 +28,10 @@ use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
 {
+    private const REQUIRED_SYSTEM_CATEGORY_UUIDS = [
+        '61000000-0000-4000-8000-000000000007',
+    ];
+
     public function __construct(
         private ContentSanitizer $sanitizer,
         private SafeMediaReplacementService $media,
@@ -283,6 +287,11 @@ class CategoryController extends Controller
         try {
             if ($request->ajax()) {
                 return DB::transaction(function () use ($request, $id) {
+                    if (in_array((string) $id, self::REQUIRED_SYSTEM_CATEGORY_UUIDS, true)) {
+                        return response([
+                            'message' => 'The Blog category is a required website destination. Hide its navigation link if you do not want visitors to see it.',
+                        ], 422);
+                    }
                     $categories = Category::query()
                         ->where('uuid', $id)
                         ->orderBy('id')
@@ -311,6 +320,11 @@ class CategoryController extends Controller
     {
         try {
             return DB::transaction(function () use ($request, $id) {
+                if (in_array((string) $id, self::REQUIRED_SYSTEM_CATEGORY_UUIDS, true)) {
+                    return response([
+                        'message' => 'The Blog category cannot be deleted because it owns the Blog page. Delete or move individual posts, or hide the Blog navigation link instead.',
+                    ], 422);
+                }
                 $categories = Category::query()
                     ->where('uuid', $id)
                     ->orderBy('id')

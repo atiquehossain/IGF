@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Schema;
 
 class SeoMetadataService
 {
+    private const BLOG_CATEGORY_UUID = '61000000-0000-4000-8000-000000000007';
+
     /**
      * Return the deterministic, owner-editable social-card fallback without
      * hiding missing page-specific images in the SEO editor or health report.
@@ -112,6 +114,14 @@ class SeoMetadataService
     {
         $defaultLocale = (string) config('app.fallback_locale', 'en');
         $slug = (string) $page->slug;
+        if ($this->isBlogPage($page)) {
+            return (string) $this->localizedUrl(
+                route('frontend.blog.show', ['slug' => $slug]),
+                (string) ($page->language ?: $defaultLocale),
+                $defaultLocale,
+            );
+        }
+
         $landingOwner = app(CategoryLandingPageAliasService::class)->categoryForPage(
             $page,
             (string) ($page->language ?: app()->getLocale()),
@@ -411,7 +421,7 @@ class SeoMetadataService
 
         $routeName = (string) request()->route()->getName();
 
-        return in_array($routeName, ['frontend.events', 'frontend.news'], true)
+        return in_array($routeName, ['frontend.events', 'frontend.news', 'frontend.blog'], true)
             ? $routeName
             : null;
     }
@@ -436,6 +446,14 @@ class SeoMetadataService
         $routeName = (string) request()->route()->getName();
         $slug = trim((string) request()->route('slug'));
         $currentLocale = (string) app()->getLocale();
+
+        if ($routeName === 'frontend.blog') {
+            return $this->blogArchiveAlternateUrls($locales, $defaultLocale);
+        }
+
+        if ($routeName === 'frontend.blog.show') {
+            return $this->blogPageAlternateUrls($slug, $currentLocale, $locales, $defaultLocale);
+        }
 
         if ($routeName === 'frontend.page') {
             return $this->pageAlternateUrls($slug, $currentLocale, $locales, $defaultLocale);
@@ -627,6 +645,90 @@ class SeoMetadataService
     }
 
     /** @param Collection<int, string> $locales @return Collection<string, string> */
+    private function blogArchiveAlternateUrls(Collection $locales, string $defaultLocale): Collection
+    {
+        if (!Schema::hasTable('categories')) {
+            return collect();
+        }
+
+        return Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('status', 1)
+            ->whereIn('language', $locales->all())
+            ->get()
+            ->unique('language')
+            ->mapWithKeys(fn (Category $category) => [
+                (string) $category->language => (string) $this->localizedUrl(
+                    route('frontend.blog'),
+                    (string) $category->language,
+                    $defaultLocale,
+                ),
+            ]);
+    }
+
+    /** @param Collection<int, string> $locales @return Collection<string, string> */
+    private function blogPageAlternateUrls(
+        string $slug,
+        string $currentLocale,
+        Collection $locales,
+        string $defaultLocale
+    ): Collection {
+        if ($slug === '' || !Schema::hasTable('pages') || !Schema::hasTable('categories')) {
+            return collect();
+        }
+
+        $categories = Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('status', 1)
+            ->whereIn('language', $locales->all())
+            ->get()
+            ->keyBy('language');
+        /** @var Category|null $currentCategory */
+        $currentCategory = $categories->get($currentLocale);
+        if (!$currentCategory) {
+            return collect();
+        }
+
+        $page = $this->publicPages()
+            ->where('language', $currentLocale)
+            ->where('slug', $slug)
+            ->whereIn('category_id', [
+                $currentCategory->getKey(),
+                (string) $currentCategory->uuid,
+            ])
+            ->first();
+        if (!$page) {
+            return collect();
+        }
+
+        $translations = filled($page->uuid)
+            ? $this->publicPages()
+                ->where('uuid', $page->uuid)
+                ->whereIn('language', $categories->keys()->all())
+                ->get()
+            : collect([$page]);
+
+        return $translations
+            ->filter(function (Page $translation) use ($categories): bool {
+                /** @var Category|null $category */
+                $category = $categories->get((string) $translation->language);
+
+                return $category && in_array(trim((string) $translation->category_id), [
+                    (string) $category->getKey(),
+                    trim((string) $category->uuid),
+                ], true);
+            })
+            ->unique('language')
+            ->mapWithKeys(fn (Page $translation) => [
+                (string) $translation->language => (string) $this->localizedUrl(
+                    route('frontend.blog.show', ['slug' => $translation->slug]),
+                    (string) $translation->language,
+                    $defaultLocale,
+                ),
+            ]);
+    }
+
+    /** @param Collection<int, string> $locales @return Collection<string, string> */
     private function jobAlternateUrls(
         string $slug,
         string $currentLocale,
@@ -764,6 +866,30 @@ class SeoMetadataService
             ->where(function ($query) {
                 $query->whereNull('published_at')->orWhere('published_at', '<=', now());
             });
+    }
+
+    private function isBlogPage(Page $page): bool
+    {
+        if (!Schema::hasTable('categories')) {
+            return false;
+        }
+
+        $categoryKey = trim((string) $page->category_id);
+        if ($categoryKey === '') {
+            return false;
+        }
+
+        return Category::query()
+            ->where('uuid', self::BLOG_CATEGORY_UUID)
+            ->where('language', (string) ($page->language ?: app()->getLocale()))
+            ->where('status', 1)
+            ->where(function ($query) use ($categoryKey): void {
+                $query->where('uuid', $categoryKey);
+                if (ctype_digit($categoryKey)) {
+                    $query->orWhere('id', (int) $categoryKey);
+                }
+            })
+            ->exists();
     }
 
     /**

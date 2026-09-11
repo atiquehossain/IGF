@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AnnualReport;
 use App\Models\NoticeBoard;
+use App\Models\Page;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use Throwable;
@@ -16,7 +17,7 @@ class PublicStructuredDataService
         'NGO', 'Organization', 'WebSite', 'SearchAction', 'EntryPoint',
         'BreadcrumbList', 'ListItem', 'CollectionPage', 'WebPage',
         'Event', 'Place', 'VirtualLocation', 'PostalAddress', 'ImageObject', 'Report',
-        'Article', 'MediaObject', 'DonateAction', 'MonetaryAmount',
+        'Article', 'BlogPosting', 'Person', 'MediaObject', 'DonateAction', 'MonetaryAmount',
     ];
 
     public function __construct(
@@ -138,6 +139,38 @@ class PublicStructuredDataService
         }
         if ($modified = $this->date($event->updated_at)) {
             $node['dateModified'] = $modified;
+        }
+
+        return $this->document([$this->breadcrumbNode($breadcrumbs), $this->compact($node)]);
+    }
+
+    /** @param array<int, array{name: string, url: string}> $breadcrumbs */
+    public function article(
+        Page $page,
+        string $url,
+        ?string $image = null,
+        array $breadcrumbs = [],
+    ): array {
+        $description = $this->text($page->sub_title ?: $page->description, 1000);
+        $author = $this->text($page->publish_by, 200);
+        $node = $this->pageNode(
+            'BlogPosting',
+            (string) $page->name,
+            $description,
+            $url,
+        ) + [
+            'headline' => $this->text($page->name, 300),
+            'datePublished' => $this->date(
+                $page->published_at ?: $page->last_published_at ?: $page->created_at
+            ),
+            'dateModified' => $this->date($page->updated_at),
+            'author' => $author !== ''
+                ? ['@type' => 'Person', 'name' => $author]
+                : ['@id' => $this->organizationId()],
+            'publisher' => ['@id' => $this->organizationId()],
+        ];
+        if ($safeImage = $this->imageUrl($image)) {
+            $node['image'] = [$safeImage];
         }
 
         return $this->document([$this->breadcrumbNode($breadcrumbs), $this->compact($node)]);
@@ -465,7 +498,7 @@ class PublicStructuredDataService
             }
         }
 
-        if (in_array($type, ['NGO', 'Organization', 'WebSite', 'CollectionPage', 'WebPage', 'Event', 'Report', 'Article', 'DonateAction'], true)
+        if (in_array($type, ['NGO', 'Organization', 'WebSite', 'CollectionPage', 'WebPage', 'Event', 'Report', 'Article', 'BlogPosting', 'Person', 'DonateAction'], true)
             && trim((string) ($node['name'] ?? $node['headline'] ?? '')) === '') {
             $errors[] = "{$path} must have a name.";
         }
